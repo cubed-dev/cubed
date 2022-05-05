@@ -56,7 +56,7 @@ def ones(shape, *, dtype=None, device=None, chunks=None, spec=None):
     )
 
     plan = Plan(name, "ones", target, spec)
-    return Array(name, plan, store, target.shape, dtype, chunks)
+    return Array(name, plan, store, target.shape, target.dtype, chunks)
 
 
 # Data type functions
