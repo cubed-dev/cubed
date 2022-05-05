@@ -1,0 +1,11 @@
+apache-beam[gcp]
+dask[array]
+fsspec
+gcsfs
+networkx
+numpy >= 1.22
+pygraphviz
+pytest
+rechunker
+yarl
+zarr
