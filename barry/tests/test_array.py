@@ -141,6 +141,14 @@ def test_squeeze_2d(spec, executor):
 
 def test_sum(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.sum(a)
+    assert_array_equal(
+        b.compute(executor=executor), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).sum()
+    )
+
+
+def test_sum_axis_0(spec, executor):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.sum(a, axis=0)
     assert_array_equal(b.compute(executor=executor), np.array([12, 15, 18]))
 

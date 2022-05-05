@@ -68,7 +68,7 @@ class Array:
         if return_stored:
             # read back from zarr
             a = zarr.open(self.store, mode="r")
-            return a[:]
+            return a[...]
 
     def visualize(self, filename="barry", format=None):
         return self.plan.visualize(filename=filename, format=format)
