@@ -1,5 +1,6 @@
 from .array_api import (
     add,
+    all,
     asarray,
     equal,
     matmul,
@@ -15,6 +16,7 @@ from .core import Spec, from_zarr, map_blocks, to_zarr
 
 __all__ = [
     "add",
+    "all",
     "asarray",
     "equal",
     "from_zarr",

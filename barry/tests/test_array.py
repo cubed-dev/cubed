@@ -66,6 +66,19 @@ def test_negative(spec, executor):
     )
 
 
+def test_all(spec, executor):
+    a = xp.asarray(
+        [[True, True, True], [True, True, True], [True, True, True]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.all(a)
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[True, True, True], [True, True, True], [True, True, True]]).all(),
+    )
+
+
 def test_outer(spec, executor):
     a = xp.asarray([0, 1, 2], chunks=2, spec=spec)
     b = xp.asarray([10, 50, 100], chunks=2, spec=spec)

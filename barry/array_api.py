@@ -159,3 +159,10 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False):
     if dtype is None:
         dtype = x.dtype
     return reduction(x, np.sum, axis=axis, dtype=dtype, keepdims=keepdims)
+
+
+# Utility functions
+
+
+def all(x, /, *, axis=None, keepdims=False):
+    return reduction(x, np.all, axis=axis, dtype=bool, keepdims=keepdims)
