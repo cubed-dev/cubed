@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import prod
 from numbers import Integral, Number
 from operator import mul
 
@@ -167,7 +168,6 @@ class Plan:
                 dag.remove_nodes_from(no_dep_nodes)
 
         else:
-
             executor.execute_dag(dag, **kwargs)
 
         self.complete = True
@@ -360,9 +360,7 @@ def reduction(x, func, axis=None, dtype=None, keepdims=False):
     inds = tuple(range(x.ndim))
 
     result = x
-
-    # TODO: the following may need to be done in multiple rounds in order to keep chunks within a given memory size
-    # (condition is: number of chunks > chunksize in reduction axis)
+    max_mem = x.plan.spec.max_mem
 
     # reduce chunks (if any axis chunksize is > 1)
     if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
@@ -380,30 +378,37 @@ def reduction(x, func, axis=None, dtype=None, keepdims=False):
             adjust_chunks=adjust_chunks,
         )
 
-    # rechunk along axis (if any axis numblocks > 1)
-    if any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
+    # rechunk/reduce along axis in multiple rounds until there's a single block in each reduction axis
+    while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
+        # rechunk along axis
         target_chunks = list(result.chunksize)
+        chunk_mem = np.dtype(dtype).itemsize * prod(result.chunksize)
         for i, s in enumerate(result.shape):
             if i in axis:
-                target_chunks[i] = s
+                if len(axis) > 1:
+                    # TODO: make sure chunk size doesn't exceed max_mem for multi-axis reduction
+                    target_chunks[i] = s
+                else:
+                    target_chunks[i] = min(s, (max_mem - chunk_mem) // chunk_mem)
         target_chunks = tuple(target_chunks)
         result = rechunk(result, target_chunks)
 
-    # reduce chunks (if any axis chunksize is > 1)
-    if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
-        args = (result, inds)
-        adjust_chunks = {
-            i: (1,) * len(c) if i in axis else c for i, c in enumerate(result.chunks)
-        }
-        result = blockwise(
-            func,
-            inds,
-            *args,
-            axis=axis,
-            keepdims=True,
-            dtype=dtype,
-            adjust_chunks=adjust_chunks,
-        )
+        # reduce chunks (if any axis chunksize is > 1)
+        if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
+            args = (result, inds)
+            adjust_chunks = {
+                i: (1,) * len(c) if i in axis else c
+                for i, c in enumerate(result.chunks)
+            }
+            result = blockwise(
+                func,
+                inds,
+                *args,
+                axis=axis,
+                keepdims=True,
+                dtype=dtype,
+                adjust_chunks=adjust_chunks,
+            )
 
     # TODO: [optimization] remove extra squeeze (and materialized zarr) by doing it as a part of the last blockwise
     if not keepdims:

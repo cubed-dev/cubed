@@ -14,13 +14,7 @@ from rechunker.types import (
     Stage,
 )
 
-sym_counter = 0
-
-
-def gensym(name):
-    global sym_counter
-    sym_counter += 1
-    return f"{name}-{sym_counter:03}"
+from ..utils import gensym
 
 
 def _no_arg_stage(

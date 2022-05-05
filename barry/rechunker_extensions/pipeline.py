@@ -9,6 +9,8 @@ from rechunker.pipeline import (
 )
 from rechunker.types import CopySpec, Pipeline, Stage
 
+from .utils import gensym
+
 
 class ChunkKeys(Iterable[Tuple[slice, ...]]):
     def __init__(self, shape: Tuple[int, ...], chunks: Tuple[int, ...]):
@@ -26,7 +28,7 @@ def spec_to_pipeline(spec: CopySpec) -> Pipeline:
         stages = [
             Stage(
                 copy_read_to_write,
-                "copy_read_to_write",
+                gensym("copy_read_to_write"),
                 mappable=ChunkKeys(shape, spec.write.chunks),
             )
         ]
@@ -34,12 +36,12 @@ def spec_to_pipeline(spec: CopySpec) -> Pipeline:
         stages = [
             Stage(
                 copy_read_to_intermediate,
-                "copy_read_to_intermediate",
+                gensym("copy_read_to_intermediate"),
                 mappable=ChunkKeys(shape, spec.intermediate.chunks),
             ),
             Stage(
                 copy_intermediate_to_write,
-                "copy_intermediate_to_write",
+                gensym("copy_intermediate_to_write"),
                 mappable=ChunkKeys(shape, spec.write.chunks),
             ),
         ]

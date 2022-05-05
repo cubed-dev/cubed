@@ -238,3 +238,10 @@ def test_default_spec_max_mem_exceeded():
     a = xp.ones((100000, 100000), chunks=(10000, 10000))
     with pytest.raises(ValueError):
         xp.negative(a)
+
+
+def test_reduction_multiple_rounds(tmp_path, executor):
+    spec = xp.Spec(tmp_path, max_mem=110)
+    a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
+    b = xp.sum(a, axis=0)
+    assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
