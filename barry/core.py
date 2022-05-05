@@ -74,6 +74,11 @@ class Array:
     def visualize(self, filename="barry", format=None):
         return self.plan.visualize(filename=filename, format=format)
 
+    def __bool__(self, /):
+        if self.ndim != 0:
+            raise TypeError("bool is only allowed on arrays with 0 dimensions")
+        return bool(self.compute())
+
     def __repr__(self):
         return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
