@@ -79,8 +79,8 @@ def test_all(spec, executor):
     )
 
 
-def test_object_bool(spec):
-    # TODO: allow an executor to be specified
+def test_object_bool(tmp_path, executor):
+    spec = xp.Spec(tmp_path, 100000, executor=executor)
     a = xp.asarray(
         [[False, False, False], [False, False, False], [False, False, False]],
         chunks=(2, 2),
@@ -88,6 +88,14 @@ def test_object_bool(spec):
     )
     b = xp.all(a)
     assert not b
+
+    a = xp.asarray(
+        [[True, True, True], [True, True, True], [True, True, True]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.all(a)
+    assert b
 
 
 def test_outer(spec, executor):

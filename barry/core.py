@@ -17,6 +17,7 @@ from toolz import map, reduce
 
 from barry.primitive import blockwise as primitive_blockwise
 from barry.primitive import rechunk as primitive_rechunk
+from barry.rechunker_extensions.types import Executor
 from barry.utils import temporary_directory
 
 sym_counter = 0
@@ -147,7 +148,9 @@ class Plan:
             return
 
         if executor is None:
-            executor = PythonPipelineExecutor()
+            executor = self.spec.executor
+            if executor is None:
+                executor = PythonPipelineExecutor()
 
         # prune DAG so it only has transitive dependencies of 'name'
         dag = self.dag.subgraph(get_weakly_cc(self.dag, name))
@@ -220,6 +223,7 @@ class Spec:
 
     work_dir: str
     max_mem: int
+    executor: Executor = None
 
 
 def new_temp_store(name=None, spec=None):
