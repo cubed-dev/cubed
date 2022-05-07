@@ -28,6 +28,30 @@ def executor(request):
 
 # Test API
 
+# Array object
+
+
+def test_object_bool(tmp_path, executor):
+    spec = xp.Spec(tmp_path, 100000, executor=executor)
+    a = xp.asarray(
+        [[False, False, False], [False, False, False], [False, False, False]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.all(a)
+    assert not b
+
+    a = xp.asarray(
+        [[True, True, True], [True, True, True], [True, True, True]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.all(a)
+    assert b
+
+
+# Creation functions
+
 
 def test_asarray(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
@@ -39,6 +63,12 @@ def test_asarray(spec, executor):
 def test_ones(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     assert_array_equal(a.compute(executor=executor), np.ones((3, 3)))
+
+
+# Data type functions
+
+
+# Elementwise functions
 
 
 def test_add(spec, executor):
@@ -66,43 +96,7 @@ def test_negative(spec, executor):
     )
 
 
-def test_all(spec, executor):
-    a = xp.asarray(
-        [[True, True, True], [True, True, True], [True, True, True]],
-        chunks=(2, 2),
-        spec=spec,
-    )
-    b = xp.all(a)
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[True, True, True], [True, True, True], [True, True, True]]).all(),
-    )
-
-
-def test_object_bool(tmp_path, executor):
-    spec = xp.Spec(tmp_path, 100000, executor=executor)
-    a = xp.asarray(
-        [[False, False, False], [False, False, False], [False, False, False]],
-        chunks=(2, 2),
-        spec=spec,
-    )
-    b = xp.all(a)
-    assert not b
-
-    a = xp.asarray(
-        [[True, True, True], [True, True, True], [True, True, True]],
-        chunks=(2, 2),
-        spec=spec,
-    )
-    b = xp.all(a)
-    assert b
-
-
-def test_outer(spec, executor):
-    a = xp.asarray([0, 1, 2], chunks=2, spec=spec)
-    b = xp.asarray([10, 50, 100], chunks=2, spec=spec)
-    c = xp.outer(a, b)
-    assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
+# Linear algebra functions
 
 
 def test_matmul(spec, executor):
@@ -148,6 +142,16 @@ def test_matmul_cloud(executor):
         fs.rm(tmp_path, recursive=True)
 
 
+def test_outer(spec, executor):
+    a = xp.asarray([0, 1, 2], chunks=2, spec=spec)
+    b = xp.asarray([10, 50, 100], chunks=2, spec=spec)
+    c = xp.outer(a, b)
+    assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
+
+
+# Manipulation functions
+
+
 def test_permute_dims(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.permute_dims(a, (1, 0))
@@ -171,6 +175,9 @@ def test_squeeze_2d(spec, executor):
     )
 
 
+# Statistical functions
+
+
 def test_sum(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.sum(a)
@@ -183,6 +190,22 @@ def test_sum_axis_0(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.sum(a, axis=0)
     assert_array_equal(b.compute(executor=executor), np.array([12, 15, 18]))
+
+
+# Utility functions
+
+
+def test_all(spec, executor):
+    a = xp.asarray(
+        [[True, True, True], [True, True, True], [True, True, True]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.all(a)
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[True, True, True], [True, True, True], [True, True, True]]).all(),
+    )
 
 
 # Other
