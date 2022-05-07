@@ -32,10 +32,10 @@ def gensym(name="array"):
 class Array:
     """Chunked array backed by Zarr storage."""
 
-    def __init__(self, name, plan, store, shape, dtype, chunks):
+    def __init__(self, name, plan, zarray, shape, dtype, chunks):
         self.name = name
         self.plan = plan
-        self.store = store
+        self.zarray = zarray
         self.shape = shape
         self.dtype = dtype
         self.chunks = normalize_chunks(chunks, shape, dtype)
@@ -69,8 +69,7 @@ class Array:
 
         if return_stored:
             # read back from zarr
-            a = zarr.open(self.store, mode="r")
-            return a[...]
+            return self.zarray[...]
 
     def visualize(self, filename="barry", format=None):
         return self.plan.visualize(filename=filename, format=format)
@@ -248,7 +247,7 @@ def from_zarr(store, spec=None):
     target = zarr.open(store, mode="r")
 
     plan = Plan(name, "from_zarr", target, spec)
-    return Array(name, plan, store, target.shape, target.dtype, target.chunks)
+    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
 
 
 def to_zarr(x, store, return_stored=False, executor=None):
@@ -266,7 +265,7 @@ def blockwise(func, out_ind, *args, dtype=None, adjust_chunks=None, **kwargs):
 
     # replace arrays with zarr arrays
     zargs = list(args)
-    zargs[::2] = [zarr.open(a.store) for a in arrays]
+    zargs[::2] = [a.zarray for a in arrays]
 
     name = gensym()
     spec = arrays[0].plan.spec
@@ -284,7 +283,7 @@ def blockwise(func, out_ind, *args, dtype=None, adjust_chunks=None, **kwargs):
     plan = Plan(
         name, "blockwise", target, spec, pipeline, required_mem, num_tasks, *arrays
     )
-    return Array(name, plan, target_store, target.shape, dtype, target.chunks)
+    return Array(name, plan, target, target.shape, dtype, target.chunks)
 
 
 def elementwise_unary_operation(x, func, dtype):
@@ -349,14 +348,14 @@ def rechunk(x, chunks, target_store=None):
         target_store = new_temp_store(name=name, spec=spec)
     temp_store = new_temp_store(name=f"{name}-intermediate", spec=spec)
     pipeline, target, required_mem, num_tasks = primitive_rechunk(
-        zarr.open(x.store),
+        x.zarray,
         target_chunks=chunks,
         max_mem=spec.max_mem,
         target_store=target_store,
         temp_store=temp_store,
     )
     plan = Plan(name, "rechunk", target, spec, pipeline, required_mem, num_tasks, x)
-    return Array(name, plan, target_store, target.shape, target.dtype, target.chunks)
+    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
 
 
 def reduction(x, func, axis=None, dtype=None, keepdims=False):

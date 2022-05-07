@@ -38,7 +38,7 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks=None, spec=Non
     target[:] = a
 
     plan = Plan(name, "asarray", target, spec)
-    return Array(name, plan, store, target.shape, dtype, chunks)
+    return Array(name, plan, target, target.shape, dtype, chunks)
 
 
 def ones(shape, *, dtype=None, device=None, chunks=None, spec=None):
@@ -56,7 +56,7 @@ def ones(shape, *, dtype=None, device=None, chunks=None, spec=None):
     )
 
     plan = Plan(name, "ones", target, spec)
-    return Array(name, plan, store, target.shape, target.dtype, chunks)
+    return Array(name, plan, target, target.shape, target.dtype, chunks)
 
 
 # Data type functions
