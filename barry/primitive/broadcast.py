@@ -31,28 +31,83 @@ def broadcast_to(source, shape):
     path = source._path
     read_only = True
     synchronizer = source._synchronizer
+    cache_metadata = True
+    cache_attrs = True
+    partial_decompress = False
+    write_empty_chunks = True
+
+    chunks = (1,) * ndim_new + source.chunks
+    bds = [i for i, s in enumerate(source.shape) if s != shape[ndim_new:][i]]
 
     a = BroadcastArray(
         store=store,
         path=path,
-        chunk_store=chunk_store,
         read_only=read_only,
+        chunk_store=chunk_store,
         synchronizer=synchronizer,
-        cache_metadata=True,
+        cache_metadata=cache_metadata,
+        cache_attrs=cache_attrs,
+        partial_decompress=partial_decompress,
+        write_empty_chunks=write_empty_chunks,
+        shape=shape,
+        chunks=chunks,
+        bds=bds,
+        ndim_new=ndim_new,
     )
-    a._dtype = source.dtype
-    a._shape = shape  # TODO: normalize_shape
-    a._chunks = (1,) * ndim_new + source.chunks
-    a._bds = [i for i, s in enumerate(source.shape) if s != shape[ndim_new:][i]]
-    a._ndim_new = ndim_new
-
     return a
 
 
 class BroadcastArray(Array):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    # TODO: make this less brittle to changes in Zarr version (which may change init params)
+    def __init__(
+        self,
+        store,
+        path,
+        read_only,
+        chunk_store,
+        synchronizer,
+        cache_metadata,
+        cache_attrs,
+        partial_decompress,
+        write_empty_chunks,
+        shape,
+        chunks,
+        bds,
+        ndim_new,
+    ):
+        super().__init__(
+            store,
+            path,
+            read_only,
+            chunk_store,
+            synchronizer,
+            cache_metadata,
+            cache_attrs,
+            partial_decompress,
+            write_empty_chunks,
+        )
         self._is_view = True
+        self._shape = shape
+        self._chunks = chunks
+        self._bds = bds
+        self._ndim_new = ndim_new
+
+    def __getstate__(self):
+        return (
+            self._store,
+            self._path,
+            self._read_only,
+            self._chunk_store,
+            self._synchronizer,
+            self._cache_metadata,
+            self._attrs.cache,
+            self._partial_decompress,
+            self._write_empty_chunks,
+            self._shape,
+            self._chunks,
+            self._bds,
+            self._ndim_new,
+        )
 
     def _chunk_key(self, chunk_coords):
         # change chunk_coords to pre-broadcast values

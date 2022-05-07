@@ -4,6 +4,7 @@ import numpy as np
 import zarr
 from dask.array.core import normalize_chunks
 
+from barry.primitive import broadcast_to as primitive_broadcast_to
 from barry.utils import to_chunksize
 
 from .core import (
@@ -60,6 +61,14 @@ def ones(shape, *, dtype=None, device=None, chunks=None, spec=None):
 
 
 # Data type functions
+
+
+def broadcast_to(x, /, shape):
+    name = gensym()
+    spec = x.plan.spec
+    target = primitive_broadcast_to(x.zarray, shape)
+    plan = Plan(name, "broadcast_to", target, spec)
+    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
 
 
 def result_type(*arrays_and_dtypes):

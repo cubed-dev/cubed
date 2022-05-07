@@ -134,7 +134,7 @@ class BeamDagExecutor:
                     node, None
                 )
                 if rechunker_pipeline is None:
-                    continue  # TODO: won't work for non-leaf nodes (e.g. BroadcastArray)
+                    continue
 
                 dep_nodes = dag[node].keys()
 

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from barry.primitive.broadcast import broadcast_to
+from barry.primitive import broadcast_to
 from barry.tests.utils import create_zarr
 
 
