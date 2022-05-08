@@ -14,6 +14,7 @@ from .core import (
     elementwise_binary_operation,
     elementwise_unary_operation,
     gensym,
+    map_blocks,
     new_temp_store,
     new_temp_zarr,
     reduction,
@@ -21,6 +22,29 @@ from .core import (
 )
 
 # Creation functions
+
+
+def _arange(a, size):
+    start = a[0]
+    return np.arange(start * size, (start + 1) * size)
+
+
+def arange(
+    start, /, stop=None, step=1, *, dtype=None, device=None, chunks=None, spec=None
+):
+    # TODO: implement step
+    # TODO: support array length that isn't a multiple of chunks
+    if stop is None:
+        start, stop = 0, start
+    num = int(max(np.ceil((stop - start) / step), 0))
+    chunks = normalize_chunks(chunks, (num,), dtype)
+    chunksize = chunks[0][0]
+    numblocks = len(chunks[0])
+    # create small array of block numbers
+    out = asarray(np.arange(numblocks), chunks=(1,), spec=spec)
+    # then map each block to partial arange
+    out = map_blocks(_arange, out, dtype=dtype, chunks=chunks, size=chunksize)
+    return out
 
 
 def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks=None, spec=None):

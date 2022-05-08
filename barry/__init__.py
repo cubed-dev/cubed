@@ -1,6 +1,7 @@
 from .array_api import (
     add,
     all,
+    arange,
     asarray,
     broadcast_to,
     equal,
@@ -18,6 +19,7 @@ from .core import Spec, from_zarr, map_blocks, to_zarr
 __all__ = [
     "add",
     "all",
+    "arange",
     "asarray",
     "broadcast_to",
     "equal",
