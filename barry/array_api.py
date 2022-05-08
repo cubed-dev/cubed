@@ -3,6 +3,7 @@ from typing import Iterable
 import numpy as np
 import zarr
 from dask.array.core import normalize_chunks
+from dask.array.reductions import numel
 
 from barry.primitive import broadcast_to as primitive_broadcast_to
 from barry.utils import to_chunksize
@@ -111,6 +112,12 @@ def add(x1, x2, /):
     return elementwise_binary_operation(x1, x2, np.add, result_type(x1.dtype, x2.dtype))
 
 
+def divide(x1, x2, /):
+    return elementwise_binary_operation(
+        x1, x2, np.divide, result_type(x1.dtype, x2.dtype)
+    )
+
+
 def equal(x1, x2, /):
     return elementwise_binary_operation(x1, x2, np.equal, dtype=np.bool)
 
@@ -186,6 +193,13 @@ def permute_dims(x, /, axes):
 
 
 # Statistical functions
+
+
+def mean(x, /, *, axis=None, keepdims=False):
+    dtype = x.dtype
+    n = reduction(x, numel, np.sum, axis=axis, dtype=dtype, keepdims=keepdims)
+    total = reduction(x, np.sum, axis=axis, dtype=dtype, keepdims=keepdims)
+    return divide(total, n)
 
 
 def sum(x, /, *, axis=None, dtype=None, keepdims=False):

@@ -359,7 +359,9 @@ def rechunk(x, chunks, target_store=None):
     return Array(name, plan, target, target.shape, target.dtype, target.chunks)
 
 
-def reduction(x, func, axis=None, dtype=None, keepdims=False):
+def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False):
+    if combine_func is None:
+        combine_func = func
     if axis is None:
         axis = tuple(range(x.ndim))
     if isinstance(axis, Integral):
@@ -371,8 +373,11 @@ def reduction(x, func, axis=None, dtype=None, keepdims=False):
     result = x
     max_mem = x.plan.spec.max_mem
 
-    # reduce chunks (if any axis chunksize is > 1)
-    if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
+    # reduce initial chunks (if any axis chunksize is > 1)
+    if (
+        any(s > 1 for i, s in enumerate(result.chunksize) if i in axis)
+        or func != combine_func
+    ):
         args = (result, inds)
         adjust_chunks = {
             i: (1,) * len(c) if i in axis else c for i, c in enumerate(result.chunks)
@@ -410,7 +415,7 @@ def reduction(x, func, axis=None, dtype=None, keepdims=False):
                 for i, c in enumerate(result.chunks)
             }
             result = blockwise(
-                func,
+                combine_func,
                 inds,
                 *args,
                 axis=axis,
