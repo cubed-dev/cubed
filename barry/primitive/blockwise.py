@@ -38,6 +38,17 @@ def apply_blockwise(graph_item, *, config=BlockwiseSpec):
     config.write.array[out_chunk_key] = config.function(*args)
 
 
+def apply_blockwise_structured(graph_item, *, config=BlockwiseSpec):
+    out_chunk_key, in_name_chunk_keys = graph_item
+    args = []
+    for name, in_chunk_key in in_name_chunk_keys:
+        arg = np.asarray(config.reads_map[name].array[in_chunk_key])
+        args.append(arg)
+    result = config.function(*args)
+    for k, v in result.items():
+        config.write.array.set_basic_selection(out_chunk_key, v, fields=k)
+
+
 def get_item(chunks, idx):
 
     starts = tuple(cached_cumsum(c, initial_zero=True) for c in chunks)
@@ -164,9 +175,14 @@ def blockwise(
     }
     write_proxy = ArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(func_with_kwargs, read_proxies, write_proxy)
+
+    if np.dtype(dtype).fields is None:
+        apply_blockwise_func = apply_blockwise
+    else:
+        apply_blockwise_func = apply_blockwise_structured
     stages = [
         Stage(
-            apply_blockwise,
+            apply_blockwise_func,
             gensym("apply_blockwise"),
             mappable=graph_mappable,
         )
