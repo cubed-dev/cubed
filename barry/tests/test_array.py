@@ -312,3 +312,12 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0)
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
+
+
+def test_unify_chunks(spec, executor):
+    a = xp.ones((10, 10), chunks=(10, 2), spec=spec)
+    b = xp.ones((10, 10), chunks=(2, 10), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor), np.ones((10, 10)) + np.ones((10, 10))
+    )

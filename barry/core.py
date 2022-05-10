@@ -8,18 +8,19 @@ import fsspec
 import networkx as nx
 import numpy as np
 import zarr
-from dask.array.core import normalize_chunks
+from dask.array.core import common_blockdim, normalize_chunks
 from dask.array.utils import validate_axis
+from dask.blockwise import broadcast_dimensions
 from dask.utils import memory_repr
 from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
-from tlz import concat
+from tlz import concat, partition
 from toolz import map, reduce
 
 from barry.primitive import blockwise as primitive_blockwise
 from barry.primitive import rechunk as primitive_rechunk
 from barry.rechunker_extensions.types import Executor
-from barry.utils import temporary_directory
+from barry.utils import temporary_directory, to_chunksize
 
 sym_counter = 0
 
@@ -60,6 +61,10 @@ class Array:
     @property
     def numblocks(self):
         return tuple(map(len, self.chunks))
+
+    @property
+    def npartitions(self):
+        return reduce(mul, self.numblocks, 1)
 
     @property
     def size(self):
@@ -260,31 +265,32 @@ def to_zarr(x, store, return_stored=False, executor=None):
     return out.compute(return_stored=return_stored, executor=executor)
 
 
-def blockwise(func, out_ind, *args, dtype=None, adjust_chunks=None, **kwargs):
+def blockwise(
+    func, out_ind, *args, dtype=None, adjust_chunks=None, align_arrays=True, **kwargs
+):
     arrays = args[::2]
 
     assert len(arrays) > 0
 
-    # replace arrays with zarr arrays
-    zargs = list(args)
-    zargs[::2] = [a.zarray for a in arrays]
-
     # Calculate output chunking. A lot of this is from dask's blockwise function
-    inds = args[1::2]
-    arginds = zip(arrays, inds)
+    if align_arrays:
+        chunkss, arrays = unify_chunks(*args)
+    else:
+        inds = args[1::2]
+        arginds = zip(arrays, inds)
 
-    chunkss = {}
-    # For each dimension, use the input chunking that has the most blocks;
-    # this will ensure that broadcasting works as expected, and in
-    # particular the number of blocks should be correct if the inputs are
-    # consistent.
-    for arg, ind in arginds:
-        arg_chunks = normalize_chunks(
-            arg.chunks, arg.shape, dtype=arg.dtype
-        )  # have to normalize zarr chunks
-        for c, i in zip(arg_chunks, ind):
-            if i not in chunkss or len(c) > len(chunkss[i]):
-                chunkss[i] = c
+        chunkss = {}
+        # For each dimension, use the input chunking that has the most blocks;
+        # this will ensure that broadcasting works as expected, and in
+        # particular the number of blocks should be correct if the inputs are
+        # consistent.
+        for arg, ind in arginds:
+            arg_chunks = normalize_chunks(
+                arg.chunks, arg.shape, dtype=arg.dtype
+            )  # have to normalize zarr chunks
+            for c, i in zip(arg_chunks, ind):
+                if i not in chunkss or len(c) > len(chunkss[i]):
+                    chunkss[i] = c
     chunks = [chunkss[i] for i in out_ind]
     if adjust_chunks:
         for i, ind in enumerate(out_ind):
@@ -306,6 +312,10 @@ def blockwise(func, out_ind, *args, dtype=None, adjust_chunks=None, **kwargs):
                     )
     chunks = tuple(chunks)
     shape = tuple(map(sum, chunks))
+
+    # replace arrays with zarr arrays
+    zargs = list(args)
+    zargs[::2] = [a.zarray for a in arrays]
 
     name = gensym()
     spec = arrays[0].plan.spec
@@ -485,3 +495,53 @@ def squeeze(x, /, axis):
     return map_blocks(
         np.squeeze, x, dtype=x.dtype, chunks=chunks, drop_axis=axis, axis=axis
     )
+
+
+def unify_chunks(*args, **kwargs):
+    # From dask unify_chunks
+    if not args:
+        return {}, []
+
+    arginds = [(a, ind) for a, ind in partition(2, args)]  # [x, ij, y, jk]
+
+    arrays, inds = zip(*arginds)
+    if all(ind is None for ind in inds):
+        return {}, list(arrays)
+    if all(ind == inds[0] for ind in inds) and all(
+        a.chunks == arrays[0].chunks for a in arrays
+    ):
+        return dict(zip(inds[0], arrays[0].chunks)), arrays
+
+    nameinds = []
+    blockdim_dict = dict()
+    max_parts = 0
+    for a, ind in arginds:
+        if ind is not None:
+            nameinds.append((a.name, ind))
+            blockdim_dict[a.name] = a.chunks
+            max_parts = max(max_parts, a.npartitions)
+        else:
+            nameinds.append((a, ind))
+
+    chunkss = broadcast_dimensions(nameinds, blockdim_dict, consolidate=common_blockdim)
+
+    arrays = []
+    for a, i in arginds:
+        if i is None:
+            arrays.append(a)
+        else:
+            chunks = tuple(
+                chunkss[j]
+                if a.shape[n] > 1
+                else a.shape[n]
+                if not np.isnan(sum(chunkss[j]))
+                else None
+                for n, j in enumerate(i)
+            )
+            if chunks != a.chunks and all(a.chunks):
+                # this will raise if chunks are not regular
+                chunksize = to_chunksize(chunks)
+                arrays.append(rechunk(a, chunksize))
+            else:
+                arrays.append(a)
+    return chunkss, arrays
