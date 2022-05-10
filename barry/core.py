@@ -1,3 +1,4 @@
+import numbers
 from dataclasses import dataclass
 from math import prod
 from numbers import Integral, Number
@@ -268,6 +269,44 @@ def blockwise(func, out_ind, *args, dtype=None, adjust_chunks=None, **kwargs):
     zargs = list(args)
     zargs[::2] = [a.zarray for a in arrays]
 
+    # Calculate output chunking. A lot of this is from dask's blockwise function
+    inds = args[1::2]
+    arginds = zip(arrays, inds)
+
+    chunkss = {}
+    # For each dimension, use the input chunking that has the most blocks;
+    # this will ensure that broadcasting works as expected, and in
+    # particular the number of blocks should be correct if the inputs are
+    # consistent.
+    for arg, ind in arginds:
+        arg_chunks = normalize_chunks(
+            arg.chunks, arg.shape, dtype=arg.dtype
+        )  # have to normalize zarr chunks
+        for c, i in zip(arg_chunks, ind):
+            if i not in chunkss or len(c) > len(chunkss[i]):
+                chunkss[i] = c
+    chunks = [chunkss[i] for i in out_ind]
+    if adjust_chunks:
+        for i, ind in enumerate(out_ind):
+            if ind in adjust_chunks:
+                if callable(adjust_chunks[ind]):
+                    chunks[i] = tuple(map(adjust_chunks[ind], chunks[i]))
+                elif isinstance(adjust_chunks[ind], numbers.Integral):
+                    chunks[i] = tuple(adjust_chunks[ind] for _ in chunks[i])
+                elif isinstance(adjust_chunks[ind], (tuple, list)):
+                    if len(adjust_chunks[ind]) != len(chunks[i]):
+                        raise ValueError(
+                            f"Dimension {i} has {len(chunks[i])} blocks, adjust_chunks "
+                            f"specified with {len(adjust_chunks[ind])} blocks"
+                        )
+                    chunks[i] = tuple(adjust_chunks[ind])
+                else:
+                    raise NotImplementedError(
+                        "adjust_chunks values must be callable, int, or tuple"
+                    )
+    chunks = tuple(chunks)
+    shape = tuple(map(sum, chunks))
+
     name = gensym()
     spec = arrays[0].plan.spec
     target_store = new_temp_store(name=name, spec=spec)
@@ -277,8 +316,9 @@ def blockwise(func, out_ind, *args, dtype=None, adjust_chunks=None, **kwargs):
         *zargs,
         max_mem=spec.max_mem,
         target_store=target_store,
+        shape=shape,
         dtype=dtype,
-        adjust_chunks=adjust_chunks,
+        chunks=chunks,
         **kwargs,
     )
     plan = Plan(

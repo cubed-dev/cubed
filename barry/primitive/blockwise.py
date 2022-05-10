@@ -1,4 +1,3 @@
-import numbers
 from functools import partial
 from math import prod
 from typing import Callable, Dict, NamedTuple
@@ -58,7 +57,7 @@ def get_item(chunks, idx):
 
 
 def blockwise(
-    func, out_ind, *args, max_mem, target_store, dtype, adjust_chunks=None, **kwargs
+    func, out_ind, *args, max_mem, target_store, shape, dtype, chunks, **kwargs
 ):
     """Apply a function across blocks from multiple source Zarr arrays.
 
@@ -74,10 +73,12 @@ def blockwise(
         Maximum memory allowed for a single task of this operation, measured in bytes
     target_store : string
         Path to output Zarr store
+    shape : tuple
+        The shape of the output array.
     dtype : np.dtype
         The ``dtype`` of the output array.
-    adjust_chunks : dict
-        Dictionary mapping index to function to be applied to chunk sizes
+    chunks : tuple
+        The chunks of the output array.
     **kwargs : dict
         Extra keyword arguments to pass to function
 
@@ -88,57 +89,24 @@ def blockwise(
     required_mem: minimum memory required per-task, in bytes
     """
 
-    # Use dask's make_blockwise_graph, a lot of this is from dask's blockwise function
+    # Use dask's make_blockwise_graph
     arrays = args[::2]
     array_names = [f"in_{i}" for i in range(len(arrays))]
     array_map = {name: array for name, array in zip(array_names, arrays)}
 
     inds = args[1::2]
 
-    arginds = zip(arrays, inds)
-
     numblocks = {}
     for name, array in zip(array_names, arrays):
-        chunks = normalize_chunks(array.chunks, array.shape)
-        numblocks[name] = tuple(map(len, chunks))
+        input_chunks = normalize_chunks(array.chunks, array.shape)
+        numblocks[name] = tuple(map(len, input_chunks))
 
     argindsstr = []
     for name, ind in zip(array_names, inds):
         argindsstr.extend((name, ind))
 
-    chunkss = {}
-    # For each dimension, use the input chunking that has the most blocks;
-    # this will ensure that broadcasting works as expected, and in
-    # particular the number of blocks should be correct if the inputs are
-    # consistent.
-    for arg, ind in arginds:
-        arg_chunks = normalize_chunks(
-            arg.chunks, arg.shape, dtype=arg.dtype
-        )  # have to normalize zarr chunks
-        for c, i in zip(arg_chunks, ind):
-            if i not in chunkss or len(c) > len(chunkss[i]):
-                chunkss[i] = c
-    chunks = [chunkss[i] for i in out_ind]
-    if adjust_chunks:
-        for i, ind in enumerate(out_ind):
-            if ind in adjust_chunks:
-                if callable(adjust_chunks[ind]):
-                    chunks[i] = tuple(map(adjust_chunks[ind], chunks[i]))
-                elif isinstance(adjust_chunks[ind], numbers.Integral):
-                    chunks[i] = tuple(adjust_chunks[ind] for _ in chunks[i])
-                elif isinstance(adjust_chunks[ind], (tuple, list)):
-                    if len(adjust_chunks[ind]) != len(chunks[i]):
-                        raise ValueError(
-                            f"Dimension {i} has {len(chunks[i])} blocks, adjust_chunks "
-                            f"specified with {len(adjust_chunks[ind])} blocks"
-                        )
-                    chunks[i] = tuple(adjust_chunks[ind])
-                else:
-                    raise NotImplementedError(
-                        "adjust_chunks values must be callable, int, or tuple"
-                    )
-    chunks = tuple(chunks)
-    shape = tuple(map(sum, chunks))
+    # TODO: check output shape and chunks are consistent with inputs
+    chunks = normalize_chunks(chunks, shape, dtype)
 
     graph = make_blockwise_graph(func, "out", out_ind, *argindsstr, numblocks=numblocks)
 

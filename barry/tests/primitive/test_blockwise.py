@@ -35,7 +35,9 @@ def test_blockwise(tmp_path, executor):
         "j",
         max_mem=max_mem,
         target_store=target_store,
+        shape=(3, 3),
         dtype=int,
+        chunks=(2, 2),
     )
 
     assert target.shape == (3, 3)
@@ -68,7 +70,9 @@ def _permute_dims(x, /, axes, max_mem, target_store):
         tuple(range(x.ndim)),
         max_mem=max_mem,
         target_store=target_store,
-        dtype=int,
+        shape=x.shape,
+        dtype=x.dtype,
+        chunks=x.chunks,
         axes=axes,
     )
 
@@ -126,5 +130,7 @@ def test_blockwise_max_mem_exceeded(tmp_path):
             "j",
             max_mem=max_mem,
             target_store=target_store,
+            shape=(3, 3),
             dtype=int,
+            chunks=(2, 2),
         )
