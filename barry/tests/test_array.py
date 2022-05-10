@@ -73,15 +73,6 @@ def test_ones(spec, executor):
 # Data type functions
 
 
-def test_broadcast_to(spec, executor):
-    a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
-    b = xp.broadcast_to(a, shape=(3, 3))
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.broadcast_to(np.array([1, 2, 3]), shape=(3, 3)),
-    )
-
-
 # Elementwise functions
 
 
@@ -164,6 +155,15 @@ def test_outer(spec, executor):
 
 
 # Manipulation functions
+
+
+def test_broadcast_to(spec, executor):
+    a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
+    b = xp.broadcast_to(a, shape=(3, 3))
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.broadcast_to(np.array([1, 2, 3]), shape=(3, 3)),
+    )
 
 
 def test_permute_dims(spec, executor):

@@ -88,14 +88,6 @@ def ones(shape, *, dtype=None, device=None, chunks=None, spec=None):
 # Data type functions
 
 
-def broadcast_to(x, /, shape):
-    name = gensym()
-    spec = x.plan.spec
-    target = primitive_broadcast_to(x.zarray, shape)
-    plan = Plan(name, "broadcast_to", target, spec)
-    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
-
-
 def result_type(*arrays_and_dtypes):
     # Use numpy.array_api promotion rules (stricter than numpy)
     import numpy.array_api as nxp
@@ -177,6 +169,14 @@ def outer(x1, x2, /):
 
 
 # Manipulation functions
+
+
+def broadcast_to(x, /, shape):
+    name = gensym()
+    spec = x.plan.spec
+    target = primitive_broadcast_to(x.zarray, shape)
+    plan = Plan(name, "broadcast_to", target, spec)
+    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
 
 
 def permute_dims(x, /, axes):
