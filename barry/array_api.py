@@ -63,7 +63,7 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
     store, target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
-    target[:] = a
+    target[...] = a
 
     plan = Plan(name, "asarray", target, spec)
     return Array(name, plan, target, target.shape, dtype, chunks)
@@ -86,6 +86,23 @@ def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     plan = Plan(name, "ones", target, spec)
     return Array(name, plan, target, target.shape, target.dtype, chunks)
 
+
+# Data types
+
+# Use type code from numpy.array_api
+from numpy.array_api._dtypes import (  # noqa: F401
+    bool,
+    float32,
+    float64,
+    int8,
+    int16,
+    int32,
+    int64,
+    uint8,
+    uint16,
+    uint32,
+    uint64,
+)
 
 # Data type functions
 
