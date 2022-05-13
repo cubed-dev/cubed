@@ -40,7 +40,7 @@ class Array:
         self.zarray = zarray
         self.shape = shape
         self.dtype = dtype
-        self.chunks = normalize_chunks(chunks, shape, dtype)
+        self.chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
     def __array__(self, dtype=None):
         x = self.compute()
@@ -286,7 +286,7 @@ def blockwise(
         # consistent.
         for arg, ind in arginds:
             arg_chunks = normalize_chunks(
-                arg.chunks, arg.shape, dtype=arg.dtype
+                arg.chunks, shape=arg.shape, dtype=arg.dtype
             )  # have to normalize zarr chunks
             for c, i in zip(arg_chunks, ind):
                 if i not in chunkss or len(c) > len(chunkss[i]):

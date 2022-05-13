@@ -31,14 +31,16 @@ def _arange(a, size):
 
 
 def arange(
-    start, /, stop=None, step=1, *, dtype=None, device=None, chunks=None, spec=None
+    start, /, stop=None, step=1, *, dtype=None, device=None, chunks="auto", spec=None
 ):
     # TODO: implement step
     # TODO: support array length that isn't a multiple of chunks
     if stop is None:
         start, stop = 0, start
     num = int(max(np.ceil((stop - start) / step), 0))
-    chunks = normalize_chunks(chunks, (num,), dtype)
+    if dtype is None:
+        dtype = np.arange(start, stop, step * num if num else step).dtype
+    chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
     numblocks = len(chunks[0])
     # create small array of block numbers
@@ -48,7 +50,7 @@ def arange(
     return out
 
 
-def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks=None, spec=None):
+def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None):
     a = obj
     # from dask.asarray
     if not isinstance(getattr(a, "shape", None), Iterable):
@@ -58,7 +60,7 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks=None, spec=Non
         dtype = a.dtype
 
     # write to zarr
-    chunksize = to_chunksize(normalize_chunks(chunks, a.shape, dtype))
+    chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
     store, target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
     target[:] = a
@@ -67,10 +69,10 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks=None, spec=Non
     return Array(name, plan, target, target.shape, dtype, chunks)
 
 
-def ones(shape, *, dtype=None, device=None, chunks=None, spec=None):
+def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
-    chunksize = to_chunksize(normalize_chunks(chunks, shape, dtype))
+    chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
     store = new_temp_store(name=name, spec=spec)
     target = zarr.ones(

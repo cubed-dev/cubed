@@ -98,7 +98,9 @@ def blockwise(
 
     numblocks = {}
     for name, array in zip(array_names, arrays):
-        input_chunks = normalize_chunks(array.chunks, array.shape)
+        input_chunks = normalize_chunks(
+            array.chunks, shape=array.shape, dtype=array.dtype
+        )
         numblocks[name] = tuple(map(len, input_chunks))
 
     argindsstr = []
@@ -106,7 +108,7 @@ def blockwise(
         argindsstr.extend((name, ind))
 
     # TODO: check output shape and chunks are consistent with inputs
-    chunks = normalize_chunks(chunks, shape, dtype)
+    chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
     graph = make_blockwise_graph(func, "out", out_ind, *argindsstr, numblocks=numblocks)
 
@@ -126,7 +128,7 @@ def blockwise(
             chunk_ind = name_chunk_ind[1:]
             arr = array_map[name]
             chks = normalize_chunks(
-                arr.chunks, arr.shape, dtype=arr.dtype
+                arr.chunks, shape=arr.shape, dtype=arr.dtype
             )  # have to normalize zarr chunks
             chunk_key = get_item(chks, chunk_ind)
             name_chunk_keys.append((name, chunk_key))

@@ -18,7 +18,7 @@ def random(size, *, chunks=None, spec=None):
     # and change the chunk size to the desired size.
     # TODO: support seed (the initial array has one seed per chunk)
     dtype = nxp.float64
-    chunks = normalize_chunks(chunks, size, dtype)
+    chunks = normalize_chunks(chunks, shape=size, dtype=dtype)
     chunksize = tuple(max(c) for c in chunks)
     numblocks = tuple(map(len, chunks))
     ones_chunks = (1,) * len(numblocks)
