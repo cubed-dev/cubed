@@ -34,13 +34,15 @@ def gensym(name="array"):
 class Array:
     """Chunked array backed by Zarr storage."""
 
-    def __init__(self, name, plan, zarray, shape, dtype, chunks):
+    def __init__(self, name, zarray, plan):
         self.name = name
-        self.plan = plan
         self.zarray = zarray
-        self.shape = shape
-        self.dtype = dtype
-        self.chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
+        self.shape = zarray.shape
+        self.dtype = zarray.dtype
+        self.chunks = normalize_chunks(
+            zarray.chunks, shape=self.shape, dtype=self.dtype
+        )
+        self.plan = plan
 
     def __array__(self, dtype=None):
         x = self.compute()
@@ -241,7 +243,7 @@ def new_temp_zarr(shape, dtype, chunksize, name=None, spec=None):
     # open a new temporary zarr array for writing
     store = new_temp_store(name=name, spec=spec)
     target = zarr.open(store, mode="w-", shape=shape, dtype=dtype, chunks=chunksize)
-    return store, target
+    return target
 
 
 # General array operations
@@ -253,7 +255,7 @@ def from_zarr(store, spec=None):
     target = zarr.open(store, mode="r")
 
     plan = Plan(name, "from_zarr", target, spec)
-    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
+    return Array(name, target, plan)
 
 
 def to_zarr(x, store, return_stored=False, executor=None):
@@ -334,7 +336,7 @@ def blockwise(
     plan = Plan(
         name, "blockwise", target, spec, pipeline, required_mem, num_tasks, *arrays
     )
-    return Array(name, plan, target, target.shape, dtype, target.chunks)
+    return Array(name, target, plan)
 
 
 def elementwise_unary_operation(x, func, dtype):
@@ -406,7 +408,7 @@ def rechunk(x, chunks, target_store=None):
         temp_store=temp_store,
     )
     plan = Plan(name, "rechunk", target, spec, pipeline, required_mem, num_tasks, x)
-    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
+    return Array(name, target, plan)
 
 
 def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False):

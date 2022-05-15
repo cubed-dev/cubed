@@ -62,11 +62,11 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     # write to zarr
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
-    store, target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
+    target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
     target[...] = a
 
     plan = Plan(name, "asarray", target, spec)
-    return Array(name, plan, target, target.shape, dtype, chunks)
+    return Array(name, target, plan)
 
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
@@ -84,7 +84,7 @@ def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     )
 
     plan = Plan(name, "ones", target, spec)
-    return Array(name, plan, target, target.shape, target.dtype, chunks)
+    return Array(name, target, plan)
 
 
 # Data types
@@ -195,7 +195,7 @@ def broadcast_to(x, /, shape):
     spec = x.plan.spec
     target = primitive_broadcast_to(x.zarray, shape)
     plan = Plan(name, "broadcast_to", target, spec)
-    return Array(name, plan, target, target.shape, target.dtype, target.chunks)
+    return Array(name, target, plan)
 
 
 def permute_dims(x, /, axes):
