@@ -8,5 +8,6 @@ numpy >= 1.22
 pygraphviz
 pytest
 rechunker
+s3fs
 yarl
 zarr
