@@ -132,7 +132,8 @@ def blockwise(
             )  # have to normalize zarr chunks
             chunk_key = get_item(chks, chunk_ind)
             name_chunk_keys.append((name, chunk_key))
-        graph_mappable.append((out_chunk_key, name_chunk_keys))
+        # following has to be a list, not a tuple, otherwise lithops breaks
+        graph_mappable.append([out_chunk_key, name_chunk_keys])
 
     # now use the graph_mappable in a pipeline
 

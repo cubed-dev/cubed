@@ -10,6 +10,7 @@ from barry.rechunker_extensions.executors.beam import (
     BeamDagExecutor,
     BeamPipelineExecutor,
 )
+from barry.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
 from barry.tests.utils import create_zarr
 
 
@@ -20,7 +21,12 @@ def spec(tmp_path):
 
 @pytest.fixture(
     scope="module",
-    params=[PythonPipelineExecutor(), BeamDagExecutor(), BeamPipelineExecutor()],
+    params=[
+        PythonPipelineExecutor(),
+        BeamDagExecutor(),
+        BeamPipelineExecutor(),
+        LithopsPipelineExecutor(),
+    ],
 )
 def executor(request):
     return request.param
