@@ -327,3 +327,21 @@ def test_unify_chunks(spec, executor):
     assert_array_equal(
         c.compute(executor=executor), np.ones((10, 10)) + np.ones((10, 10))
     )
+
+
+def test_visualize(tmp_path):
+    a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10))
+    b = xp.sum(a, axis=0)
+
+    assert not (tmp_path / "myplan.dot").exists()
+    assert not (tmp_path / "myplan.png").exists()
+    assert not (tmp_path / "myplan.svg").exists()
+
+    b.visualize(filename=tmp_path / "myplan")
+    assert (tmp_path / "myplan.svg").exists()
+
+    b.visualize(filename=tmp_path / "myplan", format="png")
+    assert (tmp_path / "myplan.png").exists()
+
+    b.visualize(filename=tmp_path / "myplan", format="dot")
+    assert (tmp_path / "myplan.dot").exists()
