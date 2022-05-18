@@ -7,5 +7,5 @@ try:
 
     Executor = Union[PipelineExecutor, BeamDagExecutor]
 
-except ImportError:
+except ImportError:  # pragma: no cover
     Executor = PipelineExecutor
