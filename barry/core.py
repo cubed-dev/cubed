@@ -345,7 +345,6 @@ def elementwise_unary_operation(x, func, dtype):
 
 def elementwise_binary_operation(x1, x2, func, dtype):
     # TODO: check x1 and x2 are compatible
-    # TODO: unify_chunks
 
     return map_blocks(func, x1, x2, dtype=dtype)
 
