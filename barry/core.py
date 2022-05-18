@@ -535,7 +535,7 @@ def unify_chunks(*args, **kwargs):
             chunks = tuple(
                 chunkss[j]
                 if a.shape[n] > 1
-                else a.shape[n]
+                else (a.shape[n],)
                 if not np.isnan(sum(chunkss[j]))
                 else None
                 for n, j in enumerate(i)

@@ -2,8 +2,10 @@ from typing import Iterable
 
 import numpy as np
 import zarr
-from dask.array.core import normalize_chunks
+from dask.array.core import broadcast_chunks, broadcast_shapes, normalize_chunks
 from dask.array.reductions import numel
+from tlz import concat
+from zarr.util import normalize_shape
 
 from barry.primitive import broadcast_to as primitive_broadcast_to
 from barry.utils import to_chunksize
@@ -20,6 +22,7 @@ from .core import (
     new_temp_zarr,
     reduction,
     squeeze,
+    unify_chunks,
 )
 
 # Creation functions
@@ -72,6 +75,7 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
+    shape = normalize_shape(shape)
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
     store = new_temp_store(name=name, spec=spec)
@@ -190,10 +194,28 @@ def outer(x1, x2, /):
 # Manipulation functions
 
 
-def broadcast_to(x, /, shape):
+def broadcast_arrays(*arrays):
+    # From dask broadcast_arrays
+
+    # Unify uneven chunking
+    inds = [list(reversed(range(x.ndim))) for x in arrays]
+    uc_args = concat(zip(arrays, inds))
+    _, args = unify_chunks(*uc_args, warn=False)
+
+    shape = broadcast_shapes(*(e.shape for e in args))
+    chunks = broadcast_chunks(*(e.chunks for e in args))
+
+    result = [broadcast_to(e, shape=shape, chunks=chunks) for e in args]
+
+    return result
+
+
+def broadcast_to(x, /, shape, *, chunks=None):
+    if chunks is not None:
+        chunks = to_chunksize(chunks)
     name = gensym()
     spec = x.plan.spec
-    target = primitive_broadcast_to(x.zarray, shape)
+    target = primitive_broadcast_to(x.zarray, shape, chunks=chunks)
     plan = Plan(name, "broadcast_to", target, spec)
     return Array(name, target, plan)
 

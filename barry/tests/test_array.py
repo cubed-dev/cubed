@@ -163,6 +163,22 @@ def test_outer(spec, executor):
 # Manipulation functions
 
 
+def test_broadcast_arrays():
+    a = xp.ones(30, chunks=(3,))
+    b = xp.ones(30, chunks=(6,))
+    a_b, b_b = xp.broadcast_arrays(a, b)
+
+    assert_array_equal(a_b.compute(), np.ones(30))
+    assert_array_equal(b_b.compute(), np.ones(30))
+
+    a = xp.ones((1, 30), chunks=(1, 3))
+    b = xp.ones(30, chunks=(6,))
+    a_b, b_b = xp.broadcast_arrays(a, b)
+
+    assert_array_equal(a_b.compute(), np.ones((1, 30)))
+    assert_array_equal(b_b.compute(), np.ones((1, 30)))
+
+
 def test_broadcast_to(spec, executor):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
     b = xp.broadcast_to(a, shape=(3, 3))
