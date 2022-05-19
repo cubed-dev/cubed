@@ -2,7 +2,7 @@ apache-beam[gcp]
 dask[array]
 fsspec
 gcsfs
-lithops
+lithops[aws]
 networkx
 numpy >= 1.22
 pygraphviz

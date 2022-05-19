@@ -133,3 +133,6 @@ dmypy.json
 .vscode
 .idea
 .DS_Store
+
+# Cubed
+.lithops_config
