@@ -231,11 +231,18 @@ class Spec:
     work_dir: str
     max_mem: int
     executor: Executor = None
+    storage_options: dict = None
 
 
 def new_temp_store(name=None, spec=None):
     work_dir = spec.work_dir if spec is not None else None
-    path = temporary_directory(suffix=".zarr", prefix=f"{name}-", dir=work_dir)
+    storage_options = spec.storage_options if spec is not None else None
+    path = temporary_directory(
+        suffix=".zarr",
+        prefix=f"{name}-",
+        dir=work_dir,
+        storage_options=storage_options,
+    )
     return fsspec.get_mapper(path)
 
 
