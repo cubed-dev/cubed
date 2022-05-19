@@ -1,6 +1,6 @@
 # flake8: noqa
 from .creation_functions import arange, asarray, ones
-from .data_type_functions import result_type
+from .data_type_functions import astype, result_type
 from .dtypes import (
     bool,
     float32,

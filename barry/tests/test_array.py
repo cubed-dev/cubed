@@ -79,6 +79,15 @@ def test_ones(spec, executor):
 # Data type functions
 
 
+def test_astype(spec, executor):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.astype(a, xp.int32)
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
+    )
+
+
 # Elementwise functions
 
 
