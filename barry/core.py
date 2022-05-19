@@ -111,7 +111,6 @@ class Plan:
         )
         # if no spec is supplied, use a default with local temp dir, and a modest amount of memory (100MB)
         self.spec = spec if spec is not None else Spec(None, 100_000_000)
-        self.complete = False
 
     @staticmethod
     def create_dag(
@@ -151,9 +150,6 @@ class Plan:
         return dag
 
     def execute(self, name=None, executor=None, **kwargs):
-        if self.complete:
-            return
-
         if executor is None:
             executor = self.spec.executor
             if executor is None:
@@ -184,8 +180,6 @@ class Plan:
 
         else:
             executor.execute_dag(dag, **kwargs)
-
-        self.complete = True
 
     def visualize(self, filename="barry", format=None, rankdir="BT"):
         dag = self.dag.copy()
