@@ -92,7 +92,14 @@ class Array:
 
 
 class Plan:
-    """Deferred computation plan for a graph of arrays."""
+    """Deferred computation plan for a graph of arrays.
+
+    A thin wrapper around a NetworkX `DiGraph`. Nodes are Zarr paths, and may
+    have a `pipeline` attribute holding the pipeline to execute to generate
+    the output at that path. If there is no `pipeline` attribute no computation
+    is needed since the Zarr file already exists. Directed edges point towards
+    the dependent Zarr path.
+    """
 
     # args from pipeline onwards are omitted for creation functions when no computation is needed
     def __init__(
@@ -106,27 +113,15 @@ class Plan:
         num_tasks=None,
         *source_arrays,
     ):
-        self.dag = Plan.create_dag(
-            name, op_name, target, pipeline, required_mem, num_tasks, *source_arrays
-        )
         # if no spec is supplied, use a default with local temp dir, and a modest amount of memory (100MB)
-        self.spec = spec if spec is not None else Spec(None, 100_000_000)
+        if spec is None:
+            spec = Spec(None, 100_000_000)
 
-    @staticmethod
-    def create_dag(
-        name, op_name, target, pipeline, required_mem, num_tasks, *source_arrays
-    ):
-        """
-        Create a DAG for an Array.
-        The nodes are Zarr paths, and may have 'pipeline' attribute holding the pipeline to execute to generate the output at that path.
-        If there is no 'pipeline' attribute no computation is needed since the Zarr file already exists.
-        Directed edges point towards the dependent path.
-        """
-
-        # copy DAGs from sources
+        # create an empty DAG or combine from sources
         if len(source_arrays) == 0:
-            dag = nx.DiGraph()
+            dag = nx.DiGraph(spec=spec)
         else:
+            # TODO: check specs are the same, rather than just inheriting last one
             dag = nx.compose_all([x.plan.dag for x in source_arrays])
 
         # add new node and edges
@@ -147,7 +142,11 @@ class Plan:
         for x in source_arrays:
             dag.add_edge(name, x.name)
 
-        return dag
+        self.dag = dag
+
+    @property
+    def spec(self):
+        return self.dag.graph["spec"]
 
     def execute(self, name=None, executor=None, **kwargs):
         if executor is None:
