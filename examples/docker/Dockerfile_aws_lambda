@@ -63,7 +63,6 @@ RUN pip install \
         fsspec \
         rechunker \
         s3fs \
-        yarl \
         zarr
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]

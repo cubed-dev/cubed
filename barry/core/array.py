@@ -15,7 +15,7 @@ from rechunker.types import PipelineExecutor
 from toolz import map, reduce
 
 from barry.rechunker_extensions.types import Executor
-from barry.utils import build_url
+from barry.utils import join_path
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -230,8 +230,8 @@ def new_temp_store(name, spec=None):
     work_dir = spec.work_dir if spec is not None else None
     if work_dir is None:
         work_dir = tempfile.gettempdir()
-    context_dir = build_url(work_dir, CONTEXT_ID)
-    zarr_path = build_url(context_dir, f"{name}.zarr")
+    context_dir = join_path(work_dir, CONTEXT_ID)
+    zarr_path = join_path(context_dir, f"{name}.zarr")
     return fsspec.get_mapper(zarr_path)
 
 

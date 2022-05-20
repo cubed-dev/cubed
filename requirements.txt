@@ -9,5 +9,4 @@ pygraphviz
 pytest
 rechunker
 s3fs
-yarl
 zarr

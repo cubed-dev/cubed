@@ -6,7 +6,6 @@ REQUIRED_PACKAGES = [
     "gcsfs",
     "networkx",
     "rechunker",
-    "yarl",
     "zarr",
 ]
 
