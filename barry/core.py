@@ -1,5 +1,8 @@
 import numbers
+import tempfile
+import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from math import prod
 from numbers import Integral, Number
 from operator import mul
@@ -20,12 +23,16 @@ from toolz import map, reduce
 from barry.primitive import blockwise as primitive_blockwise
 from barry.primitive import rechunk as primitive_rechunk
 from barry.rechunker_extensions.types import Executor
-from barry.utils import temporary_directory, to_chunksize
+from barry.utils import build_url, to_chunksize
+
+# A unique ID with sensible ordering, used for making directory names
+CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
 
 sym_counter = 0
 
 
 def gensym(name="array"):
+    """Generate a name with an incrementing counter"""
     global sym_counter
     sym_counter += 1
     return f"{name}-{sym_counter:03}"
@@ -227,16 +234,11 @@ class Spec:
     storage_options: dict = None
 
 
-def new_temp_store(name=None, spec=None):
-    work_dir = spec.work_dir if spec is not None else None
-    storage_options = spec.storage_options if spec is not None else None
-    path = temporary_directory(
-        suffix=".zarr",
-        prefix=f"{name}-",
-        dir=work_dir,
-        storage_options=storage_options,
-    )
-    return fsspec.get_mapper(path)
+def new_temp_store(name, spec=None):
+    work_dir = spec.work_dir if spec is not None else tempfile.gettempdir()
+    context_dir = build_url(work_dir, CONTEXT_ID)
+    zarr_path = build_url(context_dir, f"{name}.zarr")
+    return fsspec.get_mapper(zarr_path)
 
 
 def new_temp_zarr(shape, dtype, chunksize, name=None, spec=None):
