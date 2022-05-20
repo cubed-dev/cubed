@@ -226,12 +226,16 @@ class Spec:
     storage_options: dict = None
 
 
-def new_temp_store(name, spec=None):
+def new_temp_path(name, suffix, spec=None):
     work_dir = spec.work_dir if spec is not None else None
     if work_dir is None:
         work_dir = tempfile.gettempdir()
     context_dir = join_path(work_dir, CONTEXT_ID)
-    zarr_path = join_path(context_dir, f"{name}.zarr")
+    return join_path(context_dir, f"{name}{suffix}")
+
+
+def new_temp_store(name, spec=None):
+    zarr_path = new_temp_path(name, ".zarr", spec)
     return fsspec.get_mapper(zarr_path)
 
 

@@ -1,3 +1,5 @@
+import pickle
+
 import fsspec
 import numpy as np
 import pytest
@@ -370,3 +372,25 @@ def test_visualize(tmp_path):
 
     b.visualize(filename=tmp_path / "myplan", format="dot")
     assert (tmp_path / "myplan.dot").exists()
+
+
+def test_array_pickle(spec, executor):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    c = xp.matmul(a, b)
+
+    # we haven't computed c yet, so pickle and unpickle, and check it still works
+    c = pickle.loads(pickle.dumps(c))
+
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    expected = np.matmul(x, y)
+    assert_array_equal(c.compute(executor=executor), expected)
