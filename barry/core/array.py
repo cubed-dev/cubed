@@ -227,7 +227,9 @@ class Spec:
 
 
 def new_temp_store(name, spec=None):
-    work_dir = spec.work_dir if spec is not None else tempfile.gettempdir()
+    work_dir = spec.work_dir if spec is not None else None
+    if work_dir is None:
+        work_dir = tempfile.gettempdir()
     context_dir = build_url(work_dir, CONTEXT_ID)
     zarr_path = build_url(context_dir, f"{name}.zarr")
     return fsspec.get_mapper(zarr_path)
