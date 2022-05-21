@@ -11,8 +11,7 @@ Barry is a distributed N-dimensional array library implemented in Python using f
 - Implements the [Python Array API standard](https://data-apis.org/array-api/latest/)
 - Guaranteed maximum memory usage for standard array functions
 - [Zarr](https://zarr.readthedocs.io/en/stable/) for storage
-- Serverless model
-- Multiple runtimes: Python, [Apache Beam](https://beam.apache.org/), [Dask](https://dask.org/)
+- Multiple serverless runtimes: Python, [Apache Beam](https://beam.apache.org/), [Lithops](https://lithops-cloud.github.io/)
 
 ## Example
 
@@ -60,7 +59,7 @@ Every _array_ in Barry is backed by a Zarr array. This means that the array type
 
 ### Runtime
 
-Barry uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Dask, and Prefect.
+Barry uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Dask, Lithops, and Prefect.
 
 ### Primitive operations
 
