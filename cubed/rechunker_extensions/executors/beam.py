@@ -27,7 +27,7 @@ def _no_arg_stage(
 
     fun(config=config)
 
-    beam.metrics.metric.Metrics.counter("barry", "completed_tasks").inc()
+    beam.metrics.metric.Metrics.counter("cubed", "completed_tasks").inc()
 
     return current
 
@@ -55,7 +55,7 @@ class _SingleArgumentStage(beam.PTransform):
 
         self.stage.function(arg, config=self.config)  # type: ignore
 
-        beam.metrics.metric.Metrics.counter("barry", "completed_tasks").inc()
+        beam.metrics.metric.Metrics.counter("cubed", "completed_tasks").inc()
 
         return self.step
 

@@ -1,6 +1,6 @@
 import numpy.array_api as nxp
 
-from barry.core import Array, map_blocks
+from cubed.core import Array, map_blocks
 
 
 def astype(x, dtype, /, *, copy=True):

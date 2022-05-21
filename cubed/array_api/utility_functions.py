@@ -1,6 +1,6 @@
 import numpy as np
 
-from barry.core import reduction
+from cubed.core import reduction
 
 
 def all(x, /, *, axis=None, keepdims=False):

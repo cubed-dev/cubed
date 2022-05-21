@@ -1,8 +1,8 @@
 from apache_beam.options.pipeline_options import PipelineOptions
 
-import barry as xp
-import barry.random
-from barry.rechunker_extensions.executors.beam import BeamPipelineExecutor
+import cubed as xp
+import cubed.random
+from cubed.rechunker_extensions.executors.beam import BeamPipelineExecutor
 
 if __name__ == "__main__":
     tmp_path = "gs://barry-zarr-test/cdtest"
@@ -21,10 +21,10 @@ if __name__ == "__main__":
         sdk_container_image="us-docker.pkg.dev/tom-white/barry-test/beam_python_prebuilt_sdk:cd923a45-104f-4203-8b1a-29ab4974c1f2",
     )
 
-    a = barry.random.random(
+    a = cubed.random.random(
         (20000, 20000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
-    b = barry.random.random(
+    b = cubed.random.random(
         (20000, 20000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.matmul(a, b)

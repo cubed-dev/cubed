@@ -1,7 +1,7 @@
 from apache_beam.options.pipeline_options import PipelineOptions
 
-import barry as xp
-from barry.rechunker_extensions.executors.beam import BeamPipelineExecutor
+import cubed as xp
+from cubed.rechunker_extensions.executors.beam import BeamPipelineExecutor
 
 if __name__ == "__main__":
     tmp_path = "gs://barry-zarr-test/cdtest"

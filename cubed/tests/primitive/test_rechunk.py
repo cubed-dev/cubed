@@ -4,9 +4,9 @@ import zarr
 from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
-from barry.primitive import rechunk
-from barry.rechunker_extensions.executors.beam import BeamPipelineExecutor
-from barry.tests.utils import execute_pipeline
+from cubed.primitive import rechunk
+from cubed.rechunker_extensions.executors.beam import BeamPipelineExecutor
+from cubed.tests.utils import execute_pipeline
 
 
 @pytest.fixture(

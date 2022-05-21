@@ -10,7 +10,7 @@ REQUIRED_PACKAGES = [
 ]
 
 setuptools.setup(
-    name="barry",
+    name="cubed",
     version="0.0.1",
     install_requires=REQUIRED_PACKAGES,
     packages=setuptools.find_packages(),

@@ -1,9 +1,9 @@
 import pytest
 from rechunker.executors.python import PythonPipelineExecutor
 
-import barry as xp
-import barry.random
-from barry.rechunker_extensions.executors.beam import (
+import cubed as xp
+import cubed.random
+from cubed.rechunker_extensions.executors.beam import (
     BeamDagExecutor,
     BeamPipelineExecutor,
 )
@@ -23,7 +23,7 @@ def executor(request):
 
 
 def test_random(spec, executor):
-    a = barry.random.random((10, 10), chunks=(5, 5), spec=spec)
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
 
     assert a.shape == (10, 10)
     assert a.chunks == ((5, 5), (5, 5))
@@ -33,8 +33,8 @@ def test_random(spec, executor):
 
 
 def test_random_add(spec, executor):
-    a = barry.random.random((10, 10), chunks=(5, 5), spec=spec)
-    b = barry.random.random((10, 10), chunks=(5, 5), spec=spec)
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
 
     c = xp.add(a, b)
 

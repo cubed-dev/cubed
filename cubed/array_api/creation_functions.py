@@ -5,8 +5,8 @@ import zarr
 from dask.array.core import normalize_chunks
 from zarr.util import normalize_shape
 
-from barry.core import Array, Plan, gensym, map_blocks, new_temp_store, new_temp_zarr
-from barry.utils import to_chunksize
+from cubed.core import Array, Plan, gensym, map_blocks, new_temp_store, new_temp_zarr
+from cubed.utils import to_chunksize
 
 
 def _arange(a, size):

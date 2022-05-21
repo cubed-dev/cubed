@@ -1,7 +1,7 @@
 import numpy as np
 
-from barry.array_api.data_type_functions import result_type
-from barry.core import blockwise, reduction, squeeze
+from cubed.array_api.data_type_functions import result_type
+from cubed.core import blockwise, reduction, squeeze
 
 
 def matmul(x1, x2, /):

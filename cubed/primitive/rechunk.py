@@ -2,7 +2,7 @@ from math import ceil, prod
 
 from rechunker.api import _setup_rechunk
 
-from barry.rechunker_extensions.pipeline import spec_to_pipeline
+from cubed.rechunker_extensions.pipeline import spec_to_pipeline
 
 
 def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):

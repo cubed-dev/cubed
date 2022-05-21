@@ -1,7 +1,7 @@
 import numpy as np
 from dask.array.reductions import numel
 
-from barry.core import map_blocks, reduction, squeeze
+from cubed.core import map_blocks, reduction, squeeze
 
 
 def mean(x, /, *, axis=None, keepdims=False):

@@ -7,13 +7,13 @@ import zarr
 from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
-import barry as xp
-from barry.rechunker_extensions.executors.beam import (
+import cubed as xp
+from cubed.rechunker_extensions.executors.beam import (
     BeamDagExecutor,
     BeamPipelineExecutor,
 )
-from barry.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
-from barry.tests.utils import create_zarr
+from cubed.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
+from cubed.tests.utils import create_zarr
 
 
 @pytest.fixture()

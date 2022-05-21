@@ -11,7 +11,7 @@ from rechunker.api import _zarr_empty
 from rechunker.types import ArrayProxy, Pipeline, Stage
 from toolz import map
 
-from barry.utils import to_chunksize
+from cubed.utils import to_chunksize
 
 sym_counter = 0
 

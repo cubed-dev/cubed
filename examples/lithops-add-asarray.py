@@ -1,5 +1,5 @@
-import barry as xp
-from barry.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
+import cubed as xp
+from cubed.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
 
 if __name__ == "__main__":
     tmp_path = "s3://barry-lithops-temp/lithopstest"

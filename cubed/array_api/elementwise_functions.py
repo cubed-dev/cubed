@@ -1,7 +1,7 @@
 import numpy as np
 
-from barry.array_api.data_type_functions import result_type
-from barry.core import elementwise_binary_operation, elementwise_unary_operation
+from cubed.array_api.data_type_functions import result_type
+from cubed.core import elementwise_binary_operation, elementwise_unary_operation
 
 
 def add(x1, x2, /):

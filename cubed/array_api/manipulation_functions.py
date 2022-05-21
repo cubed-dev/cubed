@@ -2,10 +2,10 @@ import numpy as np
 from dask.array.core import broadcast_chunks, broadcast_shapes
 from tlz import concat
 
-from barry.core import squeeze  # noqa: F401
-from barry.core import Array, Plan, blockwise, gensym, unify_chunks
-from barry.primitive import broadcast_to as primitive_broadcast_to
-from barry.utils import to_chunksize
+from cubed.core import squeeze  # noqa: F401
+from cubed.core import Array, Plan, blockwise, gensym, unify_chunks
+from cubed.primitive import broadcast_to as primitive_broadcast_to
+from cubed.utils import to_chunksize
 
 
 def broadcast_arrays(*arrays):

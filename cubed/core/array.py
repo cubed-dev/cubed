@@ -14,8 +14,8 @@ from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
 from toolz import map, reduce
 
-from barry.rechunker_extensions.types import Executor
-from barry.utils import join_path
+from cubed.rechunker_extensions.types import Executor
+from cubed.utils import join_path
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -78,7 +78,7 @@ class Array:
             # read back from zarr
             return self.zarray[...]
 
-    def visualize(self, filename="barry", format=None):
+    def visualize(self, filename="cubed", format=None):
         return self.plan.visualize(filename=filename, format=format)
 
     def __bool__(self, /):
@@ -179,7 +179,7 @@ class Plan:
         else:
             executor.execute_dag(dag, **kwargs)
 
-    def visualize(self, filename="barry", format=None, rankdir="BT"):
+    def visualize(self, filename="cubed", format=None, rankdir="BT"):
         dag = self.dag.copy()
         dag.graph["rankdir"] = rankdir
         for (_, d) in dag.nodes(data=True):

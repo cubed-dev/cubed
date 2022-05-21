@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from barry.primitive import broadcast_to
-from barry.tests.utils import create_zarr
+from cubed.primitive import broadcast_to
+from cubed.tests.utils import create_zarr
 
 
 @pytest.mark.parametrize(

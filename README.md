@@ -1,12 +1,12 @@
-# Memwise
+# Cubed
 
-Codename: Barry
+Codename: Cubed
 
 **_Note: this is a proof-of-concept, and many things are incomplete or don't work._**
 
 ## Fixed-memory serverless distributed N-dimensional array processing
 
-Barry is a distributed N-dimensional array library implemented in Python using fixed-memory serverless processing and Zarr for storage.
+Cubed is a distributed N-dimensional array library implemented in Python using fixed-memory serverless processing and Zarr for storage.
 
 - Implements the [Python Array API standard](https://data-apis.org/array-api/latest/)
 - Guaranteed maximum memory usage for standard array functions
@@ -16,12 +16,12 @@ Barry is a distributed N-dimensional array library implemented in Python using f
 ## Example
 
 ```python
->>> import barry
->>> import barry.random
->>> spec = barry.Spec(work_dir="tmp", max_mem=100_000)
->>> a = barry.random.random((4, 4), chunks=(2, 2), spec=spec)
->>> b = barry.random.random((4, 4), chunks=(2, 2), spec=spec)
->>> c = barry.matmul(a, b)
+>>> import cubed
+>>> import cubed.random
+>>> spec = cubed.Spec(work_dir="tmp", max_mem=100_000)
+>>> a = cubed.random.random((4, 4), chunks=(2, 2), spec=spec)
+>>> b = cubed.random.random((4, 4), chunks=(2, 2), spec=spec)
+>>> c = cubed.matmul(a, b)
 >>> c.compute()
 array([[1.22171031, 0.93644194, 1.83459119, 1.8087655 ],
        [1.3540541 , 1.13054495, 2.24504742, 2.05022751],
@@ -45,21 +45,21 @@ This project is an attempt to go further: implement all distributed array operat
 
 ## Design
 
-Barry is composed of five layers: from the storage layer at the bottom, to the Array API layer at the top:
+Cubed is composed of five layers: from the storage layer at the bottom, to the Array API layer at the top:
 
 ![Five layer diagram](design.svg)
 
-Blue blocks are implemented in Barry, green in Rechunker, and red in other projects like Zarr and Beam.
+Blue blocks are implemented in Cubed, green in Rechunker, and red in other projects like Zarr and Beam.
 
 Let's go through the layers from the bottom:
 
 ### Storage
 
-Every _array_ in Barry is backed by a Zarr array. This means that the array type inherits Zarr attributes including the underlying store (which may be on local disk, or a cloud store, for example), as well as the shape, dtype, and chunks. Chunks are the unit of storage and computation in this system.
+Every _array_ in Cubed is backed by a Zarr array. This means that the array type inherits Zarr attributes including the underlying store (which may be on local disk, or a cloud store, for example), as well as the shape, dtype, and chunks. Chunks are the unit of storage and computation in this system.
 
 ### Runtime
 
-Barry uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Dask, Lithops, and Prefect.
+Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Dask, Lithops, and Prefect.
 
 ### Primitive operations
 
@@ -99,7 +99,7 @@ The new [Python Array API](https://data-apis.org/array-api/latest/) was chosen f
 
 ## Implementation
 
-Barry has a lazy computation model. As array functions are invoked, a computation _plan_ is built up, and it is only executed when explicitly triggered with
+Cubed has a lazy computation model. As array functions are invoked, a computation _plan_ is built up, and it is only executed when explicitly triggered with
 a call to `compute`, or when implicitly triggered by converting an array to an in-memory (NumPy) or on-disk (Zarr) representation.
 
 A `Plan` object is a directed acyclic graph (DAG), where the nodes are arrays and the edges express primitive operations. For example, one array may be rechunked to another using a `rechunk` operation. Or a pair of arrays may be added together using a `blockwise` operation.
@@ -116,13 +116,13 @@ The main disadvantage of this model is that every intermediate array is written 
 
 ## Comparison with Dask
 
-Dask is a ["flexible library for parallel computing in Python"](https://docs.dask.org/en/latest/). It has several components: Dask Array, Dask DataFrame, Dask Bag, and Dask Delayed. Barry supports only distributed arrays, corresponding to Dask Array.
+Dask is a ["flexible library for parallel computing in Python"](https://docs.dask.org/en/latest/). It has several components: Dask Array, Dask DataFrame, Dask Bag, and Dask Delayed. Cubed supports only distributed arrays, corresponding to Dask Array.
 
-Dask converts high-level operations into a task graph, where tasks correspond to chunk-level operations. In Barry, the computational graph (or plan) is defined at the level of array operations and is decomposed into fine-grained tasks by the primitive operators for the runtime. Higher-level graphs are more useful for users, since they are easier to visualize and reason about. (Dask's newer High Level Graph abstraction is similar.)
+Dask converts high-level operations into a task graph, where tasks correspond to chunk-level operations. In Cubed, the computational graph (or plan) is defined at the level of array operations and is decomposed into fine-grained tasks by the primitive operators for the runtime. Higher-level graphs are more useful for users, since they are easier to visualize and reason about. (Dask's newer High Level Graph abstraction is similar.)
 
-Dask only has a single distributed runtime, Dask Distributed, whereas Barry has the advantage of running on a variety of distributed runtimes, including more mature ones like Google Cloud Dataflow (a Beam runner).
+Dask only has a single distributed runtime, Dask Distributed, whereas Cubed has the advantage of running on a variety of distributed runtimes, including more mature ones like Google Cloud Dataflow (a Beam runner).
 
-The core operations and array API layers in Barry are heavily influenced by Dask Array - in both naming, as well as implementation (Barry has a dependency on Dask Array for some chunking utilities).
+The core operations and array API layers in Cubed are heavily influenced by Dask Array - in both naming, as well as implementation (Cubed has a dependency on Dask Array for some chunking utilities).
 
 ## Previous work
 
@@ -133,7 +133,7 @@ This project is a continuation of a similar project I worked on, called [Zappy](
 Create an environment with
 
 ```shell
-conda create --name barry python=3.8
-conda activate barry
+conda create --name cubed python=3.8
+conda activate cubed
 pip install -r requirements.txt
 ```

@@ -10,10 +10,10 @@ from dask.blockwise import broadcast_dimensions
 from tlz import concat, partition
 from toolz import map
 
-from barry.core.array import Array, Plan, gensym, new_temp_store
-from barry.primitive import blockwise as primitive_blockwise
-from barry.primitive import rechunk as primitive_rechunk
-from barry.utils import to_chunksize
+from cubed.core.array import Array, Plan, gensym, new_temp_store
+from cubed.primitive import blockwise as primitive_blockwise
+from cubed.primitive import rechunk as primitive_rechunk
+from cubed.utils import to_chunksize
 
 
 def from_zarr(store, spec=None):

@@ -1,6 +1,6 @@
 import pytest
 
-from barry.utils import join_path, to_chunksize
+from cubed.utils import join_path, to_chunksize
 
 
 def test_to_chunksize():
