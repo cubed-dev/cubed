@@ -1,6 +1,6 @@
 # Cubed
 
-Codename: Cubed
+Codename: Barry
 
 **_Note: this is a proof-of-concept, and many things are incomplete or don't work._**
 
