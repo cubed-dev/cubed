@@ -1,8 +1,11 @@
+import sys
+
 import cubed as xp
 from cubed.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
 
 if __name__ == "__main__":
-    tmp_path = "s3://barry-lithops-temp/lithopstest"
+    tmp_path = sys.argv[1]
+    runtime = sys.argv[2]
     spec = xp.Spec(tmp_path, max_mem=100000)
     executor = LithopsPipelineExecutor()
     a = xp.asarray(
@@ -16,5 +19,5 @@ if __name__ == "__main__":
         spec=spec,
     )
     c = xp.add(a, b)
-    res = c.compute(executor=executor, runtime="barryruntime", runtime_memory=2000)
+    res = c.compute(executor=executor, runtime=runtime, runtime_memory=2000)
     print(res)

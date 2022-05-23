@@ -1,9 +1,12 @@
+import sys
+
 import cubed as xp
 import cubed.random
 from cubed.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
 
 if __name__ == "__main__":
-    tmp_path = "s3://barry-lithops-temp/lithopstest"
+    tmp_path = sys.argv[1]
+    runtime = sys.argv[2]
     spec = xp.Spec(tmp_path, max_mem=1_000_000_000)
     executor = LithopsPipelineExecutor()
 
@@ -17,6 +20,6 @@ if __name__ == "__main__":
     c.compute(
         return_stored=False,
         executor=executor,
-        runtime="barryruntime",
+        runtime=runtime,
         runtime_memory=2000,
     )
