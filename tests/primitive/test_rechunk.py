@@ -6,7 +6,7 @@ from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.primitive import rechunk
 from cubed.rechunker_extensions.executors.beam import BeamPipelineExecutor
-from cubed.tests.utils import execute_pipeline
+from tests.utils import execute_pipeline
 
 
 @pytest.fixture(

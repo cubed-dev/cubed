@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from cubed.primitive import broadcast_to
-from cubed.tests.utils import create_zarr
+from tests.utils import create_zarr
 
 
 @pytest.mark.parametrize(

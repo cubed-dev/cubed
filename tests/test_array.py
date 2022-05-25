@@ -13,7 +13,7 @@ from cubed.rechunker_extensions.executors.beam import (
     BeamPipelineExecutor,
 )
 from cubed.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
-from cubed.tests.utils import create_zarr
+from tests.utils import create_zarr
 
 
 @pytest.fixture()
