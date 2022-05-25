@@ -1,6 +1,7 @@
 from functools import partial
 from typing import Callable, Iterable
 
+import networkx as nx
 from lithops.executors import FunctionExecutor
 from rechunker.types import ParallelPipelines, PipelineExecutor
 
@@ -62,3 +63,24 @@ def _execute_in_series(
 ) -> None:
     for task in tasks:
         task(lithops_function_executor)
+
+
+class LithopsDagExecutor:
+
+    # TODO: execute tasks for independent pipelines in parallel
+    def execute_dag(self, dag, **kwargs):
+        dag = dag.copy()
+        with FunctionExecutor(**kwargs) as executor:
+            for node in reversed(list(nx.topological_sort(dag))):
+                pipeline = nx.get_node_attributes(dag, "pipeline").get(node, None)
+                if pipeline is None:
+                    continue
+
+                for stage in pipeline.stages:
+                    if stage.mappable is not None:
+                        stage_func = build_stage_mappable_func(stage, pipeline.config)
+                    else:
+                        stage_func = build_stage_func(stage, pipeline.config)
+
+                    # execute each stage in series
+                    stage_func(executor)

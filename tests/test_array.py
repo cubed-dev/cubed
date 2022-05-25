@@ -8,11 +8,8 @@ from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
-from cubed.rechunker_extensions.executors.beam import (
-    BeamDagExecutor,
-    BeamPipelineExecutor,
-)
-from cubed.rechunker_extensions.executors.lithops import LithopsPipelineExecutor
+from cubed.rechunker_extensions.executors.beam import BeamDagExecutor
+from cubed.rechunker_extensions.executors.lithops import LithopsDagExecutor
 from tests.utils import create_zarr
 
 
@@ -26,8 +23,7 @@ def spec(tmp_path):
     params=[
         PythonPipelineExecutor(),
         BeamDagExecutor(),
-        BeamPipelineExecutor(),
-        LithopsPipelineExecutor(),
+        LithopsDagExecutor(),
     ],
 )
 def executor(request):
