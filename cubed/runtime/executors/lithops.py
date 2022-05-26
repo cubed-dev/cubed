@@ -71,7 +71,7 @@ class LithopsDagExecutor(DagExecutor):
 
     # TODO: execute tasks for independent pipelines in parallel
     @staticmethod
-    def execute_dag(self, dag, **kwargs):
+    def execute_dag(dag, **kwargs):
         dag = dag.copy()
         with FunctionExecutor(**kwargs) as executor:
             for node in reversed(list(nx.topological_sort(dag))):
