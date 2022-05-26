@@ -11,11 +11,13 @@
 
 1. Install a Python dev environment as described in the top-level README.
 2. Configure Lithops with an [AWS Lambda compute backend](https://lithops-cloud.github.io/docs/source/compute_config/aws_lambda.html), and an [AWS S3 storage backend](https://lithops-cloud.github.io/docs/source/storage_config/aws_s3.html).
+   - Note: it may be useful to put the configuration in a different place to the default (e.g. `~/.lithops/config.aws`), and then call `export LITHOPS_CONFIG_FILE=~/.lithops/config.aws`)
 3. Create a new S3 bucket (called `cubed-<username>-temp`, for example) in the same region you chose when configuring Lamda and S3 for Lithops. This will be used for intermediate data. Note that this is different to the bucket created when configuring Lithops.
 4. Build a Lithops runtime image for Cubed (this will build and upload a Docker image, which can take a while):
 
 ```shell
 lithops runtime build -b aws_lambda -f examples/docker/Dockerfile_aws_lambda cubed-runtime
+lithops runtime deploy -b aws_lambda --memory 2000 --timeout 180 cubed-runtime # optional, will be done automatically on first use
 ```
 
 ### Running

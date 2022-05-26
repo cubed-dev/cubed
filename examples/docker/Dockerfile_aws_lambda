@@ -61,8 +61,10 @@ RUN unzip lithops_lambda.zip \
 RUN pip install \
         dask[array] \
         fsspec \
+        networkx \
         rechunker \
         s3fs \
+        tenacity \
         zarr
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]

@@ -51,7 +51,7 @@ def build_stage_mappable_func(stage, config):
         for _ in range(max_attempts):
             tagged_inputs_list = [[k, v] for (k, v) in tagged_inputs.items()]
             futures = lithops_function_executor.map(
-                tagged_wrapper(sf), tagged_inputs_list
+                tagged_wrapper(sf), tagged_inputs_list, include_modules=["cubed"]
             )
             fs_done, _ = lithops_function_executor.wait(futures, throw_except=False)
             for f in fs_done:
