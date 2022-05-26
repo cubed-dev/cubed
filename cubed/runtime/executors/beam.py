@@ -14,6 +14,8 @@ from rechunker.types import (
     Stage,
 )
 
+from cubed.runtime.types import DagExecutor
+
 from ..utils import gensym
 
 
@@ -125,8 +127,9 @@ class BeamPipelineExecutor(PipelineExecutor[List[beam.PTransform]]):
             #     print(metric)
 
 
-class BeamDagExecutor:
-    def execute_dag(self, dag, **kwargs):
+class BeamDagExecutor(DagExecutor):
+    @staticmethod
+    def execute_dag(dag, **kwargs):
         dag = dag.copy()
         with beam.Pipeline(**kwargs) as pipeline:
             for node in reversed(list(nx.topological_sort(dag))):

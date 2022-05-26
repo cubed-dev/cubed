@@ -5,6 +5,8 @@ import networkx as nx
 from lithops.executors import FunctionExecutor
 from rechunker.types import ParallelPipelines, PipelineExecutor
 
+from cubed.runtime.types import DagExecutor
+
 # Lithops represents delayed execution tasks as functions that require
 # a FunctionExecutor.
 Task = Callable[[FunctionExecutor], None]
@@ -65,9 +67,10 @@ def _execute_in_series(
         task(lithops_function_executor)
 
 
-class LithopsDagExecutor:
+class LithopsDagExecutor(DagExecutor):
 
     # TODO: execute tasks for independent pipelines in parallel
+    @staticmethod
     def execute_dag(self, dag, **kwargs):
         dag = dag.copy()
         with FunctionExecutor(**kwargs) as executor:

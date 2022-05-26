@@ -2,10 +2,11 @@ from typing import Union
 
 from rechunker.types import PipelineExecutor
 
-try:
-    from cubed.runtime.executors.beam import BeamDagExecutor
 
-    Executor = Union[PipelineExecutor, BeamDagExecutor]
+class DagExecutor:
+    @staticmethod
+    def execute_dag(dag, **kwargs):
+        raise NotImplementedError
 
-except ImportError:  # pragma: no cover
-    Executor = PipelineExecutor
+
+Executor = Union[PipelineExecutor, DagExecutor]
