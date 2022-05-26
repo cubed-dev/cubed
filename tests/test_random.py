@@ -3,10 +3,7 @@ from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
 import cubed.random
-from cubed.rechunker_extensions.executors.beam import (
-    BeamDagExecutor,
-    BeamPipelineExecutor,
-)
+from cubed.runtime.executors.beam import BeamDagExecutor, BeamPipelineExecutor
 
 
 @pytest.fixture()

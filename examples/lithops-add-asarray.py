@@ -1,7 +1,7 @@
 import sys
 
 import cubed as xp
-from cubed.rechunker_extensions.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.lithops import LithopsDagExecutor
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]

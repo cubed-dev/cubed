@@ -14,7 +14,7 @@ from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
 from toolz import map, reduce
 
-from cubed.rechunker_extensions.types import Executor
+from cubed.runtime.types import Executor
 from cubed.utils import join_path
 
 # A unique ID with sensible ordering, used for making directory names

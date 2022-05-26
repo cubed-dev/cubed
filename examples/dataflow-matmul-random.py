@@ -2,7 +2,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 
 import cubed as xp
 import cubed.random
-from cubed.rechunker_extensions.executors.beam import BeamPipelineExecutor
+from cubed.runtime.executors.beam import BeamPipelineExecutor
 
 if __name__ == "__main__":
     tmp_path = "gs://barry-zarr-test/cdtest"

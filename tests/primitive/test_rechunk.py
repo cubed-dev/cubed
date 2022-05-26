@@ -5,7 +5,7 @@ from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.primitive import rechunk
-from cubed.rechunker_extensions.executors.beam import BeamPipelineExecutor
+from cubed.runtime.executors.beam import BeamPipelineExecutor
 from tests.utils import execute_pipeline
 
 
