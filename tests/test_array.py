@@ -10,6 +10,7 @@ from rechunker.executors.python import PythonPipelineExecutor
 import cubed as xp
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.python import PythonDagExecutor
 from tests.utils import create_zarr
 
 
@@ -22,6 +23,7 @@ def spec(tmp_path):
     scope="module",
     params=[
         PythonPipelineExecutor(),
+        PythonDagExecutor(),
         BeamDagExecutor(),
         LithopsDagExecutor(),
     ],
