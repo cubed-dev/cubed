@@ -5,7 +5,7 @@ gcsfs
 lithops[aws]
 networkx
 numpy >= 1.22
-pygraphviz
+pydot
 pytest
 rechunker
 s3fs

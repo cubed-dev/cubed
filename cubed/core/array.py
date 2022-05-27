@@ -181,20 +181,16 @@ class Plan:
 
     def visualize(self, filename="cubed", format=None, rankdir="BT"):
         dag = self.dag.copy()
-        dag.graph["rankdir"] = rankdir
+        dag.graph["graph"] = {"rankdir": rankdir}
+        dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
         for (_, d) in dag.nodes(data=True):
             if "pipeline" in d:
                 del d["pipeline"]
-        gv = nx.nx_agraph.to_agraph(dag)
-        gv.node_attr["shape"] = "box"
-        gv.node_attr["fontname"] = "helvetica"
+        gv = nx.drawing.nx_pydot.to_pydot(dag)
         if format is None:
             format = "svg"
         full_filename = f"{filename}.{format}"
-        if format == "dot":
-            gv.write(full_filename)
-        else:
-            gv.draw(full_filename, prog="dot")
+        gv.write(full_filename, format=format)
 
         try:
             import IPython.display as display

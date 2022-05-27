@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update -y
-          sudo apt install graphviz libgraphviz-dev
+          sudo apt install graphviz
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
