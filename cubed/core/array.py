@@ -55,8 +55,12 @@ class Array:
     def size(self):
         return reduce(mul, self.shape, 1)
 
-    def compute(self, *, return_stored=True, executor=None, **kwargs):
-        self.plan.execute(self.name, executor=executor, **kwargs)
+    def compute(
+        self, *, return_stored=True, executor=None, task_callback=None, **kwargs
+    ):
+        self.plan.execute(
+            self.name, executor=executor, task_callback=task_callback, **kwargs
+        )
 
         if return_stored:
             # read back from zarr

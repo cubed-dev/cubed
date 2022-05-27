@@ -129,7 +129,9 @@ class BeamPipelineExecutor(PipelineExecutor[List[beam.PTransform]]):
 
 class BeamDagExecutor(DagExecutor):
     @staticmethod
-    def execute_dag(dag, **kwargs):
+    def execute_dag(dag, task_callback=None, **kwargs):
+        if task_callback is not None:
+            raise NotImplementedError("Task callback not supported")
         dag = dag.copy()
         with beam.Pipeline(**kwargs) as pipeline:
             for node in reversed(list(nx.topological_sort(dag))):

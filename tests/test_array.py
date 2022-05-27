@@ -444,3 +444,27 @@ def test_retries_lithops(mocker, spec):
     assert_array_equal(
         c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
     )
+
+
+class TaskCounter:
+    def __init__(self):
+        self.value = 0
+
+    def increment(self, n=1):
+        self.value += n
+
+
+def test_task_callback(spec):
+    executor = PythonDagExecutor()
+
+    task_callback = TaskCounter()
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor, task_callback=task_callback),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+    )
+
+    assert task_callback.value == 4

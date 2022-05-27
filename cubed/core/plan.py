@@ -74,7 +74,7 @@ class Plan:
     def spec(self):
         return self.dag.graph["spec"]
 
-    def execute(self, name=None, executor=None, **kwargs):
+    def execute(self, name=None, executor=None, task_callback=None, **kwargs):
         if executor is None:
             executor = self.spec.executor
             if executor is None:
@@ -104,7 +104,7 @@ class Plan:
                 dag.remove_nodes_from(no_dep_nodes)
 
         else:
-            executor.execute_dag(dag, **kwargs)
+            executor.execute_dag(dag, task_callback=task_callback, **kwargs)
 
     def visualize(self, filename="cubed", format=None, rankdir="BT"):
         dag = self.dag.copy()
