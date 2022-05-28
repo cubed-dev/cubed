@@ -10,7 +10,8 @@ from dask.blockwise import broadcast_dimensions
 from tlz import concat, partition
 from toolz import map
 
-from cubed.core.array import Array, Plan, gensym, new_temp_store
+from cubed.core.array import Array, gensym
+from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive import blockwise as primitive_blockwise
 from cubed.primitive import rechunk as primitive_rechunk
 from cubed.utils import to_chunksize

@@ -1,5 +1,5 @@
 # flake8: noqa
-from .array import Array, Plan, Spec, gensym, new_temp_store, new_temp_zarr
+from .array import Array, gensym
 from .ops import (
     blockwise,
     elementwise_binary_operation,
@@ -12,3 +12,4 @@ from .ops import (
     to_zarr,
     unify_chunks,
 )
+from .plan import Plan, Spec, new_temp_store, new_temp_zarr
