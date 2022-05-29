@@ -43,10 +43,35 @@ def build_stage_mappable_func(stage, config):
         return stage.function(mappable, config=config)
 
     def stage_func(lithops_function_executor):
-        futures = lithops_function_executor.map(sf, list(stage.mappable))
-        lithops_function_executor.get_result(futures)
+        max_attempts = 3
+
+        tagged_inputs = {k: v for (k, v) in enumerate(stage.mappable)}
+
+        for _ in range(max_attempts):
+            tagged_inputs_list = [[k, v] for (k, v) in tagged_inputs.items()]
+            futures = lithops_function_executor.map(
+                tagged_wrapper(sf), tagged_inputs_list
+            )
+            fs_done, _ = lithops_function_executor.wait(futures, throw_except=False)
+            for f in fs_done:
+                # remove successful tasks from tagged inputs and rerun others
+                if f.success and not f.error:
+                    tag = f.result()
+                    del tagged_inputs[tag]
+
+            if len(tagged_inputs) == 0:
+                break
 
     return stage_func
+
+
+def tagged_wrapper(func):
+    def w(tagged_input, *args, **kwargs):
+        tag, val = tagged_input
+        func(val, *args, **kwargs)
+        return tag
+
+    return w
 
 
 def build_stage_func(stage, config):

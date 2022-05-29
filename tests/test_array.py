@@ -420,3 +420,27 @@ def test_retries(mocker, spec):
     assert_array_equal(
         c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
     )
+
+
+def test_retries_lithops(mocker, spec):
+    # Inject faults into the primitive layer
+    # We need to use random faults, since we can't coordinate using object state
+    def random_failure_apply_blockwise(*args, **kwargs):
+        import random
+
+        if random.random() < 0.2:
+            raise IOError("Test fault injection")
+        return apply_blockwise(*args, **kwargs)
+
+    mocker.patch(
+        "cubed.primitive.blockwise.apply_blockwise",
+        side_effect=random_failure_apply_blockwise,
+    )
+
+    executor = LithopsDagExecutor()
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+    )
