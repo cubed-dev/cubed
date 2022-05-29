@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from cubed.primitive import broadcast_to
+from cubed.primitive.broadcast import broadcast_to
 from tests.utils import create_zarr
 
 

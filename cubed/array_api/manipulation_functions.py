@@ -4,7 +4,7 @@ from tlz import concat
 
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import Array, Plan, blockwise, gensym, unify_chunks
-from cubed.primitive import broadcast_to as primitive_broadcast_to
+from cubed.primitive.broadcast import broadcast_to as primitive_broadcast_to
 from cubed.utils import to_chunksize
 
 

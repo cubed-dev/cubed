@@ -4,7 +4,7 @@ import zarr
 from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
-from cubed.primitive import rechunk
+from cubed.primitive.rechunk import rechunk
 from cubed.runtime.executors.beam import BeamPipelineExecutor
 from tests.utils import execute_pipeline
 

@@ -12,8 +12,8 @@ from toolz import map
 
 from cubed.core.array import Array, gensym
 from cubed.core.plan import Plan, new_temp_store
-from cubed.primitive import blockwise as primitive_blockwise
-from cubed.primitive import rechunk as primitive_rechunk
+from cubed.primitive.blockwise import blockwise as primitive_blockwise
+from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import to_chunksize
 
 
