@@ -88,3 +88,18 @@ def spec_to_pipeline(spec: CopySpec) -> Pipeline:
             ),
         ]
     return Pipeline(stages, config=spec)
+
+
+def already_computed(node_dict):
+    """
+    Return True if the array for a node doesn't have a pipeline to compute it,
+    or it has already been computed (all chunks are present).
+    """
+    pipeline = node_dict.get("pipeline", None)
+    if pipeline is None:
+        return True
+    target = node_dict.get("target", None)
+    # TODO: 0-d arrays need another way of indicating they have been computed...
+    if target.ndim > 0 and target.nchunks_initialized == target.nchunks:
+        return True
+    return False

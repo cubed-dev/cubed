@@ -62,9 +62,11 @@ class Plan:
         if num_tasks is not None:
             tooltip += f"\ntasks: {num_tasks}"
         if pipeline is None:
-            dag.add_node(name, label=label, tooltip=tooltip)
+            dag.add_node(name, label=label, tooltip=tooltip, target=target)
         else:
-            dag.add_node(name, label=label, tooltip=tooltip, pipeline=pipeline)
+            dag.add_node(
+                name, label=label, tooltip=tooltip, target=target, pipeline=pipeline
+            )
         for x in source_arrays:
             dag.add_edge(name, x.name)
 

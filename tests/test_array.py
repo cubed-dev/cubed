@@ -468,3 +468,21 @@ def test_task_callback(spec):
     )
 
     assert task_callback.value == 4
+
+
+def test_already_computed(spec):
+    executor = PythonDagExecutor()
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    d = xp.negative(c)
+
+    task_callback = TaskCounter()
+    c.compute(executor=executor, task_callback=task_callback)
+    assert task_callback.value == 4
+
+    # since c has already been computed, when computing d only 4 tasks are run, instead of 8
+    task_callback = TaskCounter()
+    d.compute(executor=executor, task_callback=task_callback)
+    assert task_callback.value == 4

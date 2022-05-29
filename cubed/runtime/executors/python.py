@@ -1,6 +1,7 @@
 import networkx as nx
 from tenacity import retry, stop_after_attempt
 
+from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 
 
@@ -12,12 +13,11 @@ def exec_stage_func(func, *args, **kwargs):
 class PythonDagExecutor(DagExecutor):
     @staticmethod
     def execute_dag(dag, task_callback=None, **kwargs):
-        dag = dag.copy()
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
         for node in reversed(list(nx.topological_sort(dag))):
-            pipeline = nx.get_node_attributes(dag, "pipeline").get(node, None)
-            if pipeline is None:
+            if already_computed(nodes[node]):
                 continue
-
+            pipeline = nodes[node]["pipeline"]
             for stage in pipeline.stages:
                 if stage.mappable is not None:
                     for m in stage.mappable:

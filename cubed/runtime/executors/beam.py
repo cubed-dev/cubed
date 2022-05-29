@@ -14,6 +14,7 @@ from rechunker.types import (
     Stage,
 )
 
+from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 
 from ..utils import gensym
@@ -134,12 +135,11 @@ class BeamDagExecutor(DagExecutor):
             raise NotImplementedError("Task callback not supported")
         dag = dag.copy()
         with beam.Pipeline(**kwargs) as pipeline:
+            nodes = {n: d for (n, d) in dag.nodes(data=True)}
             for node in reversed(list(nx.topological_sort(dag))):
-                rechunker_pipeline = nx.get_node_attributes(dag, "pipeline").get(
-                    node, None
-                )
-                if rechunker_pipeline is None:
+                if already_computed(nodes[node]):
                     continue
+                rechunker_pipeline = nodes[node]["pipeline"]
 
                 dep_nodes = dag[node].keys()
 
