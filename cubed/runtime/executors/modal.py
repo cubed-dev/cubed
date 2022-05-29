@@ -14,6 +14,7 @@ image = modal.DebianSlim(
         "dask[array]",
         "fsspec",
         "networkx",
+        "pytest-mock",  # TODO: only needed for tests
         "rechunker",
         "s3fs",
         "tenacity",
@@ -33,7 +34,7 @@ def run_map_with_retries(input, func=None, config=None, max_attempts=3):
 
     try:
         for attempt in Retrying(
-            retry=retry_if_exception_type(RemoteError),
+            retry=retry_if_exception_type((RemoteError, OSError)),
             stop=stop_after_attempt(max_attempts),
         ):
             with attempt:

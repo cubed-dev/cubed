@@ -476,6 +476,37 @@ def test_retries_lithops(mocker, spec):
     )
 
 
+@pytest.mark.cloud
+def test_retries_modal(mocker, spec):
+    # Inject faults into the primitive layer
+    # We need to use random faults, since we can't coordinate using object state
+    def random_failure_apply_blockwise(*args, **kwargs):
+        import random
+
+        if random.random() < 0.2:
+            raise IOError("Test fault injection")
+        return apply_blockwise(*args, **kwargs)
+
+    mocker.patch(
+        "cubed.primitive.blockwise.apply_blockwise",
+        side_effect=random_failure_apply_blockwise,
+    )
+
+    executor = ModalDagExecutor()
+    tmp_path = "s3://cubed-unittest/retries"
+    spec = xp.Spec(tmp_path, max_mem=100000)
+    try:
+        a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+        b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+        c = xp.add(a, b)
+        assert_array_equal(
+            c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+        )
+    finally:
+        fs = fsspec.open(tmp_path).fs
+        fs.rm(tmp_path, recursive=True)
+
+
 class TaskCounter(Callback):
     def on_compute_start(self, arr):
         self.value = 0
