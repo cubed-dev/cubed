@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
+from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
@@ -392,3 +393,30 @@ def test_array_pickle(spec, executor):
     y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     expected = np.matmul(x, y)
     assert_array_equal(c.compute(executor=executor), expected)
+
+
+mock_call_counter = 0
+
+
+def mock_apply_blockwise(*args, **kwargs):
+    # Raise an error on every 3rd call
+    global mock_call_counter
+    mock_call_counter += 1
+    if mock_call_counter % 3 == 0:
+        raise IOError("Test fault injection")
+    return apply_blockwise(*args, **kwargs)
+
+
+def test_retries(mocker, spec):
+    # Inject faults into the primitive layer
+    mocker.patch(
+        "cubed.primitive.blockwise.apply_blockwise", side_effect=mock_apply_blockwise
+    )
+
+    executor = PythonDagExecutor()
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+    )

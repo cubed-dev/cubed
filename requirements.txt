@@ -7,6 +7,8 @@ networkx
 numpy >= 1.22
 pydot
 pytest
+pytest-mock
 rechunker
 s3fs
+tenacity
 zarr
