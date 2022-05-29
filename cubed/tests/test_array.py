@@ -12,6 +12,7 @@ from cubed import Callback
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.modal import ModalDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr
 
@@ -144,6 +145,32 @@ def test_matmul(spec, executor):
 @pytest.mark.cloud
 def test_matmul_cloud(executor):
     tmp_path = "gs://barry-zarr-test/matmul"
+    spec = xp.Spec(tmp_path, max_mem=100000)
+    try:
+        a = xp.asarray(
+            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+            chunks=(2, 2),
+            spec=spec,
+        )
+        b = xp.asarray(
+            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+            chunks=(2, 2),
+            spec=spec,
+        )
+        c = xp.matmul(a, b)
+        x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+        y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+        expected = np.matmul(x, y)
+        assert_array_equal(c.compute(executor=executor), expected)
+    finally:
+        fs = fsspec.open(tmp_path).fs
+        fs.rm(tmp_path, recursive=True)
+
+
+@pytest.mark.cloud
+def test_matmul_modal():
+    executor = ModalDagExecutor()
+    tmp_path = "s3://cubed-unittest/matmul"
     spec = xp.Spec(tmp_path, max_mem=100000)
     try:
         a = xp.asarray(
