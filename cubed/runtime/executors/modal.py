@@ -5,6 +5,7 @@ import networkx as nx
 from modal.exception import RemoteError
 from tenacity import RetryError, Retrying, retry_if_exception_type, stop_after_attempt
 
+from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 
 app = modal.App()
@@ -76,12 +77,11 @@ class ModalDagExecutor(DagExecutor):
                 with attempt:
                     with app.run():
 
+                        nodes = {n: d for (n, d) in dag.nodes(data=True)}
                         for node in reversed(list(nx.topological_sort(dag))):
-                            pipeline = nx.get_node_attributes(dag, "pipeline").get(
-                                node, None
-                            )
-                            if pipeline is None:
+                            if already_computed(nodes[node]):
                                 continue
+                            pipeline = nodes[node]["pipeline"]
 
                             for stage in pipeline.stages:
                                 if stage.mappable is not None:
