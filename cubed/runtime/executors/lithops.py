@@ -48,12 +48,15 @@ def build_stage_mappable_func(stage, config):
 
         tagged_inputs = {k: v for (k, v) in enumerate(stage.mappable)}
 
-        for _ in range(max_attempts):
+        for i in range(max_attempts):
             tagged_inputs_list = [[k, v] for (k, v) in tagged_inputs.items()]
             futures = lithops_function_executor.map(
                 tagged_wrapper(sf), tagged_inputs_list, include_modules=["cubed"]
             )
-            fs_done, _ = lithops_function_executor.wait(futures, throw_except=False)
+            throw_except = i == max_attempts - 1
+            fs_done, _ = lithops_function_executor.wait(
+                futures, throw_except=throw_except
+            )
             for f in fs_done:
                 # remove successful tasks from tagged inputs and rerun others
                 if f.success and not f.error:
