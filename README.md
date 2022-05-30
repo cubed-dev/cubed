@@ -97,6 +97,17 @@ Note that these operations are all included in Dask, and Dask uses them as build
 
 The new [Python Array API](https://data-apis.org/array-api/latest/) was chosen for the public API as it provides a useful, well-defined subset of the NumPy API. There are a few extensions, including Zarr IO, random number generation, and operations like `map_blocks` which are heavily used in Dask applications.
 
+## Features
+
+<dl>
+  <dt>Task failure handling</dt>
+  <dd>If a task fails - with an IO exception when reading or writing to Zarr, for example - it will be retried (up to a total of three attempts).</dd>
+  <dt>Resume a computation from a checkpoint</dt>
+  <dd>Since intermediate arrays are persisted to Zarr, it is possible to resume a computation without starting from scratch. To do this, the Cubed <code>Array</code> object should be stored persistently (using <code>pickle</code>), so it can be reloaded in a new process and then <code>compute()</code> called on it to finish the computation.</dd>
+  <dt>Straggler mitigation</dt>
+  <dd>A few slow running tasks (called stragglers) can disproportionately slow down the whole computation. To mitigate this, speculative duplicate tasks are launched in certain circumstances, acting as backups that complete more quickly than the straggler, hence bringing down the overall time taken. <b>[Not yet implemented]</b></dd>
+</dl>
+
 ## Implementation
 
 Cubed has a lazy computation model. As array functions are invoked, a computation _plan_ is built up, and it is only executed when explicitly triggered with
