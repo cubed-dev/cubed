@@ -29,7 +29,7 @@ def run_remotely(input, func=None, config=None):
     return func(input, config=config)
 
 
-def run_map_with_retries(input, func=None, config=None, max_attempts=3):
+def run_map_with_retries(input, func=None, config=None, max_attempts=3, callbacks=None):
     tagged_inputs = {k: v for (k, v) in enumerate(input)}
 
     try:
@@ -46,6 +46,8 @@ def run_map_with_retries(input, func=None, config=None, max_attempts=3):
                     kwargs=dict(func=tagged_wrapper(func), config=config),
                 ):
                     print(f"Completed tag {tag}")
+                    if callbacks is not None:
+                        [callback.on_task_end() for callback in callbacks]
                     del tagged_inputs[tag]
     except RetryError:
         pass
@@ -64,7 +66,7 @@ class ModalDagExecutor(DagExecutor):
 
     # TODO: execute tasks for independent pipelines in parallel
     @staticmethod
-    def execute_dag(dag, **kwargs):
+    def execute_dag(dag, callbacks=None, **kwargs):
         max_attempts = 3
         try:
             for attempt in Retrying(
@@ -88,6 +90,7 @@ class ModalDagExecutor(DagExecutor):
                                         stage.mappable,
                                         stage.function,
                                         config=pipeline.config,
+                                        callbacks=callbacks,
                                     )
                                 else:
                                     raise NotImplementedError()

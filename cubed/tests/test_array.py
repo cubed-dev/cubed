@@ -532,6 +532,27 @@ def test_callbacks(spec, executor):
     assert task_counter.value == 4
 
 
+@pytest.mark.cloud
+def test_callbacks_modal(spec):
+    executor = ModalDagExecutor()
+    task_counter = TaskCounter()
+    tmp_path = "s3://cubed-unittest/callbacks"
+    spec = xp.Spec(tmp_path, max_mem=100000)
+    try:
+        a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+        b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+        c = xp.add(a, b)
+        assert_array_equal(
+            c.compute(executor=executor, callbacks=[task_counter]),
+            np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+        )
+
+        assert task_counter.value == 4
+    finally:
+        fs = fsspec.open(tmp_path).fs
+        fs.rm(tmp_path, recursive=True)
+
+
 def test_already_computed(spec):
     executor = PythonDagExecutor()
 
