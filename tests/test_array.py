@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
+from cubed import Callback
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
@@ -446,28 +447,28 @@ def test_retries_lithops(mocker, spec):
     )
 
 
-class TaskCounter:
-    def __init__(self):
+class TaskCounter(Callback):
+    def on_compute_start(self, arr):
         self.value = 0
 
-    def increment(self, n=1):
+    def on_task_end(self, n=1):
         self.value += n
 
 
-def test_task_callback(spec):
+def test_callbacks(spec):
     executor = PythonDagExecutor()
 
-    task_callback = TaskCounter()
+    task_counter = TaskCounter()
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
-        c.compute(executor=executor, task_callback=task_callback),
+        c.compute(executor=executor, callbacks=[task_counter]),
         np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
     )
 
-    assert task_callback.value == 4
+    assert task_counter.value == 4
 
 
 def test_already_computed(spec):
@@ -478,11 +479,13 @@ def test_already_computed(spec):
     c = xp.add(a, b)
     d = xp.negative(c)
 
-    task_callback = TaskCounter()
-    c.compute(executor=executor, task_callback=task_callback)
-    assert task_callback.value == 4
+    assert d.plan.num_tasks(d.name) == 8
+
+    task_counter = TaskCounter()
+    c.compute(executor=executor, callbacks=[task_counter])
+    assert task_counter.value == 4
 
     # since c has already been computed, when computing d only 4 tasks are run, instead of 8
-    task_callback = TaskCounter()
-    d.compute(executor=executor, task_callback=task_callback)
-    assert task_callback.value == 4
+    task_counter = TaskCounter()
+    d.compute(executor=executor, callbacks=[task_counter])
+    assert task_counter.value == 4

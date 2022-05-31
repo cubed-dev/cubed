@@ -29,7 +29,7 @@ from .array_api import (
     uint32,
     uint64,
 )
-from .core import Spec, from_zarr, map_blocks, to_zarr
+from .core import Callback, Spec, TqdmProgressBar, from_zarr, map_blocks, to_zarr
 
 __all__ = [
     "add",
@@ -40,6 +40,7 @@ __all__ = [
     "bool",
     "broadcast_arrays",
     "broadcast_to",
+    "Callback",
     "divide",
     "equal",
     "float32",
@@ -61,6 +62,7 @@ __all__ = [
     "squeeze",
     "sum",
     "to_zarr",
+    "TqdmProgressBar",
     "uint16",
     "uint32",
     "uint64",

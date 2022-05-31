@@ -100,9 +100,9 @@ class LithopsDagExecutor(DagExecutor):
 
     # TODO: execute tasks for independent pipelines in parallel
     @staticmethod
-    def execute_dag(dag, task_callback=None, **kwargs):
-        if task_callback is not None:
-            raise NotImplementedError("Task callback not supported")
+    def execute_dag(dag, callbacks=None, **kwargs):
+        if callbacks is not None:
+            raise NotImplementedError("Callbacks not supported")
         with FunctionExecutor(**kwargs) as executor:
             nodes = {n: d for (n, d) in dag.nodes(data=True)}
             for node in reversed(list(nx.topological_sort(dag))):

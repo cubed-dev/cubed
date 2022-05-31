@@ -130,9 +130,9 @@ class BeamPipelineExecutor(PipelineExecutor[List[beam.PTransform]]):
 
 class BeamDagExecutor(DagExecutor):
     @staticmethod
-    def execute_dag(dag, task_callback=None, **kwargs):
-        if task_callback is not None:
-            raise NotImplementedError("Task callback not supported")
+    def execute_dag(dag, callbacks=None, **kwargs):
+        if callbacks is not None:
+            raise NotImplementedError("Callbacks not supported")
         dag = dag.copy()
         with beam.Pipeline(**kwargs) as pipeline:
             nodes = {n: d for (n, d) in dag.nodes(data=True)}

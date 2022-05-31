@@ -55,12 +55,14 @@ class Array:
     def size(self):
         return reduce(mul, self.shape, 1)
 
-    def compute(
-        self, *, return_stored=True, executor=None, task_callback=None, **kwargs
-    ):
-        self.plan.execute(
-            self.name, executor=executor, task_callback=task_callback, **kwargs
-        )
+    def compute(self, *, return_stored=True, executor=None, callbacks=None, **kwargs):
+        if callbacks is not None:
+            [callback.on_compute_start(self) for callback in callbacks]
+
+        self.plan.execute(self.name, executor=executor, callbacks=callbacks, **kwargs)
+
+        if callbacks is not None:
+            [callback.on_compute_end(self) for callback in callbacks]
 
         if return_stored:
             # read back from zarr
@@ -76,3 +78,34 @@ class Array:
 
     def __repr__(self):
         return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+
+
+class Callback:
+    def on_compute_start(self, arr):
+        pass
+
+    def on_compute_end(self, arr):
+        pass
+
+    def on_task_end(self, n=1):
+        pass
+
+
+class TqdmProgressBar(Callback):
+    """Progress bar for a computation."""
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    def on_compute_start(self, arr):
+        from tqdm import tqdm
+
+        total_tasks = arr.plan.num_tasks(arr.name)
+        self.pbar = tqdm(*self.args, total=total_tasks, **self.kwargs)
+
+    def on_compute_end(self, arr):
+        self.pbar.close()
+
+    def on_task_end(self, n=1):
+        self.pbar.update(n)

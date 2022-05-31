@@ -12,7 +12,7 @@ def exec_stage_func(func, *args, **kwargs):
 
 class PythonDagExecutor(DagExecutor):
     @staticmethod
-    def execute_dag(dag, task_callback=None, **kwargs):
+    def execute_dag(dag, callbacks=None, **kwargs):
         nodes = {n: d for (n, d) in dag.nodes(data=True)}
         for node in reversed(list(nx.topological_sort(dag))):
             if already_computed(nodes[node]):
@@ -22,9 +22,9 @@ class PythonDagExecutor(DagExecutor):
                 if stage.mappable is not None:
                     for m in stage.mappable:
                         exec_stage_func(stage.function, m, config=pipeline.config)
-                        if task_callback is not None:
-                            task_callback.increment()
+                        if callbacks is not None:
+                            [callback.on_task_end() for callback in callbacks]
                 else:
                     exec_stage_func(stage.function, config=pipeline.config)
-                    if task_callback is not None:
-                        task_callback.increment()
+                    if callbacks is not None:
+                        [callback.on_task_end() for callback in callbacks]

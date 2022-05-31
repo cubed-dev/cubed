@@ -10,6 +10,7 @@ from dask.utils import memory_repr
 from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
 
+from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.utils import join_path
 
@@ -76,17 +77,36 @@ class Plan:
     def spec(self):
         return self.dag.graph["spec"]
 
-    def execute(self, name=None, executor=None, task_callback=None, **kwargs):
+    def transitive_dependencies(self, name):
+        # prune DAG so it only has transitive dependencies of 'name'
+        return self.dag.subgraph(get_weakly_cc(self.dag, name))
+
+    def num_tasks(self, name=None):
+        """Return the number of tasks needed to execute this plan."""
+        tasks = 0
+        dag = self.transitive_dependencies(name)
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+        for node in dag:
+            if already_computed(nodes[node]):
+                continue
+            pipeline = nodes[node]["pipeline"]
+            for stage in pipeline.stages:
+                if stage.mappable is not None:
+                    tasks += len(stage.mappable)
+                else:
+                    tasks += 1
+        return tasks
+
+    def execute(self, name=None, executor=None, callbacks=None, **kwargs):
         if executor is None:
             executor = self.spec.executor
             if executor is None:
                 executor = PythonPipelineExecutor()
 
-        # prune DAG so it only has transitive dependencies of 'name'
-        dag = self.dag.subgraph(get_weakly_cc(self.dag, name))
-        dag = dag.copy()
+        dag = self.transitive_dependencies(name)
 
         if isinstance(executor, PipelineExecutor):
+            dag = dag.copy()
 
             while len(dag) > 0:
                 # Find nodes (and their pipelines) that have no dependencies
@@ -106,7 +126,7 @@ class Plan:
                 dag.remove_nodes_from(no_dep_nodes)
 
         else:
-            executor.execute_dag(dag, task_callback=task_callback, **kwargs)
+            executor.execute_dag(dag, callbacks=callbacks, **kwargs)
 
     def visualize(self, filename="cubed", format=None, rankdir="BT"):
         dag = self.dag.copy()
