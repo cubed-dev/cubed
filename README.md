@@ -8,7 +8,7 @@ Codename: Barry
 
 Cubed is a distributed N-dimensional array library implemented in Python using fixed-memory serverless processing and Zarr for storage.
 
-- Implements the [Python Array API standard](https://data-apis.org/array-api/latest/)
+- Implements the [Python Array API standard](https://data-apis.org/array-api/latest/) (see [coverage status](./api_status.md))
 - Guaranteed maximum memory usage for standard array functions
 - [Zarr](https://zarr.readthedocs.io/en/stable/) for storage
 - Multiple serverless runtimes: Python, [Apache Beam](https://beam.apache.org/), [Lithops](https://lithops-cloud.github.io/)
@@ -30,6 +30,8 @@ array([[1.22171031, 0.93644194, 1.83459119, 1.8087655 ],
 ```
 
 See more in the [demo notebook](./examples/demo.ipynb).
+
+See the [examples README](./examples/README.md) for more about running on cloud services.
 
 ## Motivation
 
