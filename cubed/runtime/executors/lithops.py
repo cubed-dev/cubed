@@ -3,6 +3,7 @@ from typing import Callable, Iterable
 
 import networkx as nx
 from lithops.executors import FunctionExecutor
+from lithops.wait import ANY_COMPLETED
 from rechunker.types import ParallelPipelines, PipelineExecutor
 
 from cubed.runtime.pipeline import already_computed
@@ -46,25 +47,51 @@ def build_stage_mappable_func(stage, config):
     def stage_func(lithops_function_executor):
         max_attempts = 3
 
-        tagged_inputs = {k: v for (k, v) in enumerate(stage.mappable)}
+        attempt = 0
 
-        for i in range(max_attempts):
-            tagged_inputs_list = [[k, v] for (k, v) in tagged_inputs.items()]
-            futures = lithops_function_executor.map(
+        tagged_inputs = {k: v for (k, v) in enumerate(stage.mappable)}
+        futures = []
+        tagged_futures = {}
+        pending = []
+
+        tagged_inputs_list = [[k, v] for (k, v) in tagged_inputs.items()]
+        futures.extend(
+            lithops_function_executor.map(
                 tagged_wrapper(sf), tagged_inputs_list, include_modules=["cubed"]
             )
-            throw_except = i == max_attempts - 1
-            fs_done, _ = lithops_function_executor.wait(
-                futures, throw_except=throw_except
-            )
-            for f in fs_done:
-                # remove successful tasks from tagged inputs and rerun others
-                if f.success and not f.error:
-                    tag = f.result()
-                    del tagged_inputs[tag]
+        )
+        tagged_futures.update({k: v for (k, v) in zip(futures, tagged_inputs_list)})
+        pending.extend(futures)
+        attempt += 1
 
-            if len(tagged_inputs) == 0:
-                break
+        while pending:
+            throw_except = attempt == max_attempts - 1
+            finished, pending = lithops_function_executor.wait(
+                futures, throw_except=throw_except, return_when=ANY_COMPLETED
+            )
+
+            errored = []
+            for future in finished:
+                if future.error:
+                    errored.append(future)
+                futures.remove(future)
+            if errored:
+                # rerun and add to pending
+                tagged_inputs_list = [
+                    [k, v] for (fut, (k, v)) in tagged_futures.items() if fut in errored
+                ]
+                # TODO: de-duplicate code from above
+                new_futures = lithops_function_executor.map(
+                    tagged_wrapper(sf),
+                    tagged_inputs_list,
+                    include_modules=["cubed"],
+                )
+                futures.extend(new_futures)
+                tagged_futures.update(
+                    {k: v for (k, v) in zip(futures, tagged_inputs_list)}
+                )
+                pending.append(new_futures)
+                attempt += 1
 
     return stage_func
 
