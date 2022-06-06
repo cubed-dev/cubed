@@ -5,6 +5,7 @@ import networkx as nx
 from lithops.executors import FunctionExecutor
 from lithops.wait import ANY_COMPLETED
 from rechunker.types import ParallelPipelines, PipelineExecutor
+from six import reraise
 
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
@@ -40,72 +41,84 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
             plan(executor)
 
 
+def map_with_retries(
+    lithops_function_executor,
+    map_function,
+    map_iterdata,
+    include_modules=[],
+    max_failures=3,
+    callbacks=None,
+):
+    """
+    Generalised Lithops `map` with retries and callbacks.
+
+    Up to `max_failures` task failures will be retried before the function fails by raising an exception.
+    """
+    failures = 0
+
+    inputs = map_iterdata
+    futures = []
+    futures_to_inputs = {}
+    pending = []
+
+    futures.extend(
+        lithops_function_executor.map(
+            map_function,
+            inputs,
+            include_modules=include_modules,
+        )
+    )
+    futures_to_inputs.update({k: v for (k, v) in zip(futures, inputs)})
+    pending.extend(futures)
+
+    while pending:
+        finished, pending = lithops_function_executor.wait(
+            futures, throw_except=False, return_when=ANY_COMPLETED
+        )
+
+        errored = []
+        for future in finished:
+            if future.error:
+                failures += 1
+                if failures > max_failures:
+                    # re-raise exception
+                    # TODO: why does calling status not raise the exception?
+                    future.status(throw_except=True)
+                    reraise(*future._exception)
+                errored.append(future)
+            else:
+                if callbacks is not None:
+                    [callback.on_task_end() for callback in callbacks]
+            futures.remove(future)
+        if errored:
+            # rerun and add to pending
+            inputs = [v for (fut, v) in futures_to_inputs.items() if fut in errored]
+            # TODO: de-duplicate code from above
+            new_futures = lithops_function_executor.map(
+                map_function,
+                inputs,
+                include_modules=include_modules,
+            )
+            futures.extend(new_futures)
+            futures_to_inputs.update({k: v for (k, v) in zip(futures, inputs)})
+            pending.append(new_futures)
+
+
 def build_stage_mappable_func(stage, config, callbacks=None):
     def sf(mappable):
         return stage.function(mappable, config=config)
 
     def stage_func(lithops_function_executor):
-        max_attempts = 3
-
-        attempt = 0
-
-        tagged_inputs = {k: v for (k, v) in enumerate(stage.mappable)}
-        futures = []
-        tagged_futures = {}
-        pending = []
-
-        tagged_inputs_list = [[k, v] for (k, v) in tagged_inputs.items()]
-        futures.extend(
-            lithops_function_executor.map(
-                tagged_wrapper(sf), tagged_inputs_list, include_modules=["cubed"]
-            )
+        map_with_retries(
+            lithops_function_executor,
+            sf,
+            list(stage.mappable),
+            include_modules=["cubed"],
+            max_failures=3,
+            callbacks=callbacks,
         )
-        tagged_futures.update({k: v for (k, v) in zip(futures, tagged_inputs_list)})
-        pending.extend(futures)
-        attempt += 1
-
-        while pending:
-            throw_except = attempt == max_attempts - 1
-            finished, pending = lithops_function_executor.wait(
-                futures, throw_except=throw_except, return_when=ANY_COMPLETED
-            )
-
-            errored = []
-            for future in finished:
-                if future.error:
-                    errored.append(future)
-                else:
-                    if callbacks is not None:
-                        [callback.on_task_end() for callback in callbacks]
-                futures.remove(future)
-            if errored:
-                # rerun and add to pending
-                tagged_inputs_list = [
-                    [k, v] for (fut, (k, v)) in tagged_futures.items() if fut in errored
-                ]
-                # TODO: de-duplicate code from above
-                new_futures = lithops_function_executor.map(
-                    tagged_wrapper(sf),
-                    tagged_inputs_list,
-                    include_modules=["cubed"],
-                )
-                futures.extend(new_futures)
-                tagged_futures.update(
-                    {k: v for (k, v) in zip(futures, tagged_inputs_list)}
-                )
-                pending.append(new_futures)
-                attempt += 1
 
     return stage_func
-
-
-def tagged_wrapper(func):
-    def w(tagged_input, *args, **kwargs):
-        tag, val = tagged_input
-        func(val, *args, **kwargs)
-        return tag
-
-    return w
 
 
 def build_stage_func(stage, config):
