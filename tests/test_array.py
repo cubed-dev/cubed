@@ -455,8 +455,9 @@ class TaskCounter(Callback):
         self.value += n
 
 
-def test_callbacks(spec):
-    executor = PythonDagExecutor()
+def test_callbacks(spec, executor):
+    if not isinstance(executor, (PythonDagExecutor, LithopsDagExecutor)):
+        pytest.skip(f"{type(executor)} does not support callbacks")
 
     task_counter = TaskCounter()
 

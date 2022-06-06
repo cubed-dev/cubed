@@ -40,7 +40,7 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
             plan(executor)
 
 
-def build_stage_mappable_func(stage, config):
+def build_stage_mappable_func(stage, config, callbacks=None):
     def sf(mappable):
         return stage.function(mappable, config=config)
 
@@ -74,6 +74,9 @@ def build_stage_mappable_func(stage, config):
             for future in finished:
                 if future.error:
                     errored.append(future)
+                else:
+                    if callbacks is not None:
+                        [callback.on_task_end() for callback in callbacks]
                 futures.remove(future)
             if errored:
                 # rerun and add to pending
@@ -128,8 +131,6 @@ class LithopsDagExecutor(DagExecutor):
     # TODO: execute tasks for independent pipelines in parallel
     @staticmethod
     def execute_dag(dag, callbacks=None, **kwargs):
-        if callbacks is not None:
-            raise NotImplementedError("Callbacks not supported")
         with FunctionExecutor(**kwargs) as executor:
             nodes = {n: d for (n, d) in dag.nodes(data=True)}
             for node in reversed(list(nx.topological_sort(dag))):
@@ -139,7 +140,9 @@ class LithopsDagExecutor(DagExecutor):
 
                 for stage in pipeline.stages:
                     if stage.mappable is not None:
-                        stage_func = build_stage_mappable_func(stage, pipeline.config)
+                        stage_func = build_stage_mappable_func(
+                            stage, pipeline.config, callbacks=callbacks
+                        )
                     else:
                         stage_func = build_stage_func(stage, pipeline.config)
 
