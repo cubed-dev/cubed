@@ -6,7 +6,7 @@ from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.primitive.blockwise import blockwise
 from cubed.runtime.executors.beam import BeamPipelineExecutor
-from tests.utils import create_zarr, execute_pipeline
+from cubed.tests.utils import create_zarr, execute_pipeline
 
 
 @pytest.fixture(

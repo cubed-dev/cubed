@@ -13,7 +13,7 @@ from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
-from tests.utils import create_zarr
+from cubed.tests.utils import create_zarr
 
 
 @pytest.fixture()
