@@ -1,3 +1,4 @@
+import asyncio
 from asyncio.exceptions import TimeoutError
 
 import modal
@@ -28,6 +29,31 @@ image = modal.DebianSlim(
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
     return func(input, config=config)
+
+
+async def map_with_retries(
+    app_function, input, max_failures=3, callbacks=None, **kwargs
+):
+    failures = 0
+    tasks = {asyncio.ensure_future(app_function(i, **kwargs)): i for i in input}
+    pending = set(tasks.keys())
+    while pending:
+        finished, pending = await asyncio.wait(
+            pending, return_when=asyncio.FIRST_COMPLETED
+        )
+
+        for task in finished:
+            if task.exception():
+                failures += 1
+                if failures > max_failures:
+                    raise task.exception()
+                i = tasks[task]
+                new_task = asyncio.ensure_future(app_function(i, **kwargs))
+                tasks[new_task] = i
+                pending.add(new_task)
+            else:
+                if callbacks is not None:
+                    [callback.on_task_end() for callback in callbacks]
 
 
 def run_map_with_retries(input, func=None, config=None, max_attempts=3, callbacks=None):
