@@ -12,7 +12,7 @@ from cubed import Callback
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
-from cubed.runtime.executors.modal import ModalDagExecutor
+from cubed.runtime.executors.modal import AsyncModalDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr
 
@@ -169,7 +169,7 @@ def test_matmul_cloud(executor):
 
 @pytest.mark.cloud
 def test_matmul_modal():
-    executor = ModalDagExecutor()
+    executor = AsyncModalDagExecutor()
     tmp_path = "s3://cubed-unittest/matmul"
     spec = xp.Spec(tmp_path, max_mem=100000)
     try:
@@ -492,7 +492,7 @@ def test_retries_modal(mocker, spec):
         side_effect=random_failure_apply_blockwise,
     )
 
-    executor = ModalDagExecutor()
+    executor = AsyncModalDagExecutor()
     tmp_path = "s3://cubed-unittest/retries"
     spec = xp.Spec(tmp_path, max_mem=100000)
     try:
@@ -534,7 +534,7 @@ def test_callbacks(spec, executor):
 
 @pytest.mark.cloud
 def test_callbacks_modal(spec):
-    executor = ModalDagExecutor()
+    executor = AsyncModalDagExecutor()
     task_counter = TaskCounter()
     tmp_path = "s3://cubed-unittest/callbacks"
     spec = xp.Spec(tmp_path, max_mem=100000)

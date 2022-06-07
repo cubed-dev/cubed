@@ -16,7 +16,8 @@ from tenacity import (
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 
-app = modal.aio.AioApp()
+app = modal.App()
+async_app = modal.aio.AioApp()
 
 image = modal.DebianSlim(
     python_packages=[
@@ -32,8 +33,14 @@ image = modal.DebianSlim(
 )
 
 
+@async_app.function(image=image, secret=modal.ref("my-aws-secret"))
+async def async_run_remotely(input, func=None, config=None):
+    print(f"running remotely on {input}")
+    return func(input, config=config)
+
+
 @app.function(image=image, secret=modal.ref("my-aws-secret"))
-async def run_remotely(input, func=None, config=None):
+def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
     return func(input, config=config)
 
@@ -96,7 +103,38 @@ def tagged_wrapper(func):
     return w
 
 
-async def execute_dag_async(dag, callbacks=None, **kwargs):
+def sync_execute_dag(dag, callbacks=None, **kwargs):
+    max_attempts = 3
+    try:
+        for attempt in Retrying(
+            retry=retry_if_exception_type(TimeoutError),
+            stop=stop_after_attempt(max_attempts),
+        ):
+            with attempt:
+                with app.run():
+
+                    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+                    for node in reversed(list(nx.topological_sort(dag))):
+                        if already_computed(nodes[node]):
+                            continue
+                        pipeline = nodes[node]["pipeline"]
+
+                        for stage in pipeline.stages:
+                            if stage.mappable is not None:
+                                # print(f"about to run remotely on {stage.mappable}")
+                                run_map_with_retries(
+                                    stage.mappable,
+                                    stage.function,
+                                    config=pipeline.config,
+                                    callbacks=callbacks,
+                                )
+                            else:
+                                raise NotImplementedError()
+    except RetryError:
+        pass
+
+
+async def async_execute_dag(dag, callbacks=None, **kwargs):
     max_attempts = 3
     try:
         async for attempt in AsyncRetrying(
@@ -105,7 +143,7 @@ async def execute_dag_async(dag, callbacks=None, **kwargs):
         ):
             with attempt:
 
-                async with app.run():
+                async with async_app.run():
                     nodes = {n: d for (n, d) in dag.nodes(data=True)}
                     for node in reversed(list(nx.topological_sort(dag))):
                         if already_computed(nodes[node]):
@@ -116,7 +154,7 @@ async def execute_dag_async(dag, callbacks=None, **kwargs):
                             if stage.mappable is not None:
                                 # print(f"about to run remotely on {stage.mappable}")
                                 await map_with_retries(
-                                    run_remotely,
+                                    async_run_remotely,
                                     stage.mappable,
                                     callbacks=callbacks,
                                     func=stage.function,
@@ -133,33 +171,10 @@ class ModalDagExecutor(DagExecutor):
     # TODO: execute tasks for independent pipelines in parallel
     @staticmethod
     def execute_dag(dag, callbacks=None, **kwargs):
-        asyncio.run(execute_dag_async(dag, callbacks=callbacks))
+        sync_execute_dag(dag, callbacks=callbacks)
 
-        # max_attempts = 3
-        # try:
-        #     for attempt in Retrying(
-        #         retry=retry_if_exception_type(TimeoutError),
-        #         stop=stop_after_attempt(max_attempts),
-        #     ):
-        #         with attempt:
-        #             with app.run():
 
-        #                 nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        #                 for node in reversed(list(nx.topological_sort(dag))):
-        #                     if already_computed(nodes[node]):
-        #                         continue
-        #                     pipeline = nodes[node]["pipeline"]
-
-        #                     for stage in pipeline.stages:
-        #                         if stage.mappable is not None:
-        #                             # print(f"about to run remotely on {stage.mappable}")
-        #                             run_map_with_retries(
-        #                                 stage.mappable,
-        #                                 stage.function,
-        #                                 config=pipeline.config,
-        #                                 callbacks=callbacks,
-        #                             )
-        #                         else:
-        #                             raise NotImplementedError()
-        # except RetryError:
-        #     pass
+class AsyncModalDagExecutor(DagExecutor):
+    @staticmethod
+    def execute_dag(dag, callbacks=None, **kwargs):
+        asyncio.run(async_execute_dag(dag, callbacks=callbacks))

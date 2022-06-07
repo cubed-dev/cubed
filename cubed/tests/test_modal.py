@@ -63,6 +63,7 @@ async def run_test(app_function, max_failures=3):
         await map_with_retries(app_function, [0, 1, 2], max_failures=max_failures)
 
 
+@pytest.mark.cloud
 def test_map_with_retries_no_failures():
     try:
         asyncio.run(run_test(app_function=never_fail, max_failures=0))
@@ -76,6 +77,7 @@ def test_map_with_retries_no_failures():
         fs.rm(tmp_path, recursive=True)
 
 
+@pytest.mark.cloud
 def test_map_with_retries_recovers_from_failures():
     try:
         asyncio.run(run_test(app_function=fail_on_first_invocation))
@@ -89,6 +91,7 @@ def test_map_with_retries_recovers_from_failures():
         fs.rm(tmp_path, recursive=True)
 
 
+@pytest.mark.cloud
 def test_map_with_retries_too_many_failures():
     try:
         with pytest.raises(RuntimeError):
