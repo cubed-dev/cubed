@@ -57,23 +57,20 @@ def map_with_retries(
     failures = 0
 
     inputs = map_iterdata
-    futures = []
     futures_to_inputs = {}
     pending = []
 
-    futures.extend(
-        lithops_function_executor.map(
-            map_function,
-            inputs,
-            include_modules=include_modules,
-        )
+    futures = lithops_function_executor.map(
+        map_function,
+        inputs,
+        include_modules=include_modules,
     )
     futures_to_inputs.update({k: v for (k, v) in zip(futures, inputs)})
     pending.extend(futures)
 
     while pending:
         finished, pending = lithops_function_executor.wait(
-            futures, throw_except=False, return_when=ANY_COMPLETED
+            pending, throw_except=False, return_when=ANY_COMPLETED
         )
 
         errored = []
@@ -89,19 +86,17 @@ def map_with_retries(
             else:
                 if callbacks is not None:
                     [callback.on_task_end() for callback in callbacks]
-            futures.remove(future)
         if errored:
             # rerun and add to pending
             inputs = [v for (fut, v) in futures_to_inputs.items() if fut in errored]
             # TODO: de-duplicate code from above
-            new_futures = lithops_function_executor.map(
+            futures = lithops_function_executor.map(
                 map_function,
                 inputs,
                 include_modules=include_modules,
             )
-            futures.extend(new_futures)
             futures_to_inputs.update({k: v for (k, v) in zip(futures, inputs)})
-            pending.append(new_futures)
+            pending.extend(futures)
 
 
 def build_stage_mappable_func(stage, config, callbacks=None):
