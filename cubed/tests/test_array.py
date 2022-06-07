@@ -12,7 +12,7 @@ from cubed import Callback
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
-from cubed.runtime.executors.modal import AsyncModalDagExecutor
+from cubed.runtime.executors.modal import AsyncModalDagExecutor, ModalDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr
 
@@ -34,6 +34,17 @@ def spec(tmp_path):
     ],
 )
 def executor(request):
+    return request.param
+
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        AsyncModalDagExecutor(),
+        ModalDagExecutor(),
+    ],
+)
+def modal_executor(request):
     return request.param
 
 
@@ -168,8 +179,7 @@ def test_matmul_cloud(executor):
 
 
 @pytest.mark.cloud
-def test_matmul_modal():
-    executor = AsyncModalDagExecutor()
+def test_matmul_modal(modal_executor):
     tmp_path = "s3://cubed-unittest/matmul"
     spec = xp.Spec(tmp_path, max_mem=100000)
     try:
@@ -187,7 +197,7 @@ def test_matmul_modal():
         x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
         y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
         expected = np.matmul(x, y)
-        assert_array_equal(c.compute(executor=executor), expected)
+        assert_array_equal(c.compute(executor=modal_executor), expected)
     finally:
         fs = fsspec.open(tmp_path).fs
         fs.rm(tmp_path, recursive=True)
@@ -477,7 +487,7 @@ def test_retries_lithops(mocker, spec):
 
 
 @pytest.mark.cloud
-def test_retries_modal(mocker, spec):
+def test_retries_modal(mocker, spec, modal_executor):
     # Inject faults into the primitive layer
     # We need to use random faults, since we can't coordinate using object state
     def random_failure_apply_blockwise(*args, **kwargs):
@@ -492,7 +502,6 @@ def test_retries_modal(mocker, spec):
         side_effect=random_failure_apply_blockwise,
     )
 
-    executor = AsyncModalDagExecutor()
     tmp_path = "s3://cubed-unittest/retries"
     spec = xp.Spec(tmp_path, max_mem=100000)
     try:
@@ -500,7 +509,8 @@ def test_retries_modal(mocker, spec):
         b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
         c = xp.add(a, b)
         assert_array_equal(
-            c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+            c.compute(executor=modal_executor),
+            np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
         )
     finally:
         fs = fsspec.open(tmp_path).fs
@@ -533,8 +543,7 @@ def test_callbacks(spec, executor):
 
 
 @pytest.mark.cloud
-def test_callbacks_modal(spec):
-    executor = AsyncModalDagExecutor()
+def test_callbacks_modal(spec, modal_executor):
     task_counter = TaskCounter()
     tmp_path = "s3://cubed-unittest/callbacks"
     spec = xp.Spec(tmp_path, max_mem=100000)
@@ -543,7 +552,7 @@ def test_callbacks_modal(spec):
         b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
         c = xp.add(a, b)
         assert_array_equal(
-            c.compute(executor=executor, callbacks=[task_counter]),
+            c.compute(executor=modal_executor, callbacks=[task_counter]),
             np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
         )
 
