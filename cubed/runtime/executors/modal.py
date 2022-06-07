@@ -5,7 +5,13 @@ import modal
 import modal.aio
 import networkx as nx
 from modal.exception import RemoteError
-from tenacity import RetryError, Retrying, retry_if_exception_type, stop_after_attempt
+from tenacity import (
+    AsyncRetrying,
+    RetryError,
+    Retrying,
+    retry_if_exception_type,
+    stop_after_attempt,
+)
 
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
@@ -91,25 +97,35 @@ def tagged_wrapper(func):
 
 
 async def execute_dag_async(dag, callbacks=None, **kwargs):
-    async with app.run():
-        nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        for node in reversed(list(nx.topological_sort(dag))):
-            if already_computed(nodes[node]):
-                continue
-            pipeline = nodes[node]["pipeline"]
+    max_attempts = 3
+    try:
+        async for attempt in AsyncRetrying(
+            retry=retry_if_exception_type(TimeoutError),
+            stop=stop_after_attempt(max_attempts),
+        ):
+            with attempt:
 
-            for stage in pipeline.stages:
-                if stage.mappable is not None:
-                    # print(f"about to run remotely on {stage.mappable}")
-                    await map_with_retries(
-                        run_remotely,
-                        stage.mappable,
-                        callbacks=callbacks,
-                        func=stage.function,
-                        config=pipeline.config,
-                    )
-                else:
-                    raise NotImplementedError()
+                async with app.run():
+                    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+                    for node in reversed(list(nx.topological_sort(dag))):
+                        if already_computed(nodes[node]):
+                            continue
+                        pipeline = nodes[node]["pipeline"]
+
+                        for stage in pipeline.stages:
+                            if stage.mappable is not None:
+                                # print(f"about to run remotely on {stage.mappable}")
+                                await map_with_retries(
+                                    run_remotely,
+                                    stage.mappable,
+                                    callbacks=callbacks,
+                                    func=stage.function,
+                                    config=pipeline.config,
+                                )
+                            else:
+                                raise NotImplementedError()
+    except RetryError:
+        pass
 
 
 class ModalDagExecutor(DagExecutor):
