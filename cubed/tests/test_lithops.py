@@ -1,5 +1,7 @@
+import time
+
 import pytest
-from lithops.executors import FunctionExecutor
+from lithops.executors import LocalhostExecutor
 
 from cubed.runtime.executors.lithops import map_with_retries
 
@@ -22,7 +24,7 @@ def test_map_with_retries_no_failures(tmp_path):
         write_int_to_file(invocation_count_file, 1)
         return i
 
-    with FunctionExecutor() as executor:
+    with LocalhostExecutor() as executor:
         map_with_retries(executor, never_fail, range(3), max_failures=0)
 
     assert read_int_from_file(tmp_path / "0") == 1
@@ -42,14 +44,38 @@ def test_map_with_retries(tmp_path):
         return i
 
     with pytest.raises(RuntimeError):
-        with FunctionExecutor() as executor:
+        with LocalhostExecutor() as executor:
             map_with_retries(
                 executor, fail_on_first_invocation, [0, 1, 2], max_failures=2
             )
 
-    with FunctionExecutor() as executor:
+    with LocalhostExecutor() as executor:
         map_with_retries(executor, fail_on_first_invocation, [3, 4, 5], max_failures=3)
 
     assert read_int_from_file(tmp_path / "3") == 2
     assert read_int_from_file(tmp_path / "4") == 2
     assert read_int_from_file(tmp_path / "5") == 2
+
+
+def test_map_with_retries_execution_timeout(tmp_path):
+    def sleep_on_first_invocation(i):
+        invocation_count_file = tmp_path / f"{i}"
+        if invocation_count_file.exists():
+            count = read_int_from_file(invocation_count_file)
+            write_int_to_file(invocation_count_file, count + 1)
+        else:
+            write_int_to_file(invocation_count_file, 1)
+            # only sleep on first invocation of input = 0
+            if i == 0:
+                time.sleep(60)
+        return i
+
+    # set execution timeout to less than sleep value above, to check that
+    # task is retried after timeout exception
+    config = {"lithops": {"execution_timeout": 30}}
+    with LocalhostExecutor(config=config) as executor:
+        map_with_retries(executor, sleep_on_first_invocation, [0, 1, 2])
+
+    assert read_int_from_file(tmp_path / "0") == 2
+    assert read_int_from_file(tmp_path / "1") == 1
+    assert read_int_from_file(tmp_path / "2") == 1
