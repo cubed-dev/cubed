@@ -1,14 +1,20 @@
+import copy
+import logging
+import time
 from functools import partial
 from typing import Callable, Iterable
 
 import networkx as nx
 from lithops.executors import FunctionExecutor
-from lithops.wait import ANY_COMPLETED
+from lithops.wait import ALWAYS, ANY_COMPLETED
 from rechunker.types import ParallelPipelines, PipelineExecutor
 from six import reraise
 
+from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
+
+logger = logging.getLogger(__name__)
 
 # Lithops represents delayed execution tasks as functions that require
 # a FunctionExecutor.
@@ -47,6 +53,7 @@ def map_as_completed(
     map_iterdata,
     include_modules=[],
     max_failures=3,
+    use_backups=False,
 ):
     """
     Apply a function to items of an input list, yielding results as they are completed
@@ -59,13 +66,18 @@ def map_as_completed(
     :param map_iterdata: An iterable of input data.
     :param include_modules: Modules to include.
     :param max_failures: The number of task failures to allow before raising an exception.
+    :param use_backups: Whether to launch backup tasks to mitigate against slow-running tasks.
 
     :return: Function values as they are completed, not necessarily in the input order.
     """
     failures = 0
+    return_when = ALWAYS if use_backups else ANY_COMPLETED
 
     inputs = map_iterdata
     tasks = {}
+    start_times = {}
+    end_times = {}
+    backups = {}
     pending = []
 
     futures = lithops_function_executor.map(
@@ -74,11 +86,12 @@ def map_as_completed(
         include_modules=include_modules,
     )
     tasks.update({k: v for (k, v) in zip(futures, inputs)})
+    start_times.update({k: time.monotonic() for k in futures})
     pending.extend(futures)
 
     while pending:
         finished, pending = lithops_function_executor.wait(
-            pending, throw_except=False, return_when=ANY_COMPLETED
+            pending, throw_except=False, return_when=return_when
         )
 
         failed = []
@@ -92,7 +105,18 @@ def map_as_completed(
                     reraise(*future._exception)
                 failed.append(future)
             else:
+                end_times[future] = time.monotonic()
                 yield future.result()
+
+            if use_backups:
+                # remove backups
+                backup = backups.get(future, None)
+                if backup:
+                    if backup in pending:
+                        pending.remove(backup)
+                    del backups[future]
+                    del backups[backup]
+
         if failed:
             # rerun and add to pending
             inputs = [v for (fut, v) in tasks.items() if fut in failed]
@@ -103,10 +127,33 @@ def map_as_completed(
                 include_modules=include_modules,
             )
             tasks.update({k: v for (k, v) in zip(futures, inputs)})
+            start_times.update({k: time.monotonic() for k in futures})
             pending.extend(futures)
 
+        if use_backups:
+            now = time.monotonic()
+            for future in copy.copy(pending):
+                if future not in backups and should_launch_backup(
+                    future, now, start_times, end_times
+                ):
+                    inputs = [v for (fut, v) in tasks.items() if fut == future]
+                    logger.info("Running backup task for %s", inputs)
+                    futures = lithops_function_executor.map(
+                        map_function,
+                        inputs,
+                        include_modules=include_modules,
+                    )
+                    tasks.update({k: v for (k, v) in zip(futures, inputs)})
+                    start_times.update({k: time.monotonic() for k in futures})
+                    pending.extend(futures)
+                    pending.remove(future)  # throw away slow one
+                    backup = futures[0]  # TODO: launch multiple backups at once
+                    backups[future] = backup
+                    backups[backup] = future
+            time.sleep(1)
 
-def build_stage_mappable_func(stage, config, callbacks=None):
+
+def build_stage_mappable_func(stage, config, callbacks=None, use_backups=False):
     def sf(mappable):
         return stage.function(mappable, config=config)
 
@@ -116,6 +163,7 @@ def build_stage_mappable_func(stage, config, callbacks=None):
             sf,
             list(stage.mappable),
             include_modules=["cubed"],
+            use_backups=use_backups,
         ):
             if callbacks is not None:
                 [callback.on_task_end() for callback in callbacks]
@@ -148,6 +196,7 @@ class LithopsDagExecutor(DagExecutor):
     # TODO: execute tasks for independent pipelines in parallel
     def execute_dag(self, dag, callbacks=None, **kwargs):
         merged_kwargs = {**self.kwargs, **kwargs}
+        use_backups = merged_kwargs.pop("use_backups", False)
         with FunctionExecutor(**merged_kwargs) as executor:
             nodes = {n: d for (n, d) in dag.nodes(data=True)}
             for node in list(nx.topological_sort(dag)):
@@ -158,7 +207,10 @@ class LithopsDagExecutor(DagExecutor):
                 for stage in pipeline.stages:
                     if stage.mappable is not None:
                         stage_func = build_stage_mappable_func(
-                            stage, pipeline.config, callbacks=callbacks
+                            stage,
+                            pipeline.config,
+                            callbacks=callbacks,
+                            use_backups=use_backups,
                         )
                     else:
                         stage_func = build_stage_func(stage, pipeline.config)

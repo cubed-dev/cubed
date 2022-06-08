@@ -85,3 +85,32 @@ def test_map_as_completed_execution_timeout(tmp_path):
     assert read_int_from_file(tmp_path / "0") == 2
     assert read_int_from_file(tmp_path / "1") == 1
     assert read_int_from_file(tmp_path / "2") == 1
+
+
+def test_map_as_completed_stragglers(tmp_path):
+    def sleep_on_first_invocation(i):
+        invocation_count_file = tmp_path / f"{i}"
+        if invocation_count_file.exists():
+            count = read_int_from_file(invocation_count_file)
+            write_int_to_file(invocation_count_file, count + 1)
+        else:
+            write_int_to_file(invocation_count_file, 1)
+            # only sleep on first invocation of input = 0
+            if i == 0:
+                time.sleep(30)
+        return i
+
+    # TODO: run a test like this using a cloud executor
+    # Reason: this test passes, but lithops local mode only runs one job at a time,
+    # so it actually waits for the first job to finish before running the second one.
+
+    config = {"lithops": {"log_level": "DEBUG"}}
+    with LocalhostExecutor(config=config) as executor:
+        for _ in map_as_completed(
+            executor, sleep_on_first_invocation, range(10), use_backups=True
+        ):
+            pass
+
+    assert read_int_from_file(tmp_path / "0") == 2
+    for i in range(1, 10):
+        assert read_int_from_file(tmp_path / f"{i}") == 1
