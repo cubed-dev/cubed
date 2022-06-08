@@ -145,14 +145,11 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
 
 
 class ModalDagExecutor(DagExecutor):
-
     # TODO: execute tasks for independent pipelines in parallel
-    @staticmethod
-    def execute_dag(dag, callbacks=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, **kwargs):
         sync_execute_dag(dag, callbacks=callbacks)
 
 
 class AsyncModalDagExecutor(DagExecutor):
-    @staticmethod
-    def execute_dag(dag, callbacks=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, **kwargs):
         asyncio.run(async_execute_dag(dag, callbacks=callbacks))
