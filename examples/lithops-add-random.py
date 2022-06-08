@@ -1,9 +1,18 @@
+import logging
 import sys
+
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 import cubed as xp
 import cubed.random
 from cubed import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
+
+logging.basicConfig(level=logging.INFO)
+# turn off lithops own progress bar
+logging.getLogger("lithops.wait").setLevel(logging.WARNING)
+# suppress harmless connection pool warnings
+logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
@@ -18,11 +27,12 @@ if __name__ == "__main__":
         (50000, 50000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.add(a, b)
-    progress = TqdmProgressBar()
-    c.compute(
-        return_stored=False,
-        executor=executor,
-        callbacks=[progress],
-        runtime=runtime,
-        runtime_memory=2000,
-    )
+    with logging_redirect_tqdm():
+        progress = TqdmProgressBar()
+        c.compute(
+            return_stored=False,
+            executor=executor,
+            callbacks=[progress],
+            runtime=runtime,
+            runtime_memory=2000,
+        )
