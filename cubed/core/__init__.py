@@ -1,5 +1,5 @@
 # flake8: noqa
-from .array import Array, Callback, TqdmProgressBar, gensym
+from .array import Array, Callback, TqdmProgressBar, gensym, std_out_err_redirect_tqdm
 from .ops import (
     blockwise,
     elementwise_binary_operation,
