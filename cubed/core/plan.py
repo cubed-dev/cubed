@@ -92,7 +92,7 @@ class Plan:
             pipeline = nodes[node]["pipeline"]
             for stage in pipeline.stages:
                 if stage.mappable is not None:
-                    tasks += len(stage.mappable)
+                    tasks += len(list(stage.mappable))
                 else:
                     tasks += 1
         return tasks
