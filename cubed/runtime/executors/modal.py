@@ -1,4 +1,7 @@
 import asyncio
+import copy
+import math
+import time
 from asyncio.exceptions import TimeoutError
 
 import modal
@@ -45,7 +48,9 @@ async def async_run_remotely(input, func=None, config=None):
     return func(input, config=config)
 
 
-async def map_as_completed(app_function, input, max_failures=3, **kwargs):
+async def map_as_completed(
+    app_function, input, max_failures=3, use_backups=True, **kwargs
+):
     """
     Apply a function to items of an input list, yielding results as they are completed
     (which may be different to the input order).
@@ -53,6 +58,7 @@ async def map_as_completed(app_function, input, max_failures=3, **kwargs):
     :param app_function: The Modal function to map over the data.
     :param input: An iterable of input data.
     :param max_failures: The number of task failures to allow before raising an exception.
+    :param use_backups: Whether to launch backup tasks to mitigate against slow-running tasks.
     :param kwargs: Keyword arguments to pass to the function.
 
     :return: Function values as they are completed, not necessarily in the input order.
@@ -60,22 +66,83 @@ async def map_as_completed(app_function, input, max_failures=3, **kwargs):
     failures = 0
     tasks = {asyncio.ensure_future(app_function(i, **kwargs)): i for i in input}
     pending = set(tasks.keys())
+    t = time.monotonic()
+    start_times = {f: t for f in pending}
+    end_times = {}
+    backups = {}
+
     while pending:
         finished, pending = await asyncio.wait(
-            pending, return_when=asyncio.FIRST_COMPLETED
+            pending, return_when=asyncio.FIRST_COMPLETED, timeout=2
         )
+        # print("finished", finished)
+        # print("pending", pending)
 
         for task in finished:
             if task.exception():
                 failures += 1
                 if failures > max_failures:
                     raise task.exception()
+                # retry failed task
                 i = tasks[task]
                 new_task = asyncio.ensure_future(app_function(i, **kwargs))
                 tasks[new_task] = i
+                start_times[new_task] = time.monotonic()
                 pending.add(new_task)
             else:
+                end_times[task] = time.monotonic()
                 yield task.result()
+
+            # remove any backup task
+            if use_backups:
+                backup = backups.get(task, None)
+                if backup:
+                    pending.remove(backup)
+                    del backups[task]
+                    del backups[backup]
+
+        if use_backups:
+            now = time.monotonic()
+            for task in copy.copy(pending):
+                if task not in backups and launch_backup(
+                    task, now, start_times, end_times
+                ):
+                    # launch backup task
+                    i = tasks[task]
+                    new_task = asyncio.ensure_future(app_function(i, **kwargs))
+                    tasks[new_task] = i
+                    start_times[new_task] = time.monotonic()
+                    pending.add(new_task)
+                    backups[task] = new_task
+                    backups[new_task] = task
+
+
+def launch_backup(
+    task,
+    now,
+    start_times,
+    end_times,
+    min_tasks=10,
+    min_completed_fraction=0.5,
+    slow_factor=3.0,
+):
+    """
+    Determine whether to launch a backup task.
+
+    Backup tasks are only launched if there are at least `min_tasks` being run, and `min_completed_fraction` of tasks have completed.
+    If both those criteria have been met, then a backup task is launched if the duration of the current task is at least
+    `slow_factor` times slower than the `min_completed_fraction` percentile task duration.
+    """
+    if len(start_times) < min_tasks:
+        return False
+    n = math.ceil(len(start_times) * min_completed_fraction) - 1
+    if len(end_times) <= n:
+        return False
+    completed_durations = sorted(
+        [end_times[task] - start_times[task] for task in end_times]
+    )
+    duration = now - start_times[task]
+    return duration > completed_durations[n] * slow_factor
 
 
 def execute_dag(dag, callbacks=None, **kwargs):
