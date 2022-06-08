@@ -135,11 +135,13 @@ def _execute_in_series(
 
 
 class LithopsDagExecutor(DagExecutor):
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
 
     # TODO: execute tasks for independent pipelines in parallel
-    @staticmethod
-    def execute_dag(dag, callbacks=None, **kwargs):
-        with FunctionExecutor(**kwargs) as executor:
+    def execute_dag(self, dag, callbacks=None, **kwargs):
+        merged_kwargs = {**self.kwargs, **kwargs}
+        with FunctionExecutor(**merged_kwargs) as executor:
             nodes = {n: d for (n, d) in dag.nodes(data=True)}
             for node in reversed(list(nx.topological_sort(dag))):
                 if already_computed(nodes[node]):

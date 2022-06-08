@@ -11,8 +11,7 @@ def exec_stage_func(func, *args, **kwargs):
 
 
 class PythonDagExecutor(DagExecutor):
-    @staticmethod
-    def execute_dag(dag, callbacks=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, **kwargs):
         nodes = {n: d for (n, d) in dag.nodes(data=True)}
         for node in reversed(list(nx.topological_sort(dag))):
             if already_computed(nodes[node]):

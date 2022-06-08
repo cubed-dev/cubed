@@ -15,6 +15,8 @@ from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr
 
+LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
+
 
 @pytest.fixture()
 def spec(tmp_path):
@@ -27,7 +29,7 @@ def spec(tmp_path):
         PythonPipelineExecutor(),
         PythonDagExecutor(),
         BeamDagExecutor(),
-        LithopsDagExecutor(),
+        LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG),
     ],
 )
 def executor(request):
@@ -438,7 +440,7 @@ def test_retries_lithops(mocker, spec):
         side_effect=random_failure_apply_blockwise,
     )
 
-    executor = LithopsDagExecutor()
+    executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)

@@ -4,8 +4,7 @@ from rechunker.types import PipelineExecutor
 
 
 class DagExecutor:
-    @staticmethod
-    def execute_dag(dag, **kwargs):
+    def execute_dag(self, dag, **kwargs):
         raise NotImplementedError
 
 
