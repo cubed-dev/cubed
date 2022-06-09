@@ -32,12 +32,6 @@ image = modal.DebianSlim(
 )
 
 
-@async_app.function(image=image, secret=modal.ref("my-aws-secret"))
-async def async_run_remotely(input, func=None, config=None):
-    print(f"running remotely on {input}")
-    return func(input, config=config)
-
-
 @app.function(image=image, secret=modal.ref("my-aws-secret"))
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
@@ -45,9 +39,24 @@ def run_remotely(input, func=None, config=None):
     return func(input, config=config) or 1
 
 
-async def map_with_retries(
-    app_function, input, max_failures=3, callbacks=None, **kwargs
-):
+@async_app.function(image=image, secret=modal.ref("my-aws-secret"))
+async def async_run_remotely(input, func=None, config=None):
+    print(f"running remotely on {input}")
+    return func(input, config=config)
+
+
+async def map_as_completed(app_function, input, max_failures=3, **kwargs):
+    """
+    Apply a function to items of an input list, yielding results as they are completed
+    (which may be different to the input order).
+
+    :param app_function: The Modal function to map over the data.
+    :param input: An iterable of input data.
+    :param max_failures: The number of task failures to allow before raising an exception.
+    :param kwargs: Keyword arguments to pass to the function.
+
+    :return: Function values as they are completed, not necessarily in the input order.
+    """
     failures = 0
     tasks = {asyncio.ensure_future(app_function(i, **kwargs)): i for i in input}
     pending = set(tasks.keys())
@@ -66,21 +75,10 @@ async def map_with_retries(
                 tasks[new_task] = i
                 pending.add(new_task)
             else:
-                if callbacks is not None:
-                    [callback.on_task_end() for callback in callbacks]
+                yield task.result()
 
 
-def sync_map(app_function, input, callbacks=None, **kwargs):
-    for _ in app_function.map(
-        input,
-        window=1,
-        kwargs=kwargs,
-    ):
-        if callbacks is not None:
-            [callback.on_task_end() for callback in callbacks]
-
-
-def sync_execute_dag(dag, callbacks=None, **kwargs):
+def execute_dag(dag, callbacks=None, **kwargs):
     max_attempts = 3
     try:
         for attempt in Retrying(
@@ -99,13 +97,18 @@ def sync_execute_dag(dag, callbacks=None, **kwargs):
                         for stage in pipeline.stages:
                             if stage.mappable is not None:
                                 # print(f"about to run remotely on {stage.mappable}")
-                                sync_map(
-                                    run_remotely,
+                                for _ in run_remotely.map(
                                     list(stage.mappable),
-                                    callbacks=callbacks,
-                                    func=stage.function,
-                                    config=pipeline.config,
-                                )
+                                    window=1,
+                                    kwargs=dict(
+                                        func=stage.function, config=pipeline.config
+                                    ),
+                                ):
+                                    if callbacks is not None:
+                                        [
+                                            callback.on_task_end()
+                                            for callback in callbacks
+                                        ]
                             else:
                                 raise NotImplementedError()
     except RetryError:
@@ -131,13 +134,17 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
                         for stage in pipeline.stages:
                             if stage.mappable is not None:
                                 # print(f"about to run remotely on {stage.mappable}")
-                                await map_with_retries(
+                                async for _ in map_as_completed(
                                     async_run_remotely,
                                     list(stage.mappable),
-                                    callbacks=callbacks,
                                     func=stage.function,
                                     config=pipeline.config,
-                                )
+                                ):
+                                    if callbacks is not None:
+                                        [
+                                            callback.on_task_end()
+                                            for callback in callbacks
+                                        ]
                             else:
                                 raise NotImplementedError()
     except RetryError:
@@ -147,7 +154,7 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
 class ModalDagExecutor(DagExecutor):
     # TODO: execute tasks for independent pipelines in parallel
     def execute_dag(self, dag, callbacks=None, **kwargs):
-        sync_execute_dag(dag, callbacks=callbacks)
+        execute_dag(dag, callbacks=callbacks)
 
 
 class AsyncModalDagExecutor(DagExecutor):

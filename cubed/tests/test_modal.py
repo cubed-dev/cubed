@@ -5,7 +5,7 @@ import modal
 import modal.aio
 import pytest
 
-from cubed.runtime.executors.modal import map_with_retries
+from cubed.runtime.executors.modal import map_as_completed
 from cubed.utils import join_path
 
 
@@ -19,7 +19,7 @@ def write_int_to_file(path, i):
         f.write(str(i))
 
 
-tmp_path = "s3://cubed-unittest/map_with_retries"
+tmp_path = "s3://cubed-unittest/map_as_completed"
 
 
 app = modal.aio.AioApp()
@@ -60,11 +60,14 @@ async def fail_on_first_invocation(i):
 
 async def run_test(app_function, max_failures=3):
     async with app.run():
-        await map_with_retries(app_function, [0, 1, 2], max_failures=max_failures)
+        async for _ in map_as_completed(
+            app_function, [0, 1, 2], max_failures=max_failures
+        ):
+            pass
 
 
 @pytest.mark.cloud
-def test_map_with_retries_no_failures():
+def test_map_as_completed_no_failures():
     try:
         asyncio.run(run_test(app_function=never_fail, max_failures=0))
 
@@ -78,7 +81,7 @@ def test_map_with_retries_no_failures():
 
 
 @pytest.mark.cloud
-def test_map_with_retries_recovers_from_failures():
+def test_map_as_completed_recovers_from_failures():
     try:
         asyncio.run(run_test(app_function=fail_on_first_invocation))
 
@@ -92,7 +95,7 @@ def test_map_with_retries_recovers_from_failures():
 
 
 @pytest.mark.cloud
-def test_map_with_retries_too_many_failures():
+def test_map_as_completed_too_many_failures():
     try:
         with pytest.raises(RuntimeError):
             asyncio.run(run_test(app_function=fail_on_first_invocation, max_failures=2))
