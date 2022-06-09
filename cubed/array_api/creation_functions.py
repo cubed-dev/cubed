@@ -53,20 +53,29 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     return Array(name, target, plan)
 
 
-def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None):
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
     store = new_temp_store(name=name, spec=spec)
-    target = zarr.ones(
+    target = zarr.full(
         shape,
+        fill_value,
         store=store,
         dtype=dtype,
         chunks=chunksize,
         write_empty_chunks=False,
     )
 
-    plan = Plan(name, "ones", target, spec)
+    plan = Plan(name, "full", target, spec)
     return Array(name, target, plan)
+
+
+def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+    return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
+
+
+def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+    return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)

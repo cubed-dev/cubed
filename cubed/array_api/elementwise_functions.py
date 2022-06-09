@@ -18,5 +18,13 @@ def equal(x1, x2, /):
     return elementwise_binary_operation(x1, x2, np.equal, dtype=np.bool)
 
 
+def isfinite(x, /):
+    return elementwise_unary_operation(x, np.isfinite)
+
+
+def isnan(x, /):
+    return elementwise_unary_operation(x, np.isnan)
+
+
 def negative(x, /):
     return elementwise_unary_operation(x, np.negative, dtype=x.dtype)

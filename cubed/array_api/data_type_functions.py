@@ -13,6 +13,14 @@ def _astype(a, astype_dtype):
     return a.astype(astype_dtype)
 
 
+def finfo(type, /):
+    return nxp.finfo(type)
+
+
+def iinfo(type, /):
+    return nxp.iinfo(type)
+
+
 def result_type(*arrays_and_dtypes):
     # Use numpy.array_api promotion rules (stricter than numpy)
     return nxp.result_type(
