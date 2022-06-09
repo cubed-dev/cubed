@@ -65,7 +65,7 @@ def map_as_completed(
     failures = 0
 
     inputs = map_iterdata
-    futures_to_inputs = {}
+    tasks = {}
     pending = []
 
     futures = lithops_function_executor.map(
@@ -73,7 +73,7 @@ def map_as_completed(
         inputs,
         include_modules=include_modules,
     )
-    futures_to_inputs.update({k: v for (k, v) in zip(futures, inputs)})
+    tasks.update({k: v for (k, v) in zip(futures, inputs)})
     pending.extend(futures)
 
     while pending:
@@ -81,7 +81,7 @@ def map_as_completed(
             pending, throw_except=False, return_when=ANY_COMPLETED
         )
 
-        errored = []
+        failed = []
         for future in finished:
             if future.error:
                 failures += 1
@@ -90,19 +90,19 @@ def map_as_completed(
                     # TODO: why does calling status not raise the exception?
                     future.status(throw_except=True)
                     reraise(*future._exception)
-                errored.append(future)
+                failed.append(future)
             else:
                 yield future.result()
-        if errored:
+        if failed:
             # rerun and add to pending
-            inputs = [v for (fut, v) in futures_to_inputs.items() if fut in errored]
+            inputs = [v for (fut, v) in tasks.items() if fut in failed]
             # TODO: de-duplicate code from above
             futures = lithops_function_executor.map(
                 map_function,
                 inputs,
                 include_modules=include_modules,
             )
-            futures_to_inputs.update({k: v for (k, v) in zip(futures, inputs)})
+            tasks.update({k: v for (k, v) in zip(futures, inputs)})
             pending.extend(futures)
 
 
