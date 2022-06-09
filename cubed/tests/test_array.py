@@ -210,6 +210,16 @@ def test_permute_dims(spec, executor):
     )
 
 
+def test_reshape(spec, executor):
+    a = xp.arange(12, chunks=4, spec=spec)
+    b = xp.reshape(a, (3, 4))
+
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.arange(12).reshape((3, 4)),
+    )
+
+
 def test_squeeze_1d(spec, executor):
     a = xp.asarray([[1, 2, 3]], chunks=(1, 2), spec=spec)
     b = xp.squeeze(a, 0)

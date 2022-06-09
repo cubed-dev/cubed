@@ -39,7 +39,7 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 |                | `expand_dims`      |                    | 1                | Like `squeeze` or Zarr view  |
 |                | `flip`             |                    | 3                | Needs indexing               |
 |                | `permute_dims`     | :white_check_mark: |                  |                              |
-|                | `reshape`          |                    | 3                | Like Dask                    |
+|                | `reshape`          | :white_check_mark: | 3                | Partial implementation       |
 |                | `roll`             |                    | 3                | Needs `concat` and `reshape` |
 |                | `squeeze`          | :white_check_mark: |                  |                              |
 |                | `stack`            |                    | 2                | Primitive (Zarr view)        |

@@ -20,6 +20,7 @@ from .manipulation_functions import (
     broadcast_arrays,
     broadcast_to,
     permute_dims,
+    reshape,
     squeeze,
 )
 from .statistical_functions import mean, sum
