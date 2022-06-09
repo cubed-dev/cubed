@@ -41,18 +41,26 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
             plan(executor)
 
 
-def map_with_retries(
+def map_as_completed(
     lithops_function_executor,
     map_function,
     map_iterdata,
     include_modules=[],
     max_failures=3,
-    callbacks=None,
 ):
     """
-    Generalised Lithops `map` with retries and callbacks.
+    Apply a function to items of an input list, yielding results as they are completed
+    (which may be different to the input order).
 
-    Up to `max_failures` task failures will be retried before the function fails by raising an exception.
+    A generalisation of Lithops `map`, with retries, and relaxed return ordering.
+
+    :param lithops_function_executor: The Lithops function executor to use.
+    :param map_function: The function to map over the data.
+    :param map_iterdata: An iterable of input data.
+    :param include_modules: Modules to include.
+    :param max_failures: The number of task failures to allow before raising an exception.
+
+    :return: Function values as they are completed, not necessarily in the input order.
     """
     failures = 0
 
@@ -84,8 +92,7 @@ def map_with_retries(
                     reraise(*future._exception)
                 errored.append(future)
             else:
-                if callbacks is not None:
-                    [callback.on_task_end() for callback in callbacks]
+                yield future.result()
         if errored:
             # rerun and add to pending
             inputs = [v for (fut, v) in futures_to_inputs.items() if fut in errored]
@@ -104,14 +111,14 @@ def build_stage_mappable_func(stage, config, callbacks=None):
         return stage.function(mappable, config=config)
 
     def stage_func(lithops_function_executor):
-        map_with_retries(
+        for _ in map_as_completed(
             lithops_function_executor,
             sf,
             list(stage.mappable),
             include_modules=["cubed"],
-            max_failures=3,
-            callbacks=callbacks,
-        )
+        ):
+            if callbacks is not None:
+                [callback.on_task_end() for callback in callbacks]
 
     return stage_func
 
