@@ -36,7 +36,7 @@ def broadcast_to(x, /, shape, *, chunks=None):
     name = gensym()
     spec = x.plan.spec
     target = primitive_broadcast_to(x.zarray, shape, chunks=chunks)
-    plan = Plan(name, "broadcast_to", target, spec)
+    plan = Plan(name, "broadcast_to", target, spec, None, None, None, x)
     return Array(name, target, plan)
 
 
