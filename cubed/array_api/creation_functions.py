@@ -57,6 +57,8 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
+    if dtype is None:
+        dtype = np.float64
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
     store = new_temp_store(name=name, spec=spec)
