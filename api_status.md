@@ -6,11 +6,11 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 | -------------- | ------------------ | ------------------ | ---------------- | ---------------------------- |
 | Creation       | `arange`           | :white_check_mark: |                  | Partial implementation       |
 |                | `asarray`          | :white_check_mark: |                  |                              |
-|                | `empty`            |                    | 1                | Like `ones`                  |
+|                | `empty`            |                    | 1                |                              |
 |                | `empty_like`       |                    | 1                | Like `ones`                  |
 |                | `eye`              |                    |                  |                              |
 |                | `from_dlpack`      |                    |                  |                              |
-|                | `full`             |                    | 1                | Like `ones`                  |
+|                | `full`             | :white_check_mark: | 1                |                              |
 |                | `full_like`        |                    | 1                | Like `ones`                  |
 |                | `linspace`         |                    | 2                | Like `arange`                |
 |                | `meshgrid`         |                    |                  |                              |
@@ -18,12 +18,12 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 |                | `ones_like`        |                    | 1                | Like `ones`                  |
 |                | `tril`             |                    |                  |                              |
 |                | `triu`             |                    |                  |                              |
-|                | `zeros`            |                    | 1                | Like `ones`                  |
+|                | `zeros`            | :white_check_mark: | 1                |                              |
 |                | `zeros_like`       |                    | 1                | Like `ones`                  |
 | Data Type      | `astype`           | :white_check_mark: |                  |                              |
 |                | `can_cast`         |                    | 1                | Same as `numpy.array_api`    |
-|                | `finfo`            |                    | 1                | Same as `numpy.array_api`    |
-|                | `iinfo`            |                    | 1                | Same as `numpy.array_api`    |
+|                | `finfo`            | :white_check_mark: | 1                |                              |
+|                | `iinfo`            | :white_check_mark: | 1                |                              |
 |                | `result_type`      | :white_check_mark: |                  |                              |
 | Elementwise    | `add`              | :white_check_mark: |                  | Example of a binary function |
 |                | `negative`         | :white_check_mark: |                  | Example of a unary function  |
