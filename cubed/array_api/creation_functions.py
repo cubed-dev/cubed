@@ -57,6 +57,10 @@ def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     return full(shape, None, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
+def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None):
+    return empty(**_like_args(x, dtype, device, chunks, spec))
+
+
 def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None):
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
@@ -79,9 +83,31 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     return Array(name, target, plan)
 
 
+def full_like(x, fill_value, /, *, dtype=None, device=None, chunks=None, spec=None):
+    return full(fill_value=fill_value, **_like_args(x, dtype, device, chunks, spec))
+
+
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
+def ones_like(x, /, *, dtype=None, device=None, chunks=None, spec=None):
+    return ones(**_like_args(x, dtype, device, chunks, spec))
+
+
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
+
+
+def zeros_like(x, /, *, dtype=None, device=None, chunks=None, spec=None):
+    return zeros(**_like_args(x, dtype, device, chunks, spec))
+
+
+def _like_args(x, dtype=None, device=None, chunks=None, spec=None):
+    if dtype is None:
+        dtype = x.dtype
+    if chunks is None:
+        chunks = x.chunks
+    if spec is None:
+        spec = x.plan.spec
+    return dict(shape=x.shape, dtype=dtype, device=device, chunks=chunks, spec=spec)

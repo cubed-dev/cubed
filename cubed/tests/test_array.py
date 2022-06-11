@@ -80,6 +80,12 @@ def test_ones(spec, executor):
     assert_array_equal(a.compute(executor=executor), np.ones((3, 3)))
 
 
+def test_ones_like(spec, executor):
+    a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
+    b = xp.ones_like(a)
+    assert_array_equal(b.compute(executor=executor), np.ones_like(np.ones((3, 3))))
+
+
 # Data type functions
 
 
