@@ -76,6 +76,16 @@ class Array:
             raise TypeError("bool is only allowed on arrays with 0 dimensions")
         return bool(self.compute())
 
+    def __float__(self, /):
+        if self.ndim != 0:
+            raise TypeError("float is only allowed on arrays with 0 dimensions")
+        return float(self.compute())
+
+    def __int__(self, /):
+        if self.ndim != 0:
+            raise TypeError("int is only allowed on arrays with 0 dimensions")
+        return int(self.compute())
+
     def __repr__(self):
         return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
