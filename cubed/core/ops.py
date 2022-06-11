@@ -410,7 +410,9 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
             )
 
     if not keepdims:
-        result = squeeze(result, axis)
+        axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)
+        if len(axis_to_squeeze) > 0:
+            result = squeeze(result, axis_to_squeeze)
 
     from cubed.array_api import astype
 
