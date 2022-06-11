@@ -35,4 +35,4 @@ from .manipulation_functions import (
     squeeze,
 )
 from .statistical_functions import mean, sum
-from .utility_functions import all
+from .utility_functions import all, any

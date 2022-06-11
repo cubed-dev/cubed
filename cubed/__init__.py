@@ -8,6 +8,7 @@ if not sys.warnoptions:
 from .array_api import (
     add,
     all,
+    any,
     arange,
     asarray,
     astype,
@@ -54,6 +55,7 @@ from .core import Callback, Spec, TqdmProgressBar, from_zarr, map_blocks, to_zar
 __all__ = [
     "add",
     "all",
+    "any",
     "arange",
     "asarray",
     "astype",

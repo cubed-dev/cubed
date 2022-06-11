@@ -61,6 +61,6 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 |                | `sum`              | :white_check_mark: |                  |                              |
 |                | `var`              |                    | 2                | Like `mean`                  |
 | Utility        | `all`              | :white_check_mark: |                  |                              |
-|                | `any`              |                    | 1                | Like `all`                   |
+|                | `any`              | :white_check_mark: | 1                |                              |
 
 TODO: add other parts of the spec (Array object, for example) and their level of coverage.
