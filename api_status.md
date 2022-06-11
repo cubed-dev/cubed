@@ -21,7 +21,7 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 |                | `zeros`            | :white_check_mark: | 1                |                              |
 |                | `zeros_like`       | :white_check_mark: | 1                |                              |
 | Data Type      | `astype`           | :white_check_mark: |                  |                              |
-|                | `can_cast`         |                    | 1                | Same as `numpy.array_api`    |
+|                | `can_cast`         | :white_check_mark: | 1                |                              |
 |                | `finfo`            | :white_check_mark: | 1                |                              |
 |                | `iinfo`            | :white_check_mark: | 1                |                              |
 |                | `result_type`      | :white_check_mark: |                  |                              |

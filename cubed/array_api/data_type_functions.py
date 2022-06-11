@@ -13,6 +13,12 @@ def _astype(a, astype_dtype):
     return a.astype(astype_dtype)
 
 
+def can_cast(from_, to, /):
+    if isinstance(from_, Array):
+        from_ = from_.dtype
+    return nxp.can_cast(from_, to)
+
+
 def finfo(type, /):
     return nxp.finfo(type)
 

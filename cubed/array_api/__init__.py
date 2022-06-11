@@ -11,7 +11,7 @@ from .creation_functions import (
     zeros,
     zeros_like,
 )
-from .data_type_functions import astype, finfo, iinfo, result_type
+from .data_type_functions import astype, can_cast, finfo, iinfo, result_type
 from .dtypes import (
     bool,
     float32,
