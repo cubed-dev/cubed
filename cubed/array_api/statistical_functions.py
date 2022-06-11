@@ -1,6 +1,11 @@
 import numpy as np
 from dask.array.reductions import numel
 
+from cubed.array_api.dtypes import (
+    _numeric_dtypes,
+    _signed_integer_dtypes,
+    _unsigned_integer_dtypes,
+)
 from cubed.core import map_blocks, reduction, squeeze
 
 
@@ -45,6 +50,15 @@ def _mean_aggregate(a):
 
 
 def sum(x, /, *, axis=None, dtype=None, keepdims=False):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in sum")
     if dtype is None:
-        dtype = x.dtype
+        if x.dtype in _signed_integer_dtypes:
+            dtype = np.int64
+        elif x.dtype in _unsigned_integer_dtypes:
+            dtype = np.uint64
+        elif x.dtype == np.float32:
+            dtype = np.float64
+        else:
+            dtype = x.dtype
     return reduction(x, np.sum, axis=axis, dtype=dtype, keepdims=keepdims)

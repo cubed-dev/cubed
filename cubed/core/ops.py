@@ -247,6 +247,10 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
     if not keepdims:
         result = squeeze(result, axis)
 
+    from cubed.array_api import astype
+
+    result = astype(result, dtype, copy=False)
+
     return result
 
 
