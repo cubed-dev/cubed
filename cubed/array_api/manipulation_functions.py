@@ -67,6 +67,14 @@ def reshape(x, /, shape):
     if x.shape == shape:
         return x
 
+    if x.npartitions == 1:
+        outchunks = tuple((d,) for d in shape)
+        name = gensym()
+        spec = x.plan.spec
+        target = primitive_reshape_chunks(x.zarray, shape, outchunks)
+        plan = Plan(name, "reshape", target, spec, None, None, None, x)
+        return Array(name, target, plan)
+
     inchunks, outchunks = reshape_rechunk(x.shape, shape, x.chunks)
 
     # TODO: make sure chunks are not too large
