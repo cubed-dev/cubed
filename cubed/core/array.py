@@ -103,6 +103,11 @@ class Array:
             raise TypeError("int is only allowed on arrays with 0 dimensions")
         return int(self.compute())
 
+    def __eq__(self, other, /):
+        from cubed.core.ops import elemwise
+
+        return elemwise(np.equal, self, other, dtype=np.bool_)
+
     def __repr__(self):
         return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
