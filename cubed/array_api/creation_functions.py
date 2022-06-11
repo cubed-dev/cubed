@@ -53,6 +53,10 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     return Array(name, target, plan)
 
 
+def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+    return full(shape, None, dtype=dtype, device=device, chunks=chunks, spec=spec)
+
+
 def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None):
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays

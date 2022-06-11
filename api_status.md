@@ -6,7 +6,7 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 | -------------- | ------------------ | ------------------ | ---------------- | ---------------------------- |
 | Creation       | `arange`           | :white_check_mark: |                  | Partial implementation       |
 |                | `asarray`          | :white_check_mark: |                  |                              |
-|                | `empty`            |                    | 1                |                              |
+|                | `empty`            | :white_check_mark: | 1                |                              |
 |                | `empty_like`       |                    | 1                | Like `ones`                  |
 |                | `eye`              |                    |                  |                              |
 |                | `from_dlpack`      |                    |                  |                              |
