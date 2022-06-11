@@ -132,6 +132,10 @@ class ReshapedArray(Array):
     def _chunk_key(self, chunk_coords):
         # change chunk_coords to original (not reshaped) values
 
+        # special case for reshaping from (1,) to ()
+        if self._new_chunkset == ():
+            return super()._chunk_key(chunk_coords)
+
         # TODO: find better way than computing cartesian product of all keys each time
         in_keys = list(product(*[range(len(c)) for c in self._original_chunkset]))
         out_keys = list(product(*[range(len(c)) for c in self._new_chunkset]))

@@ -10,6 +10,7 @@ from cubed.tests.utils import create_zarr
     "shape, chunks, new_shape, new_chunks",
     [
         ((12,), 4, (3, 4), (1, 4)),
+        ((1,), (1,), (), ()),
     ],
 )
 def test_reshape_chunks(tmp_path, shape, chunks, new_shape, new_chunks):
@@ -24,7 +25,7 @@ def test_reshape_chunks(tmp_path, shape, chunks, new_shape, new_chunks):
 
     assert target.shape == new_shape
     assert target.chunks == new_chunks
-    assert_array_equal(target[:], np.reshape(x, new_shape))
+    assert_array_equal(target[...], np.reshape(x, new_shape))
 
 
 def test_reshape_chunks_errors(tmp_path):
