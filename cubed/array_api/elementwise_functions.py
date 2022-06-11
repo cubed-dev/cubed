@@ -15,15 +15,15 @@ def divide(x1, x2, /):
 
 
 def equal(x1, x2, /):
-    return elementwise_binary_operation(x1, x2, np.equal, dtype=np.bool)
+    return elementwise_binary_operation(x1, x2, np.equal, dtype=np.bool_)
 
 
 def isfinite(x, /):
-    return elementwise_unary_operation(x, np.isfinite)
+    return elementwise_unary_operation(x, np.isfinite, dtype=np.bool_)
 
 
 def isnan(x, /):
-    return elementwise_unary_operation(x, np.isnan)
+    return elementwise_unary_operation(x, np.isnan, dtype=np.bool_)
 
 
 def negative(x, /):
