@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from cubed.primitive.reshape import reshape_chunks
+from cubed.primitive.views.reshape import reshape_chunks
 from cubed.tests.utils import create_zarr
 
 

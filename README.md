@@ -63,26 +63,28 @@ Every _array_ in Cubed is backed by a Zarr array. This means that the array type
 
 Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Dask, Lithops, and Prefect.
 
-### Primitive operations
+### Primitive operations and views
 
-There are a small number of primitive operations on arrays:
+There are a small number of primitives, which are either operations or views. A primitive operation produces a new, persistent output Zarr array. A view, however, does not create a persistent output array, since the output can be trivially created from the input by some kind of restructuring operation.
 
 <dl>
   <dt><code>blockwise</code></dt>
   <dd>Applies a function to multiple blocks from multiple inputs, expressed using concise indexing rules.</dd>
   <dt><code>rechunk</code></dt>
   <dd>Changes the chunking of an array, without changing its shape or dtype.</dd>
-  <dt><code>broadcast_to</code></dt>
-  <dd>Expands array dimensions to a given shape by repeating values, but without physically copying data.</dd>
   <dt>indexing</dt>
   <dd>Subsets an array, along one or more axes.</dd>
+  <dt><code>broadcast_to</code></dt>
+  <dd>(View) Expands array dimensions to a given shape by repeating values, but without physically copying data.</dd>
+  <dt><code>reshape_chunks</code></dt>
+  <dd>(View) Reshape an array by reshaping its chunks.</dd>
 </dl>
 
 (This list may need to be expanded to support structural operations, like concatenation.)
 
 ### Core operations
 
-These are built on top of the primitive operations, and provide functions that are needed to implement all array operations.
+These are built on top of the primitives, and provide functions that are needed to implement all array operations.
 
 <dl>
   <dt><code>map_blocks</code></dt>

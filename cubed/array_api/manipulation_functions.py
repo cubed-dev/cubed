@@ -9,8 +9,8 @@ from toolz import reduce
 
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import Array, Plan, blockwise, gensym, rechunk, unify_chunks
-from cubed.primitive.broadcast import broadcast_to as primitive_broadcast_to
-from cubed.primitive.reshape import reshape_chunks as primitive_reshape_chunks
+from cubed.primitive.views.broadcast import broadcast_to as primitive_broadcast_to
+from cubed.primitive.views.reshape import reshape_chunks as primitive_reshape_chunks
 from cubed.utils import to_chunksize
 
 
