@@ -36,12 +36,13 @@ class SqueezeViewTranslator(Translator):
         self.shape = shape
         self.chunks = chunks
         self.axis = axis
+        self.ndim_old = len(shape) + len(axis)
 
     def to_source_chunk_coords(self, target_chunk_coords):
-        coords = list(target_chunk_coords)
-        for i in self.axis:
-            coords.insert(i, 0)
-        return tuple(coords)
+        coords_it = iter(target_chunk_coords)
+        return tuple(
+            0 if i in self.axis else next(coords_it) for i in range(self.ndim_old)
+        )
 
     def to_target_chunk(self, source_chunk):
         return np.squeeze(source_chunk, axis=self.axis)

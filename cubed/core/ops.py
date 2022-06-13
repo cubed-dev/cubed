@@ -14,6 +14,7 @@ from cubed.core.array import Array, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
+from cubed.primitive.views.squeeze import squeeze as primitive_squeeze
 from cubed.utils import to_chunksize
 
 
@@ -243,7 +244,6 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
                 adjust_chunks=adjust_chunks,
             )
 
-    # TODO: [optimization] remove extra squeeze (and materialized zarr) by doing it as a part of the last blockwise
     if not keepdims:
         result = squeeze(result, axis)
 
@@ -255,19 +255,11 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
 
 
 def squeeze(x, /, axis):
-    if not isinstance(axis, tuple):
-        axis = (axis,)
-
-    if any(x.shape[i] != 1 for i in axis):
-        raise ValueError("cannot squeeze axis with size other than one")
-
-    axis = validate_axis(axis, x.ndim)
-
-    chunks = tuple(c for i, c in enumerate(x.chunks) if i not in axis)
-
-    return map_blocks(
-        np.squeeze, x, dtype=x.dtype, chunks=chunks, drop_axis=axis, axis=axis
-    )
+    name = gensym()
+    spec = x.plan.spec
+    target = primitive_squeeze(x.zarray, axis)
+    plan = Plan(name, "squeeze", target, spec, None, None, None, x)
+    return Array(name, target, plan)
 
 
 def unify_chunks(*args, **kwargs):

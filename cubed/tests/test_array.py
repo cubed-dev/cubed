@@ -226,6 +226,12 @@ def test_reshape(spec, executor):
     )
 
 
+def test_squeeze_0d(spec, executor):
+    a = xp.asarray([[3]], chunks=(1, 1), spec=spec)
+    b = xp.squeeze(a, (0, 1))
+    assert_array_equal(b.compute(executor=executor), np.squeeze([[3]], (0, 1)))
+
+
 def test_squeeze_1d(spec, executor):
     a = xp.asarray([[1, 2, 3]], chunks=(1, 2), spec=spec)
     b = xp.squeeze(a, 0)
