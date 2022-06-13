@@ -1,4 +1,7 @@
+import inspect
+import sysconfig
 import tempfile
+import traceback
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -62,6 +65,19 @@ class Plan:
             tooltip += f"\nmemory: {memory_repr(required_mem)}"
         if num_tasks is not None:
             tooltip += f"\ntasks: {num_tasks}"
+
+        # add call stack information
+        python_lib_path = sysconfig.get_path("purelib")
+        frame = inspect.currentframe().f_back  # go back one in the stack
+        calls = " -> ".join(
+            [
+                s.name
+                for s in traceback.extract_stack(frame)
+                if not s.filename.startswith(python_lib_path)
+            ]
+        )
+        tooltip += f"\ncalls: {calls}"
+
         if pipeline is None:
             dag.add_node(name, label=label, tooltip=tooltip, target=target)
         else:
