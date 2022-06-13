@@ -172,3 +172,68 @@ def blockwise(
     num_tasks = len(graph)
 
     return Pipeline(stages, config=spec), target_array, required_mem, num_tasks
+
+
+# Code for fusing pipelines
+
+
+def is_fuse_candidate(node_dict):
+    """
+    Return True if the array for a node is a candidate for map fusion.
+    """
+    pipeline = node_dict.get("pipeline", None)
+    if pipeline is None:
+        return False
+
+    stages = pipeline.stages
+    return len(stages) == 1 and stages[0].function == apply_blockwise
+
+
+def can_fuse_pipelines(n1_dict, n2_dict):
+    if is_fuse_candidate(n1_dict) and is_fuse_candidate(n2_dict):
+        return True
+    return False
+
+
+def fuse(
+    pipeline1,
+    target_array1,
+    required_mem1,
+    num_tasks1,
+    pipeline2,
+    target_array2,
+    required_mem2,
+    num_tasks2,
+):
+    """
+    Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
+    """
+    assert num_tasks1 == num_tasks2
+
+    # combine mappables by using input keys for first pipeline, and output keys for second
+    out_keys1, in_keys1 = list(zip(*pipeline1.stages[0].mappable))
+    out_keys2, in_keys2 = list(zip(*pipeline2.stages[0].mappable))
+    # following has to be a list of lists, not of tuples, otherwise lithops breaks
+    mappable = [list(a) for a in zip(out_keys2, in_keys1)]
+
+    stages = [
+        Stage(
+            apply_blockwise,
+            gensym("fused_apply_blockwise"),
+            mappable=mappable,
+        )
+    ]
+
+    def fused_func(*args):
+        return pipeline2.config.function(pipeline1.config.function(*args))
+
+    read_proxies = pipeline1.config.reads_map
+    write_proxy = pipeline2.config.write
+    spec = BlockwiseSpec(fused_func, read_proxies, write_proxy)
+    pipeline = Pipeline(stages, config=spec)
+
+    target_array = target_array2
+    required_mem = max(required_mem1, required_mem2)
+    num_tasks = num_tasks2
+
+    return pipeline, target_array, required_mem, num_tasks

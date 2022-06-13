@@ -508,3 +508,23 @@ def test_already_computed(spec):
     task_counter = TaskCounter()
     d.compute(executor=executor, callbacks=[task_counter])
     assert task_counter.value == 4
+
+
+def test_fusion(tmp_path, spec):
+    executor = PythonDagExecutor()
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.negative(a)
+    c = xp.astype(b, np.float32)
+    d = xp.negative(c)
+
+    assert d.plan.num_tasks(d.name, optimize_graph=False) == 12
+    assert d.plan.num_tasks(d.name, optimize_graph=True) == 4
+
+    task_counter = TaskCounter()
+    result = d.compute(executor=executor, callbacks=[task_counter])
+    assert task_counter.value == 4
+
+    assert_array_equal(
+        result,
+        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.float32),
+    )

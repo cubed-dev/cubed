@@ -13,6 +13,7 @@ from dask.utils import memory_repr
 from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
 
+from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.utils import join_path
@@ -56,33 +57,22 @@ class Plan:
 
         # add new node and edges
         label = f"{name} ({op_name})"
-        tooltip = (
-            f"shape: {target.shape}\n"
-            f"chunks: {target.chunks}\n"
-            f"dtype: {target.dtype}"
-        )
-        if required_mem is not None:
-            tooltip += f"\nmemory: {memory_repr(required_mem)}"
-        if num_tasks is not None:
-            tooltip += f"\ntasks: {num_tasks}"
-
-        # add call stack information
-        python_lib_path = sysconfig.get_path("purelib")
         frame = inspect.currentframe().f_back  # go back one in the stack
-        calls = " -> ".join(
-            [
-                s.name
-                for s in traceback.extract_stack(frame)
-                if not s.filename.startswith(python_lib_path)
-            ]
-        )
-        tooltip += f"\ncalls: {calls}"
+        stack_summaries = traceback.extract_stack(frame, 10)
 
         if pipeline is None:
-            dag.add_node(name, label=label, tooltip=tooltip, target=target)
+            dag.add_node(
+                name, label=label, target=target, stack_summaries=stack_summaries
+            )
         else:
             dag.add_node(
-                name, label=label, tooltip=tooltip, target=target, pipeline=pipeline
+                name,
+                label=label,
+                target=target,
+                stack_summaries=stack_summaries,
+                pipeline=pipeline,
+                required_mem=required_mem,
+                num_tasks=num_tasks,
             )
         for x in source_arrays:
             dag.add_edge(x.name, name)
@@ -95,12 +85,21 @@ class Plan:
 
     def transitive_dependencies(self, name):
         # prune DAG so it only has transitive dependencies of 'name'
-        return self.dag.subgraph(get_weakly_cc(self.dag, name))
+        if name is None:
+            return self.dag
+        for cc in nx.weakly_connected_components(self.dag):
+            if name in cc:
+                return self.dag.subgraph(cc)
+        else:
+            raise ValueError(f"{name} not found")
 
-    def num_tasks(self, name=None):
+    def num_tasks(self, name=None, optimize_graph=True):
         """Return the number of tasks needed to execute this plan."""
         tasks = 0
-        dag = self.transitive_dependencies(name)
+        if optimize_graph:
+            dag = self.optimize(name)
+        else:
+            dag = self.dag.copy()
         nodes = {n: d for (n, d) in dag.nodes(data=True)}
         for node in dag:
             if already_computed(nodes[node]):
@@ -113,13 +112,61 @@ class Plan:
                     tasks += 1
         return tasks
 
-    def execute(self, name=None, executor=None, callbacks=None, **kwargs):
+    def optimize(self, name=None):
+        # remove anything that 'name' node doesn't depend on
+        dag = self.transitive_dependencies(name)
+
+        # fuse map blocks
+        dag = dag.copy()
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+
+        def can_fuse(n):
+            # node and its predecessor must have single predecessor, must have pipelines that can be fused
+            if dag.in_degree(n) != 1:
+                return False
+            pre = next(dag.predecessors(n))
+            if dag.in_degree(pre) != 1:
+                return False
+            return can_fuse_pipelines(nodes[pre], nodes[n])
+
+        for n in list(dag.nodes()):
+            if can_fuse(n):
+                pre = next(dag.predecessors(n))
+                n1_dict = nodes[pre]
+                n2_dict = nodes[n]
+                pipeline, target, required_mem, num_tasks = fuse(
+                    n1_dict["pipeline"],
+                    n1_dict["target"],
+                    n1_dict["required_mem"],
+                    n1_dict["num_tasks"],
+                    n2_dict["pipeline"],
+                    n2_dict["target"],
+                    n2_dict["required_mem"],
+                    n2_dict["num_tasks"],
+                )
+                nodes[n]["pipeline"] = pipeline
+                nodes[n]["target"] = target
+                nodes[n]["required_mem"] = required_mem
+                nodes[n]["num_tasks"] = num_tasks
+
+                prepre = next(dag.predecessors(pre))
+                dag.add_edge(prepre, n)
+                dag.remove_node(pre)
+
+        return dag
+
+    def execute(
+        self, name=None, executor=None, callbacks=None, optimize_graph=True, **kwargs
+    ):
         if executor is None:
             executor = self.spec.executor
             if executor is None:
                 executor = PythonPipelineExecutor()
 
-        dag = self.transitive_dependencies(name)
+        if optimize_graph:
+            dag = self.optimize(name)
+        else:
+            dag = self.dag.copy()
 
         if isinstance(executor, PipelineExecutor):
             dag = dag.copy()
@@ -144,13 +191,40 @@ class Plan:
         else:
             executor.execute_dag(dag, callbacks=callbacks, **kwargs)
 
-    def visualize(self, filename="cubed", format=None, rankdir="TB"):
-        dag = self.dag.copy()
+    def visualize(
+        self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
+    ):
+        if optimize_graph:
+            dag = self.optimize()
+        else:
+            dag = self.dag.copy()
         dag.graph["graph"] = {"rankdir": rankdir}
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
         for (_, d) in dag.nodes(data=True):
-            if "pipeline" in d:
-                del d["pipeline"]
+            target = d["target"]
+            tooltip = (
+                f"shape: {target.shape}\n"
+                f"chunks: {target.chunks}\n"
+                f"dtype: {target.dtype}"
+            )
+            if "required_mem" in d:
+                tooltip += f"\nmemory: {memory_repr(d['required_mem'])}"
+            if "num_tasks" in d:
+                tooltip += f"\ntasks: {d['num_tasks']}"
+            if "stack_summaries" in d:
+                # add call stack information
+                stack_summaries = d["stack_summaries"]
+                python_lib_path = sysconfig.get_path("purelib")
+                calls = " -> ".join(
+                    [
+                        s.name
+                        for s in stack_summaries
+                        if not s.filename.startswith(python_lib_path)
+                    ]
+                )
+                tooltip += f"\ncalls: {calls}"
+
+            d["tooltip"] = tooltip
         gv = nx.drawing.nx_pydot.to_pydot(dag)
         if format is None:
             format = "svg"
@@ -166,15 +240,6 @@ class Plan:
             # Can't return a display object if no IPython.
             pass
         return None
-
-
-def get_weakly_cc(G, node):
-    """get weakly connected component of node"""
-    for cc in nx.weakly_connected_components(G):
-        if node in cc:
-            return cc
-    else:
-        return set()
 
 
 @dataclass

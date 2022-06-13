@@ -243,7 +243,6 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
                 adjust_chunks=adjust_chunks,
             )
 
-    # TODO: [optimization] remove extra squeeze (and materialized zarr) by doing it as a part of the last blockwise
     if not keepdims:
         result = squeeze(result, axis)
 
