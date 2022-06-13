@@ -6,25 +6,25 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 | -------------- | ------------------ | ------------------ | ---------------- | ---------------------------- |
 | Creation       | `arange`           | :white_check_mark: |                  | Partial implementation       |
 |                | `asarray`          | :white_check_mark: |                  |                              |
-|                | `empty`            | :white_check_mark: | 1                |                              |
-|                | `empty_like`       | :white_check_mark: | 1                |                              |
+|                | `empty`            | :white_check_mark: |                  | Uses `full`                  |
+|                | `empty_like`       | :white_check_mark: |                  |                              |
 |                | `eye`              |                    |                  |                              |
 |                | `from_dlpack`      |                    |                  |                              |
-|                | `full`             | :white_check_mark: | 1                |                              |
-|                | `full_like`        | :white_check_mark: | 1                |                              |
+|                | `full`             | :white_check_mark: |                  |                              |
+|                | `full_like`        | :white_check_mark: |                  |                              |
 |                | `linspace`         |                    | 2                | Like `arange`                |
 |                | `meshgrid`         |                    |                  |                              |
-|                | `ones`             | :white_check_mark: |                  |                              |
-|                | `ones_like`        | :white_check_mark: | 1                |                              |
+|                | `ones`             | :white_check_mark: |                  | Uses `full`                  |
+|                | `ones_like`        | :white_check_mark: |                  |                              |
 |                | `tril`             |                    |                  |                              |
 |                | `triu`             |                    |                  |                              |
-|                | `zeros`            | :white_check_mark: | 1                |                              |
-|                | `zeros_like`       | :white_check_mark: | 1                |                              |
+|                | `zeros`            | :white_check_mark: |                  | Uses `full`                  |
+|                | `zeros_like`       | :white_check_mark: |                  |                              |
 | Data Type      | `astype`           | :white_check_mark: |                  |                              |
-|                | `can_cast`         | :white_check_mark: | 1                |                              |
-|                | `finfo`            | :white_check_mark: | 1                |                              |
-|                | `iinfo`            | :white_check_mark: | 1                |                              |
-|                | `result_type`      | :white_check_mark: |                  |                              |
+|                | `can_cast`         | :white_check_mark: |                  | Same as `numpy.array_api`    |
+|                | `finfo`            | :white_check_mark: |                  | Same as `numpy.array_api`    |
+|                | `iinfo`            | :white_check_mark: |                  | Same as `numpy.array_api`    |
+|                | `result_type`      | :white_check_mark: |                  | Same as `numpy.array_api`    |
 | Elementwise    | `add`              | :white_check_mark: |                  | Example of a binary function |
 |                | `negative`         | :white_check_mark: |                  | Example of a unary function  |
 |                | ...                |                    |                  |                              |
@@ -34,12 +34,12 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 |                | `tensordot`        |                    | 1                | Like Dask                    |
 |                | `vecdot`           |                    | 1                | Express using `tensordot`    |
 | Manipulation   | `broadcast_arrays` | :white_check_mark: |                  |                              |
-|                | `broadcast_to`     | :white_check_mark: |                  |                              |
+|                | `broadcast_to`     | :white_check_mark: |                  | Primitive (Zarr view)        |
 |                | `concat`           |                    | 3                | Primitive (Zarr view)        |
-|                | `expand_dims`      |                    | 1                | Like `squeeze` or Zarr view  |
+|                | `expand_dims`      | :white_check_mark: |                  |                              |
 |                | `flip`             |                    | 3                | Needs indexing               |
 |                | `permute_dims`     | :white_check_mark: |                  |                              |
-|                | `reshape`          | :white_check_mark: | 3                | Partial implementation       |
+|                | `reshape`          | :white_check_mark: |                  | Partial implementation       |
 |                | `roll`             |                    | 3                | Needs `concat` and `reshape` |
 |                | `squeeze`          | :white_check_mark: |                  |                              |
 |                | `stack`            |                    | 2                | Primitive (Zarr view)        |
@@ -61,6 +61,6 @@ This table shows which [Array API functions](https://data-apis.org/array-api/lat
 |                | `sum`              | :white_check_mark: |                  |                              |
 |                | `var`              |                    | 2                | Like `mean`                  |
 | Utility        | `all`              | :white_check_mark: |                  |                              |
-|                | `any`              | :white_check_mark: | 1                |                              |
+|                | `any`              | :white_check_mark: |                  |                              |
 
 TODO: add other parts of the spec (Array object, for example) and their level of coverage.
