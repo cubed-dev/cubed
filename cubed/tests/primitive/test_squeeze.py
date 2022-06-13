@@ -6,10 +6,7 @@ from cubed.primitive.views.squeeze import squeeze
 from cubed.tests.utils import create_zarr
 
 
-@pytest.mark.parametrize(
-    "axis",
-    [0, -1, (0, -1)],
-)
+@pytest.mark.parametrize("axis", [0, -1, (0, -1)])
 def test_squeeze(tmp_path, axis):
     x = np.arange(10)[None, :, None, None]
     chunks = (1, 3, 1, 1)
