@@ -207,6 +207,12 @@ def test_broadcast_to(spec, executor):
     )
 
 
+def test_expand_dims(spec, executor):
+    a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
+    b = xp.expand_dims(a, axis=0)
+    assert_array_equal(b.compute(executor=executor), np.expand_dims([1, 2, 3], 0))
+
+
 def test_permute_dims(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.permute_dims(a, (1, 0))

@@ -4,11 +4,13 @@ import numpy as np
 from dask.array.core import broadcast_chunks, broadcast_shapes
 from dask.array.reshape import reshape_rechunk
 from dask.array.slicing import sanitize_index
+from dask.array.utils import validate_axis
 from tlz import concat
 from toolz import reduce
 
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import Array, Plan, blockwise, gensym, rechunk, unify_chunks
+from cubed.core.ops import map_blocks
 from cubed.primitive.broadcast import broadcast_to as primitive_broadcast_to
 from cubed.primitive.reshape import reshape_chunks as primitive_reshape_chunks
 from cubed.utils import to_chunksize
@@ -38,6 +40,20 @@ def broadcast_to(x, /, shape, *, chunks=None):
     target = primitive_broadcast_to(x.zarray, shape, chunks=chunks)
     plan = Plan(name, "broadcast_to", target, spec, None, None, None, x)
     return Array(name, target, plan)
+
+
+def expand_dims(x, /, *, axis):
+    if not isinstance(axis, tuple):
+        axis = (axis,)
+    ndim_new = len(axis) + x.ndim
+    axis = validate_axis(axis, ndim_new)
+
+    chunks_it = iter(x.chunks)
+    chunks = tuple(1 if i in axis else next(chunks_it) for i in range(ndim_new))
+
+    return map_blocks(
+        np.expand_dims, x, dtype=x.dtype, chunks=chunks, new_axis=axis, axis=axis
+    )
 
 
 def permute_dims(x, /, axes):

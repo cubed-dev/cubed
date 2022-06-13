@@ -30,6 +30,7 @@ from .linear_algebra_functions import matmul, outer
 from .manipulation_functions import (
     broadcast_arrays,
     broadcast_to,
+    expand_dims,
     permute_dims,
     reshape,
     squeeze,
