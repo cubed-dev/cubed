@@ -10,6 +10,7 @@ from toolz import reduce
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import Array, Plan, blockwise, gensym, rechunk, unify_chunks
 from cubed.primitive.views.broadcast import broadcast_to as primitive_broadcast_to
+from cubed.primitive.views.expand_dims import expand_dims as primitive_expand_dims
 from cubed.primitive.views.reshape import reshape_chunks as primitive_reshape_chunks
 from cubed.utils import to_chunksize
 
@@ -37,6 +38,14 @@ def broadcast_to(x, /, shape, *, chunks=None):
     spec = x.plan.spec
     target = primitive_broadcast_to(x.zarray, shape, chunks=chunks)
     plan = Plan(name, "broadcast_to", target, spec, None, None, None, x)
+    return Array(name, target, plan)
+
+
+def expand_dims(x, /, *, axis):
+    name = gensym()
+    spec = x.plan.spec
+    target = primitive_expand_dims(x.zarray, axis)
+    plan = Plan(name, "expand_dims", target, spec, None, None, None, x)
     return Array(name, target, plan)
 
 
