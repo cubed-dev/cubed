@@ -13,7 +13,7 @@ def exec_stage_func(func, *args, **kwargs):
 class PythonDagExecutor(DagExecutor):
     def execute_dag(self, dag, callbacks=None, **kwargs):
         nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        for node in reversed(list(nx.topological_sort(dag))):
+        for node in list(nx.topological_sort(dag)):
             if already_computed(nodes[node]):
                 continue
             pipeline = nodes[node]["pipeline"]

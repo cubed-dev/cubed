@@ -135,12 +135,12 @@ class BeamDagExecutor(DagExecutor):
         dag = dag.copy()
         with beam.Pipeline(**kwargs) as pipeline:
             nodes = {n: d for (n, d) in dag.nodes(data=True)}
-            for node in reversed(list(nx.topological_sort(dag))):
+            for node in list(nx.topological_sort(dag)):
                 if already_computed(nodes[node]):
                     continue
                 rechunker_pipeline = nodes[node]["pipeline"]
 
-                dep_nodes = dag[node].keys()
+                dep_nodes = list(dag.predecessors(node))
 
                 pcolls = [
                     p

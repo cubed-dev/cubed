@@ -69,7 +69,7 @@ class Plan:
                 name, label=label, tooltip=tooltip, target=target, pipeline=pipeline
             )
         for x in source_arrays:
-            dag.add_edge(name, x.name)
+            dag.add_edge(x.name, name)
 
         self.dag = dag
 
@@ -110,7 +110,7 @@ class Plan:
 
             while len(dag) > 0:
                 # Find nodes (and their pipelines) that have no dependencies
-                no_dep_nodes = [x for x in dag.nodes() if dag.out_degree(x) == 0]
+                no_dep_nodes = [x for x in dag.nodes() if dag.in_degree(x) == 0]
                 pipelines = [
                     p
                     for (n, p) in nx.get_node_attributes(dag, "pipeline").items()
@@ -128,7 +128,7 @@ class Plan:
         else:
             executor.execute_dag(dag, callbacks=callbacks, **kwargs)
 
-    def visualize(self, filename="cubed", format=None, rankdir="BT"):
+    def visualize(self, filename="cubed", format=None, rankdir="TB"):
         dag = self.dag.copy()
         dag.graph["graph"] = {"rankdir": rankdir}
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
