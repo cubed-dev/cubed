@@ -36,13 +36,30 @@ def to_zarr(x, store, return_stored=False, executor=None):
 
 
 def blockwise(
-    func, out_ind, *args, dtype=None, adjust_chunks=None, align_arrays=True, **kwargs
+    func,
+    out_ind,
+    *args,
+    dtype=None,
+    adjust_chunks=None,
+    new_axes=None,
+    align_arrays=True,
+    **kwargs,
 ):
     arrays = args[::2]
 
     assert len(arrays) > 0
 
     # Calculate output chunking. A lot of this is from dask's blockwise function
+
+    new_axes = new_axes or {}
+    new = (
+        set(out_ind)
+        - {a for arg in args[1::2] if arg is not None for a in arg}
+        - set(new_axes or ())
+    )
+    if new:
+        raise ValueError("Unknown dimension", new)
+
     if align_arrays:
         chunkss, arrays = unify_chunks(*args)
     else:
@@ -61,6 +78,12 @@ def blockwise(
             for c, i in zip(arg_chunks, ind):
                 if i not in chunkss or len(c) > len(chunkss[i]):
                     chunkss[i] = c
+
+    for k, v in new_axes.items():
+        if not isinstance(v, tuple):
+            v = (v,)
+        chunkss[k] = v
+
     chunks = [chunkss[i] for i in out_ind]
     if adjust_chunks:
         for i, ind in enumerate(out_ind):
@@ -99,6 +122,7 @@ def blockwise(
         shape=shape,
         dtype=dtype,
         chunks=chunks,
+        new_axes=new_axes,
         **kwargs,
     )
     plan = Plan(
@@ -117,10 +141,17 @@ def elementwise_binary_operation(x1, x2, func, dtype):
     return map_blocks(func, x1, x2, dtype=dtype)
 
 
-def map_blocks(func, *args, dtype=None, chunks=None, drop_axis=[], **kwargs):
+def map_blocks(
+    func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+):
     # based on dask
+
+    new_axes = {}
+
     if isinstance(drop_axis, Number):
         drop_axis = [drop_axis]
+    if isinstance(new_axis, Number):
+        new_axis = [new_axis]
 
     arrs = args
     argpairs = [
@@ -141,6 +172,21 @@ def map_blocks(func, *args, dtype=None, chunks=None, drop_axis=[], **kwargs):
             )
         drop_axis = [i % ndim_out for i in drop_axis]
         out_ind = tuple(x for i, x in enumerate(out_ind) if i not in drop_axis)
+    if new_axis is None and chunks is not None and len(out_ind) < len(chunks):
+        new_axis = range(len(chunks) - len(out_ind))
+    if new_axis:
+        # new_axis = [x + len(drop_axis) for x in new_axis]
+        out_ind = list(out_ind)
+        for ax in sorted(new_axis):
+            n = len(out_ind) + len(drop_axis)
+            out_ind.insert(ax, n)
+            if chunks is not None:
+                new_axes[n] = chunks[ax]
+            else:
+                new_axes[n] = 1
+        out_ind = tuple(out_ind)
+        if max(new_axis) > max(out_ind):
+            raise ValueError("New_axis values do not fill in all dimensions")
 
     if chunks is not None:
         if len(chunks) != len(out_ind):
@@ -157,6 +203,7 @@ def map_blocks(func, *args, dtype=None, chunks=None, drop_axis=[], **kwargs):
         *concat(argpairs),
         dtype=dtype,
         adjust_chunks=adjust_chunks,
+        new_axes=new_axes,
         **kwargs,
     )
 

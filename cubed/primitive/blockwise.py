@@ -57,7 +57,16 @@ def get_item(chunks, idx):
 
 
 def blockwise(
-    func, out_ind, *args, max_mem, target_store, shape, dtype, chunks, **kwargs
+    func,
+    out_ind,
+    *args,
+    max_mem,
+    target_store,
+    shape,
+    dtype,
+    chunks,
+    new_axes=None,
+    **kwargs,
 ):
     """Apply a function across blocks from multiple source Zarr arrays.
 
@@ -79,6 +88,8 @@ def blockwise(
         The ``dtype`` of the output array.
     chunks : tuple
         The chunks of the output array.
+    new_axes : dict
+        New indexes and their dimension lengths
     **kwargs : dict
         Extra keyword arguments to pass to function
 
@@ -110,7 +121,9 @@ def blockwise(
     # TODO: check output shape and chunks are consistent with inputs
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    graph = make_blockwise_graph(func, "out", out_ind, *argindsstr, numblocks=numblocks)
+    graph = make_blockwise_graph(
+        func, "out", out_ind, *argindsstr, numblocks=numblocks, new_axes=new_axes
+    )
 
     # convert chunk indexes to chunk keys (slices)
     graph_mappable = []
