@@ -9,6 +9,7 @@ from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
 from cubed import Callback
+from cubed.array_api.manipulation_functions import reshape_chunks
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
@@ -250,6 +251,19 @@ def test_reshape(spec, executor):
     assert_array_equal(
         b.compute(executor=executor),
         np.arange(12).reshape((3, 4)),
+    )
+
+
+def test_reshape_chunks(spec, executor):
+    a = xp.arange(12, chunks=4, spec=spec)
+    b = reshape_chunks(a, (2, 6), (2, 2))
+
+    assert b.shape == (2, 6)
+    assert b.chunks == ((2,), (2, 2, 2))
+
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[0, 1, 4, 5, 8, 9], [2, 3, 6, 7, 10, 11]]),
     )
 
 

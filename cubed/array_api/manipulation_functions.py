@@ -1,3 +1,4 @@
+from itertools import product
 from math import prod
 from operator import mul
 
@@ -134,6 +135,38 @@ def reshape(x, /, shape):
     target = primitive_reshape_chunks(x2.zarray, shape, outchunks)
     plan = Plan(name, "reshape", target, spec, None, None, None, x2)
     return Array(name, target, plan)
+
+
+def reshape_chunks(x, shape, chunks):
+    if reduce(mul, shape, 1) != x.size:
+        raise ValueError("total size of new array must be unchanged")
+
+    inchunks = normalize_chunks(x.chunks, shape=x.shape, dtype=x.dtype)
+    outchunks = normalize_chunks(chunks, shape=shape, dtype=x.dtype)
+
+    # TODO: check number of chunks is unchanged
+
+    # memory allocated by reading one chunk from input array
+    extra_required_mem = np.dtype(x.dtype).itemsize * prod(to_chunksize(x.chunks))
+
+    return map_direct(
+        _reshape_chunk,
+        x,
+        shape=shape,
+        dtype=x.dtype,
+        chunks=outchunks,
+        extra_required_mem=extra_required_mem,
+        inchunks=inchunks,
+        outchunks=outchunks,
+    )
+
+
+def _reshape_chunk(e, x, inchunks=None, outchunks=None, block_id=None):
+    in_keys = list(product(*[range(len(c)) for c in inchunks]))
+    out_keys = list(product(*[range(len(c)) for c in outchunks]))
+    idx = in_keys[out_keys.index(block_id)]
+    out = x.zarray[get_item(x.chunks, idx)]
+    return out.reshape(e.shape)
 
 
 def stack(arrays, /, *, axis=0):
