@@ -138,7 +138,10 @@ def elementwise_unary_operation(x, func, dtype):
 def elementwise_binary_operation(x1, x2, func, dtype):
     # TODO: check x1 and x2 are compatible
 
-    return map_blocks(func, x1, x2, dtype=dtype)
+    # use blockwise rather than map_blocks since it will align arrays (unify_chunks)
+    argpairs = [(a, tuple(range(a.ndim))[::-1]) for a in (x1, x2)]
+    out_ind = tuple(range(max(a.ndim for a in (x1, x2))))[::-1]
+    return blockwise(func, out_ind, *concat(argpairs), dtype=dtype)
 
 
 def map_blocks(
@@ -204,6 +207,7 @@ def map_blocks(
         dtype=dtype,
         adjust_chunks=adjust_chunks,
         new_axes=new_axes,
+        align_arrays=False,
         **kwargs,
     )
 
