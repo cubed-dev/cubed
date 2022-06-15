@@ -6,12 +6,11 @@ import numpy as np
 from dask.array.core import normalize_chunks
 from dask.blockwise import make_blockwise_graph
 from dask.core import flatten
-from dask.utils import cached_cumsum
 from rechunker.api import _zarr_empty
 from rechunker.types import ArrayProxy, Pipeline, Stage
 from toolz import map
 
-from cubed.utils import to_chunksize
+from cubed.utils import get_item, to_chunksize
 
 sym_counter = 0
 
@@ -46,14 +45,6 @@ def apply_blockwise_structured(graph_item, *, config=BlockwiseSpec):
     result = config.function(*args)
     for k, v in result.items():
         config.write.array.set_basic_selection(out_chunk_key, v, fields=k)
-
-
-def get_item(chunks, idx):
-
-    starts = tuple(cached_cumsum(c, initial_zero=True) for c in chunks)
-
-    loc = tuple((start[i], start[i + 1]) for i, start in zip(idx, starts))
-    return tuple(slice(*s, None) for s in loc)
 
 
 def blockwise(

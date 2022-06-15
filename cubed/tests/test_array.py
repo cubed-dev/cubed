@@ -232,6 +232,17 @@ def test_reshape(spec, executor):
     )
 
 
+def test_stack(spec, executor):
+    a = xp.full((4, 6), 1, chunks=(2, 3), spec=spec)
+    b = xp.full((4, 6), 2, chunks=(2, 3), spec=spec)
+    c = xp.full((4, 6), 3, chunks=(2, 3), spec=spec)
+    d = xp.stack([a, b, c], axis=0)
+    assert_array_equal(
+        d.compute(executor=executor),
+        np.stack([np.full((4, 6), 1), np.full((4, 6), 2), np.full((4, 6), 3)], axis=0),
+    )
+
+
 def test_squeeze_1d(spec, executor):
     a = xp.asarray([[1, 2, 3]], chunks=(1, 2), spec=spec)
     b = xp.squeeze(a, 0)

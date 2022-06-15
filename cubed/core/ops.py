@@ -111,6 +111,11 @@ def blockwise(
     zargs = list(args)
     zargs[::2] = [a.zarray for a in arrays]
 
+    extra_source_arrays = kwargs.pop("extra_source_arrays", [])
+    source_arrays = list(arrays) + list(extra_source_arrays)
+
+    extra_required_mem = kwargs.pop("extra_required_mem", 0)
+
     name = gensym()
     spec = arrays[0].plan.spec
     target_store = new_temp_store(name=name, spec=spec)
@@ -127,7 +132,14 @@ def blockwise(
         **kwargs,
     )
     plan = Plan(
-        name, "blockwise", target, spec, pipeline, required_mem, num_tasks, *arrays
+        name,
+        "blockwise",
+        target,
+        spec,
+        pipeline,
+        required_mem + extra_required_mem,
+        num_tasks,
+        *source_arrays,
     )
     return Array(name, target, plan)
 
@@ -256,6 +268,53 @@ def _map_blocks(
         adjust_chunks=adjust_chunks,
         new_axes=new_axes,
         align_arrays=False,
+        **kwargs,
+    )
+
+
+def map_direct(func, *args, shape, dtype, chunks, extra_required_mem, **kwargs):
+    """
+    Map a function across blocks of a new array, using side-input arrays to read directly from.
+
+    Parameters
+    ----------
+    func : callable
+        Function to apply to every block to produce the output array.
+        Must accept ``block_id`` as a keyword argument (with same meaning as for ``map_blocks``).
+    args : arrays
+        The side-input arrays that may be accessed directly in the function.
+    shape : tuple
+        Shape of the output array.
+    dtype : np.dtype
+        The ``dtype`` of the output array.
+    chunks : tuple
+        Chunk shape of blocks in the output array.
+    extra_required_mem : int
+        Extra memory required (in bytes) for each map task. This should take into account the
+        memory requirements for any reads from the side-input arrays (``args``).
+    """
+
+    from cubed.array_api.creation_functions import empty
+
+    out = empty(shape, dtype=dtype, chunks=chunks, spec=args[0].plan.spec)
+
+    kwargs["arrays"] = args
+
+    def new_func(func):
+        def wrap(*a, block_id=None, **kw):
+            arrays = kw.pop("arrays")
+            args = a + arrays
+            return func(*args, block_id=block_id, **kw)
+
+        return wrap
+
+    return map_blocks(
+        new_func(func),
+        out,
+        dtype=dtype,
+        chunks=chunks,
+        extra_source_arrays=args,
+        extra_required_mem=extra_required_mem,
         **kwargs,
     )
 

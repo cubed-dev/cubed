@@ -4,8 +4,16 @@ from typing import Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from dask.array.core import _check_regular_chunks
+from dask.utils import cached_cumsum
 
 PathType = Union[str, Path]
+
+
+def get_item(chunks, idx):
+    """Convert a chunk index to a tuple of slices."""
+    starts = tuple(cached_cumsum(c, initial_zero=True) for c in chunks)
+    loc = tuple((start[i], start[i + 1]) for i, start in zip(idx, starts))
+    return tuple(slice(*s, None) for s in loc)
 
 
 def join_path(dir_url: PathType, child_path: str) -> str:

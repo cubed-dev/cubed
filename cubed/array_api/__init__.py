@@ -34,6 +34,7 @@ from .manipulation_functions import (
     permute_dims,
     reshape,
     squeeze,
+    stack,
 )
 from .statistical_functions import mean, sum
 from .utility_functions import all, any
