@@ -2,17 +2,17 @@ from math import prod
 from operator import mul
 
 import numpy as np
-from dask.array.core import broadcast_chunks, broadcast_shapes
+from dask.array.core import broadcast_chunks, normalize_chunks
 from dask.array.reshape import reshape_rechunk
 from dask.array.slicing import sanitize_index
 from dask.array.utils import validate_axis
 from tlz import concat
 from toolz import reduce
 
+from cubed.array_api.creation_functions import empty
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import Array, Plan, blockwise, gensym, rechunk, unify_chunks
-from cubed.core.ops import map_blocks, map_direct
-from cubed.primitive.broadcast import broadcast_to as primitive_broadcast_to
+from cubed.core.ops import elemwise, map_blocks, map_direct
 from cubed.primitive.reshape import reshape_chunks as primitive_reshape_chunks
 from cubed.utils import get_item, to_chunksize
 
@@ -25,7 +25,7 @@ def broadcast_arrays(*arrays):
     uc_args = concat(zip(arrays, inds))
     _, args = unify_chunks(*uc_args, warn=False)
 
-    shape = broadcast_shapes(*(e.shape for e in args))
+    shape = np.broadcast_shapes(*(e.shape for e in args))
     chunks = broadcast_chunks(*(e.chunks for e in args))
 
     result = [broadcast_to(e, shape=shape, chunks=chunks) for e in args]
@@ -34,13 +34,44 @@ def broadcast_arrays(*arrays):
 
 
 def broadcast_to(x, /, shape, *, chunks=None):
-    if chunks is not None:
-        chunks = to_chunksize(chunks)
-    name = gensym()
-    spec = x.plan.spec
-    target = primitive_broadcast_to(x.zarray, shape, chunks=chunks)
-    plan = Plan(name, "broadcast_to", target, spec, None, None, None, x)
-    return Array(name, target, plan)
+    if x.shape == shape and (chunks is None or chunks == x.chunks):
+        return x
+    ndim_new = len(shape) - x.ndim
+    if ndim_new < 0 or any(
+        new != old for new, old in zip(shape[ndim_new:], x.shape) if old != 1
+    ):
+        raise ValueError(f"cannot broadcast shape {x.shape} to shape {shape}")
+
+    # TODO: fix case where shape has a dimension of size zero
+
+    if chunks is None:
+        # New dimensions and broadcast dimensions have chunk size 1
+        # This behaviour differs from dask where it is the full dimension size
+        xchunks = normalize_chunks(x.chunks, x.shape, dtype=x.dtype)
+        chunks = tuple((1,) * s for s in shape[:ndim_new]) + tuple(
+            bd if old > 1 else ((1,) * new if new > 0 else (0,))
+            for bd, old, new in zip(xchunks, x.shape, shape[ndim_new:])
+        )
+    else:
+        chunks = normalize_chunks(
+            chunks, shape, dtype=x.dtype, previous_chunks=x.chunks
+        )
+        for old_bd, new_bd in zip(x.chunks, chunks[ndim_new:]):
+            if old_bd != new_bd and old_bd != (1,):
+                raise ValueError(
+                    "cannot broadcast chunks %s to chunks %s: "
+                    "new chunks must either be along a new "
+                    "dimension or a dimension of size 1" % (x.chunks, chunks)
+                )
+
+    # create an empty array as a template for blockwise to do broadcasting
+    template = empty(shape, dtype=np.int8, chunks=chunks, spec=x.plan.spec)
+
+    return elemwise(_broadcast_like, x, template, dtype=x.dtype)
+
+
+def _broadcast_like(x, template):
+    return np.broadcast_to(x, template.shape)
 
 
 def expand_dims(x, /, *, axis):

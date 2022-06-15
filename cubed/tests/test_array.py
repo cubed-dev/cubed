@@ -207,13 +207,25 @@ def test_broadcast_arrays():
     assert_array_equal(b_b.compute(), np.ones((1, 30)))
 
 
-def test_broadcast_to(spec, executor):
-    a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
-    b = xp.broadcast_to(a, shape=(3, 3))
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.broadcast_to(np.array([1, 2, 3]), shape=(3, 3)),
-    )
+@pytest.mark.parametrize(
+    "shape, chunks, new_shape, new_chunks, new_chunks_expected",
+    [
+        # ((5, 1, 6), (3, 1, 3), (5, 0, 6), None, ((3, 2), (0,), (3, 3))),  # fails
+        ((5, 1, 6), (3, 1, 3), (5, 4, 6), None, ((3, 2), (1, 1, 1, 1), (3, 3))),
+        ((5, 1, 6), (3, 1, 3), (2, 5, 1, 6), None, ((1, 1), (3, 2), (1,), (3, 3))),
+        ((5, 1, 6), (3, 1, 3), (5, 3, 6), (3, 3, 3), ((3, 2), (3,), (3, 3))),
+    ],
+)
+def test_broadcast_to(
+    executor, shape, chunks, new_shape, new_chunks, new_chunks_expected
+):
+    x = np.random.randint(10, size=shape)
+    a = xp.asarray(x, chunks=chunks)
+    b = xp.broadcast_to(a, shape=new_shape, chunks=new_chunks)
+
+    assert b.shape == new_shape
+    assert b.chunks == new_chunks_expected
+    assert_array_equal(b.compute(executor=executor), np.broadcast_to(x, new_shape))
 
 
 def test_expand_dims(spec, executor):
