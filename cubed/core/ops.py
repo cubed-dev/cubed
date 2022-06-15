@@ -7,6 +7,7 @@ import zarr
 from dask.array.core import common_blockdim, normalize_chunks
 from dask.array.utils import validate_axis
 from dask.blockwise import broadcast_dimensions
+from dask.utils import has_keyword
 from tlz import concat, partition
 from toolz import map
 
@@ -145,6 +146,53 @@ def elementwise_binary_operation(x1, x2, func, dtype):
 
 
 def map_blocks(
+    func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+):
+    if has_keyword(func, "block_id"):
+        from cubed import asarray
+
+        # Create an array of index offsets with the same chunk structure as the args,
+        # which we convert to block ids (chunk coordinates) later.
+        a = args[0]
+        offsets = np.arange(a.npartitions, dtype=np.int32).reshape(a.numblocks)
+        offsets = asarray(offsets, spec=a.plan.spec)
+        # rechunk in a separate operation to avoid potentially writing lots of zarr chunks from the client
+        offsets_chunks = (1,) * len(a.numblocks)
+        offsets = rechunk(offsets, offsets_chunks)
+        new_args = args + (offsets,)
+
+        def offset_to_block_id(offset):
+            return list(np.ndindex(*(a.numblocks)))[offset]
+
+        def func_with_block_id(func):
+            def wrap(*a, **kw):
+                block_id = offset_to_block_id(a[-1].item())
+                return func(*a[:-1], block_id=block_id, **kw)
+
+            return wrap
+
+        return _map_blocks(
+            func_with_block_id(func),
+            *new_args,
+            dtype=dtype,
+            chunks=chunks,
+            drop_axis=drop_axis,
+            new_axis=new_axis,
+            **kwargs,
+        )
+
+    return _map_blocks(
+        func,
+        *args,
+        dtype=dtype,
+        chunks=chunks,
+        drop_axis=drop_axis,
+        new_axis=new_axis,
+        **kwargs,
+    )
+
+
+def _map_blocks(
     func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
 ):
     # based on dask

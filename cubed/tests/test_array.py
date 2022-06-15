@@ -329,6 +329,35 @@ def test_map_blocks_with_kwargs(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.array([4, 9]))
 
 
+def test_map_blocks_with_block_id(spec, executor):
+    # based on dask test
+    def func(block, block_id=None, c=0):
+        return np.ones_like(block) * sum(block_id) + c
+
+    a = xp.arange(10, dtype="int64", chunks=(2,))
+    b = xp.map_blocks(func, a, dtype="int64")
+
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4], dtype="int64"),
+    )
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.map_blocks(func, a, dtype="int64")
+
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype="int64"),
+    )
+
+    c = xp.map_blocks(func, a, dtype="int64", c=1)
+
+    assert_array_equal(
+        c.compute(executor=executor),
+        np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype="int64") + 1,
+    )
+
+
 def test_multiple_ops(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
