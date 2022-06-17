@@ -72,8 +72,6 @@ There are a small number of primitive operations on arrays:
   <dd>Applies a function to multiple blocks from multiple inputs, expressed using concise indexing rules.</dd>
   <dt><code>rechunk</code></dt>
   <dd>Changes the chunking of an array, without changing its shape or dtype.</dd>
-  <dt><code>broadcast_to</code></dt>
-  <dd>Expands array dimensions to a given shape by repeating values, but without physically copying data.</dd>
   <dt>indexing</dt>
   <dd>Subsets an array, along one or more axes.</dd>
 </dl>
@@ -118,8 +116,6 @@ a call to `compute`, or when implicitly triggered by converting an array to an i
 A `Plan` object is a directed acyclic graph (DAG), where the nodes are arrays and the edges express primitive operations. For example, one array may be rechunked to another using a `rechunk` operation. Or a pair of arrays may be added together using a `blockwise` operation.
 
 Of the primitive operations, `blockwise`, `rechunk`, and indexing operations all have memory requirements that are known ahead of time. Each operation runs a _task_ to compute each chunk of the output. The memory needed for each task is a function of chunk size, dtype, and the precise nature of the operation, but it can be computed before the whole operation is run, while building the plan. The user is required to specify the maximum amount of memory that tasks can use, and if the computation would exceed that amount, an exception is raised during the planning phase. This means that the user can have high confidence that the operation will run reliably.
-
-The `broadcast_to` operation is different to the others, since it is effectively a view on a Zarr array, and therefore does not require any computation.
 
 A plan is executed by traversing the DAG and materializing arrays by writing them to Zarr storage. Details of how a plan is executed depends on the runtime. Distributed runtimes, for example, may choose to materialize arrays that don't depend on one another in parallel for efficiency.
 
