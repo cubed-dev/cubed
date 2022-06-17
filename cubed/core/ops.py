@@ -31,7 +31,6 @@ def to_zarr(x, store, return_stored=False, executor=None):
     """Save an array to Zarr storage."""
     # Use rechunk with same chunks to implement a straight copy.
     # It would be good to avoid this copy in the future. Maybe allow optional store to be passed to all functions?
-    # Zarr views still need to be copied to materialize them, however.
     out = rechunk(x, x.chunksize, target_store=store)
     return out.compute(return_stored=return_stored, executor=executor)
 
