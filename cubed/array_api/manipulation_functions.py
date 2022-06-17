@@ -12,9 +12,8 @@ from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
 from cubed.core import squeeze  # noqa: F401
-from cubed.core import Array, Plan, blockwise, gensym, rechunk, unify_chunks
+from cubed.core import blockwise, rechunk, unify_chunks
 from cubed.core.ops import elemwise, map_blocks, map_direct
-from cubed.primitive.reshape import reshape_chunks as primitive_reshape_chunks
 from cubed.utils import get_item, to_chunksize
 
 
@@ -118,11 +117,7 @@ def reshape(x, /, shape):
 
     if x.npartitions == 1:
         outchunks = tuple((d,) for d in shape)
-        name = gensym()
-        spec = x.plan.spec
-        target = primitive_reshape_chunks(x.zarray, shape, outchunks)
-        plan = Plan(name, "reshape", target, spec, None, None, None, x)
-        return Array(name, target, plan)
+        return reshape_chunks(x, shape, outchunks)
 
     inchunks, outchunks = reshape_rechunk(x.shape, shape, x.chunks)
 
@@ -130,11 +125,7 @@ def reshape(x, /, shape):
 
     x2 = rechunk(x, to_chunksize(inchunks))
 
-    name = gensym()
-    spec = x.plan.spec
-    target = primitive_reshape_chunks(x2.zarray, shape, outchunks)
-    plan = Plan(name, "reshape", target, spec, None, None, None, x2)
-    return Array(name, target, plan)
+    return reshape_chunks(x2, shape, outchunks)
 
 
 def reshape_chunks(x, shape, chunks):
