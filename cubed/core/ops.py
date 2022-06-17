@@ -144,17 +144,20 @@ def blockwise(
     return Array(name, target, plan)
 
 
-def elementwise_unary_operation(x, func, dtype):
-    return map_blocks(func, x, dtype=dtype)
+def elemwise(func, *args, dtype=None):
+    shapes = [arg.shape for arg in args]
+    out_ndim = len(np.broadcast_shapes(*shapes))
+    expr_inds = tuple(range(out_ndim))[::-1]
+    if dtype is None:
+        from cubed.array_api.data_type_functions import result_type
 
-
-def elementwise_binary_operation(x1, x2, func, dtype):
-    # TODO: check x1 and x2 are compatible
-
-    # use blockwise rather than map_blocks since it will align arrays (unify_chunks)
-    argpairs = [(a, tuple(range(a.ndim))[::-1]) for a in (x1, x2)]
-    out_ind = tuple(range(max(a.ndim for a in (x1, x2))))[::-1]
-    return blockwise(func, out_ind, *concat(argpairs), dtype=dtype)
+        dtype = result_type(*args)
+    return blockwise(
+        func,
+        expr_inds,
+        *concat((a, tuple(range(a.ndim)[::-1])) for a in args),
+        dtype=dtype,
+    )
 
 
 def map_blocks(

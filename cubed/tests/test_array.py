@@ -110,6 +110,15 @@ def test_add(spec, executor):
     )
 
 
+def test_add_with_broadcast(spec, executor):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([1, 1, 1], chunks=(2,), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+    )
+
+
 def test_equal(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)

@@ -1,30 +1,27 @@
 import numpy as np
 
-from cubed.array_api.data_type_functions import result_type
-from cubed.core import elementwise_binary_operation, elementwise_unary_operation
+from cubed.core import elemwise
 
 
 def add(x1, x2, /):
-    return elementwise_binary_operation(x1, x2, np.add, result_type(x1.dtype, x2.dtype))
+    return elemwise(np.add, x1, x2)
 
 
 def divide(x1, x2, /):
-    return elementwise_binary_operation(
-        x1, x2, np.divide, result_type(x1.dtype, x2.dtype)
-    )
+    return elemwise(np.divide, x1, x2)
 
 
 def equal(x1, x2, /):
-    return elementwise_binary_operation(x1, x2, np.equal, dtype=np.bool_)
+    return elemwise(np.equal, x1, x2, dtype=np.bool_)
 
 
 def isfinite(x, /):
-    return elementwise_unary_operation(x, np.isfinite, dtype=np.bool_)
+    return elemwise(np.isfinite, x, dtype=np.bool_)
 
 
 def isnan(x, /):
-    return elementwise_unary_operation(x, np.isnan, dtype=np.bool_)
+    return elemwise(np.isnan, x, dtype=np.bool_)
 
 
 def negative(x, /):
-    return elementwise_unary_operation(x, np.negative, dtype=x.dtype)
+    return elemwise(np.negative, x)

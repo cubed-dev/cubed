@@ -2,8 +2,7 @@
 from .array import Array, Callback, TqdmProgressBar, gensym
 from .ops import (
     blockwise,
-    elementwise_binary_operation,
-    elementwise_unary_operation,
+    elemwise,
     from_zarr,
     map_blocks,
     rechunk,
