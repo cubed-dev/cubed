@@ -55,11 +55,25 @@ class Array:
     def size(self):
         return reduce(mul, self.shape, 1)
 
-    def compute(self, *, return_stored=True, executor=None, callbacks=None, **kwargs):
+    def compute(
+        self,
+        *,
+        return_stored=True,
+        executor=None,
+        callbacks=None,
+        optimize_graph=True,
+        **kwargs,
+    ):
         if callbacks is not None:
             [callback.on_compute_start(self) for callback in callbacks]
 
-        self.plan.execute(self.name, executor=executor, callbacks=callbacks, **kwargs)
+        self.plan.execute(
+            self.name,
+            executor=executor,
+            callbacks=callbacks,
+            optimize_graph=optimize_graph,
+            **kwargs,
+        )
 
         if callbacks is not None:
             [callback.on_compute_end(self) for callback in callbacks]

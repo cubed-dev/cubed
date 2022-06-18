@@ -579,15 +579,15 @@ def test_already_computed(spec):
     c = xp.add(a, b)
     d = xp.negative(c)
 
-    assert d.plan.num_tasks(d.name) == 8
+    assert d.plan.num_tasks(d.name, optimize_graph=False) == 8
 
     task_counter = TaskCounter()
-    c.compute(executor=executor, callbacks=[task_counter])
+    c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
     assert task_counter.value == 4
 
     # since c has already been computed, when computing d only 4 tasks are run, instead of 8
     task_counter = TaskCounter()
-    d.compute(executor=executor, callbacks=[task_counter])
+    d.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
     assert task_counter.value == 4
 
 

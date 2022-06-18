@@ -121,12 +121,10 @@ class Plan:
         nodes = {n: d for (n, d) in dag.nodes(data=True)}
 
         def can_fuse(n):
-            # node and its predecessor must have single predecessor, must have pipelines that can be fused
+            # node must have a single predecessor, and both must have pipelines that can be fused
             if dag.in_degree(n) != 1:
                 return False
             pre = next(dag.predecessors(n))
-            if dag.in_degree(pre) != 1:
-                return False
             return can_fuse_pipelines(nodes[pre], nodes[n])
 
         for n in list(dag.nodes()):
@@ -149,8 +147,8 @@ class Plan:
                 nodes[n]["required_mem"] = required_mem
                 nodes[n]["num_tasks"] = num_tasks
 
-                prepre = next(dag.predecessors(pre))
-                dag.add_edge(prepre, n)
+                for p in dag.predecessors(pre):
+                    dag.add_edge(p, n)
                 dag.remove_node(pre)
 
         return dag

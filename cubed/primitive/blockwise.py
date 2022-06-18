@@ -195,7 +195,7 @@ def is_fuse_candidate(node_dict):
 
 def can_fuse_pipelines(n1_dict, n2_dict):
     if is_fuse_candidate(n1_dict) and is_fuse_candidate(n2_dict):
-        return True
+        return n1_dict["num_tasks"] == n2_dict["num_tasks"]
     return False
 
 
