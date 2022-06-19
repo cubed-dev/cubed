@@ -136,6 +136,57 @@ def test_negative(spec, executor):
     )
 
 
+# Indexing
+
+
+@pytest.mark.parametrize("i", [6])
+def test_index_1d(spec, i):
+    a = xp.arange(12, chunks=(4,), spec=spec)
+    assert_array_equal(a[i].compute(), np.arange(12)[i])
+
+
+@pytest.mark.parametrize("i", [(2, 3)])
+def test_index_2d(spec, i):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    assert_array_equal(a[i].compute(), x[i])
+
+
+@pytest.mark.parametrize("sl", [slice(None), slice(10), slice(3, None), slice(3, 10)])
+def test_slice_1d(spec, sl):
+    a = xp.arange(12, chunks=(4,), spec=spec)
+    assert_array_equal(a[sl].compute(), np.arange(12)[sl])
+
+
+@pytest.mark.parametrize(
+    "sl0, sl1",
+    [
+        (slice(None), slice(2, 4)),
+        (slice(3), slice(2, None)),
+        (slice(1, None), slice(4)),
+        (slice(1, 3), slice(None)),
+    ],
+)
+def test_slice_2d(spec, sl0, sl1):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    assert_array_equal(a[sl0, sl1].compute(), x[sl0, sl1])
+
+
+def test_slice_unsupported_step(spec):
+    with pytest.raises(NotImplementedError):
+        a = xp.arange(12, chunks=(4,), spec=spec)
+        a[3:10:2]
+
+
 # Linear algebra functions
 
 

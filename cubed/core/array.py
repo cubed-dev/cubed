@@ -88,6 +88,11 @@ class Array:
     def visualize(self, filename="cubed", format=None):
         return self.plan.visualize(filename=filename, format=format)
 
+    def __getitem__(self, key, /):
+        from cubed.core.ops import index
+
+        return index(self, key)
+
     def __bool__(self, /):
         if self.ndim != 0:
             raise TypeError("bool is only allowed on arrays with 0 dimensions")

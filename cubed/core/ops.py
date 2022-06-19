@@ -10,12 +10,13 @@ from dask.blockwise import broadcast_dimensions
 from dask.utils import has_keyword
 from tlz import concat, partition
 from toolz import map
+from zarr.indexing import BasicIndexer, is_integer, is_slice, replace_ellipsis
 
 from cubed.core.array import Array, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
-from cubed.utils import to_chunksize
+from cubed.utils import get_item_with_offsets, to_chunksize
 
 
 def from_zarr(store, spec=None):
@@ -163,6 +164,60 @@ def elemwise(func, *args, dtype=None):
         *concat((a, tuple(range(a.ndim)[::-1])) for a in args),
         dtype=dtype,
     )
+
+
+def index(x, key):
+    selection = replace_ellipsis(key, x.shape)
+
+    # Use a Zarr BasicIndexer just to find the resulting array shape
+    indexer = BasicIndexer(selection, x.zarray)
+
+    shape = indexer.shape
+    dtype = x.dtype
+    chunks = normalize_chunks(x.zarray.chunks, shape, dtype=dtype)
+
+    offsets = tuple(s.start or 0 if is_slice(s) else s for s in selection)
+
+    # TODO: support mixture of index and slices
+    if all(is_integer(s) for s in selection):
+        func = _read_index_chunk
+    elif all(is_slice(s) for s in selection):
+        if any(s.step is not None and s.step != 1 for s in selection):
+            raise NotImplementedError(f"Slice step must be 1: {key}")
+        func = _read_slice_chunk
+    else:
+        raise NotImplementedError(f"Index not supported: {key}")
+
+    from cubed.core.ops import map_direct
+
+    # memory allocated by reading one chunk from input array
+    # note that although the output chunk will overlap multiple input chunks, zarr will
+    # read the chunks in series, reusing the buffer
+    extra_required_mem = np.dtype(x.dtype).itemsize * prod(to_chunksize(x.chunks))
+
+    return map_direct(
+        func,
+        x,
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        extra_required_mem=extra_required_mem,
+        source_chunks=chunks,
+        offsets=offsets,
+    )
+
+
+def _read_index_chunk(x, *arrays, source_chunks=None, offsets=None, block_id=None):
+    array = arrays[0]
+    out = array.zarray[offsets]
+    return out
+
+
+def _read_slice_chunk(x, *arrays, source_chunks=None, offsets=None, block_id=None):
+    array = arrays[0]
+    idx = block_id
+    out = array.zarray[get_item_with_offsets(source_chunks, idx, offsets)]
+    return out
 
 
 def map_blocks(
