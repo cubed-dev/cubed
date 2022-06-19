@@ -330,10 +330,17 @@ def test_all(spec, executor):
         spec=spec,
     )
     b = xp.all(a)
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[True, True, True], [True, True, True], [True, True, True]]).all(),
-    )
+    assert b.ndim == 0
+    assert b.size == 1
+    assert b.compute(executor=executor)
+
+
+def test_all_zero_dimension(spec, executor):
+    a = xp.ones((0,), spec=spec)
+    b = xp.all(a)
+    assert b.ndim == 0
+    assert b.size == 1
+    assert b.compute(executor=executor)
 
 
 # Other
