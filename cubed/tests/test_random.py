@@ -3,7 +3,10 @@ from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
 import cubed.random
-from cubed.runtime.executors.beam import BeamDagExecutor, BeamPipelineExecutor
+from cubed.runtime.executors.beam import BeamDagExecutor
+from cubed.runtime.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.python import PythonDagExecutor
+from cubed.tests.test_array import LITHOPS_LOCAL_CONFIG
 
 
 @pytest.fixture()
@@ -13,7 +16,12 @@ def spec(tmp_path):
 
 @pytest.fixture(
     scope="module",
-    params=[PythonPipelineExecutor(), BeamDagExecutor(), BeamPipelineExecutor()],
+    params=[
+        PythonPipelineExecutor(),
+        PythonDagExecutor(),
+        BeamDagExecutor(),
+        LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG),
+    ],
 )
 def executor(request):
     return request.param

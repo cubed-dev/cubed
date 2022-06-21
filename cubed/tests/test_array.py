@@ -192,7 +192,7 @@ def test_outer(spec, executor):
 # Manipulation functions
 
 
-def test_broadcast_arrays():
+def test_broadcast_arrays(executor):
     a = xp.ones(30, chunks=(3,))
     b = xp.ones(30, chunks=(6,))
     a_b, b_b = xp.broadcast_arrays(a, b)
@@ -204,8 +204,8 @@ def test_broadcast_arrays():
     b = xp.ones(30, chunks=(6,))
     a_b, b_b = xp.broadcast_arrays(a, b)
 
-    assert_array_equal(a_b.compute(), np.ones((1, 30)))
-    assert_array_equal(b_b.compute(), np.ones((1, 30)))
+    assert_array_equal(a_b.compute(executor=executor), np.ones((1, 30)))
+    assert_array_equal(b_b.compute(executor=executor), np.ones((1, 30)))
 
 
 @pytest.mark.parametrize(
@@ -347,11 +347,9 @@ def test_all_zero_dimension(spec, executor):
 
 
 def test_regular_chunks(spec):
-    a = xp.ones((5, 5), chunks=((2, 2, 1), (5,)), spec=spec)
-    a.compute()
+    xp.ones((5, 5), chunks=((2, 2, 1), (5,)), spec=spec)
     with pytest.raises(ValueError):
-        a = xp.ones((5, 5), chunks=((2, 1, 2), (5,)), spec=spec)
-        a.compute()
+        xp.ones((5, 5), chunks=((2, 1, 2), (5,)), spec=spec)
 
 
 def test_from_zarr(tmp_path, spec, executor):
@@ -598,7 +596,7 @@ def test_already_computed(spec):
     assert task_counter.value == 4
 
 
-def test_fusion(tmp_path, spec):
+def test_fusion(spec):
     executor = PythonDagExecutor()
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
