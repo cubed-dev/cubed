@@ -1,4 +1,7 @@
+import random
+
 import pytest
+from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
@@ -45,3 +48,15 @@ def test_random_add(spec, executor):
 
     x = set(c.compute(executor=executor).flat)
     assert len(x) > 90
+
+
+def test_random_seed(spec, executor):
+    random.seed(42)
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    a_result = a.compute(executor=executor)
+
+    random.seed(42)
+    b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    b_result = b.compute(executor=executor)
+
+    assert_array_equal(a_result, b_result)
