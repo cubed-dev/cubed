@@ -1,8 +1,11 @@
 from operator import mul
 
+import networkx as nx
 import numpy as np
 from dask.array.core import normalize_chunks
 from toolz import map, reduce
+
+from cubed.runtime.pipeline import already_computed
 
 sym_counter = 0
 
@@ -125,11 +128,22 @@ class TqdmProgressBar(Callback):
     def on_compute_start(self, arr):
         from tqdm import tqdm
 
-        total_tasks = arr.plan.num_tasks(arr.name)
-        self.pbar = tqdm(*self.args, total=total_tasks, **self.kwargs)
+        self.pbars = {}
+        i = 0
+        dag = arr.plan.optimize(arr.name)
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+        for node in list(nx.topological_sort(dag)):
+            if already_computed(nodes[node]):
+                continue
+            num_tasks = nodes[node]["num_tasks"]
+            self.pbars[node] = tqdm(
+                *self.args, desc=node, total=num_tasks, position=i, **self.kwargs
+            )
+            i = i + 1
 
     def on_compute_end(self, arr):
-        self.pbar.close()
+        for pbar in self.pbars.values():
+            pbar.close()
 
     def on_task_end(self, name=None):
-        self.pbar.update()
+        self.pbars[name].update()
