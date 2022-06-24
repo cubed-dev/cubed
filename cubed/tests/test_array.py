@@ -187,6 +187,27 @@ def test_slice_unsupported_step(spec):
         a[3:10:2]
 
 
+def test_setitem(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.ones(())
+    a[1, 2] = b
+    assert_array_equal(a.compute(), np.array([[1, 2, 3], [4, 5, 1], [7, 8, 9]]))
+
+
+def test_setitem_fails_not_0d(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[4, 5, 6], [7, 8, 9], [1, 2, 3]], chunks=(2, 2), spec=spec)
+    with pytest.raises(NotImplementedError):
+        a[:] = b
+
+
+def test_setitem_fails_not_computed(spec):
+    a = xp.arange(12, chunks=(4,), spec=spec)
+    b = xp.ones(())
+    with pytest.raises(NotImplementedError):
+        a[1] = b
+
+
 # Linear algebra functions
 
 

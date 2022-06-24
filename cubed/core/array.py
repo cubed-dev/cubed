@@ -93,6 +93,20 @@ class Array:
 
         return index(self, key)
 
+    def __setitem__(self, key, value):
+        if isinstance(value, Array) and value.ndim != 0:
+            raise NotImplementedError(
+                "Calling __setitem__ on an array with more than 0 dimensions is not supported."
+            )
+
+        nodes = {n: d for (n, d) in self.plan.dag.nodes(data=True)}
+        if not already_computed(nodes[self.name]):
+            raise NotImplementedError(
+                "Calling __setitem__ on an array that has not been computed is not supported."
+            )
+
+        self.zarray.__setitem__(key, value)
+
     def __bool__(self, /):
         if self.ndim != 0:
             raise TypeError("bool is only allowed on arrays with 0 dimensions")
