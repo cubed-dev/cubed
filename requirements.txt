@@ -11,4 +11,4 @@ pytest-mock
 rechunker
 s3fs
 tenacity
-zarr
+zarr < 2.12
