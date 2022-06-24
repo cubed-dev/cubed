@@ -153,7 +153,9 @@ def map_as_completed(
             time.sleep(1)
 
 
-def build_stage_mappable_func(stage, config, callbacks=None, use_backups=False):
+def build_stage_mappable_func(
+    stage, config, name=None, callbacks=None, use_backups=False
+):
     def sf(mappable):
         return stage.function(mappable, config=config)
 
@@ -166,7 +168,7 @@ def build_stage_mappable_func(stage, config, callbacks=None, use_backups=False):
             use_backups=use_backups,
         ):
             if callbacks is not None:
-                [callback.on_task_end() for callback in callbacks]
+                [callback.on_task_end(name) for callback in callbacks]
 
     return stage_func
 
@@ -209,6 +211,7 @@ class LithopsDagExecutor(DagExecutor):
                         stage_func = build_stage_mappable_func(
                             stage,
                             pipeline.config,
+                            name=node,
                             callbacks=callbacks,
                             use_backups=use_backups,
                         )

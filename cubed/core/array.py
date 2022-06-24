@@ -111,7 +111,7 @@ class Callback:
     def on_compute_end(self, arr):
         pass
 
-    def on_task_end(self, n=1):
+    def on_task_end(self, name=None):
         pass
 
 
@@ -131,5 +131,5 @@ class TqdmProgressBar(Callback):
     def on_compute_end(self, arr):
         self.pbar.close()
 
-    def on_task_end(self, n=1):
-        self.pbar.update(n)
+    def on_task_end(self, name=None):
+        self.pbar.update()

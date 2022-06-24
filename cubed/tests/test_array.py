@@ -555,8 +555,8 @@ class TaskCounter(Callback):
     def on_compute_start(self, arr):
         self.value = 0
 
-    def on_task_end(self, n=1):
-        self.value += n
+    def on_task_end(self, name=None):
+        self.value += 1
 
 
 def test_callbacks(spec, executor):
