@@ -83,7 +83,7 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     return Array(name, target, plan)
 
 
-def full_like(x, fill_value, /, *, dtype=None, device=None, chunks=None, spec=None):
+def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None):
     return full(fill_value=fill_value, **_like_args(x, dtype, device, chunks, spec))
 
 
