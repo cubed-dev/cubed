@@ -19,6 +19,10 @@ def isfinite(x, /):
     return elemwise(np.isfinite, x, dtype=np.bool_)
 
 
+def isinf(x, /):
+    return elemwise(np.isinf, x, dtype=np.bool_)
+
+
 def isnan(x, /):
     return elemwise(np.isnan, x, dtype=np.bool_)
 

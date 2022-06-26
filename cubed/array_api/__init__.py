@@ -1,4 +1,5 @@
 # flake8: noqa
+from .constants import e, inf, nan, newaxis, pi
 from .creation_functions import (
     arange,
     asarray,
@@ -25,7 +26,7 @@ from .dtypes import (
     uint32,
     uint64,
 )
-from .elementwise_functions import add, divide, equal, isfinite, isnan, negative
+from .elementwise_functions import add, divide, equal, isfinite, isinf, isnan, negative
 from .linear_algebra_functions import matmul, outer
 from .manipulation_functions import (
     broadcast_arrays,

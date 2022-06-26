@@ -1,9 +1,10 @@
 ## Array API Coverage Implementation Status
 
-This table shows which [Array API functions](https://data-apis.org/array-api/latest/API_specification/index.html) have been implemented in Cubed. For those that have not been implemented a rough level of difficulty is indicated (1=easy, 3=hard).
+This table shows which parts of the the [Array API](https://data-apis.org/array-api/latest/API_specification/index.html) have been implemented in Cubed. For those that have not been implemented a rough level of difficulty is indicated (1=easy, 3=hard).
 
-| Category       | Function           | Implemented        | Difficulty (1-3) | Notes                        |
+| Category       | Object             | Implemented        | Difficulty (1-3) | Notes                        |
 | -------------- | ------------------ | ------------------ | ---------------- | ---------------------------- |
+| Constants      | `e`, `inf`, ...    | :white_check_mark: |                  |                              |
 | Creation       | `arange`           | :white_check_mark: |                  | Partial implementation       |
 |                | `asarray`          | :white_check_mark: |                  |                              |
 |                | `empty`            | :white_check_mark: |                  | Uses `full`                  |
