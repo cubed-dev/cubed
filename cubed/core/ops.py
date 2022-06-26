@@ -399,7 +399,16 @@ def rechunk(x, chunks, target_store=None):
     return Array(name, target, plan)
 
 
-def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False):
+def reduction(
+    x,
+    func,
+    combine_func=None,
+    aggegrate_func=None,
+    axis=None,
+    intermediate_dtype=None,
+    dtype=None,
+    keepdims=False,
+):
     if combine_func is None:
         combine_func = func
     if axis is None:
@@ -407,6 +416,8 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
     if isinstance(axis, Integral):
         axis = (axis,)
     axis = validate_axis(axis, x.ndim)
+    if intermediate_dtype is None:
+        intermediate_dtype = dtype
 
     inds = tuple(range(x.ndim))
 
@@ -428,7 +439,7 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
             *args,
             axis=axis,
             keepdims=True,
-            dtype=dtype,
+            dtype=intermediate_dtype,
             adjust_chunks=adjust_chunks,
         )
 
@@ -436,7 +447,7 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
     while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
         # rechunk along axis
         target_chunks = list(result.chunksize)
-        chunk_mem = np.dtype(dtype).itemsize * prod(result.chunksize)
+        chunk_mem = np.dtype(intermediate_dtype).itemsize * prod(result.chunksize)
         for i, s in enumerate(result.shape):
             if i in axis:
                 if len(axis) > 1:
@@ -460,9 +471,12 @@ def reduction(x, func, combine_func=None, axis=None, dtype=None, keepdims=False)
                 *args,
                 axis=axis,
                 keepdims=True,
-                dtype=dtype,
+                dtype=intermediate_dtype,
                 adjust_chunks=adjust_chunks,
             )
+
+    if aggegrate_func is not None:
+        result = map_blocks(aggegrate_func, result, dtype=dtype)
 
     if not keepdims:
         axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)

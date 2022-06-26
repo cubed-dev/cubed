@@ -6,7 +6,7 @@ from cubed.array_api.dtypes import (
     _signed_integer_dtypes,
     _unsigned_integer_dtypes,
 )
-from cubed.core import map_blocks, reduction, squeeze
+from cubed.core import reduction
 
 
 def mean(x, /, *, axis=None, keepdims=False):
@@ -17,20 +17,17 @@ def mean(x, /, *, axis=None, keepdims=False):
     # this is usually OK. An alternative would be to add support for multiple
     # outputs.
     dtype = x.dtype
-    combine_dtype = [("n", np.int64), ("total", np.float64)]
-    result = reduction(
+    intermediate_dtype = [("n", np.int64), ("total", np.float64)]
+    return reduction(
         x,
         _mean_func,
         combine_func=_mean_combine,
+        aggegrate_func=_mean_aggregate,
         axis=axis,
-        dtype=combine_dtype,
-        keepdims=True,
+        intermediate_dtype=intermediate_dtype,
+        dtype=dtype,
+        keepdims=keepdims,
     )
-    # TODO: move aggregation into reduction function
-    result = map_blocks(_mean_aggregate, result, dtype=dtype)
-    if not keepdims:
-        result = squeeze(result, axis)
-    return result
 
 
 def _mean_func(a, **kwargs):
