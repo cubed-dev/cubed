@@ -29,9 +29,13 @@ def from_zarr(store, spec=None):
 
 def to_zarr(x, store, return_stored=False, executor=None):
     """Save an array to Zarr storage."""
-    # Use rechunk with same chunks to implement a straight copy.
-    # It would be good to avoid this copy in the future. Maybe allow optional store to be passed to all functions?
-    out = rechunk(x, x.chunksize, target_store=store)
+    # Note that the intermediate write to x's store will be optimized away
+    # by map fusion (if it was produced with a blockwise operation).
+    identity = lambda a: a
+    ind = tuple(range(x.ndim))
+    out = blockwise(
+        identity, ind, x, ind, dtype=x.dtype, align_arrays=False, target_store=store
+    )
     return out.compute(return_stored=return_stored, executor=executor)
 
 
@@ -43,6 +47,7 @@ def blockwise(
     adjust_chunks=None,
     new_axes=None,
     align_arrays=True,
+    target_store=None,
     **kwargs,
 ):
     arrays = args[::2]
@@ -117,7 +122,8 @@ def blockwise(
 
     name = gensym()
     spec = arrays[0].plan.spec
-    target_store = new_temp_store(name=name, spec=spec)
+    if target_store is None:
+        target_store = new_temp_store(name=name, spec=spec)
     pipeline, target, required_mem, num_tasks = primitive_blockwise(
         func,
         out_ind,
