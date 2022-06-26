@@ -47,7 +47,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | Searching      | `argmax`           |                    | 2                | `argreduction` primitive     |
 |                | `argmin`           |                    | 2                | `argreduction` primitive     |
 |                | `nonzero`          |                    | 3                | Shape is data dependent      |
-|                | `where`            |                    | 1                |                              |
+|                | `where`            | :white_check_mark: |                  |                              |
 | Set            | `unique_all`       |                    | 3                | Shape is data dependent      |
 |                | `unique_counts`    |                    | 3                | Shape is data dependent      |
 |                | `unique_inverse`   |                    | 3                | Shape is data dependent      |

@@ -55,6 +55,7 @@ from .array_api import (
     uint16,
     uint32,
     uint64,
+    where,
     zeros,
     zeros_like,
 )
@@ -116,6 +117,7 @@ __all__ = [
     "uint32",
     "uint64",
     "uint8",
+    "where",
     "zeros",
     "zeros_like",
 ]

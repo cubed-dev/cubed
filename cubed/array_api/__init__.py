@@ -37,5 +37,6 @@ from .manipulation_functions import (
     squeeze,
     stack,
 )
+from .searching_functions import where
 from .statistical_functions import mean, sum
 from .utility_functions import all, any

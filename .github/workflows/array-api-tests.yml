@@ -81,7 +81,6 @@ jobs:
           array_api_tests/test_manipulation_functions.py::test_roll
           array_api_tests/test_searching_functions.py::test_argmax
           array_api_tests/test_searching_functions.py::test_argmin
-          array_api_tests/test_searching_functions.py::test_where
           array_api_tests/test_sorting_functions.py
           array_api_tests/test_statistical_functions.py::test_max
           array_api_tests/test_statistical_functions.py::test_min
