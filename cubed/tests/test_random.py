@@ -2,14 +2,10 @@ import random
 
 import pytest
 from numpy.testing import assert_array_equal
-from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
 import cubed.random
-from cubed.runtime.executors.beam import BeamDagExecutor
-from cubed.runtime.executors.lithops import LithopsDagExecutor
-from cubed.runtime.executors.python import PythonDagExecutor
-from cubed.tests.test_array import LITHOPS_LOCAL_CONFIG
+from cubed.tests.test_array import ALL_EXECUTORS
 
 
 @pytest.fixture()
@@ -17,15 +13,7 @@ def spec(tmp_path):
     return xp.Spec(tmp_path, max_mem=100000)
 
 
-@pytest.fixture(
-    scope="module",
-    params=[
-        PythonPipelineExecutor(),
-        PythonDagExecutor(),
-        BeamDagExecutor(),
-        LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG),
-    ],
-)
+@pytest.fixture(scope="module", params=ALL_EXECUTORS)
 def executor(request):
     return request.param
 

@@ -2,6 +2,27 @@ from typing import Iterable
 
 import numpy as np
 import zarr
+from rechunker.executors.python import PythonPipelineExecutor
+
+from cubed.runtime.executors.python import PythonDagExecutor
+
+LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
+
+ALL_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
+
+try:
+    from cubed.runtime.executors.beam import BeamDagExecutor
+
+    ALL_EXECUTORS.append(BeamDagExecutor())
+except ImportError:
+    pass
+
+try:
+    from cubed.runtime.executors.lithops import LithopsDagExecutor
+
+    ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+except ImportError:
+    pass
 
 
 def create_zarr(a, /, store, *, dtype=None, chunks=None):

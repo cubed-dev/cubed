@@ -5,13 +5,10 @@ from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.primitive.blockwise import blockwise
-from cubed.runtime.executors.beam import BeamPipelineExecutor
 from cubed.tests.utils import create_zarr, execute_pipeline
 
 
-@pytest.fixture(
-    scope="module", params=[PythonPipelineExecutor(), BeamPipelineExecutor()]
-)
+@pytest.fixture(scope="module", params=[PythonPipelineExecutor()])
 def executor(request):
     return request.param
 

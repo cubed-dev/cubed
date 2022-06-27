@@ -5,18 +5,14 @@ import numpy as np
 import pytest
 import zarr
 from numpy.testing import assert_array_equal
-from rechunker.executors.python import PythonPipelineExecutor
 
 import cubed as xp
 from cubed import Callback
 from cubed.array_api.manipulation_functions import reshape_chunks
 from cubed.primitive.blockwise import apply_blockwise
-from cubed.runtime.executors.beam import BeamDagExecutor
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
-from cubed.tests.utils import create_zarr
-
-LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
+from cubed.tests.utils import ALL_EXECUTORS, LITHOPS_LOCAL_CONFIG, create_zarr
 
 
 @pytest.fixture()
@@ -24,15 +20,7 @@ def spec(tmp_path):
     return xp.Spec(tmp_path, max_mem=100000)
 
 
-@pytest.fixture(
-    scope="module",
-    params=[
-        PythonPipelineExecutor(),
-        PythonDagExecutor(),
-        BeamDagExecutor(),
-        LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG),
-    ],
-)
+@pytest.fixture(scope="module", params=ALL_EXECUTORS)
 def executor(request):
     return request.param
 
