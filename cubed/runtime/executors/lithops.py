@@ -47,7 +47,7 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
             plan(executor)
 
 
-def map_as_completed(
+def map_unordered(
     lithops_function_executor,
     map_function,
     map_iterdata,
@@ -160,7 +160,7 @@ def build_stage_mappable_func(
         return stage.function(mappable, config=config)
 
     def stage_func(lithops_function_executor):
-        for _ in map_as_completed(
+        for _ in map_unordered(
             lithops_function_executor,
             sf,
             list(stage.mappable),

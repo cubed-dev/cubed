@@ -3,7 +3,7 @@ import time
 import pytest
 from lithops.executors import LocalhostExecutor
 
-from cubed.runtime.executors.lithops import map_as_completed
+from cubed.runtime.executors.lithops import map_unordered
 
 # Functions read and write from local filesystem since lithops runs tasks in a separate process
 
@@ -18,14 +18,14 @@ def write_int_to_file(path, i):
         f.write(str(i))
 
 
-def test_map_as_completed_no_failures(tmp_path):
+def test_map_unordered_no_failures(tmp_path):
     def never_fail(i):
         invocation_count_file = tmp_path / f"{i}"
         write_int_to_file(invocation_count_file, 1)
         return i
 
     with LocalhostExecutor() as executor:
-        for _ in map_as_completed(executor, never_fail, range(3), max_failures=0):
+        for _ in map_unordered(executor, never_fail, range(3), max_failures=0):
             pass
 
     assert read_int_from_file(tmp_path / "0") == 1
@@ -33,7 +33,7 @@ def test_map_as_completed_no_failures(tmp_path):
     assert read_int_from_file(tmp_path / "2") == 1
 
 
-def test_map_as_completed(tmp_path):
+def test_map_unordered(tmp_path):
     def fail_on_first_invocation(i):
         invocation_count_file = tmp_path / f"{i}"
         if invocation_count_file.exists():
@@ -46,13 +46,13 @@ def test_map_as_completed(tmp_path):
 
     with pytest.raises(RuntimeError):
         with LocalhostExecutor() as executor:
-            for _ in map_as_completed(
+            for _ in map_unordered(
                 executor, fail_on_first_invocation, [0, 1, 2], max_failures=2
             ):
                 pass
 
     with LocalhostExecutor() as executor:
-        for _ in map_as_completed(
+        for _ in map_unordered(
             executor, fail_on_first_invocation, [3, 4, 5], max_failures=3
         ):
             pass
@@ -62,7 +62,7 @@ def test_map_as_completed(tmp_path):
     assert read_int_from_file(tmp_path / "5") == 2
 
 
-def test_map_as_completed_execution_timeout(tmp_path):
+def test_map_unordered_execution_timeout(tmp_path):
     def sleep_on_first_invocation(i):
         invocation_count_file = tmp_path / f"{i}"
         if invocation_count_file.exists():
@@ -79,7 +79,7 @@ def test_map_as_completed_execution_timeout(tmp_path):
     # task is retried after timeout exception
     config = {"lithops": {"execution_timeout": 30}}
     with LocalhostExecutor(config=config) as executor:
-        for _ in map_as_completed(executor, sleep_on_first_invocation, [0, 1, 2]):
+        for _ in map_unordered(executor, sleep_on_first_invocation, [0, 1, 2]):
             pass
 
     assert read_int_from_file(tmp_path / "0") == 2
@@ -87,7 +87,7 @@ def test_map_as_completed_execution_timeout(tmp_path):
     assert read_int_from_file(tmp_path / "2") == 1
 
 
-def test_map_as_completed_stragglers(tmp_path):
+def test_map_unordered_stragglers(tmp_path):
     def sleep_on_first_invocation(i):
         invocation_count_file = tmp_path / f"{i}"
         if invocation_count_file.exists():
@@ -106,7 +106,7 @@ def test_map_as_completed_stragglers(tmp_path):
 
     config = {"lithops": {"log_level": "DEBUG"}}
     with LocalhostExecutor(config=config) as executor:
-        for _ in map_as_completed(
+        for _ in map_unordered(
             executor, sleep_on_first_invocation, range(10), use_backups=True
         ):
             pass
