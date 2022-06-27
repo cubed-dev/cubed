@@ -24,6 +24,15 @@ try:
 except ImportError:
     pass
 
+MODAL_EXECUTORS = []
+
+try:
+    from cubed.runtime.executors.modal import AsyncModalDagExecutor, ModalDagExecutor
+
+    MODAL_EXECUTORS.append(AsyncModalDagExecutor(), ModalDagExecutor())
+except ImportError:
+    pass
+
 
 def create_zarr(a, /, store, *, dtype=None, chunks=None):
     # from dask.asarray
