@@ -60,7 +60,15 @@ from .array_api import (
     zeros,
     zeros_like,
 )
-from .core import Callback, Spec, TqdmProgressBar, from_zarr, map_blocks, to_zarr
+from .core import (
+    Callback,
+    Spec,
+    TqdmProgressBar,
+    from_zarr,
+    map_blocks,
+    std_out_err_redirect_tqdm,
+    to_zarr,
+)
 
 __all__ = [
     "add",
@@ -112,6 +120,7 @@ __all__ = [
     "Spec",
     "squeeze",
     "stack",
+    "std_out_err_redirect_tqdm",
     "sum",
     "to_zarr",
     "TqdmProgressBar",

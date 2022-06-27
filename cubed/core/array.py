@@ -1,3 +1,5 @@
+import contextlib
+import sys
 from operator import mul
 
 import networkx as nx
@@ -171,3 +173,23 @@ class TqdmProgressBar(Callback):
 
     def on_task_end(self, name=None):
         self.pbars[name].update()
+
+
+@contextlib.contextmanager
+def std_out_err_redirect_tqdm():
+    """
+    Context manager for redirecting stdout and stderr when using tqdm.
+    See https://github.com/tqdm/tqdm#redirecting-writing
+    """
+    from tqdm.contrib import DummyTqdmFile
+
+    orig_out_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = map(DummyTqdmFile, orig_out_err)
+        yield orig_out_err[0]
+    # Relay exceptions
+    except Exception as exc:
+        raise exc
+    # Always restore sys.stdout/err if necessary
+    finally:
+        sys.stdout, sys.stderr = orig_out_err
