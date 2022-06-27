@@ -36,7 +36,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                | `vecdot`           |                    | 1                | Express using `tensordot`    |
 | Manipulation   | `broadcast_arrays` | :white_check_mark: |                  |                              |
 |                | `broadcast_to`     | :white_check_mark: |                  |                              |
-|                | `concat`           |                    | 3                | Like `stack`                 |
+|                | `concat`           | :white_check_mark: |                  |                              |
 |                | `expand_dims`      | :white_check_mark: |                  |                              |
 |                | `flip`             |                    | 3                | Needs indexing               |
 |                | `permute_dims`     | :white_check_mark: |                  |                              |

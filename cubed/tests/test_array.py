@@ -301,6 +301,20 @@ def test_broadcast_to(
     assert_array_equal(b.compute(executor=executor), np.broadcast_to(x, new_shape))
 
 
+def test_concat(spec, executor):
+    # note: middle chunk of output reads from three input chunks
+    a = xp.full((4, 5), 1, chunks=(3, 2), spec=spec)
+    b = xp.full((1, 5), 2, chunks=(3, 2), spec=spec)
+    c = xp.full((3, 5), 3, chunks=(3, 2), spec=spec)
+    d = xp.concat([a, b, c], axis=0)
+    assert_array_equal(
+        d.compute(executor=executor),
+        np.concatenate(
+            [np.full((4, 5), 1), np.full((1, 5), 2), np.full((3, 5), 3)], axis=0
+        ),
+    )
+
+
 def test_expand_dims(spec, executor):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
     b = xp.expand_dims(a, axis=0)

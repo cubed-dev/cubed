@@ -1,13 +1,14 @@
+from bisect import bisect
 from itertools import product
 from math import prod
-from operator import mul
+from operator import add, mul
 
 import numpy as np
+import tlz
 from dask.array.core import broadcast_chunks, normalize_chunks
 from dask.array.reshape import reshape_rechunk
 from dask.array.slicing import sanitize_index
 from dask.array.utils import validate_axis
-from tlz import concat
 from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
@@ -22,7 +23,7 @@ def broadcast_arrays(*arrays):
 
     # Unify uneven chunking
     inds = [list(reversed(range(x.ndim))) for x in arrays]
-    uc_args = concat(zip(arrays, inds))
+    uc_args = tlz.concat(zip(arrays, inds))
     _, args = unify_chunks(*uc_args, warn=False)
 
     shape = np.broadcast_shapes(*(e.shape for e in args))
@@ -72,6 +73,73 @@ def broadcast_to(x, /, shape, *, chunks=None):
 
 def _broadcast_like(x, template):
     return np.broadcast_to(x, template.shape)
+
+
+def concat(arrays, /, *, axis=0):
+    if not arrays:
+        raise ValueError("Need array(s) to concat")
+
+    if axis is None:
+        raise NotImplementedError("None axis not supported in concat")
+
+    # TODO: check arrays all have same shape (except in the dimension specified by axis)
+    # TODO: type promotion
+    # TODO: unify chunks
+
+    a = arrays[0]
+
+    # offsets along axis for the start of each array
+    offsets = [0] + list(tlz.accumulate(add, [a.shape[axis] for a in arrays]))
+
+    axis = validate_axis(axis, a.ndim)
+    shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
+    dtype = a.dtype
+    chunks = normalize_chunks(to_chunksize(a.chunks), shape=shape, dtype=dtype)
+
+    # memory allocated by reading one chunk from input array
+    # note that although the output chunk will overlap multiple input chunks,
+    # the chunks are read in series, reusing memory
+    extra_required_mem = np.dtype(a.dtype).itemsize * prod(to_chunksize(a.chunks))
+
+    return map_direct(
+        _read_concat_chunk,
+        *arrays,
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        extra_required_mem=extra_required_mem,
+        axis=axis,
+        offsets=offsets,
+    )
+
+
+def _read_concat_chunk(x, *arrays, axis=None, offsets=None, block_id=None):
+    # determine the start and stop indexes for this block along the axis dimension
+    chunks = arrays[0].zarray.chunks
+    start = block_id[axis] * chunks[axis]
+    stop = start + x.shape[axis]
+
+    # produce a key that has slices (except for axis dimension, which is replaced below)
+    idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
+    key = get_item(arrays[0].chunks, idx)
+
+    # concatenate slices of the arrays
+    parts = []
+    for ai, sl in _array_slices(offsets, start, stop):
+        key = tuple(sl if i == axis else k for i, k in enumerate(key))
+        parts.append(arrays[ai].zarray[key])
+    return np.concatenate(parts, axis=axis)
+
+
+def _array_slices(offsets, start, stop):
+    """Return pairs of array index and slice to slice from start to stop in the concatenated array."""
+    slice_start = start
+    while slice_start < stop:
+        # find array that slice_start falls in
+        i = bisect(offsets, slice_start) - 1
+        slice_stop = min(stop, offsets[i + 1])
+        yield i, slice(slice_start - offsets[i], slice_stop - offsets[i])
+        slice_start = slice_stop
 
 
 def expand_dims(x, /, *, axis):

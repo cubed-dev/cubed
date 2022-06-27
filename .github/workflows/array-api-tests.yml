@@ -64,6 +64,7 @@ jobs:
           array_api_tests/test_creation_functions.py::test_asarray_arrays
           array_api_tests/test_creation_functions.py::test_full
           array_api_tests/test_linalg.py::test_matmul
+          array_api_tests/test_manipulation_functions.py::test_concat
           array_api_tests/test_manipulation_functions.py::test_stack
 
           # not implemented
@@ -76,7 +77,6 @@ jobs:
           array_api_tests/test_linalg.py::test_matrix_transpose
           array_api_tests/test_linalg.py::test_tensordot
           array_api_tests/test_linalg.py::test_vecdot
-          array_api_tests/test_manipulation_functions.py::test_concat
           array_api_tests/test_manipulation_functions.py::test_flip
           array_api_tests/test_manipulation_functions.py::test_roll
           array_api_tests/test_searching_functions.py::test_argmax
