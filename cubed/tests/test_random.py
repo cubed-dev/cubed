@@ -3,14 +3,15 @@ import random
 import pytest
 from numpy.testing import assert_array_equal
 
-import cubed as xp
+import cubed
+import cubed.array_api as xp
 import cubed.random
 from cubed.tests.test_array import ALL_EXECUTORS
 
 
 @pytest.fixture()
 def spec(tmp_path):
-    return xp.Spec(tmp_path, max_mem=100000)
+    return cubed.Spec(tmp_path, max_mem=100000)
 
 
 @pytest.fixture(scope="module", params=ALL_EXECUTORS)

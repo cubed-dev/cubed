@@ -6,7 +6,8 @@ import pytest
 import zarr
 from numpy.testing import assert_array_equal
 
-import cubed as xp
+import cubed
+import cubed.array_api as xp
 from cubed import Callback
 from cubed.array_api.manipulation_functions import reshape_chunks
 from cubed.primitive.blockwise import apply_blockwise
@@ -17,7 +18,7 @@ from cubed.tests.utils import ALL_EXECUTORS, LITHOPS_LOCAL_CONFIG, create_zarr
 
 @pytest.fixture()
 def spec(tmp_path):
-    return xp.Spec(tmp_path, max_mem=100000)
+    return cubed.Spec(tmp_path, max_mem=100000)
 
 
 @pytest.fixture(scope="module", params=ALL_EXECUTORS)
@@ -31,7 +32,7 @@ def executor(request):
 
 
 def test_object_bool(tmp_path, executor):
-    spec = xp.Spec(tmp_path, 100000, executor=executor)
+    spec = cubed.Spec(tmp_path, 100000, executor=executor)
     a = xp.asarray(
         [[False, False, False], [False, False, False], [False, False, False]],
         chunks=(2, 2),
@@ -220,7 +221,7 @@ def test_matmul(spec, executor):
 @pytest.mark.cloud
 def test_matmul_cloud(executor):
     tmp_path = "gs://barry-zarr-test/matmul"
-    spec = xp.Spec(tmp_path, max_mem=100000)
+    spec = cubed.Spec(tmp_path, max_mem=100000)
     try:
         a = xp.asarray(
             [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
@@ -433,7 +434,7 @@ def test_from_zarr(tmp_path, spec, executor):
         chunks=(2, 2),
         store=store,
     )
-    a = xp.from_zarr(store, spec=spec)
+    a = cubed.from_zarr(store, spec=spec)
     assert_array_equal(
         a.compute(executor=executor), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     )
@@ -442,7 +443,7 @@ def test_from_zarr(tmp_path, spec, executor):
 def test_to_zarr(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     output = tmp_path / "output.zarr"
-    xp.to_zarr(a, output, executor=executor)
+    cubed.to_zarr(a, output, executor=executor)
     res = zarr.open(output)
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
@@ -450,7 +451,7 @@ def test_to_zarr(tmp_path, spec, executor):
 def test_map_blocks_with_kwargs(spec, executor):
     # based on dask test
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=5, spec=spec)
-    b = xp.map_blocks(np.max, a, axis=0, keepdims=True, dtype=a.dtype, chunks=(1,))
+    b = cubed.map_blocks(np.max, a, axis=0, keepdims=True, dtype=a.dtype, chunks=(1,))
     assert_array_equal(b.compute(executor=executor), np.array([4, 9]))
 
 
@@ -460,7 +461,7 @@ def test_map_blocks_with_block_id(spec, executor):
         return np.ones_like(block) * sum(block_id) + c
 
     a = xp.arange(10, dtype="int64", chunks=(2,))
-    b = xp.map_blocks(func, a, dtype="int64")
+    b = cubed.map_blocks(func, a, dtype="int64")
 
     assert_array_equal(
         b.compute(executor=executor),
@@ -468,14 +469,14 @@ def test_map_blocks_with_block_id(spec, executor):
     )
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-    b = xp.map_blocks(func, a, dtype="int64")
+    b = cubed.map_blocks(func, a, dtype="int64")
 
     assert_array_equal(
         b.compute(executor=executor),
         np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype="int64"),
     )
 
-    c = xp.map_blocks(func, a, dtype="int64", c=1)
+    c = cubed.map_blocks(func, a, dtype="int64", c=1)
 
     assert_array_equal(
         c.compute(executor=executor),
@@ -519,7 +520,7 @@ def test_default_spec_max_mem_exceeded():
 
 
 def test_reduction_multiple_rounds(tmp_path, executor):
-    spec = xp.Spec(tmp_path, max_mem=110)
+    spec = cubed.Spec(tmp_path, max_mem=110)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))

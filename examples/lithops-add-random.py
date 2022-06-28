@@ -3,7 +3,8 @@ import sys
 
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-import cubed as xp
+import cubed
+import cubed.array_api as xp
 import cubed.random
 from cubed import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
@@ -17,7 +18,7 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
     runtime = sys.argv[2]
-    spec = xp.Spec(tmp_path, max_mem=1_000_000_000)
+    spec = cubed.Spec(tmp_path, max_mem=1_000_000_000)
     executor = LithopsDagExecutor()
 
     a = cubed.random.random(

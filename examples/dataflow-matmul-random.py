@@ -3,7 +3,8 @@ import logging
 
 from apache_beam.options.pipeline_options import PipelineOptions
 
-import cubed as xp
+import cubed
+import cubed.array_api as xp
 import cubed.random
 from cubed.runtime.executors.beam import BeamDagExecutor
 
@@ -18,7 +19,7 @@ def run(argv=None):
     known_args, pipeline_args = parser.parse_known_args(argv)
     beam_options = PipelineOptions(pipeline_args)
 
-    spec = xp.Spec(known_args.tmp_path, max_mem=1_000_000_000)
+    spec = cubed.Spec(known_args.tmp_path, max_mem=1_000_000_000)
     executor = BeamDagExecutor()
 
     a = cubed.random.random(

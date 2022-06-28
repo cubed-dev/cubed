@@ -16,12 +16,12 @@ Cubed is a distributed N-dimensional array library implemented in Python using f
 ## Example
 
 ```python
->>> import cubed
+>>> import cubed.array_api as xp
 >>> import cubed.random
 >>> spec = cubed.Spec(work_dir="tmp", max_mem=100_000)
 >>> a = cubed.random.random((4, 4), chunks=(2, 2), spec=spec)
 >>> b = cubed.random.random((4, 4), chunks=(2, 2), spec=spec)
->>> c = cubed.matmul(a, b)
+>>> c = xp.matmul(a, b)
 >>> c.compute()
 array([[1.22171031, 0.93644194, 1.83459119, 1.8087655 ],
        [1.3540541 , 1.13054495, 2.24504742, 2.05022751],

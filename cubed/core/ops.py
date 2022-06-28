@@ -224,7 +224,7 @@ def map_blocks(
     func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
 ):
     if has_keyword(func, "block_id"):
-        from cubed import asarray
+        from cubed.array_api import asarray
 
         # Create an array of index offsets with the same chunk structure as the args,
         # which we convert to block ids (chunk coordinates) later.
