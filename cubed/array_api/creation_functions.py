@@ -9,16 +9,9 @@ from cubed.core import Array, Plan, gensym, map_blocks, new_temp_store, new_temp
 from cubed.utils import to_chunksize
 
 
-def _arange(a, size):
-    start = a[0]
-    return np.arange(start * size, (start + 1) * size)
-
-
 def arange(
     start, /, stop=None, step=1, *, dtype=None, device=None, chunks="auto", spec=None
 ):
-    # TODO: implement step
-    # TODO: support array length that isn't a multiple of chunks
     if stop is None:
         start, stop = 0, start
     num = int(max(np.ceil((stop - start) / step), 0))
@@ -30,8 +23,24 @@ def arange(
     # create small array of block numbers
     out = asarray(np.arange(numblocks), chunks=(1,), spec=spec)
     # then map each block to partial arange
-    out = map_blocks(_arange, out, dtype=dtype, chunks=chunks, size=chunksize)
+    out = map_blocks(
+        _arange,
+        out,
+        dtype=dtype,
+        chunks=chunks,
+        size=chunksize,
+        start=start,
+        stop=stop,
+        step=step,
+    )
     return out
+
+
+def _arange(a, size, start, stop, step):
+    i = a[0]
+    blockstart = start + (i * size * step)
+    blockstop = start + ((i + 1) * size * step)
+    return np.arange(blockstart, min(blockstop, stop), step)
 
 
 def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None):
@@ -47,7 +56,8 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
     target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
-    target[...] = a
+    if a.size > 0:
+        target[...] = a
 
     plan = Plan(name, "asarray", target, spec)
     return Array(name, target, plan)

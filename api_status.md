@@ -6,7 +6,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | ------------------------ | ------------------- | ------------------ | ---------- | ----------------------------- |
 | Array object             |                     |                    |            | Partial implementation        |
 | Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                               |
-| Creation Functions       | `arange`            | :white_check_mark: |            | Partial implementation        |
+| Creation Functions       | `arange`            | :white_check_mark: |            |                               |
 |                          | `asarray`           | :white_check_mark: |            |                               |
 |                          | `empty`             | :white_check_mark: |            | Uses `full`                   |
 |                          | `empty_like`        | :white_check_mark: |            |                               |

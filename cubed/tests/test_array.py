@@ -54,8 +54,13 @@ def test_object_bool(tmp_path, executor):
 
 
 def test_arange(spec, executor):
-    a = xp.arange(12, chunks=(4,), spec=spec)
+    a = xp.arange(12, chunks=(5,), spec=spec)
     assert_array_equal(a.compute(executor=executor), np.arange(12))
+
+
+def test_arange_step(spec):
+    a = xp.arange(20, step=3, chunks=(5,), spec=spec)
+    assert_array_equal(a.compute(), np.arange(20, step=3))
 
 
 def test_asarray(spec, executor):

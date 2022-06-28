@@ -60,7 +60,6 @@ jobs:
           array_api_tests/test_signatures.py
 
           # partially implemented (some edge cases fail)
-          array_api_tests/test_creation_functions.py::test_arange
           array_api_tests/test_creation_functions.py::test_asarray_arrays
           array_api_tests/test_creation_functions.py::test_full
           array_api_tests/test_linalg.py::test_matmul
