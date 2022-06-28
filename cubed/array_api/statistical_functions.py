@@ -9,6 +9,12 @@ from cubed.array_api.dtypes import (
 from cubed.core import reduction
 
 
+def max(x, /, *, axis=None, keepdims=False):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in max")
+    return reduction(x, np.max, axis=axis, dtype=x.dtype, keepdims=keepdims)
+
+
 def mean(x, /, *, axis=None, keepdims=False):
     # This implementation uses NumPy and Zarr's structured arrays to store a
     # pair of fields needed to keep per-chunk counts and totals for computing
@@ -44,6 +50,27 @@ def _mean_combine(a, **kwargs):
 
 def _mean_aggregate(a):
     return np.divide(a["total"], a["n"])
+
+
+def min(x, /, *, axis=None, keepdims=False):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in min")
+    return reduction(x, np.min, axis=axis, dtype=x.dtype, keepdims=keepdims)
+
+
+def prod(x, /, *, axis=None, dtype=None, keepdims=False):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in prod")
+    if dtype is None:
+        if x.dtype in _signed_integer_dtypes:
+            dtype = np.int64
+        elif x.dtype in _unsigned_integer_dtypes:
+            dtype = np.uint64
+        elif x.dtype == np.float32:
+            dtype = np.float64
+        else:
+            dtype = x.dtype
+    return reduction(x, np.prod, axis=axis, dtype=dtype, keepdims=keepdims)
 
 
 def sum(x, /, *, axis=None, dtype=None, keepdims=False):

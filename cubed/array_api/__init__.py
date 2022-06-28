@@ -96,9 +96,9 @@ from .searching_functions import where
 
 __all__ += ["where"]
 
-from .statistical_functions import mean, sum
+from .statistical_functions import max, mean, min, prod, sum
 
-__all__ += ["mean", "sum"]
+__all__ += ["max", "mean", "min", "prod", "sum"]
 
 from .utility_functions import all, any
 

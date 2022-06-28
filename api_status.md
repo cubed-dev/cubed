@@ -59,10 +59,10 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unique_values`     |                    | 3          | Shape is data dependent       |
 | Sorting Functions        | `argsort`           |                    | 3          | Not in Dask                   |
 |                          | `sort`              |                    | 3          | Not in Dask                   |
-| Statistical Functions    | `max`               |                    | 1          | Like `sum`                    |
+| Statistical Functions    | `max`               | :white_check_mark: |            |                               |
 |                          | `mean`              | :white_check_mark: |            |                               |
-|                          | `min`               |                    | 1          | Like `sum`                    |
-|                          | `prod`              |                    | 1          | Like `sum`                    |
+|                          | `min`               | :white_check_mark: |            |                               |
+|                          | `prod`              | :white_check_mark: |            |                               |
 |                          | `std`               |                    | 2          | Like `mean`                   |
 |                          | `sum`               | :white_check_mark: |            |                               |
 |                          | `var`               |                    | 2          | Like `mean`                   |
