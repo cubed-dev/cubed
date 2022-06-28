@@ -4,7 +4,9 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 
 | Category                 | Object/Function     | Implemented        | Difficulty | Notes                         |
 | ------------------------ | ------------------- | ------------------ | ---------- | ----------------------------- |
-| Array object             |                     |                    |            | Partial implementation        |
+| Array object             | Operators           |                    |            | Partial implementation        |
+|                          | Attributes          | :white_check_mark: |            |                               |
+|                          | Methods             |                    |            | Partial implementation        |
 | Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                               |
 | Creation Functions       | `arange`            | :white_check_mark: |            |                               |
 |                          | `asarray`           | :white_check_mark: |            |                               |

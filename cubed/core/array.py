@@ -45,6 +45,10 @@ class Array:
         return tuple(max(c) for c in self.chunks)
 
     @property
+    def device(self):
+        return "cpu"
+
+    @property
     def mT(self):
         from cubed.array_api.linear_algebra_functions import matrix_transpose
 
