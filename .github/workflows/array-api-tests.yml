@@ -43,7 +43,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Array API tests
         env:
-          ARRAY_API_TESTS_MODULE: cubed
+          ARRAY_API_TESTS_MODULE: cubed.array_api
         run: |
           pushd array-api-tests
 
