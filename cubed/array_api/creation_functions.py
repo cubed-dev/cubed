@@ -64,6 +64,8 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
 
 
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+    if dtype is None:
+        dtype = np.float64
     return full(shape, None, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -76,7 +78,14 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
     if dtype is None:
-        dtype = np.float64
+        if isinstance(fill_value, int):
+            dtype = np.int64
+        elif isinstance(fill_value, float):
+            dtype = np.float64
+        elif isinstance(fill_value, bool):
+            dtype = np.bool_
+        else:
+            raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
     store = new_temp_store(name=name, spec=spec)
@@ -98,6 +107,8 @@ def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=No
 
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+    if dtype is None:
+        dtype = np.float64
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -106,6 +117,8 @@ def ones_like(x, /, *, dtype=None, device=None, chunks=None, spec=None):
 
 
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None):
+    if dtype is None:
+        dtype = np.float64
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
