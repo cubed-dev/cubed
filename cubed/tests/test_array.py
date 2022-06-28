@@ -50,6 +50,14 @@ def test_object_bool(tmp_path, executor):
     assert b
 
 
+def test_object_transpose(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+
+    assert_array_equal(a.mT.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).T)
+
+    assert_array_equal(a.T.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).T)
+
+
 # Creation functions
 
 

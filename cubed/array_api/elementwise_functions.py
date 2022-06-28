@@ -27,5 +27,13 @@ def isnan(x, /):
     return elemwise(np.isnan, x, dtype=np.bool_)
 
 
+def logical_and(x1, x2, /):
+    return elemwise(np.logical_and, x1, x2, dtype=np.bool_)
+
+
+def logical_or(x1, x2, /):
+    return elemwise(np.logical_or, x1, x2, dtype=np.bool_)
+
+
 def negative(x, /):
     return elemwise(np.negative, x)

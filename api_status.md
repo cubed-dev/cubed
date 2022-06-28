@@ -36,7 +36,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | Multi-axis          | :white_check_mark: |            | Can't mix integers and slices |
 |                          | Boolean array       |                    | 3          | Shape is data dependent       |
 | Linear Algebra Functions | `matmul`            | :white_check_mark: |            | Only 2D case                  |
-|                          | `matrix_transpose`  |                    | 1          | Like Dask                     |
+|                          | `matrix_transpose`  | :white_check_mark: |            |                               |
 |                          | `tensordot`         |                    | 1          | Like Dask                     |
 |                          | `vecdot`            |                    | 1          | Express using `tensordot`     |
 | Manipulation Functions   | `broadcast_arrays`  | :white_check_mark: |            |                               |

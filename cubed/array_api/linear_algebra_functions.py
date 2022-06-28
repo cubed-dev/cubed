@@ -47,5 +47,16 @@ def _chunk_sum(a, axis=None, dtype=None, keepdims=None):
     return np.sum(a, axis=axis, dtype=dtype, keepdims=True)
 
 
+def matrix_transpose(x, /):
+    if x.ndim < 2:
+        raise ValueError("x must be at least 2-dimensional for matrix_transpose")
+
+    from cubed.array_api.manipulation_functions import permute_dims
+
+    axes = list(range(x.ndim))
+    axes[-1], axes[-2] = axes[-2], axes[-1]  # swap last two axes
+    return permute_dims(x, axes)
+
+
 def outer(x1, x2, /):
     return blockwise(np.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)

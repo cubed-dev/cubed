@@ -45,6 +45,12 @@ class Array:
         return tuple(max(c) for c in self.chunks)
 
     @property
+    def mT(self):
+        from cubed.array_api.linear_algebra_functions import matrix_transpose
+
+        return matrix_transpose(self)
+
+    @property
     def ndim(self):
         return len(self.shape)
 
@@ -59,6 +65,14 @@ class Array:
     @property
     def size(self):
         return reduce(mul, self.shape, 1)
+
+    @property
+    def T(self):
+        if self.ndim != 2:
+            raise ValueError("x.T requires x to have 2 dimensions.")
+        from cubed.array_api.linear_algebra_functions import matrix_transpose
+
+        return matrix_transpose(self)
 
     def compute(
         self,
@@ -128,6 +142,11 @@ class Array:
         from cubed.core.ops import elemwise
 
         return elemwise(np.equal, self, other, dtype=np.bool_)
+
+    def __neg__(self, /):
+        from cubed.core.ops import elemwise
+
+        return elemwise(np.negative, self)
 
     def __repr__(self):
         return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"

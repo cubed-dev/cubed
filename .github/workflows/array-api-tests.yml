@@ -63,6 +63,7 @@ jobs:
           array_api_tests/test_creation_functions.py::test_asarray_arrays
           array_api_tests/test_creation_functions.py::test_full
           array_api_tests/test_linalg.py::test_matmul
+          array_api_tests/test_linalg.py::test_matrix_transpose
           array_api_tests/test_manipulation_functions.py::test_concat
           array_api_tests/test_manipulation_functions.py::test_stack
 
@@ -73,7 +74,6 @@ jobs:
           array_api_tests/test_array_object.py::test_scalar_casting
           array_api_tests/test_creation_functions.py::test_eye
           array_api_tests/test_creation_functions.py::test_meshgrid
-          array_api_tests/test_linalg.py::test_matrix_transpose
           array_api_tests/test_linalg.py::test_tensordot
           array_api_tests/test_linalg.py::test_vecdot
           array_api_tests/test_manipulation_functions.py::test_flip

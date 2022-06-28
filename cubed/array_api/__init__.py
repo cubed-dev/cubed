@@ -62,13 +62,33 @@ __all__ += [
     "uint64",
 ]
 
-from .elementwise_functions import add, divide, equal, isfinite, isinf, isnan, negative
+from .elementwise_functions import (
+    add,
+    divide,
+    equal,
+    isfinite,
+    isinf,
+    isnan,
+    logical_and,
+    logical_or,
+    negative,
+)
 
-__all__ += ["add", "divide", "equal", "isfinite", "isinf", "isnan", "negative"]
+__all__ += [
+    "add",
+    "divide",
+    "equal",
+    "isfinite",
+    "isinf",
+    "isnan",
+    "logical_and",
+    "logical_or",
+    "negative",
+]
 
-from .linear_algebra_functions import matmul, outer
+from .linear_algebra_functions import matmul, matrix_transpose, outer
 
-__all__ += ["matmul", "outer"]
+__all__ += ["matmul", "matrix_transpose", "outer"]
 
 from .manipulation_functions import (
     broadcast_arrays,
