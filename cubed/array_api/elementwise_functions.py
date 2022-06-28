@@ -1,14 +1,15 @@
 import numpy as np
 
+from cubed.array_api.data_type_functions import result_type
 from cubed.core import elemwise
 
 
 def add(x1, x2, /):
-    return elemwise(np.add, x1, x2)
+    return elemwise(np.add, x1, x2, dtype=result_type(x1, x2))
 
 
 def divide(x1, x2, /):
-    return elemwise(np.divide, x1, x2)
+    return elemwise(np.divide, x1, x2, dtype=result_type(x1, x2))
 
 
 def equal(x1, x2, /):
@@ -36,4 +37,4 @@ def logical_or(x1, x2, /):
 
 
 def negative(x, /):
-    return elemwise(np.negative, x)
+    return elemwise(np.negative, x, dtype=x.dtype)

@@ -150,7 +150,7 @@ class Array:
     def __neg__(self, /):
         from cubed.core.ops import elemwise
 
-        return elemwise(np.negative, self)
+        return elemwise(np.negative, self, dtype=self.dtype)
 
     def __repr__(self):
         return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"

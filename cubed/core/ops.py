@@ -155,9 +155,7 @@ def elemwise(func, *args, dtype=None):
     out_ndim = len(np.broadcast_shapes(*shapes))
     expr_inds = tuple(range(out_ndim))[::-1]
     if dtype is None:
-        from cubed.array_api.data_type_functions import result_type
-
-        dtype = result_type(*args)
+        raise ValueError("dtype must be specified for elemwise")
     return blockwise(
         func,
         expr_inds,
