@@ -4,9 +4,9 @@ Codename: Barry
 
 **_Note: this is a proof-of-concept, and many things are incomplete or don't work._**
 
-## Fixed-memory serverless distributed N-dimensional array processing
+## Bounded-memory serverless distributed N-dimensional array processing
 
-Cubed is a distributed N-dimensional array library implemented in Python using fixed-memory serverless processing and Zarr for storage.
+Cubed is a distributed N-dimensional array library implemented in Python using bounded-memory serverless processing and Zarr for storage.
 
 - Implements the [Python Array API standard](https://data-apis.org/array-api/latest/) (see [coverage status](./api_status.md))
 - Guaranteed maximum memory usage for standard array functions
@@ -43,7 +43,7 @@ Another approach has started gaining traction in the last few years. [Lithops](h
 
 Rechunker is interesting, since it implements a very targeted use case (rechunking persistent N-dimensional arrays), using only stateless (serverless) operations, with guaranteed memory usage. Even though it can run on systems like Beam and Dask, it deliberately avoids passing array chunks between worker nodes using the shuffle. Instead, all bulk data operations are reads from, or writes to, cloud storage (Zarr in this case). Since chunks are always of known size it is possible to tightly control memory usage, thereby avoiding unpredictable memory use at runtime.
 
-This project is an attempt to go further: implement all distributed array operations using a fixed-memory serverless model.
+This project is an attempt to go further: implement all distributed array operations using a bounded-memory serverless model.
 
 ## Design
 
