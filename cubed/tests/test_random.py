@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.tests.test_array import ALL_EXECUTORS
+from cubed.tests.utils import ALL_EXECUTORS
 
 
 @pytest.fixture()
