@@ -1,4 +1,5 @@
 import numbers
+from functools import partial
 from math import prod
 from numbers import Integral, Number
 
@@ -486,6 +487,66 @@ def reduction(
     result = astype(result, dtype, copy=False)
 
     return result
+
+
+def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False):
+    dtype = np.int64  # index data type
+    intermediate_dtype = [("i", dtype), ("v", x.dtype)]
+
+    # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
+    chunks = tuple((1,) * len(c) if i == axis else c for i, c in enumerate(x.chunks))
+    out = map_blocks(
+        partial(_arg_map_func, arg_func=arg_func),
+        x,
+        dtype=intermediate_dtype,
+        chunks=chunks,
+        axis=axis,
+        size=to_chunksize(x.chunks)[axis],
+    )
+
+    # then reduce across blocks
+    return reduction(
+        out,
+        _arg_func,
+        combine_func=partial(_arg_combine, arg_func=arg_func),
+        aggegrate_func=_arg_aggregate,
+        axis=axis,
+        intermediate_dtype=intermediate_dtype,
+        dtype=dtype,
+        keepdims=keepdims,
+    )
+
+
+def _arg_map_func(a, axis, arg_func=None, size=None, block_id=None):
+    i = arg_func(a, axis=axis, keepdims=True)
+    v = np.take_along_axis(a, i, axis=axis)
+    # add block offset to i so it is absolute index within whole array
+    offset = block_id[axis] * size
+    return {"i": i + offset, "v": v}
+
+
+def _arg_func(a, **kwargs):
+    # pass through
+    return {"i": a["i"], "v": a["v"]}
+
+
+def _arg_combine(a, arg_func=None, **kwargs):
+    # convert axis from single value tuple to int
+    axis = kwargs.pop("axis")[0]
+
+    i = a["i"]
+    v = a["v"]
+
+    # find indexes of values in v and apply to i and v
+    vi = arg_func(v, axis=axis, **kwargs)
+    i_combined = np.take_along_axis(i, vi, axis=axis)
+    v_combined = np.take_along_axis(v, vi, axis=axis)
+    return {"i": i_combined, "v": v_combined}
+
+
+def _arg_aggregate(a):
+    # just return index values
+    return a["i"]
 
 
 def squeeze(x, /, axis):

@@ -51,8 +51,8 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `roll`              |                    | 3          | Needs `concat` and `reshape`  |
 |                          | `squeeze`           | :white_check_mark: |            |                               |
 |                          | `stack`             | :white_check_mark: |            |                               |
-| Searching Functions      | `argmax`            |                    | 2          | `argreduction` primitive      |
-|                          | `argmin`            |                    | 2          | `argreduction` primitive      |
+| Searching Functions      | `argmax`            | :white_check_mark: |            |                               |
+|                          | `argmin`            | :white_check_mark: |            |                               |
 |                          | `nonzero`           |                    | 3          | Shape is data dependent       |
 |                          | `where`             | :white_check_mark: |            |                               |
 | Set Functions            | `unique_all`        |                    | 3          | Shape is data dependent       |

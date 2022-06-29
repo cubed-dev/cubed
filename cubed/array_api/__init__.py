@@ -112,9 +112,9 @@ __all__ += [
     "stack",
 ]
 
-from .searching_functions import where
+from .searching_functions import argmax, argmin, where
 
-__all__ += ["where"]
+__all__ += ["argmax", "argmin", "where"]
 
 from .statistical_functions import max, mean, min, prod, sum
 

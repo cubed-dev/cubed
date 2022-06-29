@@ -380,6 +380,36 @@ def test_squeeze_2d(spec, executor):
     )
 
 
+# Searching functions
+
+
+def test_argmax(spec):
+    a = xp.asarray([[11, 12, 13], [11, 11, 14], [10, 13, 11]], chunks=(2, 2), spec=spec)
+    b = xp.argmax(a)
+    assert_array_equal(
+        b.compute(),
+        np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmax(),
+    )
+
+
+def test_argmax_axis_0(spec):
+    a = xp.asarray([[11, 12, 13], [11, 11, 14], [10, 13, 11]], chunks=(2, 2), spec=spec)
+    b = xp.argmax(a, axis=0)
+    assert_array_equal(
+        b.compute(),
+        np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmax(axis=0),
+    )
+
+
+def test_argmin_axis_0(spec):
+    a = xp.asarray([[11, 12, 13], [11, 11, 14], [10, 13, 11]], chunks=(2, 2), spec=spec)
+    b = xp.argmin(a, axis=0)
+    assert_array_equal(
+        b.compute(),
+        np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmin(axis=0),
+    )
+
+
 # Statistical functions
 
 
