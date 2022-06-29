@@ -175,7 +175,13 @@ def reshape(x, /, shape):
     shape = tuple(map(sanitize_index, shape))
     known_sizes = [s for s in shape if s != -1]
     if len(known_sizes) != len(shape):
-        raise NotImplementedError("unknown dimension not supported in reshape")
+        if len(shape) - len(known_sizes) > 1:
+            raise ValueError("can only specify one unknown dimension")
+        # Fastpath for x.reshape(-1) on 1D arrays
+        if len(shape) == 1 and x.ndim == 1:
+            return x
+        missing_size = sanitize_index(x.size / reduce(mul, known_sizes, 1))
+        shape = tuple(missing_size if s == -1 else s for s in shape)
 
     if reduce(mul, shape, 1) != x.size:
         raise ValueError("total size of new array must be unchanged")
