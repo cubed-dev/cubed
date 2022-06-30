@@ -27,6 +27,14 @@ def floor_divide(x1, x2, /):
     return elemwise(np.floor_divide, x1, x2, dtype=result_type(x1, x2))
 
 
+def greater(x1, x2, /):
+    return elemwise(np.greater, x1, x2, dtype=np.bool_)
+
+
+def greater_equal(x1, x2, /):
+    return elemwise(np.greater_equal, x1, x2, dtype=np.bool_)
+
+
 def isfinite(x, /):
     return elemwise(np.isfinite, x, dtype=np.bool_)
 
@@ -37,6 +45,14 @@ def isinf(x, /):
 
 def isnan(x, /):
     return elemwise(np.isnan, x, dtype=np.bool_)
+
+
+def less(x1, x2, /):
+    return elemwise(np.less, x1, x2, dtype=np.bool_)
+
+
+def less_equal(x1, x2, /):
+    return elemwise(np.less_equal, x1, x2, dtype=np.bool_)
 
 
 def logical_and(x1, x2, /):
@@ -57,6 +73,10 @@ def negative(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in negative")
     return elemwise(np.negative, x, dtype=x.dtype)
+
+
+def not_equal(x1, x2, /):
+    return elemwise(np.not_equal, x1, x2, dtype=np.bool_)
 
 
 def positive(x, /):
