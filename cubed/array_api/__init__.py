@@ -66,26 +66,36 @@ from .elementwise_functions import (
     add,
     divide,
     equal,
+    floor_divide,
     isfinite,
     isinf,
     isnan,
     logical_and,
     logical_or,
+    multiply,
     negative,
     positive,
+    pow,
+    remainder,
+    subtract,
 )
 
 __all__ += [
     "add",
     "divide",
     "equal",
+    "floor_divide",
     "isfinite",
     "isinf",
     "isnan",
     "logical_and",
     "logical_or",
+    "multiply",
     "negative",
     "positive",
+    "pow",
+    "remainder",
+    "subtract",
 ]
 
 from .linear_algebra_functions import matmul, matrix_transpose, outer
