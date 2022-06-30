@@ -1,7 +1,7 @@
 import numpy as np
 
 from cubed.array_api.data_type_functions import result_type
-from cubed.array_api.dtypes import _floating_dtypes, _numeric_dtypes
+from cubed.array_api.dtypes import _boolean_dtypes, _floating_dtypes, _numeric_dtypes
 from cubed.core import elemwise
 
 
@@ -36,14 +36,20 @@ def greater_equal(x1, x2, /):
 
 
 def isfinite(x, /):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in isfinite")
     return elemwise(np.isfinite, x, dtype=np.bool_)
 
 
 def isinf(x, /):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in isinf")
     return elemwise(np.isinf, x, dtype=np.bool_)
 
 
 def isnan(x, /):
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in isnan")
     return elemwise(np.isnan, x, dtype=np.bool_)
 
 
@@ -56,10 +62,14 @@ def less_equal(x1, x2, /):
 
 
 def logical_and(x1, x2, /):
+    if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
+        raise TypeError("Only boolean dtypes are allowed in logical_and")
     return elemwise(np.logical_and, x1, x2, dtype=np.bool_)
 
 
 def logical_or(x1, x2, /):
+    if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
+        raise TypeError("Only boolean dtypes are allowed in logical_or")
     return elemwise(np.logical_or, x1, x2, dtype=np.bool_)
 
 
