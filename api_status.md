@@ -4,7 +4,12 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 
 | Category                 | Object/Function     | Implemented        | Difficulty | Notes                         |
 | ------------------------ | ------------------- | ------------------ | ---------- | ----------------------------- |
-| Array object             | Operators           |                    |            | Partial implementation        |
+| Array object             | Arithmetic Ops      | :white_check_mark: |            |                               |
+|                          | Array Ops           |                    |            |                               |
+|                          | Bitwise Ops         |                    |            |                               |
+|                          | Comparison Ops      | :white_check_mark: |            |                               |
+|                          | In-place Ops        |                    |            |                               |
+|                          | Reflected Ops       |                    |            |                               |
 |                          | Attributes          | :white_check_mark: |            |                               |
 |                          | Methods             |                    |            | Partial implementation        |
 | Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                               |
