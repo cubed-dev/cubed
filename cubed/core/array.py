@@ -3,7 +3,6 @@ import sys
 from operator import mul
 
 import networkx as nx
-import numpy as np
 from dask.array.core import normalize_chunks
 from toolz import map, reduce
 
@@ -20,7 +19,11 @@ def gensym(name="array"):
 
 
 class CoreArray:
-    """Chunked array backed by Zarr storage."""
+    """Chunked array backed by Zarr storage.
+
+    This class has the basic array attributes (`dtype`, `shape`, `chunks`, etc).
+    The other array methods and attributes are provided in a subclass.
+    """
 
     def __init__(self, name, zarray, plan):
         self.name = name
@@ -34,29 +37,14 @@ class CoreArray:
 
     @classmethod
     def new(cls, name, zarray, plan):
-        return cls(name, zarray, plan)
+        # Always create an Array object subclass that has array API methods and attributes
+        from cubed.array_api.array_object import Array
 
-    def __array__(self, dtype=None):
-        x = self.compute()
-        if dtype and x.dtype != dtype:
-            x = x.astype(dtype)
-        if not isinstance(x, np.ndarray):
-            x = np.array(x)
-        return x
+        return Array(name, zarray, plan)
 
     @property
     def chunksize(self):
         return tuple(max(c) for c in self.chunks)
-
-    @property
-    def device(self):
-        return "cpu"
-
-    @property
-    def mT(self):
-        from cubed.array_api.linear_algebra_functions import matrix_transpose
-
-        return matrix_transpose(self)
 
     @property
     def ndim(self):
@@ -73,14 +61,6 @@ class CoreArray:
     @property
     def size(self):
         return reduce(mul, self.shape, 1)
-
-    @property
-    def T(self):
-        if self.ndim != 2:
-            raise ValueError("x.T requires x to have 2 dimensions.")
-        from cubed.array_api.linear_algebra_functions import matrix_transpose
-
-        return matrix_transpose(self)
 
     def compute(
         self,
@@ -147,16 +127,6 @@ class CoreArray:
         if self.ndim != 0:
             raise TypeError("int is only allowed on arrays with 0 dimensions")
         return int(self.compute())
-
-    def __eq__(self, other, /):
-        from cubed.core.ops import elemwise
-
-        return elemwise(np.equal, self, other, dtype=np.bool_)
-
-    def __neg__(self, /):
-        from cubed.core.ops import elemwise
-
-        return elemwise(np.negative, self, dtype=self.dtype)
 
     def __repr__(self):
         return f"CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
