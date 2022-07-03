@@ -72,6 +72,7 @@ from .elementwise_functions import (
     logical_and,
     logical_or,
     negative,
+    positive,
 )
 
 __all__ += [
@@ -84,6 +85,7 @@ __all__ += [
     "logical_and",
     "logical_or",
     "negative",
+    "positive",
 ]
 
 from .linear_algebra_functions import matmul, matrix_transpose, outer

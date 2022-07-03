@@ -38,3 +38,7 @@ def logical_or(x1, x2, /):
 
 def negative(x, /):
     return elemwise(np.negative, x, dtype=x.dtype)
+
+
+def positive(x, /):
+    return elemwise(np.positive, x, dtype=x.dtype)
