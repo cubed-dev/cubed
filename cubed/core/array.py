@@ -105,8 +105,10 @@ class Array:
             # read back from zarr
             return self.zarray[...]
 
-    def visualize(self, filename="cubed", format=None):
-        return self.plan.visualize(filename=filename, format=format)
+    def visualize(self, filename="cubed", format=None, optimize_graph=True):
+        return self.plan.visualize(
+            filename=filename, format=format, optimize_graph=optimize_graph
+        )
 
     def __getitem__(self, key, /):
         from cubed.core.ops import index

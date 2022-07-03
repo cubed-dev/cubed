@@ -259,3 +259,21 @@ def test_fusion(spec):
         result,
         np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.float32),
     )
+
+
+def test_no_fusion(spec):
+    executor = PythonDagExecutor()
+    # b can't be fused with c because d also depends on b
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.positive(a)
+    c = xp.positive(b)
+    d = xp.equal(b, c)
+
+    assert d.plan.num_tasks(d.name, optimize_graph=False) == 3
+    assert d.plan.num_tasks(d.name, optimize_graph=True) == 3
+
+    task_counter = TaskCounter()
+    result = d.compute(executor=executor, callbacks=[task_counter])
+    assert task_counter.value == 3
+
+    assert_array_equal(result, np.ones((2, 2)))
