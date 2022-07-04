@@ -238,7 +238,7 @@ class Plan:
 
             if format == "svg":
                 return display.SVG(filename=full_filename)
-        except ImportError:
+        except ImportError:  # pragma: no cover
             # Can't return a display object if no IPython.
             pass
         return None

@@ -5,7 +5,7 @@ from rechunker.types import PipelineExecutor
 
 class DagExecutor:
     def execute_dag(self, dag, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 Executor = Union[PipelineExecutor, DagExecutor]

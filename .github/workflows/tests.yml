@@ -43,4 +43,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v
+          pytest -v --cov=cubed --cov-report=term-missing --cov-fail-under=90

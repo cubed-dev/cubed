@@ -1,3 +1,5 @@
+import operator
+
 import numpy as np
 
 from cubed.array_api.creation_functions import asarray
@@ -158,6 +160,26 @@ class Array(CoreArray):
         import cubed.array_api as array_api
 
         return array_api
+
+    def __bool__(self, /):
+        if self.ndim != 0:
+            raise TypeError("bool is only allowed on arrays with 0 dimensions")
+        return bool(self.compute())
+
+    def __float__(self, /):
+        if self.ndim != 0:
+            raise TypeError("float is only allowed on arrays with 0 dimensions")
+        return float(self.compute())
+
+    def __index__(self, /):
+        if self.ndim != 0:
+            raise TypeError("index is only allowed on arrays with 0 dimensions")
+        return operator.index(self.compute())
+
+    def __int__(self, /):
+        if self.ndim != 0:
+            raise TypeError("int is only allowed on arrays with 0 dimensions")
+        return int(self.compute())
 
     # Utility methods
 
