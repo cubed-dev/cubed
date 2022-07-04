@@ -1,6 +1,6 @@
 import contextlib
 import sys
-from operator import index, mul
+from operator import mul
 
 import networkx as nx
 from dask.array.core import normalize_chunks
@@ -113,39 +113,19 @@ class CoreArray:
 
         self.zarray.__setitem__(key, value)
 
-    def __bool__(self, /):
-        if self.ndim != 0:
-            raise TypeError("bool is only allowed on arrays with 0 dimensions")
-        return bool(self.compute())
-
-    def __float__(self, /):
-        if self.ndim != 0:
-            raise TypeError("float is only allowed on arrays with 0 dimensions")
-        return float(self.compute())
-
-    def __index__(self, /):
-        if self.ndim != 0:
-            raise TypeError("index is only allowed on arrays with 0 dimensions")
-        return index(self.compute())
-
-    def __int__(self, /):
-        if self.ndim != 0:
-            raise TypeError("int is only allowed on arrays with 0 dimensions")
-        return int(self.compute())
-
     def __repr__(self):
         return f"CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
 class Callback:
     def on_compute_start(self, arr):
-        pass
+        pass  # pragma: no cover
 
     def on_compute_end(self, arr):
-        pass
+        pass  # pragma: no cover
 
     def on_task_end(self, name=None):
-        pass
+        pass  # pragma: no cover
 
 
 class TqdmProgressBar(Callback):

@@ -41,6 +41,7 @@ jobs:
           pushd array-api-tests
           pip install -e '../cubed'
           pip install -r requirements.txt
+          pip install pytest-cov
       - name: Run Array API tests
         env:
           ARRAY_API_TESTS_MODULE: cubed.array_api
@@ -115,4 +116,4 @@ jobs:
 
           EOF
 
-          pytest -v -rxXfEA --max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --ci
+          pytest -v -rxXfEA --max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --ci --cov=cubed.array_api --cov-report=term-missing

@@ -1,3 +1,4 @@
 [run]
 omit =
     */tests/*
+    cubed/array_api/*
