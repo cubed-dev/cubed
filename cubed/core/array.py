@@ -1,6 +1,6 @@
 import contextlib
 import sys
-from operator import mul
+from operator import index, mul
 
 import networkx as nx
 from dask.array.core import normalize_chunks
@@ -122,6 +122,11 @@ class CoreArray:
         if self.ndim != 0:
             raise TypeError("float is only allowed on arrays with 0 dimensions")
         return float(self.compute())
+
+    def __index__(self, /):
+        if self.ndim != 0:
+            raise TypeError("index is only allowed on arrays with 0 dimensions")
+        return index(self.compute())
 
     def __int__(self, /):
         if self.ndim != 0:

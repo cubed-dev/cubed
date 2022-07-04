@@ -6,8 +6,10 @@ from cubed.array_api.dtypes import (
     _boolean_dtypes,
     _dtype_categories,
     _floating_dtypes,
+    _integer_or_boolean_dtypes,
     _numeric_dtypes,
 )
+from cubed.array_api.linear_algebra_functions import matmul
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
 
@@ -84,6 +86,39 @@ class Array(CoreArray):
         other = self._check_allowed_dtypes(other, "numeric", "__pow__")
         return elemwise(np.power, self, other, dtype=result_type(self, other))
 
+    # Array Operators
+
+    def __matmul__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__matmul__")
+        return matmul(self, other)
+
+    # Bitwise Operators
+
+    def __invert__(self, /):
+        if self.dtype not in _integer_or_boolean_dtypes:
+            raise TypeError("Only integer or boolean dtypes are allowed in __invert__")
+        return elemwise(np.invert, self, dtype=self.dtype)
+
+    def __and__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer or boolean", "__and__")
+        return elemwise(np.bitwise_and, self, other, dtype=result_type(self, other))
+
+    def __or__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer or boolean", "__or__")
+        return elemwise(np.bitwise_or, self, other, dtype=result_type(self, other))
+
+    def __xor__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer or boolean", "__xor__")
+        return elemwise(np.bitwise_xor, self, other, dtype=result_type(self, other))
+
+    def __lshift__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer", "__lshift__")
+        return elemwise(np.left_shift, self, other, dtype=result_type(self, other))
+
+    def __rshift__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer", "__rshift__")
+        return elemwise(np.right_shift, self, other, dtype=result_type(self, other))
+
     # Comparison Operators
 
     def __eq__(self, other, /):
@@ -109,6 +144,20 @@ class Array(CoreArray):
     def __ne__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__ne__")
         return elemwise(np.not_equal, self, other, dtype=np.bool_)
+
+    # Methods
+
+    def __abs__(self, /):
+        if self.dtype not in _numeric_dtypes:
+            raise TypeError("Only numeric dtypes are allowed in __abs__")
+        return elemwise(np.abs, self, dtype=self.dtype)
+
+    def __array_namespace__(self, /, *, api_version):
+        if api_version is not None and not api_version.startswith("2021."):
+            raise ValueError(f"Unrecognized array API version: {api_version!r}")
+        import cubed.array_api as array_api
+
+        return array_api
 
     # Utility methods
 
