@@ -50,8 +50,59 @@ jobs:
           # Skip testing functions with known issues
           cat << EOF >> skips.txt
 
-          # don't test elemwise yet as most are not implemented
-          array_api_tests/test_operators_and_elementwise_functions.py
+          # not implemented (elemwise)
+          array_api_tests/test_operators_and_elementwise_functions.py::test_abs
+          array_api_tests/test_operators_and_elementwise_functions.py::test_acos
+          array_api_tests/test_operators_and_elementwise_functions.py::test_acosh
+          array_api_tests/test_operators_and_elementwise_functions.py::test_asin
+          array_api_tests/test_operators_and_elementwise_functions.py::test_asinh
+          array_api_tests/test_operators_and_elementwise_functions.py::test_atan
+          array_api_tests/test_operators_and_elementwise_functions.py::test_atan2
+          array_api_tests/test_operators_and_elementwise_functions.py::test_atanh
+          array_api_tests/test_operators_and_elementwise_functions.py::test_bitwise_and
+          array_api_tests/test_operators_and_elementwise_functions.py::test_bitwise_left_shift
+          array_api_tests/test_operators_and_elementwise_functions.py::test_bitwise_invert
+          array_api_tests/test_operators_and_elementwise_functions.py::test_bitwise_or
+          array_api_tests/test_operators_and_elementwise_functions.py::test_bitwise_right_shift
+          array_api_tests/test_operators_and_elementwise_functions.py::test_bitwise_xor
+          array_api_tests/test_operators_and_elementwise_functions.py::test_ceil
+          array_api_tests/test_operators_and_elementwise_functions.py::test_cos
+          array_api_tests/test_operators_and_elementwise_functions.py::test_cosh
+          array_api_tests/test_operators_and_elementwise_functions.py::test_exp
+          array_api_tests/test_operators_and_elementwise_functions.py::test_expm1
+          array_api_tests/test_operators_and_elementwise_functions.py::test_floor
+          array_api_tests/test_operators_and_elementwise_functions.py::test_log
+          array_api_tests/test_operators_and_elementwise_functions.py::test_log1p
+          array_api_tests/test_operators_and_elementwise_functions.py::test_log2
+          array_api_tests/test_operators_and_elementwise_functions.py::test_log10
+          array_api_tests/test_operators_and_elementwise_functions.py::test_logaddexp
+          array_api_tests/test_operators_and_elementwise_functions.py::test_logical_not
+          array_api_tests/test_operators_and_elementwise_functions.py::test_logical_xor
+          array_api_tests/test_operators_and_elementwise_functions.py::test_round
+          array_api_tests/test_operators_and_elementwise_functions.py::test_sign
+          array_api_tests/test_operators_and_elementwise_functions.py::test_sin
+          array_api_tests/test_operators_and_elementwise_functions.py::test_sinh
+          array_api_tests/test_operators_and_elementwise_functions.py::test_square
+          array_api_tests/test_operators_and_elementwise_functions.py::test_sqrt
+          array_api_tests/test_operators_and_elementwise_functions.py::test_tan
+          array_api_tests/test_operators_and_elementwise_functions.py::test_tanh
+          array_api_tests/test_operators_and_elementwise_functions.py::test_trunc
+
+          # not implemented (elemwise inplace)
+          array_api_tests/test_operators_and_elementwise_functions.py::test_add[__iadd__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_add[__iadd__(x, s)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_divide[__itruediv__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_divide[__itruediv__(x, s)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_floor_divide[__ifloordiv__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_floor_divide[__ifloordiv__(x, s)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_multiply[__imul__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_multiply[__imul__(x, s)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_pow[__ipow__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_pow[__ipow__(x, s)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_remainder[__imod__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_remainder[__imod__(x, s)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_subtract[__isub__(x1, x2)]
+          array_api_tests/test_operators_and_elementwise_functions.py::test_subtract[__isub__(x, s)]
 
           # don't run special cases yet
           array_api_tests/test_special_cases.py
