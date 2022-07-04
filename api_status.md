@@ -5,13 +5,13 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | Category                 | Object/Function     | Implemented        | Difficulty | Notes                         |
 | ------------------------ | ------------------- | ------------------ | ---------- | ----------------------------- |
 | Array object             | Arithmetic Ops      | :white_check_mark: |            |                               |
-|                          | Array Ops           |                    |            |                               |
-|                          | Bitwise Ops         |                    |            |                               |
+|                          | Array Ops           | :white_check_mark: |            |                               |
+|                          | Bitwise Ops         | :white_check_mark: |            |                               |
 |                          | Comparison Ops      | :white_check_mark: |            |                               |
 |                          | In-place Ops        |                    |            |                               |
 |                          | Reflected Ops       |                    |            |                               |
 |                          | Attributes          | :white_check_mark: |            |                               |
-|                          | Methods             |                    |            | Partial implementation        |
+|                          | Methods             | :white_check_mark: |            | Not device methods            |
 | Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                               |
 | Creation Functions       | `arange`            | :white_check_mark: |            |                               |
 |                          | `asarray`           | :white_check_mark: |            |                               |
@@ -37,8 +37,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | Data Types               | `bool`, `int8`, ... | :white_check_mark: |            |                               |
 | Elementwise Functions    | `add`               | :white_check_mark: |            | Example of a binary function  |
 |                          | `negative`          | :white_check_mark: |            | Example of a unary function   |
-|                          | ...                 |                    |            |                               |
-|                          | _others_            |                    | 1          | Like `add` or `negative`      |
+|                          | _others_            | :white_check_mark: |            |                               |
 | Indexing                 | Single-axis         | :white_check_mark: |            |                               |
 |                          | Multi-axis          | :white_check_mark: |            | Can't mix integers and slices |
 |                          | Boolean array       |                    | 3          | Shape is data dependent       |
