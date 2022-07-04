@@ -13,7 +13,7 @@ from tlz import concat, partition
 from toolz import map
 from zarr.indexing import BasicIndexer, is_integer, is_slice, replace_ellipsis
 
-from cubed.core.array import Array, gensym
+from cubed.core.array import CoreArray, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
@@ -26,7 +26,7 @@ def from_zarr(store, spec=None):
     target = zarr.open(store, mode="r")
 
     plan = Plan(name, "from_zarr", target, spec)
-    return Array(name, target, plan)
+    return CoreArray.new(name, target, plan)
 
 
 def to_zarr(x, store, return_stored=False, executor=None):
@@ -148,7 +148,7 @@ def blockwise(
         num_tasks,
         *source_arrays,
     )
-    return Array(name, target, plan)
+    return CoreArray.new(name, target, plan)
 
 
 def elemwise(func, *args, dtype=None):
@@ -280,7 +280,7 @@ def _map_blocks(
 
     arrs = args
     argpairs = [
-        (a, tuple(range(a.ndim))[::-1]) if isinstance(a, Array) else (a, None)
+        (a, tuple(range(a.ndim))[::-1]) if isinstance(a, CoreArray) else (a, None)
         for a in args
     ]
     if arrs:
@@ -395,7 +395,7 @@ def rechunk(x, chunks, target_store=None):
         temp_store=temp_store,
     )
     plan = Plan(name, "rechunk", target, spec, pipeline, required_mem, num_tasks, x)
-    return Array(name, target, plan)
+    return CoreArray.new(name, target, plan)
 
 
 def reduction(

@@ -19,7 +19,7 @@ def gensym(name="array"):
     return f"{name}-{sym_counter:03}"
 
 
-class Array:
+class CoreArray:
     """Chunked array backed by Zarr storage."""
 
     def __init__(self, name, zarray, plan):
@@ -31,6 +31,10 @@ class Array:
             zarray.chunks, shape=self.shape, dtype=self.dtype
         )
         self.plan = plan
+
+    @classmethod
+    def new(cls, name, zarray, plan):
+        return cls(name, zarray, plan)
 
     def __array__(self, dtype=None):
         x = self.compute()
@@ -116,7 +120,7 @@ class Array:
         return index(self, key)
 
     def __setitem__(self, key, value):
-        if isinstance(value, Array) and value.ndim != 0:
+        if isinstance(value, CoreArray) and value.ndim != 0:
             raise NotImplementedError(
                 "Calling __setitem__ on an array with more than 0 dimensions is not supported."
             )
@@ -155,7 +159,7 @@ class Array:
         return elemwise(np.negative, self, dtype=self.dtype)
 
     def __repr__(self):
-        return f"Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+        return f"CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
 class Callback:
