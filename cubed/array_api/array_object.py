@@ -154,7 +154,7 @@ class Array(CoreArray):
             raise TypeError("Only numeric dtypes are allowed in __abs__")
         return elemwise(np.abs, self, dtype=self.dtype)
 
-    def __array_namespace__(self, /, *, api_version):
+    def __array_namespace__(self, /, *, api_version=None):
         if api_version is not None and not api_version.startswith("2021."):
             raise ValueError(f"Unrecognized array API version: {api_version!r}")
         import cubed.array_api as array_api
