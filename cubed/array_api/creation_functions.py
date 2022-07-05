@@ -52,8 +52,16 @@ def _arange(a, size, start, stop, step):
 
 def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None):
     a = obj
+    from cubed.array_api.array_object import Array
+
     # from dask.asarray
-    if not isinstance(getattr(a, "shape", None), Iterable):
+    if isinstance(a, Array):
+        return a
+    elif type(a).__module__.split(".")[0] == "xarray" and hasattr(
+        a, "data"
+    ):  # pragma: no cover
+        return asarray(a.data)
+    elif not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
         a = np.asarray(a, dtype=dtype)
     if dtype is None:

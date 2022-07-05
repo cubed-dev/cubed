@@ -69,6 +69,13 @@ def test_asarray(spec, executor):
     )
 
 
+def test_asarray_from_array(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray(a)
+    assert b is a
+    assert_array_equal(b.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
 def test_ones(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     assert_array_equal(a.compute(executor=executor), np.ones((3, 3)))
