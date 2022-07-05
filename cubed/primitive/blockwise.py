@@ -123,10 +123,8 @@ def blockwise(
         name_chunk_keys = []
         name_chunk_inds = v[1:]  # remove func
         # flatten (nested) lists indicating contraction
-        # note this only works for dimensions of size 1 (used for squeeze impl)
         if isinstance(name_chunk_inds[0], list):
             name_chunk_inds = list(flatten(name_chunk_inds))
-            assert len(name_chunk_inds) == 1
         for name_chunk_ind in name_chunk_inds:
             name = name_chunk_ind[0]
             chunk_ind = name_chunk_ind[1:]

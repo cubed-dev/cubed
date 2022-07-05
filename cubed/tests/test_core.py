@@ -87,6 +87,18 @@ def test_map_blocks_with_block_id(spec, executor):
     )
 
 
+def test_map_blocks_with_different_block_shapes(spec):
+    def func(x, y):
+        return x
+
+    a = xp.asarray([[[12, 13]]], spec=spec)
+    b = xp.asarray([14, 15], spec=spec)
+    c = cubed.map_blocks(
+        func, a, b, dtype="int64", chunks=(1, 1, 2), drop_axis=2, new_axis=2
+    )
+    assert_array_equal(c.compute(), np.array([[[12, 13]]]))
+
+
 def test_multiple_ops(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
