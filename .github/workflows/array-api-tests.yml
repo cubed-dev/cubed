@@ -86,7 +86,6 @@ jobs:
           # partially implemented (some edge cases fail)
           array_api_tests/test_creation_functions.py::test_asarray_arrays
           array_api_tests/test_linalg.py::test_matmul
-          array_api_tests/test_linalg.py::test_matrix_transpose
           array_api_tests/test_manipulation_functions.py::test_concat
           array_api_tests/test_manipulation_functions.py::test_stack
 
