@@ -131,6 +131,42 @@ def ones_like(x, /, *, dtype=None, device=None, chunks=None, spec=None):
     return ones(**_like_args(x, dtype, device, chunks, spec))
 
 
+def tril(x, /, *, k=0):
+    from cubed.array_api.searching_functions import where
+
+    if x.ndim < 2:
+        raise ValueError("x must be at least 2-dimensional for tril")
+
+    mask = _tri_mask(*x.shape[-2:], k, x.chunks[-2:])
+    return where(mask, x, zeros_like(x))
+
+
+def triu(x, /, *, k=0):
+    from cubed.array_api.searching_functions import where
+
+    if x.ndim < 2:
+        raise ValueError("x must be at least 2-dimensional for triu")
+
+    mask = _tri_mask(*x.shape[-2:], k - 1, x.chunks[-2:])
+    return where(mask, zeros_like(x), x)
+
+
+def _tri_mask(N, M, k, chunks):
+    from cubed.array_api.elementwise_functions import greater_equal
+    from cubed.array_api.manipulation_functions import expand_dims
+
+    # based on dask
+    chunks = normalize_chunks(chunks, shape=(N, M))
+
+    # TODO: use min_int for arange dtype
+    m = greater_equal(
+        expand_dims(arange(N, chunks=chunks[0][0]), axis=1),
+        arange(-k, M - k, chunks=chunks[1][0]),
+    )
+
+    return m
+
+
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     if dtype is None:
         dtype = np.float64
