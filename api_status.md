@@ -15,7 +15,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                               |
 | Creation Functions       | `arange`            | :white_check_mark: |            |                               |
 |                          | `asarray`           | :white_check_mark: |            |                               |
-|                          | `empty`             | :white_check_mark: |            | Uses `full`                   |
+|                          | `empty`             | :white_check_mark: |            |                               |
 |                          | `empty_like`        | :white_check_mark: |            |                               |
 |                          | `eye`               |                    |            |                               |
 |                          | `from_dlpack`       |                    |            |                               |
@@ -23,11 +23,11 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `full_like`         | :white_check_mark: |            |                               |
 |                          | `linspace`          |                    | 2          | Like `arange`                 |
 |                          | `meshgrid`          |                    |            |                               |
-|                          | `ones`              | :white_check_mark: |            | Uses `full`                   |
+|                          | `ones`              | :white_check_mark: |            |                               |
 |                          | `ones_like`         | :white_check_mark: |            |                               |
-|                          | `tril`              |                    |            |                               |
-|                          | `triu`              |                    |            |                               |
-|                          | `zeros`             | :white_check_mark: |            | Uses `full`                   |
+|                          | `tril`              | :white_check_mark: |            |                               |
+|                          | `triu`              | :white_check_mark: |            |                               |
+|                          | `zeros`             | :white_check_mark: |            |                               |
 |                          | `zeros_like`        | :white_check_mark: |            |                               |
 | Data Type Functions      | `astype`            | :white_check_mark: |            |                               |
 |                          | `can_cast`          | :white_check_mark: |            | Same as `numpy.array_api`     |

@@ -87,6 +87,13 @@ def test_ones_like(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.ones_like(np.ones((3, 3))))
 
 
+@pytest.mark.parametrize("k", [0, 1])
+def test_tril_triu(spec, k):
+    a = xp.ones((4, 5), chunks=(2, 2), spec=spec)
+    assert_array_equal(xp.tril(a, k=k), np.tril(np.ones((4, 5)), k))
+    assert_array_equal(xp.triu(a, k=k), np.triu(np.ones((4, 5)), k))
+
+
 # Data type functions
 
 

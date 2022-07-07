@@ -13,6 +13,8 @@ from .creation_functions import (
     full_like,
     ones,
     ones_like,
+    tril,
+    triu,
     zeros,
     zeros_like,
 )
@@ -26,6 +28,8 @@ __all__ += [
     "full_like",
     "ones",
     "ones_like",
+    "tril",
+    "triu",
     "zeros",
     "zeros_like",
 ]
