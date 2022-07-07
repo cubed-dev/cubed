@@ -8,6 +8,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed import Callback
+from cubed.core.array import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
@@ -221,12 +222,13 @@ def test_callbacks(spec, executor):
         pytest.skip(f"{type(executor)} does not support callbacks")
 
     task_counter = TaskCounter()
+    progress = TqdmProgressBar()  # test indirectly (doesn't fail)
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
-        c.compute(executor=executor, callbacks=[task_counter]),
+        c.compute(executor=executor, callbacks=[task_counter, progress]),
         np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
     )
 
