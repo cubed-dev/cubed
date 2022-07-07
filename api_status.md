@@ -41,7 +41,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | Indexing                 | Single-axis         | :white_check_mark: |            |                               |
 |                          | Multi-axis          | :white_check_mark: |            | Can't mix integers and slices |
 |                          | Boolean array       |                    | 3          | Shape is data dependent       |
-| Linear Algebra Functions | `matmul`            | :white_check_mark: |            | Only 2D case                  |
+| Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                               |
 |                          | `matrix_transpose`  | :white_check_mark: |            |                               |
 |                          | `tensordot`         |                    | 2          | Like Dask                     |
 |                          | `vecdot`            |                    | 1          | Express using `tensordot`     |
