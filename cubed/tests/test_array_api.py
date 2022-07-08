@@ -76,6 +76,12 @@ def test_asarray_from_array(spec):
     assert_array_equal(b.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+@pytest.mark.parametrize("k", [-1, 0, 1])
+def test_eye(spec, k):
+    a = xp.eye(5, k=k, chunks=(2, 2), spec=spec)
+    assert_array_equal(a, np.eye(5, k=k))
+
+
 def test_ones(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     assert_array_equal(a.compute(executor=executor), np.ones((3, 3)))
@@ -87,7 +93,7 @@ def test_ones_like(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.ones_like(np.ones((3, 3))))
 
 
-@pytest.mark.parametrize("k", [0, 1])
+@pytest.mark.parametrize("k", [-1, 0, 1])
 def test_tril_triu(spec, k):
     a = xp.ones((4, 5), chunks=(2, 2), spec=spec)
     assert_array_equal(xp.tril(a, k=k), np.tril(np.ones((4, 5)), k))

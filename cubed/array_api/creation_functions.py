@@ -13,6 +13,7 @@ from cubed.core import (
     new_temp_store,
     new_temp_zarr,
 )
+from cubed.core.ops import map_direct
 from cubed.utils import to_chunksize
 
 
@@ -86,6 +87,39 @@ def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None):
 
 def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None):
     return empty(**_like_args(x, dtype, device, chunks, spec))
+
+
+def eye(
+    n_rows, n_cols=None, /, *, k=0, dtype=None, device=None, chunks="auto", spec=None
+):
+    if n_cols is None:
+        n_cols = n_rows
+    if dtype is None:
+        dtype = np.float64
+
+    shape = (n_rows, n_cols)
+    chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
+    chunksize = to_chunksize(chunks)[0]
+
+    return map_direct(
+        _eye,
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        extra_required_mem=0,
+        spec=spec,
+        k=k,
+        chunksize=chunksize,
+    )
+
+
+def _eye(x, *arrays, k=None, chunksize=None, block_id=None):
+    i, j = block_id
+    bk = (j - i) * chunksize
+    if bk - chunksize <= k <= bk + chunksize:
+        return np.eye(x.shape[0], x.shape[1], k=k - bk, dtype=x.dtype)
+    else:
+        return np.zeros_like(x)
 
 
 def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None):
