@@ -17,7 +17,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `asarray`           | :white_check_mark: |            |                               |
 |                          | `empty`             | :white_check_mark: |            |                               |
 |                          | `empty_like`        | :white_check_mark: |            |                               |
-|                          | `eye`               |                    |            |                               |
+|                          | `eye`               | :white_check_mark: |            |                               |
 |                          | `from_dlpack`       |                    |            |                               |
 |                          | `full`              | :white_check_mark: |            |                               |
 |                          | `full_like`         | :white_check_mark: |            |                               |

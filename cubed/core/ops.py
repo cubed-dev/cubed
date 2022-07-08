@@ -334,7 +334,9 @@ def _map_blocks(
     )
 
 
-def map_direct(func, *args, shape, dtype, chunks, extra_required_mem, **kwargs):
+def map_direct(
+    func, *args, shape, dtype, chunks, extra_required_mem, spec=None, **kwargs
+):
     """
     Map a function across blocks of a new array, using side-input arrays to read directly from.
 
@@ -354,11 +356,17 @@ def map_direct(func, *args, shape, dtype, chunks, extra_required_mem, **kwargs):
     extra_required_mem : int
         Extra memory required (in bytes) for each map task. This should take into account the
         memory requirements for any reads from the side-input arrays (``args``).
+    spec : Spec
+        Specification for the new array. If not specified, the one from the first side input
+        (`args`) will be used (if any).
     """
 
     from cubed.array_api.creation_functions import empty
 
-    out = empty(shape, dtype=dtype, chunks=chunks, spec=args[0].plan.spec)
+    if spec is None and len(args) > 0:
+        spec = args[0].plan.spec
+
+    out = empty(shape, dtype=dtype, chunks=chunks, spec=spec)
 
     kwargs["arrays"] = args
 
