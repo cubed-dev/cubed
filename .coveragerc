@@ -2,3 +2,4 @@
 omit =
     */tests/*
     cubed/array_api/*
+    cubed/extensions/*
