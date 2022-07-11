@@ -6,6 +6,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 
@@ -30,10 +31,11 @@ if __name__ == "__main__":
     c = xp.add(a, b)
     with logging_redirect_tqdm():
         progress = TqdmProgressBar()
+        timeline_viz = TimelineVisualizationCallback()
         c.compute(
             return_stored=False,
             executor=executor,
-            callbacks=[progress],
+            callbacks=[progress, timeline_viz],
             runtime=runtime,
             runtime_memory=2000,
         )
