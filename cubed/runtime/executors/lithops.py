@@ -55,6 +55,7 @@ def map_unordered(
     include_modules=[],
     max_failures=3,
     use_backups=False,
+    return_stats=False,
 ):
     """
     Apply a function to items of an input list, yielding results as they are completed
@@ -68,8 +69,9 @@ def map_unordered(
     :param include_modules: Modules to include.
     :param max_failures: The number of task failures to allow before raising an exception.
     :param use_backups: Whether to launch backup tasks to mitigate against slow-running tasks.
+    :param return_stats: Whether to return lithops stats.
 
-    :return: Function values as they are completed, not necessarily in the input order.
+    :return: Function values (and optionally stats) as they are completed, not necessarily in the input order.
     """
     failures = 0
     return_when = ALWAYS if use_backups else ANY_COMPLETED
@@ -107,7 +109,10 @@ def map_unordered(
                 failed.append(future)
             else:
                 end_times[future] = time.monotonic()
-                yield future.result()
+                if return_stats:
+                    yield future.result(), future.stats
+                else:  # pragma: no cover
+                    yield future.result()
 
             if use_backups:
                 # remove backups
@@ -154,6 +159,16 @@ def map_unordered(
             time.sleep(1)
 
 
+def lithops_stats_to_task_end_event(name, stats):
+    return TaskEndEvent(
+        array_name=name,
+        task_create_tstamp=stats["host_job_create_tstamp"],
+        function_start_tstamp=stats["worker_func_start_tstamp"],
+        function_end_tstamp=stats["worker_func_end_tstamp"],
+        task_result_tstamp=stats["host_status_done_tstamp"],
+    )
+
+
 def build_stage_mappable_func(
     stage, config, name=None, callbacks=None, use_backups=False
 ):
@@ -161,15 +176,16 @@ def build_stage_mappable_func(
         return stage.function(mappable, config=config)
 
     def stage_func(lithops_function_executor):
-        for _ in map_unordered(
+        for _, stats in map_unordered(
             lithops_function_executor,
             sf,
             list(stage.mappable),
             include_modules=["cubed"],
             use_backups=use_backups,
+            return_stats=True,
         ):
             if callbacks is not None:
-                event = TaskEndEvent(array_name=name)
+                event = lithops_stats_to_task_end_event(name, stats)
                 [callback.on_task_end(event) for callback in callbacks]
 
     return stage_func

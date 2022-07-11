@@ -214,6 +214,14 @@ class TaskCounter(Callback):
         self.value = 0
 
     def on_task_end(self, event):
+        if event.task_create_tstamp is not None:
+            assert (
+                event.task_result_tstamp
+                >= event.function_end_tstamp
+                >= event.function_start_tstamp
+                >= event.task_create_tstamp
+                > 0
+            )
         self.value += 1
 
 
