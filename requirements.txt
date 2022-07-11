@@ -1,7 +1,7 @@
-apache-beam[gcp]
+apache-beam #[gcp]
 dask[array]
 fsspec
-gcsfs
+#gcsfs
 lithops[aws]
 networkx < 2.8.3 # https://github.com/networkx/networkx/pull/5667
 numpy >= 1.22
