@@ -134,3 +134,4 @@ class TaskEndEvent:
     function_start_tstamp: Optional[float] = None
     function_end_tstamp: Optional[float] = None
     task_result_tstamp: Optional[float] = None
+    ru_maxrss: Optional[int] = None
