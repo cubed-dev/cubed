@@ -213,7 +213,7 @@ class TaskCounter(Callback):
     def on_compute_start(self, arr):
         self.value = 0
 
-    def on_task_end(self, name=None):
+    def on_task_end(self, event):
         self.value += 1
 
 

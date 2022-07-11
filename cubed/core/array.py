@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from operator import mul
 
 from dask.array.core import normalize_chunks
@@ -121,5 +122,10 @@ class Callback:
     def on_compute_end(self, arr):
         pass  # pragma: no cover
 
-    def on_task_end(self, name=None):
+    def on_task_end(self, event):
         pass  # pragma: no cover
+
+
+@dataclass
+class TaskEndEvent:
+    array_name: str

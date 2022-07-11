@@ -10,6 +10,7 @@ from lithops.wait import ALWAYS, ANY_COMPLETED
 from rechunker.types import ParallelPipelines, PipelineExecutor
 from six import reraise
 
+from cubed.core.array import TaskEndEvent
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
@@ -168,7 +169,8 @@ def build_stage_mappable_func(
             use_backups=use_backups,
         ):
             if callbacks is not None:
-                [callback.on_task_end(name) for callback in callbacks]
+                event = TaskEndEvent(array_name=name)
+                [callback.on_task_end(event) for callback in callbacks]
 
     return stage_func
 

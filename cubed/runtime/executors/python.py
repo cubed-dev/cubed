@@ -1,6 +1,7 @@
 import networkx as nx
 from tenacity import retry, stop_after_attempt
 
+from cubed.core.array import TaskEndEvent
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 
@@ -22,8 +23,10 @@ class PythonDagExecutor(DagExecutor):
                     for m in stage.mappable:
                         exec_stage_func(stage.function, m, config=pipeline.config)
                         if callbacks is not None:
-                            [callback.on_task_end(node) for callback in callbacks]
+                            event = TaskEndEvent(array_name=node)
+                            [callback.on_task_end(event) for callback in callbacks]
                 else:
                     exec_stage_func(stage.function, config=pipeline.config)
                     if callbacks is not None:
-                        [callback.on_task_end(node) for callback in callbacks]
+                        event = TaskEndEvent(array_name=node)
+                        [callback.on_task_end(event) for callback in callbacks]
