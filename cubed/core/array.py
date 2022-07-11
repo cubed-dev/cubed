@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from operator import mul
+from typing import Optional
 
 from dask.array.core import normalize_chunks
 from toolz import map, reduce
@@ -129,3 +130,7 @@ class Callback:
 @dataclass
 class TaskEndEvent:
     array_name: str
+    task_create_tstamp: Optional[float] = None
+    function_start_tstamp: Optional[float] = None
+    function_end_tstamp: Optional[float] = None
+    task_result_tstamp: Optional[float] = None
