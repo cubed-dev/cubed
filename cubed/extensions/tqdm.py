@@ -35,8 +35,8 @@ class TqdmProgressBar(Callback):
         for pbar in self.pbars.values():
             pbar.close()
 
-    def on_task_end(self, name):
-        self.pbars[name].update()
+    def on_task_end(self, event):
+        self.pbars[event.array_name].update()
 
 
 @contextlib.contextmanager
