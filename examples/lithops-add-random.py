@@ -6,7 +6,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed import TqdmProgressBar
+from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 
 logging.basicConfig(level=logging.INFO)

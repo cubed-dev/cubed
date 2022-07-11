@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed import Callback
-from cubed.core.array import TqdmProgressBar
+from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor

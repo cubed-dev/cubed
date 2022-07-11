@@ -12,23 +12,13 @@ try:
 except Exception:  # pragma: no cover
     __version__ = "unknown"
 
-from .core import (
-    Callback,
-    Spec,
-    TqdmProgressBar,
-    from_zarr,
-    map_blocks,
-    std_out_err_redirect_tqdm,
-    to_zarr,
-)
+from .core import Callback, Spec, from_zarr, map_blocks, to_zarr
 
 __all__ = [
     "__version__",
     "Callback",
     "Spec",
-    "TqdmProgressBar",
     "from_zarr",
     "map_blocks",
-    "std_out_err_redirect_tqdm",
     "to_zarr",
 ]

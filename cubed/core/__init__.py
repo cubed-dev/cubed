@@ -1,11 +1,5 @@
 # flake8: noqa
-from .array import (
-    Callback,
-    CoreArray,
-    TqdmProgressBar,
-    gensym,
-    std_out_err_redirect_tqdm,
-)
+from .array import Callback, CoreArray, gensym
 from .ops import (
     blockwise,
     elemwise,
