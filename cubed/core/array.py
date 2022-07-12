@@ -117,6 +117,8 @@ class CoreArray:
 
 
 class Callback:
+    """Object to receive callback events during array computation."""
+
     def on_compute_start(self, arr):
         pass  # pragma: no cover
 
@@ -129,9 +131,22 @@ class Callback:
 
 @dataclass
 class TaskEndEvent:
+    """Information about a completed task."""
+
     array_name: str
+    """Name of the array that the task is for."""
+
     task_create_tstamp: Optional[float] = None
+    """Timestamp of when the task was created by the client."""
+
     function_start_tstamp: Optional[float] = None
+    """Timestamp of when the function started executing on the remote worker."""
+
     function_end_tstamp: Optional[float] = None
+    """Timestamp of when the function finished executing on the remote worker."""
+
     task_result_tstamp: Optional[float] = None
+    """Timestamp of when the result of the task was received by the client."""
+
     ru_maxrss: Optional[int] = None
+    """Peak memory usage of the function running on the remote worker."""

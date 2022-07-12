@@ -1,5 +1,5 @@
 # flake8: noqa
-from .array import Callback, CoreArray, gensym
+from .array import Callback, CoreArray, TaskEndEvent, gensym
 from .ops import (
     blockwise,
     elemwise,
