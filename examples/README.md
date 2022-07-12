@@ -45,7 +45,8 @@ python examples/lithops-add-random.py "s3://cubed-$USER-temp" cubed-runtime
 ### Set up
 
 1. Install a Python dev environment as described in the top-level README.
-2. Create a new GCS bucket (called `cubed-<username>-temp`, for example) in a given region (e.g. `us-central1`) for low latency. This will be used for intermediate data.
+2. Install the dataflow dependencies with `pip install apache-beam[gcp]`
+3. Create a new GCS bucket (called `cubed-<username>-temp`, for example) in a given region (e.g. `us-central1`) for low latency. This will be used for intermediate data.
 
 ### Running
 
@@ -91,7 +92,8 @@ For `dataflow-matmul-random.py`, try with `--num_workers 8`.
 Pre-building a custom container can help reduce the worker startup time. To do this, first enable the Google Cloud Build API and Artifact Registry services. Then:
 
 1. Create a new repository called `cubed-runtime` in Artifact Registry. The format should be 'Docker', and the Location type 'Region', in the same region as the GCS bucket created above. Click on the new repository and copy its URL.
-2. Run the following script to run a small computation. This will also [pre-build a container for later use](https://cloud.google.com/dataflow/docs/guides/using-custom-containers#prebuild).
+2. In the top-level _setup.cfg_ file ensure that the `gcsfs` line for `install_requires` is uncommented.
+3. Run the following script to run a small computation. This will also [pre-build a container for later use](https://cloud.google.com/dataflow/docs/guides/using-custom-containers#prebuild).
 
    - `DOCKER_REGISTRY_PUSH_URL` is the registry URL copied above.
 

@@ -11,7 +11,7 @@ Cubed is a distributed N-dimensional array library implemented in Python using b
 - Implements the [Python Array API standard](https://data-apis.org/array-api/latest/) (see [coverage status](./api_status.md))
 - Guaranteed maximum memory usage for standard array functions
 - [Zarr](https://zarr.readthedocs.io/en/stable/) for storage
-- Multiple serverless runtimes: Python, [Apache Beam](https://beam.apache.org/), [Lithops](https://lithops-cloud.github.io/)
+- Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Apache Beam](https://beam.apache.org/)
 
 ## Example
 
@@ -61,7 +61,7 @@ Every _array_ in Cubed is backed by a Zarr array. This means that the array type
 
 ### Runtime
 
-Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Dask, Lithops, and Prefect.
+Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Lithops, and other Rechunker executors like Dask and Prefect.
 
 ### Primitive operations
 
@@ -105,7 +105,7 @@ The new [Python Array API](https://data-apis.org/array-api/latest/) was chosen f
   <dt>Resume a computation from a checkpoint</dt>
   <dd>Since intermediate arrays are persisted to Zarr, it is possible to resume a computation without starting from scratch. To do this, the Cubed <code>Array</code> object should be stored persistently (using <code>pickle</code>), so it can be reloaded in a new process and then <code>compute()</code> called on it to finish the computation.</dd>
   <dt>Straggler mitigation</dt>
-  <dd>A few slow running tasks (called stragglers) can disproportionately slow down the whole computation. To mitigate this, speculative duplicate tasks are launched in certain circumstances, acting as backups that complete more quickly than the straggler, hence bringing down the overall time taken. <b>[Not yet implemented]</b></dd>
+  <dd>A few slow running tasks (called stragglers) can disproportionately slow down the whole computation. To mitigate this, speculative duplicate tasks are launched in certain circumstances, acting as backups that complete more quickly than the straggler, hence bringing down the overall time taken.</dd>
 </dl>
 
 ## Implementation
@@ -119,7 +119,7 @@ Of the primitive operations, `blockwise`, `rechunk`, and indexing operations all
 
 A plan is executed by traversing the DAG and materializing arrays by writing them to Zarr storage. Details of how a plan is executed depends on the runtime. Distributed runtimes, for example, may choose to materialize arrays that don't depend on one another in parallel for efficiency.
 
-This processing model has advantages and disadvantages. One advantage is that since there is no shuffle involved, it is a straightforward model that can scale up with very high-levels of parallelism - for example in a serverless environment. This also makes it straightforward to make it run on multiple execution engines - the implementation here uses an adapation of Rechunker which supports local Python, Beam, Dask, and Prefect out of the box.
+This processing model has advantages and disadvantages. One advantage is that since there is no shuffle involved, it is a straightforward model that can scale up with very high-levels of parallelism - for example in a serverless environment. This also makes it straightforward to make it run on multiple execution engines.
 
 The main disadvantage of this model is that every intermediate array is written to storage, which can be slow. However, there are opportunities to optimize the DAG before running it (such as map fusion).
 
