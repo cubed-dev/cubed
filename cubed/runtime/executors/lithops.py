@@ -110,8 +110,13 @@ def map_unordered(
             else:
                 end_times[future] = time.monotonic()
                 if return_stats:
-                    yield future.result(), future.stats
-                else:  # pragma: no cover
+                    # lithops doesn't return peak mem usage, so we have to measure it ourselves
+                    # see https://pythonspeed.com/articles/estimating-memory-usage/#measuring-peak-memory-usage
+                    result, ru_maxrss = future.result()
+                    stats = future.stats.copy()
+                    stats["ru_maxrss"] = ru_maxrss
+                    yield result, stats
+                else:
                     yield future.result()
 
             if use_backups:
@@ -166,6 +171,7 @@ def lithops_stats_to_task_end_event(name, stats):
         function_start_tstamp=stats["worker_func_start_tstamp"],
         function_end_tstamp=stats["worker_func_end_tstamp"],
         task_result_tstamp=stats["host_status_done_tstamp"],
+        ru_maxrss=stats["ru_maxrss"],
     )
 
 
@@ -173,7 +179,11 @@ def build_stage_mappable_func(
     stage, config, name=None, callbacks=None, use_backups=False
 ):
     def sf(mappable):
-        return stage.function(mappable, config=config)
+        from resource import RUSAGE_SELF, getrusage
+
+        result = stage.function(mappable, config=config)
+        ru_maxrss = getrusage(RUSAGE_SELF).ru_maxrss
+        return result, ru_maxrss
 
     def stage_func(lithops_function_executor):
         for _, stats in map_unordered(
