@@ -145,4 +145,5 @@ Create an environment with
 conda create --name cubed python=3.8
 conda activate cubed
 pip install -r requirements.txt
+pip install -e .
 ```
