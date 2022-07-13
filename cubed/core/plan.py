@@ -227,6 +227,10 @@ class Plan:
                 tooltip += f"\ncalls: {calls}"
 
             d["tooltip"] = tooltip
+
+            # remove pipeline attribute since it is a long string that causes graphviz to fail
+            if "pipeline" in d:
+                del d["pipeline"]
         gv = nx.drawing.nx_pydot.to_pydot(dag)
         if format is None:
             format = "svg"
