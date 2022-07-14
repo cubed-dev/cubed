@@ -9,14 +9,13 @@ from datetime import datetime
 import fsspec
 import networkx as nx
 import zarr
-from dask.utils import memory_repr
 from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
-from cubed.utils import join_path
+from cubed.utils import join_path, memory_repr
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
