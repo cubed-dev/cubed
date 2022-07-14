@@ -18,6 +18,7 @@ from cubed.core.array import TaskEndEvent
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
+from cubed.utils import peak_memory
 
 stub = modal.Stub()
 async_stub = modal.aio.AioStub()
@@ -46,19 +47,17 @@ def run_remotely(input, func=None, config=None):
 @async_stub.function(image=image, secret=modal.ref("my-aws-secret"))
 async def async_run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
-    from resource import RUSAGE_SELF, getrusage
-
-    ru_maxrss_start = getrusage(RUSAGE_SELF).ru_maxrss
+    peak_memory_start = peak_memory()
     function_start_tstamp = time.time()
     result = func(input, config=config)
     function_end_tstamp = time.time()
-    ru_maxrss_end = getrusage(RUSAGE_SELF).ru_maxrss
+    peak_memory_end = peak_memory()
     return (
         result,
         function_start_tstamp,
         function_end_tstamp,
-        ru_maxrss_start,
-        ru_maxrss_end,
+        peak_memory_start,
+        peak_memory_end,
     )
 
 
@@ -116,16 +115,16 @@ async def map_unordered(
                         res,
                         function_start_tstamp,
                         function_end_tstamp,
-                        ru_maxrss_start,
-                        ru_maxrss_end,
+                        peak_memory_start,
+                        peak_memory_end,
                     ) = task.result()
                     task_stats = dict(
                         task_create_tstamp=event_start_times[task],
                         function_start_tstamp=function_start_tstamp,
                         function_end_tstamp=function_end_tstamp,
                         task_result_tstamp=event_end_times[task],
-                        ru_maxrss_start=ru_maxrss_start,
-                        ru_maxrss_end=ru_maxrss_end,
+                        peak_memory_start=peak_memory_start,
+                        peak_memory_end=peak_memory_end,
                     )
                     yield res, task_stats
                 else:
