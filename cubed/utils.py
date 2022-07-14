@@ -1,7 +1,9 @@
+import platform
 from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
+from resource import RUSAGE_SELF, getrusage
 from typing import Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
@@ -61,6 +63,14 @@ def memory_repr(num):
         if num < 1000.0:
             return f"{num:3.1f} {x}"
         num /= 1000.0
+
+
+def peak_memory():
+    """Return the peak memory usage in bytes."""
+    ru_maxrss = getrusage(RUSAGE_SELF).ru_maxrss
+    # note that on Linux ru_maxrss is in KiB, while on Mac it is in bytes
+    # see https://pythonspeed.com/articles/estimating-memory-usage/#measuring-peak-memory-usage
+    return ru_maxrss * 1024 if platform.system() == "Linux" else ru_maxrss
 
 
 def to_chunksize(chunkset):

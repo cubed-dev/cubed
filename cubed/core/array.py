@@ -153,8 +153,8 @@ class TaskEndEvent:
     task_result_tstamp: Optional[float] = None
     """Timestamp of when the result of the task was received by the client."""
 
-    ru_maxrss_start: Optional[int] = None
+    peak_memory_start: Optional[int] = None
     """Peak memory usage on the remote worker before the function starts executing."""
 
-    ru_maxrss_end: Optional[int] = None
+    peak_memory_end: Optional[int] = None
     """Peak memory usage on the remote worker after the function finishes executing."""
