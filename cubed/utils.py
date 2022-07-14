@@ -1,14 +1,21 @@
+from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
 from typing import Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
+import numpy as np
 import toolz
 from dask.array.core import _check_regular_chunks
 from dask.utils import cached_cumsum
 
 PathType = Union[str, Path]
+
+
+def chunk_memory(dtype, chunksize):
+    """Calculate the amount of memory in bytes that a single chunk uses."""
+    return np.dtype(dtype).itemsize * prod(chunksize)
 
 
 def get_item(chunks, idx):

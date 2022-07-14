@@ -1,6 +1,5 @@
 from bisect import bisect
 from itertools import product
-from math import prod
 from operator import add, mul
 
 import numpy as np
@@ -99,7 +98,7 @@ def concat(arrays, /, *, axis=0):
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks,
     # the chunks are read in series, reusing memory
-    extra_required_mem = np.dtype(a.dtype).itemsize * prod(to_chunksize(a.chunks))
+    extra_required_mem = a.chunkmem
 
     return map_direct(
         _read_concat_chunk,
@@ -212,7 +211,7 @@ def reshape_chunks(x, shape, chunks):
     # TODO: check number of chunks is unchanged
 
     # memory allocated by reading one chunk from input array
-    extra_required_mem = np.dtype(x.dtype).itemsize * prod(to_chunksize(x.chunks))
+    extra_required_mem = x.chunkmem
 
     return map_direct(
         _reshape_chunk,
@@ -251,7 +250,7 @@ def stack(arrays, /, *, axis=0):
 
     # memory allocated by reading one chunk from an input array
     # (output is already catered for in blockwise)
-    extra_required_mem = np.dtype(a.dtype).itemsize * prod(to_chunksize(a.chunks))
+    extra_required_mem = a.chunkmem
 
     return map_direct(
         _read_stack_chunk,

@@ -6,6 +6,7 @@ from dask.array.core import normalize_chunks
 from toolz import map, reduce
 
 from cubed.runtime.pipeline import already_computed
+from cubed.utils import chunk_memory
 
 sym_counter = 0
 
@@ -40,6 +41,10 @@ class CoreArray:
         from cubed.array_api.array_object import Array
 
         return Array(name, zarray, plan)
+
+    @property
+    def chunkmem(self):
+        return chunk_memory(self.dtype, self.chunksize)
 
     @property
     def chunksize(self):

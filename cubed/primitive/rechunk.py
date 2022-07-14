@@ -3,6 +3,7 @@ from math import ceil, prod
 from rechunker.api import _setup_rechunk
 
 from cubed.runtime.pipeline import spec_to_pipeline
+from cubed.utils import chunk_memory
 
 
 def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
@@ -44,8 +45,8 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     # note that rechunker may use more memory than this to do more efficient copies,
     # and if you give it more memory it may be able to avoid an intermediate store
     required_mem = max(
-        source.dtype.itemsize * prod(source.chunks),
-        target.dtype.itemsize * prod(target.chunks),
+        chunk_memory(source.dtype, source.chunks),
+        chunk_memory(target.dtype, target.chunks),
     )
 
     num_tasks = total_chunks(copy_spec.write.array.shape, copy_spec.write.chunks)

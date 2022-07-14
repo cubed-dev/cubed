@@ -1,6 +1,15 @@
+import numpy as np
 import pytest
 
-from cubed.utils import join_path, memory_repr, to_chunksize
+from cubed.utils import chunk_memory, join_path, memory_repr, to_chunksize
+
+
+def test_chunk_memory():
+    assert chunk_memory(int, (3,)) == 24
+    assert chunk_memory(np.int64, (3,)) == 24
+    assert chunk_memory(np.int32, (3,)) == 12
+    assert chunk_memory(np.int32, (3, 5)) == 60
+    assert chunk_memory(np.int32, (0,)) == 0
 
 
 def test_to_chunksize():
