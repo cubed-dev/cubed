@@ -1,6 +1,6 @@
 import pytest
 
-from cubed.utils import join_path, to_chunksize
+from cubed.utils import join_path, memory_repr, to_chunksize
 
 
 def test_to_chunksize():
@@ -26,3 +26,13 @@ def test_join_path():
         join_path("http://host/a%20path", "subpath") == "http://host/a%20path/subpath"
     )
     assert join_path("http://host/a path", "subpath") == "http://host/a%20path/subpath"
+
+
+def test_memory_repr():
+    assert memory_repr(0) == "0 bytes"
+    assert memory_repr(1) == "1 bytes"
+    assert memory_repr(999) == "999 bytes"
+    assert memory_repr(1_000) == "1.0 KB"
+    assert memory_repr(9_999) == "10.0 KB"
+    assert memory_repr(1_000_000) == "1.0 MB"
+    assert memory_repr(1_000_000_000_000_000) == "1.0 PB"

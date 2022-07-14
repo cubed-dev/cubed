@@ -34,6 +34,28 @@ def join_path(dir_url: PathType, child_path: str) -> str:
     return urlunsplit(parts)
 
 
+def memory_repr(num):
+    """Convert bytes to a human-readable string in decimal form.
+    1 KB is 1,000 bytes, 1 MB is 1,000,000 bytes, and so on.
+
+    Parameters
+    ----------
+    num: int
+        Number of bytes
+
+    Returns
+    -------
+    str
+    """
+    if num < 1000.0:
+        return f"{num} bytes"
+    num /= 1000.0
+    for x in ["KB", "MB", "GB", "TB", "PB"]:
+        if num < 1000.0:
+            return f"{num:3.1f} {x}"
+        num /= 1000.0
+
+
 def to_chunksize(chunkset):
     """Convert a chunkset to a chunk size for Zarr.
 
