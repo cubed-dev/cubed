@@ -1,5 +1,4 @@
 from functools import partial
-from math import prod
 from typing import Callable, Dict, NamedTuple
 
 import numpy as np
@@ -10,7 +9,7 @@ from rechunker.api import _zarr_empty
 from rechunker.types import ArrayProxy, Pipeline, Stage
 from toolz import map
 
-from cubed.utils import get_item, to_chunksize
+from cubed.utils import chunk_memory, get_item, to_chunksize
 
 sym_counter = 0
 
@@ -162,9 +161,9 @@ def blockwise(
     ]
 
     # calculate (minimum) memory requirement
-    required_mem = np.dtype(dtype).itemsize * prod(chunksize)  # output
+    required_mem = chunk_memory(dtype, chunksize)  # output
     for array in arrays:  # inputs
-        required_mem += array.dtype.itemsize * prod(array.chunks)
+        required_mem += chunk_memory(array.dtype, array.chunks)
 
     if required_mem > max_mem:
         raise ValueError(

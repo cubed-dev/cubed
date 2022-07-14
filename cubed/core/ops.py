@@ -1,6 +1,5 @@
 import numbers
 from functools import partial
-from math import prod
 from numbers import Integral, Number
 
 import numpy as np
@@ -17,7 +16,7 @@ from cubed.core.array import CoreArray, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
-from cubed.utils import get_item_with_offsets, to_chunksize
+from cubed.utils import chunk_memory, get_item_with_offsets, to_chunksize
 
 
 def from_zarr(store, spec=None):
@@ -192,7 +191,7 @@ def index(x, key):
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks, zarr will
     # read the chunks in series, reusing the buffer
-    extra_required_mem = np.dtype(x.dtype).itemsize * prod(to_chunksize(x.chunks))
+    extra_required_mem = x.chunkmem
 
     return map_direct(
         func,
@@ -454,7 +453,7 @@ def reduction(
     while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
         # rechunk along axis
         target_chunks = list(result.chunksize)
-        chunk_mem = np.dtype(intermediate_dtype).itemsize * prod(result.chunksize)
+        chunk_mem = chunk_memory(intermediate_dtype, result.chunksize)
         for i, s in enumerate(result.shape):
             if i in axis:
                 if len(axis) > 1:
