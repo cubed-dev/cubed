@@ -16,7 +16,7 @@ class TqdmProgressBar(Callback):
         self.kwargs = kwargs
 
     def on_compute_start(self, arr):
-        from tqdm import tqdm
+        from tqdm.auto import tqdm
 
         self.pbars = {}
         i = 0
