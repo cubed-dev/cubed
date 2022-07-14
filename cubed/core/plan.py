@@ -55,18 +55,17 @@ class Plan:
             dag = nx.compose_all([x.plan.dag for x in source_arrays])
 
         # add new node and edges
-        label = f"{name} ({op_name})"
         frame = inspect.currentframe().f_back  # go back one in the stack
         stack_summaries = traceback.extract_stack(frame, 10)
 
         if pipeline is None:
             dag.add_node(
-                name, label=label, target=target, stack_summaries=stack_summaries
+                name, op_name=op_name, target=target, stack_summaries=stack_summaries
             )
         else:
             dag.add_node(
                 name,
-                label=label,
+                op_name=op_name,
                 target=target,
                 stack_summaries=stack_summaries,
                 pipeline=pipeline,
@@ -201,7 +200,8 @@ class Plan:
             dag = self.dag.copy()
         dag.graph["graph"] = {"rankdir": rankdir}
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
-        for (_, d) in dag.nodes(data=True):
+        for (n, d) in dag.nodes(data=True):
+            d["label"] = f"{n} ({d['op_name']})"
             target = d["target"]
             chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
             tooltip = (

@@ -17,10 +17,16 @@ class HistoryCallback(Callback):
         for node in list(nx.topological_sort(dag)):
             if already_computed(nodes[node]):
                 continue
+            op_name = nodes[node]["op_name"]
             required_mem = nodes[node]["required_mem"]
             num_tasks = nodes[node]["num_tasks"]
             plan.append(
-                dict(array_name=node, required_mem=required_mem, num_tasks=num_tasks)
+                dict(
+                    array_name=node,
+                    op_name=op_name,
+                    required_mem=required_mem,
+                    num_tasks=num_tasks,
+                )
             )
 
         self.plan = plan
