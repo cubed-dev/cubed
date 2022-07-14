@@ -15,7 +15,7 @@ from rechunker.types import PipelineExecutor
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
-from cubed.utils import join_path, memory_repr
+from cubed.utils import chunk_memory, join_path, memory_repr
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -203,13 +203,15 @@ class Plan:
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
         for (_, d) in dag.nodes(data=True):
             target = d["target"]
+            chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
             tooltip = (
                 f"shape: {target.shape}\n"
                 f"chunks: {target.chunks}\n"
-                f"dtype: {target.dtype}"
+                f"dtype: {target.dtype}\n"
+                f"chunk memory: {chunkmem}\n"
             )
             if "required_mem" in d:
-                tooltip += f"\nmemory: {memory_repr(d['required_mem'])}"
+                tooltip += f"\ntask memory: {memory_repr(d['required_mem'])}"
             if "num_tasks" in d:
                 tooltip += f"\ntasks: {d['num_tasks']}"
             if "stack_summaries" in d:
@@ -224,6 +226,7 @@ class Plan:
                     ]
                 )
                 tooltip += f"\ncalls: {calls}"
+                del d["stack_summaries"]
 
             d["tooltip"] = tooltip
 
