@@ -20,7 +20,7 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
     runtime = sys.argv[2]
-    spec = cubed.Spec(tmp_path, max_mem=500_000_000)
+    spec = cubed.Spec(tmp_path, max_mem=2_000_000_000)
     executor = LithopsDagExecutor()
 
     a = cubed.random.random(
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     c = xp.astype(a, xp.float32)
     d = xp.astype(b, xp.float32)
     e = xp.matmul(c, d)
+    e.visualize()
     with logging_redirect_tqdm():
         progress = TqdmProgressBar()
         hist = HistoryCallback()
