@@ -28,10 +28,25 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     required_mem: minimum memory required per-task, in bytes
     """
 
+    # don't give the full max_mem to rechunker, since it doesn't take
+    # compressed copies into account
+    # instead, force it to use no more than a single source or target chunk
+    # (whichever is larger)
+    # this may mean an intermediate copy is needed, but ensures that memory is controlled
+    dtype = source.dtype  # dtype doesn't change
+    adjusted_max_mem = max(
+        chunk_memory(dtype, source.chunks),
+        chunk_memory(dtype, target_chunks),
+    )
+    if adjusted_max_mem > max_mem:
+        raise ValueError(
+            f"Source/target chunk memory ({adjusted_max_mem}) exceeds max_mem ({max_mem})"
+        )
+
     copy_specs, intermediate, target = _setup_rechunk(
         source=source,
         target_chunks=target_chunks,
-        max_mem=max_mem,
+        max_mem=adjusted_max_mem,
         target_store=target_store,
         temp_store=temp_store,
     )
@@ -41,13 +56,9 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
         raise ValueError(f"Source must be a Zarr array, but was {source}")
     copy_spec = copy_specs[0]
 
-    # calculate (minimum) memory requirement
-    # note that rechunker may use more memory than this to do more efficient copies,
-    # and if you give it more memory it may be able to avoid an intermediate store
-    required_mem = max(
-        chunk_memory(source.dtype, source.chunks),
-        chunk_memory(target.dtype, target.chunks),
-    )
+    # calculate memory requirement
+    # memory for {compressed, uncompressed} x {input, output} array chunk/selection
+    required_mem = adjusted_max_mem * 4
 
     num_tasks = total_chunks(copy_spec.write.array.shape, copy_spec.write.chunks)
     if intermediate is not None:
