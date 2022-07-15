@@ -42,7 +42,14 @@ def test_blockwise(tmp_path, executor):
     assert target.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert required_mem == (itemsize * 2) + (itemsize * 2) + (itemsize * 2 * 2)
+    assert required_mem == (
+        (itemsize * 2)  # source1 compressed chunk
+        + (itemsize * 2)  # source1 uncompressed chunk
+        + (itemsize * 2)  # source2 compressed chunk
+        + (itemsize * 2)  # source2 uncompressed chunk
+        + (itemsize * 2 * 2)  # output compressed chunk
+        + (itemsize * 2 * 2)  # output uncompressed chunk
+    )
 
     assert num_tasks == 4
 
@@ -93,7 +100,12 @@ def test_blockwise_with_args(tmp_path, executor):
     assert target.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert required_mem == (itemsize * 2 * 2) + (itemsize * 2 * 2)
+    assert required_mem == (
+        (itemsize * 2 * 2)  # source compressed chunk
+        + (itemsize * 2 * 2)  # source uncompressed chunk
+        + (itemsize * 2 * 2)  # output compressed chunk
+        + (itemsize * 2 * 2)  # output uncompressed chunk
+    )
 
     assert num_tasks == 4
 
@@ -112,11 +124,11 @@ def test_blockwise_max_mem_exceeded(tmp_path):
     source2 = create_zarr(
         [10, 50, 100], dtype=int, chunks=2, store=tmp_path / "source2.zarr"
     )
-    max_mem = 16
+    max_mem = 100
     target_store = tmp_path / "target.zarr"
 
     with pytest.raises(
-        ValueError, match=r"Blockwise memory \(64\) exceeds max_mem \(16\)"
+        ValueError, match=r"Blockwise memory \(\d+\) exceeds max_mem \(100\)"
     ):
         blockwise(
             np.outer,

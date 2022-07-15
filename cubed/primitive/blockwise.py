@@ -160,10 +160,20 @@ def blockwise(
         )
     ]
 
-    # calculate (minimum) memory requirement
-    required_mem = chunk_memory(dtype, chunksize)  # output
+    # calculate memory requirement
+    required_mem = 0
+    # inputs
     for array in arrays:  # inputs
-        required_mem += chunk_memory(array.dtype, array.chunks)
+        # memory for a compressed and an uncompressed input array chunk
+        # - we assume compression has no effect (so it's an overestimate)
+        # - ideally we'd be able to look at nbytes_stored,
+        #   but this is not possible in general since the array has not been written yet
+        required_mem += chunk_memory(array.dtype, array.chunks) * 2
+    # output
+    # memory for a compressed and an uncompressed output array chunk
+    # - this assumes the blockwise function creates a new array)
+    # - numcodecs uses a working output buffer that's the size of the array being compressed
+    required_mem += chunk_memory(dtype, chunksize) * 2
 
     if required_mem > max_mem:
         raise ValueError(
