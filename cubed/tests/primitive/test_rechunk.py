@@ -16,14 +16,14 @@ def executor(request):
 @pytest.mark.parametrize(
     "shape, source_chunks, max_mem, target_chunks, expected_required_mem, expected_num_tasks",
     [
-        # only one task since whole array fits in max_mem
+        # one target chunk is made up of two source chunks
         (
             (4, 4),
-            (1, 4),
+            (1, 2),
             1000,
-            (4, 1),
-            4 * 8,
-            1,
+            (1, 4),
+            4 * 8 * 4,  # elts x itemsize x copies
+            4,
         ),
         # only enough memory for one source/target chunk
         (
@@ -31,7 +31,7 @@ def executor(request):
             (1, 4),
             4 * 8,
             (4, 1),
-            4 * 8,
+            4 * 8 * 4,  # elts x itemsize x copies
             8,
         ),
     ],
@@ -81,7 +81,7 @@ def test_rechunk_max_mem_exceeded(tmp_path):
     temp_store = tmp_path / "temp.zarr"
 
     with pytest.raises(
-        ValueError, match=r"Source chunk memory \(32\) exceeds max_mem \(16\)"
+        ValueError, match=r"Source/target chunk memory \(32\) exceeds max_mem \(16\)"
     ):
         rechunk(
             source,
