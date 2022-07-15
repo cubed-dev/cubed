@@ -6,18 +6,11 @@ from dask.array.core import normalize_chunks
 from numpy.random import Generator, Philox
 from zarr.util import normalize_shape
 
+from cubed.core.ops import map_direct
 from cubed.utils import to_chunksize
-
-from .array_api import empty
-from .core import map_blocks
 
 
 def random(size, *, chunks=None, spec=None):
-    # Create an initial empty array with the same chunk structure as the
-    # desired output, but where each chunk has a single element.
-    # Then call map_blocks to generate random numbers for each chunk,
-    # and change the chunk size to the desired size.
-
     shape = normalize_shape(size)
     dtype = nxp.float64
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
@@ -25,21 +18,24 @@ def random(size, *, chunks=None, spec=None):
     numblocks = tuple(map(len, chunks))
     root_seed = pyrandom.getrandbits(128)
 
-    empty_chunks = (1,) * len(numblocks)
-    out = empty(numblocks, chunks=empty_chunks, spec=spec)
-    out = map_blocks(
+    # no extra memory required since input is an empty array whose
+    # memory is never allocated, see https://pythonspeed.com/articles/measuring-memory-python/#phantom-memory
+    extra_required_mem = 0
+
+    return map_direct(
         _random,
-        out,
+        shape=shape,
         dtype=dtype,
         chunks=chunks,
+        extra_required_mem=extra_required_mem,
+        spec=spec,
         size=chunksize,
         numblocks=numblocks,
         root_seed=root_seed,
     )
-    return out
 
 
-def _random(a, size=None, numblocks=None, root_seed=None, block_id=None):
+def _random(x, *arrays, size=None, numblocks=None, root_seed=None, block_id=None):
     stream_id = block_id_to_offset(block_id, numblocks)
     rg = Generator(Philox(key=root_seed + stream_id))
     return rg.random(size)
