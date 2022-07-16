@@ -460,9 +460,13 @@ def reduction(
                     # TODO: make sure chunk size doesn't exceed max_mem for multi-axis reduction
                     target_chunks[i] = s
                 else:
-                    # TODO: check that reduction is possible
                     # factor of 4 is memory for {compressed, uncompressed} x {input, output} (see rechunk.py)
-                    target_chunks[i] = min(s, (max_mem - chunk_mem) // (chunk_mem * 4))
+                    target_chunk_size = (max_mem - chunk_mem) // (chunk_mem * 4)
+                    if target_chunk_size <= 1:
+                        raise ValueError(
+                            f"Not enough memory for reduction. Increase max_mem ({max_mem}) or decrease chunk size"
+                        )
+                    target_chunks[i] = min(s, target_chunk_size)
         target_chunks = tuple(target_chunks)
         result = rechunk(result, target_chunks)
 

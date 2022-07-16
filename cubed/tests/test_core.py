@@ -142,10 +142,22 @@ def test_default_spec_max_mem_exceeded():
 
 
 def test_reduction_multiple_rounds(tmp_path, executor):
-    spec = cubed.Spec(tmp_path, max_mem=110)
+    spec = cubed.Spec(tmp_path, max_mem=1000)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
+    # check that there is > 1 rechunk step
+    rechunks = [
+        n for (n, d) in b.plan.dag.nodes(data=True) if d["op_name"] == "rechunk"
+    ]
+    assert len(rechunks) > 1
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
+
+
+def test_reduction_not_enough_memory(tmp_path):
+    spec = cubed.Spec(tmp_path, max_mem=50)
+    a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
+    with pytest.raises(ValueError, match=r"Not enough memory for reduction"):
+        xp.sum(a, axis=0, dtype=np.uint8)
 
 
 def test_visualize(tmp_path):
