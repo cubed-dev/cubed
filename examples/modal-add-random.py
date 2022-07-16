@@ -9,7 +9,7 @@ from cubed.runtime.executors.modal import AsyncModalDagExecutor
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
-    spec = cubed.Spec(tmp_path, max_mem=1_000_000_000)
+    spec = cubed.Spec(tmp_path, max_mem=2_000_000_000)
     executor = AsyncModalDagExecutor()
     a = cubed.random.random(
         (50000, 50000), chunks=(5000, 5000), spec=spec
