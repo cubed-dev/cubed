@@ -29,7 +29,8 @@ MODAL_EXECUTORS = []
 try:
     from cubed.runtime.executors.modal import AsyncModalDagExecutor, ModalDagExecutor
 
-    MODAL_EXECUTORS.append(AsyncModalDagExecutor(), ModalDagExecutor())
+    MODAL_EXECUTORS.append(AsyncModalDagExecutor())
+    MODAL_EXECUTORS.append(ModalDagExecutor())
 except ImportError:
     pass
 

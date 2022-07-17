@@ -11,7 +11,6 @@ import cubed.array_api as xp
 from cubed import Callback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
-from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import ALL_EXECUTORS, MODAL_EXECUTORS, create_zarr
 
@@ -244,6 +243,8 @@ class TaskCounter(Callback):
 
 
 def test_callbacks(spec, executor):
+    from cubed.runtime.executors.lithops import LithopsDagExecutor
+
     if not isinstance(executor, (PythonDagExecutor, LithopsDagExecutor)):
         pytest.skip(f"{type(executor)} does not support callbacks")
 
