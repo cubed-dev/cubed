@@ -1,0 +1,3 @@
+[default]
+token_id = "MODAL_TOKEN_ID"
+token_secret = "MODAL_TOKEN_SECRET"
