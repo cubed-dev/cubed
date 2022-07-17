@@ -2,10 +2,10 @@ from functools import partial
 from typing import Callable, Dict, NamedTuple
 
 import numpy as np
+import zarr
 from dask.array.core import normalize_chunks
 from dask.blockwise import make_blockwise_graph
 from dask.core import flatten
-from rechunker.api import _zarr_empty
 from rechunker.types import ArrayProxy, Pipeline, Stage
 from toolz import map
 
@@ -139,7 +139,7 @@ def blockwise(
     # now use the graph_mappable in a pipeline
 
     chunksize = to_chunksize(chunks)
-    target_array = _zarr_empty(shape, target_store, chunksize, dtype)
+    target_array = zarr.empty(shape, store=target_store, chunks=chunksize, dtype=dtype)
 
     func_with_kwargs = partial(func, **kwargs)
     read_proxies = {
