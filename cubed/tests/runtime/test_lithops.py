@@ -1,6 +1,9 @@
 import time
 
 import pytest
+
+pytest.importorskip("lithops")
+
 from lithops.executors import LocalhostExecutor
 
 from cubed.runtime.executors.lithops import map_unordered

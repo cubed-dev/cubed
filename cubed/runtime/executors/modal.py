@@ -128,7 +128,7 @@ async def map_unordered(
                     )
                     yield res, task_stats
                 else:
-                    yield res
+                    yield task.result()
 
             # remove any backup task
             if use_backups:
@@ -175,7 +175,6 @@ def execute_dag(dag, callbacks=None, **kwargs):
                                 # print(f"about to run remotely on {stage.mappable}")
                                 for _ in run_remotely.map(
                                     list(stage.mappable),
-                                    window=1,
                                     kwargs=dict(
                                         func=stage.function, config=pipeline.config
                                     ),
