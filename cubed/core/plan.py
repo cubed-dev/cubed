@@ -24,11 +24,16 @@ CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}
 class Plan:
     """Deferred computation plan for a graph of arrays.
 
-    A thin wrapper around a NetworkX `DiGraph`. Nodes are Zarr paths, and may
+    A thin wrapper around a NetworkX `MultiDiGraph`. Nodes are Zarr paths, and may
     have a `pipeline` attribute holding the pipeline to execute to generate
     the output at that path. If there is no `pipeline` attribute no computation
     is needed since the Zarr file already exists. Directed edges point towards
     the dependent Zarr path.
+
+    Multiple edges are possible since a node (Zarr file) may be computed by
+    a function with repeated inputs. For example, consider `equals` where the
+    two arguments are the same array. We need to keep track of these cases, so
+    we use a NetworkX `MultiDiGraph` rather than just as `DiGraph`.
     """
 
     # args from pipeline onwards are omitted for creation functions when no computation is needed
@@ -49,7 +54,7 @@ class Plan:
 
         # create an empty DAG or combine from sources
         if len(source_arrays) == 0:
-            dag = nx.DiGraph(spec=spec)
+            dag = nx.MultiDiGraph(spec=spec)
         else:
             # TODO: check specs are the same, rather than just inheriting last one
             dag = nx.compose_all([x.plan.dag for x in source_arrays])
@@ -120,6 +125,7 @@ class Plan:
 
         def can_fuse(n):
             # node must have a single predecessor
+            #   - not multiple edges pointing to a single predecessor
             # node must be the single successor to the predecessor
             # and both must have pipelines that can be fused
             if dag.in_degree(n) != 1:

@@ -338,3 +338,23 @@ def test_no_fusion(spec):
     assert task_counter.value == 3
 
     assert_array_equal(result, np.ones((2, 2)))
+
+
+def test_no_fusion_multiple_edges(spec):
+    executor = PythonDagExecutor()
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.positive(a)
+    c = xp.asarray(b)
+    # b and c are the same array, so d has a single dependency
+    # with multiple edges
+    # this should not be fused under the current logic
+    d = xp.equal(b, c)
+
+    assert d.plan.num_tasks(d.name, optimize_graph=False) == 2
+    assert d.plan.num_tasks(d.name, optimize_graph=True) == 2
+
+    task_counter = TaskCounter()
+    result = d.compute(executor=executor, callbacks=[task_counter])
+    assert task_counter.value == 2
+
+    assert_array_equal(result, np.full((2, 2), True))
