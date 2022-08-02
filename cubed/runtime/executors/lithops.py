@@ -95,7 +95,7 @@ def map_unordered(
 
     while pending:
         finished, pending = lithops_function_executor.wait(
-            pending, throw_except=False, return_when=return_when
+            pending, throw_except=False, return_when=return_when, show_progressbar=False
         )
 
         failed = []

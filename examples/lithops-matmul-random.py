@@ -12,8 +12,6 @@ from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 
 logging.basicConfig(level=logging.INFO)
-# turn off lithops own progress bar
-logging.getLogger("lithops.wait").setLevel(logging.WARNING)
 # suppress harmless connection pool warnings
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
