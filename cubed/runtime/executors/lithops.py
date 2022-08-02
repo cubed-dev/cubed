@@ -14,7 +14,6 @@ from cubed.core.array import TaskEndEvent
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
-from cubed.utils import peak_memory
 
 logger = logging.getLogger(__name__)
 
@@ -111,13 +110,7 @@ def map_unordered(
             else:
                 end_times[future] = time.monotonic()
                 if return_stats:
-                    # lithops doesn't return peak mem usage, so we have to measure it ourselves
-                    # see https://pythonspeed.com/articles/estimating-memory-usage/#measuring-peak-memory-usage
-                    result, peak_memory_start, peak_memory_end = future.result()
-                    stats = future.stats.copy()
-                    stats["peak_memory_start"] = peak_memory_start
-                    stats["peak_memory_end"] = peak_memory_end
-                    yield result, stats
+                    yield future.result(), future.stats
                 else:
                     yield future.result()
 
@@ -173,8 +166,8 @@ def lithops_stats_to_task_end_event(name, stats):
         function_start_tstamp=stats["worker_func_start_tstamp"],
         function_end_tstamp=stats["worker_func_end_tstamp"],
         task_result_tstamp=stats["host_status_done_tstamp"],
-        peak_memory_start=stats["peak_memory_start"],
-        peak_memory_end=stats["peak_memory_end"],
+        peak_memory_start=stats["worker_peak_memory_start"],
+        peak_memory_end=stats["worker_peak_memory_end"],
     )
 
 
@@ -182,10 +175,7 @@ def build_stage_mappable_func(
     stage, config, name=None, callbacks=None, use_backups=False
 ):
     def sf(mappable):
-        peak_memory_start = peak_memory()
-        result = stage.function(mappable, config=config)
-        peak_memory_end = peak_memory()
-        return result, peak_memory_start, peak_memory_end
+        return stage.function(mappable, config=config)
 
     def stage_func(lithops_function_executor):
         for _, stats in map_unordered(
