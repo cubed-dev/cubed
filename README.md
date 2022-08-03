@@ -11,7 +11,7 @@ Cubed is a distributed N-dimensional array library implemented in Python using b
 - Implements the [Python Array API standard](https://data-apis.org/array-api/latest/) (see [coverage status](./api_status.md))
 - Guaranteed maximum memory usage for standard array functions
 - [Zarr](https://zarr.readthedocs.io/en/stable/) for storage
-- Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Apache Beam](https://beam.apache.org/)
+- Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Modal](https://modal.com/), [Apache Beam](https://beam.apache.org/)
 
 ## Example
 
@@ -61,7 +61,7 @@ Every _array_ in Cubed is backed by a Zarr array. This means that the array type
 
 ### Runtime
 
-Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Beam, Lithops, and other Rechunker executors like Dask and Prefect.
+Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Lithops, Modal, Beam, and other Rechunker executors like Dask and Prefect.
 
 ### Primitive operations
 
@@ -79,10 +79,6 @@ There are two primitive operations on arrays:
 These are built on top of the primitive operations, and provide functions that are needed to implement all array operations.
 
 <dl>
-  <dt><code>elemwise</code></dt>
-  <dd>Applies a function elementwise to its arguments, respecting broadcasting.</dd>
-  <dt><code>index</code></dt>
-  <dd>Subsets an array, along one or more axes.</dd>
   <dt><code>map_blocks</code></dt>
   <dd>Applies a function to corresponding blocks from multiple inputs.</dd>
   <dt><code>map_direct</code></dt>
@@ -91,6 +87,10 @@ These are built on top of the primitive operations, and provide functions that a
   <dd>Applies a function to reduce an array along one or more axes.</dd>
   <dt><code>arg_reduction</code></dt>
   <dd>A reduction that returns the array indexes, not the values.</dd>
+  <dt><code>elemwise</code></dt>
+  <dd>Applies a function elementwise to its arguments, respecting broadcasting.</dd>
+  <dt><code>index</code></dt>
+  <dd>Subsets an array, along one or more axes.</dd>
 </dl>
 
 ### Array API
