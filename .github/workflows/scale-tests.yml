@@ -61,3 +61,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           LITHOPS_CONFIG_FILE: ${{ github.workspace }}/.github/workflows/.lithops_config
+
+      - name: Save plots
+        uses: actions/upload-artifact@v3
+        with:
+          name: plots
+          path: plots/
