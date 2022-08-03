@@ -10,4 +10,4 @@ rechunker
 s3fs
 tenacity
 tqdm
-zarr < 2.12
+zarr
