@@ -38,19 +38,11 @@ jobs:
           python -m pip install --no-deps -e .
           python -m pip install ${{ secrets.MODAL_WHEEL_URL }}
 
-      # can't use microsoft/variable-substitution since it doesn't support toml
-      - name: Configure modal
-        uses: bluwy/substitute-string-action@v1
-        id: sub
-        with:
-          _input-file: ${{ github.workspace }}/.github/workflows/.modal.toml.template
-          _output-file: /home/runner/.modal.toml
-          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
-          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
-
       - name: Run tests
         run: |
           pytest -vs -k "test_modal.py or modal" --runcloud
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
