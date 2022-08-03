@@ -43,8 +43,8 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | Boolean array       |                    | 3          | Shape is data dependent       |
 | Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                               |
 |                          | `matrix_transpose`  | :white_check_mark: |            |                               |
-|                          | `tensordot`         |                    | 2          | Like Dask                     |
-|                          | `vecdot`            |                    | 1          | Express using `tensordot`     |
+|                          | `tensordot`         | :white_check_mark: |            |                               |
+|                          | `vecdot`            | :white_check_mark: |            |                               |
 | Manipulation Functions   | `broadcast_arrays`  | :white_check_mark: |            |                               |
 |                          | `broadcast_to`      | :white_check_mark: |            |                               |
 |                          | `concat`            | :white_check_mark: |            |                               |
