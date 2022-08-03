@@ -1,7 +1,7 @@
 apache-beam
 dask[array]
 fsspec
-lithops[aws]
+lithops[aws] >= 2.7.0
 networkx < 2.8.3 # https://github.com/networkx/networkx/pull/5667
 numpy >= 1.22
 pydot
