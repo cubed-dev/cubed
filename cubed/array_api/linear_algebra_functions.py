@@ -144,3 +144,9 @@ def _tensordot(a, b, axes):
         ind.insert(a, None)
     x = x[tuple(ind)]
     return x
+
+
+def vecdot(x1, x2, /, *, axis=-1):
+    if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in vecdot")
+    return tensordot(x1, x2, axes=((axis,), (axis,)))
