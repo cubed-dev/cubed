@@ -304,6 +304,17 @@ def test_outer(spec, executor):
     assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
 
 
+@pytest.mark.parametrize("axes", [1, (1, 0)])
+def test_tensordot(axes):
+    x = np.arange(400).reshape((20, 20))
+    a = xp.asarray(x, chunks=(5, 4))
+    y = np.arange(200).reshape((20, 10))
+    b = xp.asarray(y, chunks=(4, 5))
+    assert_array_equal(
+        xp.tensordot(a, b, axes=axes).compute(), np.tensordot(x, y, axes=axes)
+    )
+
+
 # Manipulation functions
 
 

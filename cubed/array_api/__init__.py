@@ -186,9 +186,9 @@ __all__ += [
     "trunc",
 ]
 
-from .linear_algebra_functions import matmul, matrix_transpose, outer
+from .linear_algebra_functions import matmul, matrix_transpose, outer, tensordot
 
-__all__ += ["matmul", "matrix_transpose", "outer"]
+__all__ += ["matmul", "matrix_transpose", "outer", "tensordot"]
 
 from .manipulation_functions import (
     broadcast_arrays,

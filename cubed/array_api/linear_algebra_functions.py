@@ -1,3 +1,6 @@
+from numbers import Integral
+from typing import Iterable
+
 import numpy as np
 
 from cubed.array_api.data_type_functions import result_type
@@ -29,8 +32,8 @@ def matmul(x1, x2, /):
         x2 = expand_dims(x2, tuple(range(x1.ndim - x2.ndim)))
 
     out_ind = tuple(range(x1.ndim + 1))
-    lhs_ind = tuple(range(x1.ndim))
-    rhs_ind = tuple(range(x1.ndim - 2)) + (lhs_ind[-1], x1.ndim)
+    x1_ind = tuple(range(x1.ndim))
+    x2_ind = tuple(range(x1.ndim - 2)) + (x1_ind[-1], x1.ndim)
 
     dtype = result_type(x1, x2)
 
@@ -38,10 +41,10 @@ def matmul(x1, x2, /):
         _matmul,
         out_ind,
         x1,
-        lhs_ind,
+        x1_ind,
         x2,
-        rhs_ind,
-        adjust_chunks={lhs_ind[-1]: 1},
+        x2_ind,
+        adjust_chunks={x1_ind[-1]: 1},
         dtype=dtype,
     )
 
@@ -84,3 +87,60 @@ def matrix_transpose(x, /):
 
 def outer(x1, x2, /):
     return blockwise(np.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)
+
+
+def tensordot(x1, x2, /, *, axes=2):
+
+    from cubed.array_api.statistical_functions import sum
+
+    if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in tensordot")
+
+    # based on dask
+
+    if isinstance(axes, Iterable):
+        x1_axes, x2_axes = axes
+    else:
+        x1_axes = tuple(range(x1.ndim - axes, x1.ndim))
+        x2_axes = tuple(range(0, axes))
+    if isinstance(x1_axes, Integral):
+        x1_axes = (x1_axes,)
+    if isinstance(x2_axes, Integral):
+        x2_axes = (x2_axes,)
+    if isinstance(x1_axes, list):
+        x1_axes = tuple(x1_axes)
+    if isinstance(x2_axes, list):
+        x2_axes = tuple(x2_axes)
+
+    dtype = result_type(x1, x2)
+
+    x1_ind = list(range(x1.ndim))
+    x2_ind = list(range(x1.ndim, x1.ndim + x2.ndim))
+    out_ind = x1_ind + x2_ind
+    adjust_chunks = {}
+    for a1, a2 in zip(x1_axes, x2_axes):
+        out_ind.remove(x2_ind[a2])
+        x2_ind[a2] = x1_ind[a1]
+        adjust_chunks[x1_ind[a1]] = lambda c: 1
+
+    out = blockwise(
+        _tensordot,
+        out_ind,
+        x1,
+        x1_ind,
+        x2,
+        x2_ind,
+        dtype=dtype,
+        adjust_chunks=adjust_chunks,
+        axes=(x1_axes, x2_axes),
+    )
+    return sum(out, axis=x1_axes, dtype=dtype)
+
+
+def _tensordot(a, b, axes):
+    x = np.tensordot(a, b, axes=axes)
+    ind = [slice(None, None)] * x.ndim
+    for a in sorted(axes[0]):
+        ind.insert(a, None)
+    x = x[tuple(ind)]
+    return x
