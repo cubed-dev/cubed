@@ -165,6 +165,18 @@ def elemwise(func, *args, dtype=None):
 
 
 def index(x, key):
+    if not isinstance(key, tuple):
+        key = (key,)
+
+    # Remove None values, to be filled in with expand_dims at end
+    where_none = [i for i, ind in enumerate(key) if ind is None]
+    for i, a in enumerate(where_none):
+        n = sum(isinstance(ind, Integral) for ind in key[:a])
+        if n:
+            where_none[i] -= n
+    key = tuple(ind for ind in key if ind is not None)
+
+    # Replace ellipsis with slices
     selection = replace_ellipsis(key, x.shape)
 
     # Use a Zarr BasicIndexer just to find the resulting array shape
@@ -185,14 +197,12 @@ def index(x, key):
     else:
         raise NotImplementedError(f"Index not supported: {key}")
 
-    from cubed.core.ops import map_direct
-
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks, zarr will
     # read the chunks in series, reusing the buffer
     extra_required_mem = x.chunkmem
 
-    return map_direct(
+    out = map_direct(
         func,
         x,
         shape=shape,
@@ -202,6 +212,13 @@ def index(x, key):
         source_chunks=chunks,
         offsets=offsets,
     )
+
+    for axis in where_none:
+        from cubed.array_api.manipulation_functions import expand_dims
+
+        out = expand_dims(out, axis=axis)
+
+    return out
 
 
 def _read_index_chunk(x, *arrays, source_chunks=None, offsets=None, block_id=None):
