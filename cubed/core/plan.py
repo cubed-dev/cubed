@@ -56,7 +56,6 @@ class Plan:
         if len(source_arrays) == 0:
             dag = nx.MultiDiGraph(spec=spec)
         else:
-            # TODO: check specs are the same, rather than just inheriting last one
             dag = nx.compose_all([x.plan.dag for x in source_arrays])
 
         # add new node and edges

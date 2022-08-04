@@ -1,5 +1,3 @@
-# TODO: upstream these changes to add a BeamPipelineExecutor to rechunker.
-
 import itertools
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Tuple, cast

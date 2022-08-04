@@ -1,4 +1,3 @@
-# TODO: port to rechunker (use ChunkKeys Iterable instead of a generator, to avoid beam pickle error)
 import itertools
 import math
 from typing import Iterable, Iterator, List, Tuple
@@ -10,6 +9,7 @@ from rechunker.types import CopySpec, Pipeline, Stage
 from .utils import gensym
 
 
+# differs from rechunker's chunk_keys to return a list rather than a tuple, to keep lithops happy
 def chunk_keys(
     shape: Tuple[int, ...], chunks: Tuple[int, ...]
 ) -> Iterator[List[slice]]:
@@ -27,6 +27,7 @@ def chunk_keys(
         ]
 
 
+# need a ChunkKeys Iterable instead of a generator, to avoid beam pickle error
 class ChunkKeys(Iterable[Tuple[slice, ...]]):
     def __init__(self, shape: Tuple[int, ...], chunks: Tuple[int, ...]):
         self.shape = shape
@@ -99,7 +100,6 @@ def already_computed(node_dict):
     if pipeline is None:
         return True
     target = node_dict.get("target", None)
-    # TODO: 0-d arrays need another way of indicating they have been computed...
     if target.ndim > 0 and target.nchunks_initialized == target.nchunks:
         return True
     return False

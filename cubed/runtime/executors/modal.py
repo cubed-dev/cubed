@@ -230,7 +230,6 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
 
 
 class ModalDagExecutor(DagExecutor):
-    # TODO: execute tasks for independent pipelines in parallel
     def execute_dag(self, dag, callbacks=None, **kwargs):
         execute_dag(dag, callbacks=callbacks)
 

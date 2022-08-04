@@ -176,7 +176,6 @@ def index(x, key):
 
     offsets = tuple(s.start or 0 if is_slice(s) else s for s in selection)
 
-    # TODO: support mixture of index and slices
     if all(is_integer(s) for s in selection):
         func = _read_index_chunk
     elif all(is_slice(s) for s in selection):

@@ -43,7 +43,6 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
             # Stages for a single pipeline must be executed in series
             tasks.append(partial(_execute_in_series, stage_tasks))
 
-        # TODO: execute tasks for different specs in parallel
         return partial(_execute_in_series, tasks)
 
     def execute_plan(self, plan: Task, **kwargs):
@@ -219,7 +218,6 @@ class LithopsDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    # TODO: execute tasks for independent pipelines in parallel
     def execute_dag(self, dag, callbacks=None, **kwargs):
         merged_kwargs = {**self.kwargs, **kwargs}
         use_backups = merged_kwargs.pop("use_backups", False)
