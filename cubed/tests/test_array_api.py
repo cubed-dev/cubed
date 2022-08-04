@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed.array_api.manipulation_functions import reshape_chunks
-from cubed.tests.utils import ALL_EXECUTORS, MODAL_EXECUTORS
+from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
 
 
 @pytest.fixture()
@@ -14,8 +14,13 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, max_mem=100000)
 
 
-@pytest.fixture(scope="module", params=ALL_EXECUTORS)
+@pytest.fixture(scope="module", params=MAIN_EXECUTORS)
 def executor(request):
+    return request.param
+
+
+@pytest.fixture(scope="module", params=ALL_EXECUTORS)
+def any_executor(request):
     return request.param
 
 
@@ -119,13 +124,13 @@ def test_astype(spec, executor):
 
 # Elementwise functions
 
-
-def test_add(spec, executor):
+# test on all executors (`any_executor`) for coverage
+def test_add(spec, any_executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
-        c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+        c.compute(executor=any_executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
     )
 
 

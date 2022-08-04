@@ -52,7 +52,7 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     )
 
     # source is a Zarr array, so only a single copy spec
-    if len(copy_specs) != 1:
+    if len(copy_specs) != 1:  # pragma: no cover
         raise ValueError(f"Source must be a Zarr array, but was {source}")
     copy_spec = copy_specs[0]
 

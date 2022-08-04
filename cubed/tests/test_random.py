@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.tests.utils import ALL_EXECUTORS
+from cubed.tests.utils import MAIN_EXECUTORS
 
 
 @pytest.fixture()
@@ -14,7 +14,7 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, max_mem=100000)
 
 
-@pytest.fixture(scope="module", params=ALL_EXECUTORS)
+@pytest.fixture(scope="module", params=MAIN_EXECUTORS)
 def executor(request):
     return request.param
 

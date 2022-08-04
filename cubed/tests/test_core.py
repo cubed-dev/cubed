@@ -12,7 +12,7 @@ from cubed import Callback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.python import PythonDagExecutor
-from cubed.tests.utils import ALL_EXECUTORS, MODAL_EXECUTORS, create_zarr
+from cubed.tests.utils import MAIN_EXECUTORS, MODAL_EXECUTORS, create_zarr
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, max_mem=100000)
 
 
-@pytest.fixture(scope="module", params=ALL_EXECUTORS)
+@pytest.fixture(scope="module", params=MAIN_EXECUTORS)
 def executor(request):
     return request.param
 

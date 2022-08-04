@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from cubed.utils import chunk_memory, join_path, memory_repr, to_chunksize
+from cubed.utils import chunk_memory, join_path, memory_repr, peak_memory, to_chunksize
 
 
 def test_chunk_memory():
@@ -45,3 +45,7 @@ def test_memory_repr():
     assert memory_repr(9_999) == "10.0 KB"
     assert memory_repr(1_000_000) == "1.0 MB"
     assert memory_repr(1_000_000_000_000_000) == "1.0 PB"
+
+
+def test_peak_memory():
+    assert peak_memory() > 0

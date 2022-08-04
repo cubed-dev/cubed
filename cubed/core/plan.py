@@ -99,10 +99,7 @@ class Plan:
     def num_tasks(self, name=None, optimize_graph=True):
         """Return the number of tasks needed to execute this plan."""
         tasks = 0
-        if optimize_graph:
-            dag = self.optimize(name)
-        else:
-            dag = self.dag.copy()
+        dag = self.optimize() if optimize_graph else self.dag.copy()
         nodes = {n: d for (n, d) in dag.nodes(data=True)}
         for node in dag:
             if already_computed(nodes[node]):
@@ -169,10 +166,7 @@ class Plan:
             if executor is None:
                 executor = PythonPipelineExecutor()
 
-        if optimize_graph:
-            dag = self.optimize(name)
-        else:
-            dag = self.dag.copy()
+        dag = self.optimize() if optimize_graph else self.dag.copy()
 
         if isinstance(executor, PipelineExecutor):
             dag = dag.copy()
@@ -200,10 +194,7 @@ class Plan:
     def visualize(
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
     ):
-        if optimize_graph:
-            dag = self.optimize()
-        else:
-            dag = self.dag.copy()
+        dag = self.optimize() if optimize_graph else self.dag.copy()
         dag.graph["graph"] = {"rankdir": rankdir}
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
         for (n, d) in dag.nodes(data=True):
@@ -245,12 +236,12 @@ class Plan:
         full_filename = f"{filename}.{format}"
         gv.write(full_filename, format=format)
 
-        try:
+        try:  # pragma: no cover
             import IPython.display as display
 
             if format == "svg":
                 return display.SVG(filename=full_filename)
-        except ImportError:  # pragma: no cover
+        except ImportError:
             # Can't return a display object if no IPython.
             pass
         return None

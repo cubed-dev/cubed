@@ -10,17 +10,29 @@ LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhos
 
 ALL_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
 
+# don't run all tests on every executor as it's too slow, so just have a subset
+MAIN_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
+
 try:
-    from cubed.runtime.executors.beam import BeamDagExecutor
+    from cubed.runtime.executors.beam import BeamDagExecutor, BeamPipelineExecutor
 
     ALL_EXECUTORS.append(BeamDagExecutor())
+    ALL_EXECUTORS.append(BeamPipelineExecutor())
+
+    MAIN_EXECUTORS.append(BeamDagExecutor())
 except ImportError:
     pass
 
 try:
-    from cubed.runtime.executors.lithops import LithopsDagExecutor
+    from cubed.runtime.executors.lithops import (
+        LithopsDagExecutor,
+        LithopsPipelineExecutor,
+    )
 
     ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+    ALL_EXECUTORS.append(LithopsPipelineExecutor(config=LITHOPS_LOCAL_CONFIG))
+
+    MAIN_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
 except ImportError:
     pass
 

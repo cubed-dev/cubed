@@ -25,6 +25,9 @@ Task = Callable[[FunctionExecutor], None]
 class LithopsPipelineExecutor(PipelineExecutor[Task]):
     """An execution engine based on Lithops."""
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     def pipelines_to_plan(self, pipelines: ParallelPipelines) -> Task:
         tasks = []
         for pipeline in pipelines:
@@ -44,7 +47,8 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
         return partial(_execute_in_series, tasks)
 
     def execute_plan(self, plan: Task, **kwargs):
-        with FunctionExecutor(**kwargs) as executor:
+        merged_kwargs = {**self.kwargs, **kwargs}
+        with FunctionExecutor(**merged_kwargs) as executor:
             plan(executor)
 
 
