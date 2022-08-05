@@ -1,6 +1,7 @@
 import numbers
 from functools import partial
 from numbers import Integral, Number
+from operator import add
 
 import numpy as np
 import zarr
@@ -9,14 +10,14 @@ from dask.array.utils import validate_axis
 from dask.blockwise import broadcast_dimensions
 from dask.utils import has_keyword
 from tlz import concat, partition
-from toolz import map
-from zarr.indexing import BasicIndexer, is_integer, is_slice, replace_ellipsis
+from toolz import accumulate, map
+from zarr.indexing import BasicIndexer, IntDimIndexer, is_slice, replace_ellipsis
 
 from cubed.core.array import CoreArray, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
-from cubed.utils import chunk_memory, get_item_with_offsets, to_chunksize
+from cubed.utils import chunk_memory, to_chunksize
 
 
 def from_zarr(store, spec=None):
@@ -179,23 +180,21 @@ def index(x, key):
     # Replace ellipsis with slices
     selection = replace_ellipsis(key, x.shape)
 
-    # Use a Zarr BasicIndexer just to find the resulting array shape
+    # Use a Zarr BasicIndexer just to find the resulting array shape and chunks
     indexer = BasicIndexer(selection, x.zarray)
 
     shape = indexer.shape
     dtype = x.dtype
-    chunks = normalize_chunks(x.zarray.chunks, shape, dtype=dtype)
+    chunks = tuple(
+        s.dim_chunk_len
+        for s in indexer.dim_indexers
+        if not isinstance(s, IntDimIndexer)
+    )
+    chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
-    offsets = tuple(s.start or 0 if is_slice(s) else s for s in selection)
-
-    if all(is_integer(s) for s in selection):
-        func = _read_index_chunk
-    elif all(is_slice(s) for s in selection):
-        if any(s.step is not None and s.step != 1 for s in selection):
-            raise NotImplementedError(f"Slice step must be 1: {key}")
-        func = _read_slice_chunk
-    else:
-        raise NotImplementedError(f"Index not supported: {key}")
+    assert all(isinstance(s, (slice, Integral)) for s in selection)
+    if any(s.step is not None and s.step != 1 for s in selection if is_slice(s)):
+        raise NotImplementedError(f"Slice step must be 1: {key}")
 
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks, zarr will
@@ -203,14 +202,14 @@ def index(x, key):
     extra_required_mem = x.chunkmem
 
     out = map_direct(
-        func,
+        _read_index_chunk,
         x,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
         extra_required_mem=extra_required_mem,
-        source_chunks=chunks,
-        offsets=offsets,
+        target_chunks=chunks,
+        selection=selection,
     )
 
     for axis in where_none:
@@ -221,17 +220,32 @@ def index(x, key):
     return out
 
 
-def _read_index_chunk(x, *arrays, source_chunks=None, offsets=None, block_id=None):
-    array = arrays[0]
-    out = array.zarray[offsets]
-    return out
-
-
-def _read_slice_chunk(x, *arrays, source_chunks=None, offsets=None, block_id=None):
+def _read_index_chunk(x, *arrays, target_chunks=None, selection=None, block_id=None):
     array = arrays[0]
     idx = block_id
-    out = array.zarray[get_item_with_offsets(source_chunks, idx, offsets)]
+    out = array.zarray[_integers_and_slices_selection(target_chunks, idx, selection)]
     return out
+
+
+def _integers_and_slices_selection(target_chunks, idx, selection):
+    # integer and slice indexes can be interspersed in selection
+    # idx is the chunk index for the output (target_chunks)
+
+    # these are just for slices
+    offsets = tuple(s.start or 0 for s in selection if is_slice(s))
+    starts = tuple(tuple(accumulate(add, c, o)) for c, o in zip(target_chunks, offsets))
+
+    sel = []
+    slice_count = 0  # keep track of slices in selection
+    for s in selection:
+        if is_slice(s):
+            i = idx[slice_count]
+            start = starts[slice_count]
+            sel.append(slice(start[i], start[i + 1]))
+            slice_count += 1
+        else:
+            sel.append(s)
+    return tuple(sel)
 
 
 def map_blocks(
