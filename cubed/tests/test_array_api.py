@@ -162,32 +162,29 @@ def test_negative(spec, executor):
 # Indexing
 
 
-@pytest.mark.parametrize("i", [6, (6, None)])
-def test_index_1d(spec, i):
+@pytest.mark.parametrize(
+    "ind",
+    [
+        6,
+        (6, None),  # add a new dimension
+        (None, 6),  # add a new dimension
+        slice(None),
+        slice(10),
+        slice(3, None),
+        slice(3, 10),
+        (slice(10), None),  # add a new dimension
+    ],
+)
+def test_index_1d(spec, ind):
     a = xp.arange(12, chunks=(4,), spec=spec)
-    assert_array_equal(a[i].compute(), np.arange(12)[i])
-
-
-@pytest.mark.parametrize("i", [(2, 3), (None, 2, 3)])
-def test_index_2d(spec, i):
-    a = xp.asarray(
-        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-        chunks=(2, 2),
-        spec=spec,
-    )
-    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-    assert_array_equal(a[i].compute(), x[i])
-
-
-@pytest.mark.parametrize("sl", [slice(None), slice(10), slice(3, None), slice(3, 10)])
-def test_slice_1d(spec, sl):
-    a = xp.arange(12, chunks=(4,), spec=spec)
-    assert_array_equal(a[sl].compute(), np.arange(12)[sl])
+    assert_array_equal(a[ind].compute(), np.arange(12)[ind])
 
 
 @pytest.mark.parametrize(
-    "sl",
+    "ind",
     [
+        (2, 3),
+        (None, 2, 3),  # add a new dimension
         (slice(None), slice(2, 4)),
         (slice(3), slice(2, None)),
         (slice(1, None), slice(4)),
@@ -196,19 +193,21 @@ def test_slice_1d(spec, sl):
         (None, slice(None), slice(2, 4)),  # add a new dimension
         (slice(None), None, slice(2, 4)),  # add a new dimension
         (slice(None), slice(2, 4), None),  # add a new dimension
+        (slice(None), 1),
+        (1, slice(2, 4)),
     ],
 )
-def test_slice_2d(spec, sl):
+def test_index_2d(spec, ind):
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
         spec=spec,
     )
     x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-    assert_array_equal(a[sl].compute(), x[sl])
+    assert_array_equal(a[ind].compute(), x[ind])
 
 
-def test_slice_unsupported_step(spec):
+def test_index_slice_unsupported_step(spec):
     with pytest.raises(NotImplementedError):
         a = xp.arange(12, chunks=(4,), spec=spec)
         a[3:10:2]
