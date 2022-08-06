@@ -116,6 +116,15 @@ def test_multiple_ops(spec, executor):
     )
 
 
+def test_rechunk(spec, executor):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
+    b = a.rechunk((1, 2))
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
+    )
+
+
 def test_compute_is_idempotent(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     b = xp.negative(a)

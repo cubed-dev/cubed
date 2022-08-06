@@ -93,6 +93,11 @@ class CoreArray:
             # read back from zarr
             return self.zarray[...]
 
+    def rechunk(self, chunks):
+        from cubed.core.ops import rechunk
+
+        return rechunk(self, chunks)
+
     def visualize(self, filename="cubed", format=None, optimize_graph=True):
         return self.plan.visualize(
             filename=filename, format=format, optimize_graph=optimize_graph
