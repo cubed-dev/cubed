@@ -6,13 +6,7 @@ from asyncio.exceptions import TimeoutError
 import modal
 import modal.aio
 import networkx as nx
-from tenacity import (
-    AsyncRetrying,
-    RetryError,
-    Retrying,
-    retry_if_exception_type,
-    stop_after_attempt,
-)
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.core.array import TaskEndEvent
 from cubed.runtime.backup import should_launch_backup
@@ -37,15 +31,44 @@ image = modal.DebianSlim().pip_install(
 )
 
 
-@stub.function(image=image, secret=modal.ref("my-aws-secret"))
+# Use a generator, since we want results to be returned as they finish and we don't care about order
+@stub.generator(image=image, secret=modal.ref("my-aws-secret"), retries=2)
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
-    # we can't return None, as Modal map won't work in that case
-    return func(input, config=config) or 1
+    peak_memory_start = peak_memory()
+    function_start_tstamp = time.time()
+    result = func(input, config=config)
+    function_end_tstamp = time.time()
+    peak_memory_end = peak_memory()
+    yield (
+        result,
+        function_start_tstamp,
+        function_end_tstamp,
+        peak_memory_start,
+        peak_memory_end,
+    )
 
 
-@async_stub.function(image=image, secret=modal.ref("my-aws-secret"))
+@async_stub.generator(image=image, secret=modal.ref("my-aws-secret"), retries=2)
 async def async_run_remotely(input, func=None, config=None):
+    print(f"running remotely on {input}")
+    peak_memory_start = peak_memory()
+    function_start_tstamp = time.time()
+    result = func(input, config=config)
+    function_end_tstamp = time.time()
+    peak_memory_end = peak_memory()
+    yield (
+        result,
+        function_start_tstamp,
+        function_end_tstamp,
+        peak_memory_start,
+        peak_memory_end,
+    )
+
+
+# For backups, this needs to be a function
+@async_stub.function(image=image, secret=modal.ref("my-aws-secret"))
+async def async_run_remotely_with_backups(input, func=None, config=None):
     print(f"running remotely on {input}")
     peak_memory_start = peak_memory()
     function_start_tstamp = time.time()
@@ -61,8 +84,9 @@ async def async_run_remotely(input, func=None, config=None):
     )
 
 
+# We need map_unordered for the use_backups implementation
 async def map_unordered(
-    app_function, input, max_failures=3, use_backups=False, return_stats=False, **kwargs
+    app_function, input, max_failures=3, use_backups=False, **kwargs
 ):
     """
     Apply a function to items of an input list, yielding results as they are completed
@@ -72,7 +96,6 @@ async def map_unordered(
     :param input: An iterable of input data.
     :param max_failures: The number of task failures to allow before raising an exception.
     :param use_backups: Whether to launch backup tasks to mitigate against slow-running tasks.
-    :param return_stats: Whether to return execution stats.
     :param kwargs: Keyword arguments to pass to the function.
 
     :return: Function values (and optionally stats) as they are completed, not necessarily in the input order.
@@ -84,10 +107,6 @@ async def map_unordered(
     start_times = {f: t for f in pending}
     end_times = {}
     backups = {}
-
-    event_t = time.time()
-    event_start_times = {f: event_t for f in pending}
-    event_end_times = {}
 
     while pending:
         finished, pending = await asyncio.wait(
@@ -109,26 +128,7 @@ async def map_unordered(
                 pending.add(new_task)
             else:
                 end_times[task] = time.monotonic()
-                if return_stats:
-                    event_end_times[task] = time.time()
-                    (
-                        res,
-                        function_start_tstamp,
-                        function_end_tstamp,
-                        peak_memory_start,
-                        peak_memory_end,
-                    ) = task.result()
-                    task_stats = dict(
-                        task_create_tstamp=event_start_times[task],
-                        function_start_tstamp=function_start_tstamp,
-                        function_end_tstamp=function_end_tstamp,
-                        task_result_tstamp=event_end_times[task],
-                        peak_memory_start=peak_memory_start,
-                        peak_memory_end=peak_memory_end,
-                    )
-                    yield res, task_stats
-                else:
-                    yield task.result()
+                yield task.result()
 
             # remove any backup task
             if use_backups:
@@ -154,79 +154,128 @@ async def map_unordered(
                     backups[new_task] = task
 
 
+# This just retries the initial connection attempt, not the function calls
+@retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(3))
 def execute_dag(dag, callbacks=None, **kwargs):
-    max_attempts = 3
-    try:
-        for attempt in Retrying(
-            retry=retry_if_exception_type(TimeoutError),
-            stop=stop_after_attempt(max_attempts),
-        ):
-            with attempt:
-                with stub.run():
+    with stub.run():
 
-                    nodes = {n: d for (n, d) in dag.nodes(data=True)}
-                    for node in list(nx.topological_sort(dag)):
-                        if already_computed(nodes[node]):
-                            continue
-                        pipeline = nodes[node]["pipeline"]
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+        for node in list(nx.topological_sort(dag)):
+            if already_computed(nodes[node]):
+                continue
+            pipeline = nodes[node]["pipeline"]
 
-                        for stage in pipeline.stages:
-                            if stage.mappable is not None:
-                                # print(f"about to run remotely on {stage.mappable}")
-                                for _ in run_remotely.map(
-                                    list(stage.mappable),
-                                    kwargs=dict(
-                                        func=stage.function, config=pipeline.config
-                                    ),
-                                ):
-                                    if callbacks is not None:
-                                        event = TaskEndEvent(array_name=node)
-                                        [
-                                            callback.on_task_end(event)
-                                            for callback in callbacks
-                                        ]
-                            else:
-                                raise NotImplementedError()
-    except RetryError:
-        pass
+            for stage in pipeline.stages:
+                if stage.mappable is not None:
+                    task_create_tstamp = time.time()
+                    for result in run_remotely.map(
+                        list(stage.mappable),
+                        kwargs=dict(func=stage.function, config=pipeline.config),
+                    ):
+                        if callbacks is not None:
+                            task_result_tstamp = time.time()
+                            (
+                                res,
+                                function_start_tstamp,
+                                function_end_tstamp,
+                                peak_memory_start,
+                                peak_memory_end,
+                            ) = result
+                            task_stats = dict(
+                                task_create_tstamp=task_create_tstamp,
+                                function_start_tstamp=function_start_tstamp,
+                                function_end_tstamp=function_end_tstamp,
+                                task_result_tstamp=task_result_tstamp,
+                                peak_memory_start=peak_memory_start,
+                                peak_memory_end=peak_memory_end,
+                            )
+                            event = TaskEndEvent(array_name=node, **task_stats)
+                            [callback.on_task_end(event) for callback in callbacks]
+                else:
+                    raise NotImplementedError()
 
 
+# This just retries the initial connection attempt, not the function calls
+@retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(3))
 async def async_execute_dag(dag, callbacks=None, **kwargs):
-    max_attempts = 3
-    try:
-        async for attempt in AsyncRetrying(
-            retry=retry_if_exception_type(TimeoutError),
-            stop=stop_after_attempt(max_attempts),
-        ):
-            with attempt:
+    async with async_stub.run():
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+        for node in list(nx.topological_sort(dag)):
+            if already_computed(nodes[node]):
+                continue
+            pipeline = nodes[node]["pipeline"]
 
-                async with async_stub.run():
-                    nodes = {n: d for (n, d) in dag.nodes(data=True)}
-                    for node in list(nx.topological_sort(dag)):
-                        if already_computed(nodes[node]):
-                            continue
-                        pipeline = nodes[node]["pipeline"]
+            for stage in pipeline.stages:
+                if stage.mappable is not None:
+                    task_create_tstamp = time.time()
+                    async for result in async_run_remotely.map(
+                        list(stage.mappable),
+                        kwargs=dict(func=stage.function, config=pipeline.config),
+                    ):
+                        if callbacks is not None:
+                            task_result_tstamp = time.time()
+                            (
+                                res,
+                                function_start_tstamp,
+                                function_end_tstamp,
+                                peak_memory_start,
+                                peak_memory_end,
+                            ) = result
+                            task_stats = dict(
+                                task_create_tstamp=task_create_tstamp,
+                                function_start_tstamp=function_start_tstamp,
+                                function_end_tstamp=function_end_tstamp,
+                                task_result_tstamp=task_result_tstamp,
+                                peak_memory_start=peak_memory_start,
+                                peak_memory_end=peak_memory_end,
+                            )
+                            event = TaskEndEvent(array_name=node, **task_stats)
+                            [callback.on_task_end(event) for callback in callbacks]
+                else:
+                    raise NotImplementedError()
 
-                        for stage in pipeline.stages:
-                            if stage.mappable is not None:
-                                # print(f"about to run remotely on {stage.mappable}")
-                                async for _, stats in map_unordered(
-                                    async_run_remotely,
-                                    list(stage.mappable),
-                                    return_stats=True,
-                                    func=stage.function,
-                                    config=pipeline.config,
-                                ):
-                                    if callbacks is not None:
-                                        event = TaskEndEvent(array_name=node, **stats)
-                                        [
-                                            callback.on_task_end(event)
-                                            for callback in callbacks
-                                        ]
-                            else:
-                                raise NotImplementedError()
-    except RetryError:
-        pass
+
+# This just retries the initial connection attempt, not the function calls
+@retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(3))
+async def async_execute_dag_with_backups(dag, callbacks=None, **kwargs):
+    async with async_stub.run():
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+        for node in list(nx.topological_sort(dag)):
+            if already_computed(nodes[node]):
+                continue
+            pipeline = nodes[node]["pipeline"]
+
+            for stage in pipeline.stages:
+                if stage.mappable is not None:
+                    task_create_tstamp = time.time()
+                    async for result in map_unordered(
+                        async_run_remotely,
+                        list(stage.mappable),
+                        use_backups=True,
+                        func=stage.function,
+                        config=pipeline.config,
+                    ):
+                        if callbacks is not None:
+                            task_result_tstamp = time.time()
+                            (
+                                res,
+                                function_start_tstamp,
+                                function_end_tstamp,
+                                peak_memory_start,
+                                peak_memory_end,
+                            ) = result
+                            task_stats = dict(
+                                task_create_tstamp=task_create_tstamp,
+                                function_start_tstamp=function_start_tstamp,
+                                function_end_tstamp=function_end_tstamp,
+                                task_result_tstamp=task_result_tstamp,
+                                peak_memory_start=peak_memory_start,
+                                peak_memory_end=peak_memory_end,
+                            )
+                            event = TaskEndEvent(array_name=node, **task_stats)
+                            [callback.on_task_end(event) for callback in callbacks]
+                else:
+                    raise NotImplementedError()
 
 
 class ModalDagExecutor(DagExecutor):
@@ -236,4 +285,8 @@ class ModalDagExecutor(DagExecutor):
 
 class AsyncModalDagExecutor(DagExecutor):
     def execute_dag(self, dag, callbacks=None, **kwargs):
-        asyncio.run(async_execute_dag(dag, callbacks=callbacks))
+        use_backups = kwargs.pop("use_backups", False)
+        if use_backups:
+            asyncio.run(async_execute_dag_with_backups(dag, callbacks=callbacks))
+        else:
+            asyncio.run(async_execute_dag(dag, callbacks=callbacks))
