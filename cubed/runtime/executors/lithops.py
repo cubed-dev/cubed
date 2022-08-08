@@ -4,15 +4,14 @@ import time
 from functools import partial
 from typing import Callable, Iterable
 
-import networkx as nx
 from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from rechunker.types import ParallelPipelines, PipelineExecutor
 from six import reraise
 
 from cubed.core.array import TaskEndEvent
+from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
-from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 
 logger = logging.getLogger(__name__)
@@ -222,18 +221,14 @@ class LithopsDagExecutor(DagExecutor):
         merged_kwargs = {**self.kwargs, **kwargs}
         use_backups = merged_kwargs.pop("use_backups", False)
         with FunctionExecutor(**merged_kwargs) as executor:
-            nodes = {n: d for (n, d) in dag.nodes(data=True)}
-            for node in list(nx.topological_sort(dag)):
-                if already_computed(nodes[node]):
-                    continue
-                pipeline = nodes[node]["pipeline"]
-
+            for name, node in visit_nodes(dag):
+                pipeline = node["pipeline"]
                 for stage in pipeline.stages:
                     if stage.mappable is not None:
                         stage_func = build_stage_mappable_func(
                             stage,
                             pipeline.config,
-                            name=node,
+                            name=name,
                             callbacks=callbacks,
                             use_backups=use_backups,
                         )

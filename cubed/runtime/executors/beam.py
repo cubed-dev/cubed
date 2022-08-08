@@ -12,7 +12,7 @@ from rechunker.types import (
     Stage,
 )
 
-from cubed.runtime.pipeline import already_computed
+from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 
 from ..utils import gensym
@@ -132,13 +132,10 @@ class BeamDagExecutor(DagExecutor):
             raise NotImplementedError("Callbacks not supported")
         dag = dag.copy()
         with beam.Pipeline(**kwargs) as pipeline:
-            nodes = {n: d for (n, d) in dag.nodes(data=True)}
-            for node in list(nx.topological_sort(dag)):
-                if already_computed(nodes[node]):
-                    continue
-                rechunker_pipeline = nodes[node]["pipeline"]
+            for name, node in visit_nodes(dag):
+                rechunker_pipeline = node["pipeline"]
 
-                dep_nodes = list(dag.predecessors(node))
+                dep_nodes = list(dag.predecessors(name))
 
                 pcolls = [
                     p
@@ -148,17 +145,17 @@ class BeamDagExecutor(DagExecutor):
                 if len(pcolls) == 0:
                     pcoll = pipeline | gensym("Start") >> beam.Create([-1])
                     pcoll = add_to_pcoll(rechunker_pipeline, pcoll)
-                    dag.nodes[node]["pcoll"] = pcoll
+                    dag.nodes[name]["pcoll"] = pcoll
 
                 elif len(pcolls) == 1:
                     pcoll = pcolls[0]
                     pcoll = add_to_pcoll(rechunker_pipeline, pcoll)
-                    dag.nodes[node]["pcoll"] = pcoll
+                    dag.nodes[name]["pcoll"] = pcoll
                 else:
                     pcoll = pcolls | gensym("Flatten") >> beam.Flatten()
                     pcoll |= gensym("Distinct") >> beam.Distinct()
                     pcoll = add_to_pcoll(rechunker_pipeline, pcoll)
-                    dag.nodes[node]["pcoll"] = pcoll
+                    dag.nodes[name]["pcoll"] = pcoll
 
 
 def add_to_pcoll(rechunker_pipeline, pcoll):

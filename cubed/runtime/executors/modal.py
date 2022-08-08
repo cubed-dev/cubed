@@ -5,12 +5,11 @@ from asyncio.exceptions import TimeoutError
 
 import modal
 import modal.aio
-import networkx as nx
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.core.array import TaskEndEvent
+from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
-from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import DagExecutor
 from cubed.utils import peak_memory
 
@@ -158,12 +157,8 @@ async def map_unordered(
 @retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(3))
 def execute_dag(dag, callbacks=None, **kwargs):
     with stub.run():
-
-        nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        for node in list(nx.topological_sort(dag)):
-            if already_computed(nodes[node]):
-                continue
-            pipeline = nodes[node]["pipeline"]
+        for name, node in visit_nodes(dag):
+            pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
@@ -189,7 +184,7 @@ def execute_dag(dag, callbacks=None, **kwargs):
                                 peak_memory_start=peak_memory_start,
                                 peak_memory_end=peak_memory_end,
                             )
-                            event = TaskEndEvent(array_name=node, **task_stats)
+                            event = TaskEndEvent(array_name=name, **task_stats)
                             [callback.on_task_end(event) for callback in callbacks]
                 else:
                     raise NotImplementedError()
@@ -199,11 +194,8 @@ def execute_dag(dag, callbacks=None, **kwargs):
 @retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(3))
 async def async_execute_dag(dag, callbacks=None, **kwargs):
     async with async_stub.run():
-        nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        for node in list(nx.topological_sort(dag)):
-            if already_computed(nodes[node]):
-                continue
-            pipeline = nodes[node]["pipeline"]
+        for name, node in visit_nodes(dag):
+            pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
@@ -229,7 +221,7 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
                                 peak_memory_start=peak_memory_start,
                                 peak_memory_end=peak_memory_end,
                             )
-                            event = TaskEndEvent(array_name=node, **task_stats)
+                            event = TaskEndEvent(array_name=name, **task_stats)
                             [callback.on_task_end(event) for callback in callbacks]
                 else:
                     raise NotImplementedError()
@@ -239,11 +231,8 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
 @retry(retry=retry_if_exception_type(TimeoutError), stop=stop_after_attempt(3))
 async def async_execute_dag_with_backups(dag, callbacks=None, **kwargs):
     async with async_stub.run():
-        nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        for node in list(nx.topological_sort(dag)):
-            if already_computed(nodes[node]):
-                continue
-            pipeline = nodes[node]["pipeline"]
+        for name, node in visit_nodes(dag):
+            pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
@@ -272,7 +261,7 @@ async def async_execute_dag_with_backups(dag, callbacks=None, **kwargs):
                                 peak_memory_start=peak_memory_start,
                                 peak_memory_end=peak_memory_end,
                             )
-                            event = TaskEndEvent(array_name=node, **task_stats)
+                            event = TaskEndEvent(array_name=name, **task_stats)
                             [callback.on_task_end(event) for callback in callbacks]
                 else:
                     raise NotImplementedError()
