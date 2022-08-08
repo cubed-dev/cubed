@@ -274,3 +274,12 @@ def new_temp_zarr(shape, dtype, chunksize, name=None, spec=None):
     store = new_temp_store(name=name, spec=spec)
     target = zarr.open(store, mode="w-", shape=shape, dtype=dtype, chunks=chunksize)
     return target
+
+
+def visit_nodes(dag):
+    """Return a generator that visits the nodes in the DAG in topological order."""
+    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+    for name in list(nx.topological_sort(dag)):
+        if already_computed(nodes[name]):
+            continue
+        yield name, nodes[name]

@@ -1,11 +1,10 @@
 import contextlib
 import sys
 
-import networkx as nx
 from toolz import map
 
 from cubed.core.array import Callback
-from cubed.runtime.pipeline import already_computed
+from cubed.core.plan import visit_nodes
 
 
 class TqdmProgressBar(Callback):
@@ -21,13 +20,10 @@ class TqdmProgressBar(Callback):
         self.pbars = {}
         i = 0
         dag = arr.plan.optimize(arr.name)
-        nodes = {n: d for (n, d) in dag.nodes(data=True)}
-        for node in list(nx.topological_sort(dag)):
-            if already_computed(nodes[node]):
-                continue
-            num_tasks = nodes[node]["num_tasks"]
-            self.pbars[node] = tqdm(
-                *self.args, desc=node, total=num_tasks, position=i, **self.kwargs
+        for name, node in visit_nodes(dag):
+            num_tasks = node["num_tasks"]
+            self.pbars[name] = tqdm(
+                *self.args, desc=name, total=num_tasks, position=i, **self.kwargs
             )
             i = i + 1
 
