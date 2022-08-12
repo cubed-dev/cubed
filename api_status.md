@@ -21,7 +21,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `from_dlpack`       |                    |            |                               |
 |                          | `full`              | :white_check_mark: |            |                               |
 |                          | `full_like`         | :white_check_mark: |            |                               |
-|                          | `linspace`          |                    | 2          | Like `arange`                 |
+|                          | `linspace`          | :white_check_mark: |            |                               |
 |                          | `meshgrid`          |                    |            |                               |
 |                          | `ones`              | :white_check_mark: |            |                               |
 |                          | `ones_like`         | :white_check_mark: |            |                               |
