@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from operator import mul
 from typing import Optional
 
+import numpy as np
 from dask.array.core import normalize_chunks
 from toolz import map, reduce
 
@@ -90,8 +91,12 @@ class CoreArray:
             [callback.on_compute_end(self) for callback in callbacks]
 
         if return_stored:
-            # read back from zarr
-            return self.zarray[...]
+            if self.size > 0:
+                # read back from zarr
+                return self.zarray[...]
+            else:
+                # this case fails for zarr, so just return an empty array of the correct shape
+                return np.empty(self.shape, dtype=self.dtype)
 
     def rechunk(self, chunks):
         from cubed.core.ops import rechunk

@@ -169,6 +169,10 @@ def index(x, key):
     if not isinstance(key, tuple):
         key = (key,)
 
+    # No op case
+    if all(is_slice(ind) and ind == slice(None) for ind in key):
+        return x
+
     # Remove None values, to be filled in with expand_dims at end
     where_none = [i for i, ind in enumerate(key) if ind is None]
     for i, a in enumerate(where_none):
