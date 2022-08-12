@@ -155,6 +155,58 @@ def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=No
     return full(fill_value=fill_value, **_like_args(x, dtype, device, chunks, spec))
 
 
+def linspace(
+    start,
+    stop,
+    /,
+    num,
+    *,
+    dtype=None,
+    device=None,
+    endpoint=True,
+    chunks="auto",
+    spec=None,
+):
+    range_ = stop - start
+    div = (num - 1) if endpoint else num
+    if div == 0:
+        div = 1
+    step = float(range_) / div
+    shape = (num,)
+    if dtype is None:
+        dtype = np.float64
+    chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
+    chunksize = chunks[0][0]
+
+    if num == 0:
+        return asarray(0.0, dtype=dtype, spec=spec)
+
+    return map_direct(
+        _linspace,
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        extra_required_mem=0,
+        spec=spec,
+        size=chunksize,
+        start=start,
+        step=step,
+        endpoint=endpoint,
+        linspace_dtype=dtype,
+    )
+
+
+def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=None):
+    bs = x.shape[0]
+    i = block_id[0]
+    adjusted_bs = bs - 1 if endpoint else bs
+    blockstart = start + (i * size * step)
+    blockstop = blockstart + (adjusted_bs * step)
+    return np.linspace(
+        blockstart, blockstop, bs, endpoint=endpoint, dtype=linspace_dtype
+    )
+
+
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     if dtype is None:
         dtype = np.float64

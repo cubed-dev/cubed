@@ -1,7 +1,7 @@
 import fsspec
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_allclose, assert_array_equal
 
 import cubed
 import cubed.array_api as xp
@@ -90,6 +90,21 @@ def test_asarray_from_array(spec):
 def test_eye(spec, k):
     a = xp.eye(5, k=k, chunks=(2, 2), spec=spec)
     assert_array_equal(a, np.eye(5, k=k))
+
+
+@pytest.mark.parametrize("endpoint", [True, False])
+def test_linspace(spec, endpoint):
+    a = xp.linspace(6, 49, 50, endpoint=endpoint, chunks=5, spec=spec)
+    npa = np.linspace(6, 49, 50, endpoint=endpoint)
+    assert_allclose(a, npa)
+
+    a = xp.linspace(1.4, 4.9, 13, endpoint=endpoint, chunks=5, spec=spec)
+    npa = np.linspace(1.4, 4.9, 13, endpoint=endpoint)
+    assert_allclose(a, npa)
+
+    a = xp.linspace(0, 0, 0, endpoint=endpoint)
+    npa = np.linspace(0, 0, 0, endpoint=endpoint)
+    assert_allclose(a, npa)
 
 
 def test_ones(spec, executor):
