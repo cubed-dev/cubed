@@ -36,6 +36,17 @@ def test_regular_chunks(spec):
         xp.ones((5, 5), chunks=((2, 1, 2), (5,)), spec=spec)
 
 
+def test_asarray_from_zarr(tmp_path, spec):
+    store = store = tmp_path / "source.zarr"
+    za = create_zarr(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+        chunks=(2, 2),
+        store=store,
+    )
+    a = xp.asarray(za, spec=spec)
+    assert a.zarray is za
+
+
 def test_from_zarr(tmp_path, spec, executor):
     store = store = tmp_path / "source.zarr"
     create_zarr(
