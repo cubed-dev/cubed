@@ -3,6 +3,7 @@ from .array import Callback, CoreArray, TaskEndEvent, gensym
 from .ops import (
     blockwise,
     elemwise,
+    from_array,
     from_zarr,
     map_blocks,
     rechunk,
