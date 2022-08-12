@@ -56,7 +56,8 @@ class Plan:
         if len(source_arrays) == 0:
             dag = nx.MultiDiGraph(spec=spec)
         else:
-            dag = nx.compose_all([x.plan.dag for x in source_arrays])
+            source_dags = [x.plan.dag for x in source_arrays if hasattr(x, "plan")]
+            dag = nx.compose_all(source_dags)
 
         # add new node and edges
         frame = inspect.currentframe().f_back  # go back one in the stack
@@ -77,7 +78,8 @@ class Plan:
                 num_tasks=num_tasks,
             )
         for x in source_arrays:
-            dag.add_edge(x.name, name)
+            if hasattr(x, "name"):
+                dag.add_edge(x.name, name)
 
         self.dag = dag
 

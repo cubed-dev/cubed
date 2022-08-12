@@ -12,13 +12,22 @@ try:
 except Exception:  # pragma: no cover
     __version__ = "unknown"
 
-from .core import Callback, Spec, TaskEndEvent, from_zarr, map_blocks, to_zarr
+from .core import (
+    Callback,
+    Spec,
+    TaskEndEvent,
+    from_array,
+    from_zarr,
+    map_blocks,
+    to_zarr,
+)
 
 __all__ = [
     "__version__",
     "Callback",
     "Spec",
     "TaskEndEvent",
+    "from_array",
     "from_zarr",
     "map_blocks",
     "to_zarr",

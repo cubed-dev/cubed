@@ -36,6 +36,43 @@ def test_regular_chunks(spec):
         xp.ones((5, 5), chunks=((2, 1, 2), (5,)), spec=spec)
 
 
+class WrappedArray:
+    def __init__(self, x):
+        self.x = x
+        self.dtype = x.dtype
+        self.shape = x.shape
+        self.ndim = len(x.shape)
+
+    def __getitem__(self, i):
+        return self.x[i]
+
+
+@pytest.mark.parametrize(
+    "x,chunks",
+    [
+        (np.arange(25).reshape((5, 5)), (5, 5)),
+        (np.arange(25).reshape((5, 5)), (3, 2)),
+        (np.arange(25).reshape((5, 5)), -1),
+        (np.array([[1]]), 1),
+        (np.array(1), 1),
+    ],
+)
+def test_from_array(x, chunks):
+    a = cubed.from_array(WrappedArray(x), chunks=chunks)
+    assert_array_equal(a, x)
+
+
+def test_from_array_zarr(tmp_path, spec):
+    store = store = tmp_path / "source.zarr"
+    za = create_zarr(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+        chunks=(2, 2),
+        store=store,
+    )
+    a = cubed.from_array(za, spec=spec)
+    assert_array_equal(a, za)
+
+
 def test_from_zarr(tmp_path, spec, executor):
     store = store = tmp_path / "source.zarr"
     create_zarr(

@@ -17,7 +17,47 @@ from cubed.core.array import CoreArray, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
-from cubed.utils import chunk_memory, to_chunksize
+from cubed.utils import chunk_memory, get_item, to_chunksize
+
+
+def from_array(x, chunks="auto", spec=None):
+    """Create a Cubed array from something that looks like an array."""
+
+    if isinstance(x, CoreArray):
+        raise ValueError(
+            "Array is already a Cubed array. Use 'asarray' or 'rechunk' instead."
+        )
+
+    previous_chunks = getattr(x, "chunks", None)
+    outchunks = normalize_chunks(
+        chunks, x.shape, dtype=x.dtype, previous_chunks=previous_chunks
+    )
+
+    if isinstance(x, zarr.Array):  # zarr fast path
+        name = gensym()
+        target = x
+        plan = Plan(name, "from_array", target, spec)
+        arr = CoreArray.new(name, target, plan)
+
+        chunksize = to_chunksize(outchunks)
+        if chunks != "auto" and previous_chunks != chunksize:
+            arr = rechunk(arr, chunksize)
+        return arr
+
+    return map_direct(
+        _from_array,
+        x,
+        shape=x.shape,
+        dtype=x.dtype,
+        chunks=outchunks,
+        extra_required_mem=0,
+        spec=spec,
+        outchunks=outchunks,
+    )
+
+
+def _from_array(e, x, outchunks=None, block_id=None):
+    return x[get_item(outchunks, block_id)]
 
 
 def from_zarr(store, spec=None):
@@ -396,7 +436,7 @@ def map_direct(
 
     from cubed.array_api.creation_functions import empty
 
-    if spec is None and len(args) > 0:
+    if spec is None and len(args) > 0 and hasattr(args[0], "plan"):
         spec = args[0].plan.spec
 
     out = empty(shape, dtype=dtype, chunks=chunks, spec=spec)
