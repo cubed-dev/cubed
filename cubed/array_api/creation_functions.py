@@ -58,6 +58,11 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     # from dask.asarray
     if isinstance(a, Array):
         return a
+    elif isinstance(a, zarr.Array):
+        name = gensym()
+        target = a
+        plan = Plan(name, "asarray", target, spec)
+        return CoreArray.new(name, target, plan)
     elif type(a).__module__.split(".")[0] == "xarray" and hasattr(
         a, "data"
     ):  # pragma: no cover
