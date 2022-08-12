@@ -22,7 +22,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `full`              | :white_check_mark: |            |                               |
 |                          | `full_like`         | :white_check_mark: |            |                               |
 |                          | `linspace`          | :white_check_mark: |            |                               |
-|                          | `meshgrid`          |                    |            |                               |
+|                          | `meshgrid`          | :white_check_mark: |            |                               |
 |                          | `ones`              | :white_check_mark: |            |                               |
 |                          | `ones_like`         | :white_check_mark: |            |                               |
 |                          | `tril`              | :white_check_mark: |            |                               |

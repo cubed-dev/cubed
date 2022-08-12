@@ -95,7 +95,6 @@ jobs:
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
           array_api_tests/test_array_object.py::test_scalar_casting
-          array_api_tests/test_creation_functions.py::test_meshgrid
           array_api_tests/test_manipulation_functions.py::test_flip
           array_api_tests/test_manipulation_functions.py::test_roll
           array_api_tests/test_sorting_functions.py

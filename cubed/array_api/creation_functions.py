@@ -207,6 +207,38 @@ def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=
     )
 
 
+def meshgrid(*arrays, indexing="xy"):
+    if len({a.dtype for a in arrays}) > 1:
+        raise ValueError("meshgrid inputs must all have the same dtype")
+
+    from cubed.array_api.manipulation_functions import broadcast_arrays
+
+    # based on dask
+    if indexing not in ("ij", "xy"):
+        raise ValueError("`indexing` must be `'ij'` or `'xy'`")
+
+    if indexing == "xy" and len(arrays) > 1:
+        arrays = list(arrays)
+        arrays[0], arrays[1] = arrays[1], arrays[0]
+
+    grid = []
+    for i in range(len(arrays)):
+        s = len(arrays) * [None]
+        s[i] = slice(None)
+        s = tuple(s)
+
+        r = arrays[i][s]
+
+        grid.append(r)
+
+    grid = broadcast_arrays(*grid)
+
+    if indexing == "xy" and len(arrays) > 1:
+        grid[0], grid[1] = grid[1], grid[0]
+
+    return grid
+
+
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None):
     if dtype is None:
         dtype = np.float64
