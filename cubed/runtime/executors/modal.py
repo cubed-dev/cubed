@@ -268,11 +268,15 @@ async def async_execute_dag_with_backups(dag, callbacks=None, **kwargs):
 
 
 class ModalDagExecutor(DagExecutor):
+    """An execution engine that uses Modal."""
+
     def execute_dag(self, dag, callbacks=None, **kwargs):
         execute_dag(dag, callbacks=callbacks)
 
 
 class AsyncModalDagExecutor(DagExecutor):
+    """An execution engine that uses Modal's async API."""
+
     def execute_dag(self, dag, callbacks=None, **kwargs):
         use_backups = kwargs.pop("use_backups", False)
         if use_backups:

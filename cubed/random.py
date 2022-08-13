@@ -11,6 +11,7 @@ from cubed.utils import to_chunksize
 
 
 def random(size, *, chunks=None, spec=None):
+    """Return random floats in the half-open interval [0.0, 1.0)."""
     shape = normalize_shape(size)
     dtype = nxp.float64
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)

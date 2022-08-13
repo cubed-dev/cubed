@@ -22,22 +22,22 @@ def gensym(name="array"):
 class CoreArray:
     """Chunked array backed by Zarr storage.
 
-    This class has the basic array attributes (`dtype`, `shape`, `chunks`, etc).
+    This class has the basic array attributes (``dtype``, ``shape``, ``chunks``, etc).
     The other array methods and attributes are provided in a subclass.
     """
 
     def __init__(self, name, zarray, plan):
         self.name = name
         self.zarray = zarray
-        self.shape = zarray.shape
-        self.dtype = zarray.dtype
-        self.chunks = normalize_chunks(
+        self._shape = zarray.shape
+        self._dtype = zarray.dtype
+        self._chunks = normalize_chunks(
             zarray.chunks, shape=self.shape, dtype=self.dtype
         )
         self.plan = plan
 
     @classmethod
-    def new(cls, name, zarray, plan):
+    def _new(cls, name, zarray, plan):
         # Always create an Array object subclass that has array API methods and attributes
         from cubed.array_api.array_object import Array
 
@@ -45,26 +45,47 @@ class CoreArray:
 
     @property
     def chunkmem(self):
+        """Amount of memory in bytes that a single chunk uses."""
         return chunk_memory(self.dtype, self.chunksize)
 
     @property
     def chunksize(self):
+        """A tuple indicating the chunk size of each corresponding array dimension."""
         return tuple(max(c) for c in self.chunks)
 
     @property
+    def chunks(self):
+        """A tuple containing a sequence of block sizes for each corresponding array dimension."""
+        return self._chunks
+
+    @property
+    def dtype(self):
+        """Data type of the array elements."""
+        return self._dtype
+
+    @property
     def ndim(self):
+        """Number of array dimensions (axes)."""
         return len(self.shape)
 
     @property
     def numblocks(self):
+        """A tuple indicating the number of blocks (chunks) in each corresponding array dimension."""
         return tuple(map(len, self.chunks))
 
     @property
     def npartitions(self):
+        """Number of chunks in the array."""
         return reduce(mul, self.numblocks, 1)
 
     @property
+    def shape(self):
+        """Array dimensions."""
+        return self._shape
+
+    @property
     def size(self):
+        """Number of elements in the array."""
         return reduce(mul, self.shape, 1)
 
     def compute(
@@ -76,6 +97,7 @@ class CoreArray:
         optimize_graph=True,
         **kwargs,
     ):
+        """Compute this array, and any arrays that it depends on."""
         if callbacks is not None:
             [callback.on_compute_start(self) for callback in callbacks]
 
@@ -99,11 +121,42 @@ class CoreArray:
                 return np.empty(self.shape, dtype=self.dtype)
 
     def rechunk(self, chunks):
+        """Change the chunking of this array without changing its shape or data.
+
+        Parameters
+        ----------
+        chunks : tuple
+            The desired chunks of the array after rechunking.
+
+        Returns
+        -------
+        cubed.CoreArray
+            An array with the desired chunks.
+        """
         from cubed.core.ops import rechunk
 
         return rechunk(self, chunks)
 
-    def visualize(self, filename="cubed", format=None, optimize_graph=True):
+    def visualize(self, *, filename="cubed", format=None, optimize_graph=True):
+        """Produce a visualization of the computation graph for this array.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to write to disk. If the provided ``filename``
+            doesn't include an extension, '.svg' will be used by default.
+        format : {'png', 'pdf', 'dot', 'svg', 'jpeg', 'jpg'}, optional
+            Format in which to write output file.  Default is 'svg'.
+        optimize_graph : bool, optional
+            If True, the graph is optimized before rendering.  Otherwise,
+            the graph is displayed as is. Default is True.
+
+        Returns
+        -------
+        IPython.display.SVG, or None
+            An IPython SVG image if IPython can be imported (for rendering
+            in a notebook), otherwise None.
+        """
         return self.plan.visualize(
             filename=filename, format=format, optimize_graph=optimize_graph
         )
@@ -135,18 +188,39 @@ class Callback:
     """Object to receive callback events during array computation."""
 
     def on_compute_start(self, arr):
+        """Called when the computation is about to start.
+
+        Parameters
+        ----------
+        arr : cubed.CoreArray
+            The array being computed.
+        """
         pass  # pragma: no cover
 
     def on_compute_end(self, arr):
+        """Called when the computation has finished.
+
+        Parameters
+        ----------
+        arr : cubed.CoreArray
+            The array being computed.
+        """
         pass  # pragma: no cover
 
     def on_task_end(self, event):
+        """Called when the a task ends.
+
+        Parameters
+        ----------
+        event : TaskEndEvent
+            Information about the task execution.
+        """
         pass  # pragma: no cover
 
 
 @dataclass
 class TaskEndEvent:
-    """Information about a completed task."""
+    """Callback information about a completed task."""
 
     array_name: str
     """Name of the array that the task is for."""

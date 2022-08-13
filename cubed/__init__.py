@@ -14,6 +14,7 @@ except Exception:  # pragma: no cover
 
 from .core import (
     Callback,
+    CoreArray,
     Spec,
     TaskEndEvent,
     from_array,
@@ -25,6 +26,7 @@ from .core import (
 __all__ = [
     "__version__",
     "Callback",
+    "CoreArray",
     "Spec",
     "TaskEndEvent",
     "from_array",

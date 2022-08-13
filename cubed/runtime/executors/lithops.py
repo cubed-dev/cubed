@@ -214,6 +214,8 @@ def _execute_in_series(
 
 
 class LithopsDagExecutor(DagExecutor):
+    """An execution engine that uses Lithops."""
+
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
