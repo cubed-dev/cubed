@@ -37,7 +37,7 @@ def from_array(x, chunks="auto", spec=None):
         name = gensym()
         target = x
         plan = Plan(name, "from_array", target, spec)
-        arr = CoreArray.new(name, target, plan)
+        arr = CoreArray._new(name, target, plan)
 
         chunksize = to_chunksize(outchunks)
         if chunks != "auto" and previous_chunks != chunksize:
@@ -61,16 +61,46 @@ def _from_array(e, x, outchunks=None, block_id=None):
 
 
 def from_zarr(store, spec=None):
-    """Load an array from Zarr storage."""
+    """Load an array from Zarr storage.
+
+    Parameters
+    ----------
+    store : string
+        Path to input Zarr store
+    spec : cubed.Spec, optional
+        The spec to use for the computation.
+
+    Returns
+    -------
+    cubed.CoreArray
+        The array loaded from Zarr storage.
+    """
     name = gensym()
     target = zarr.open(store, mode="r")
 
     plan = Plan(name, "from_zarr", target, spec)
-    return CoreArray.new(name, target, plan)
+    return CoreArray._new(name, target, plan)
 
 
 def to_zarr(x, store, return_stored=False, executor=None):
-    """Save an array to Zarr storage."""
+    """Save an array to Zarr storage.
+
+    Note that this operation is eager, and will run the computation
+    immediately.
+
+    Parameters
+    ----------
+    x : cubed.CoreArray
+        Array to save
+    store : string
+        Path to output Zarr store
+    return_stored : bool, optional
+        Whether to return the array as a NumPy array.
+        (False by default.)
+    executor : cubed.runtime.types.Executor, optional
+        The executor to use to run the computation.
+        Defaults to using the in-process Python executor.
+    """
     # Note that the intermediate write to x's store will be optimized away
     # by map fusion (if it was produced with a blockwise operation).
     identity = lambda a: a
@@ -188,7 +218,7 @@ def blockwise(
         num_tasks,
         *source_arrays,
     )
-    return CoreArray.new(name, target, plan)
+    return CoreArray._new(name, target, plan)
 
 
 def elemwise(func, *args, dtype=None):
@@ -295,6 +325,7 @@ def _integers_and_slices_selection(target_chunks, idx, selection):
 def map_blocks(
     func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
 ):
+    """Apply a function to corresponding blocks from multiple input arrays."""
     if has_keyword(func, "block_id"):
         from cubed.array_api import asarray
 
@@ -476,7 +507,7 @@ def rechunk(x, chunks, target_store=None):
         temp_store=temp_store,
     )
     plan = Plan(name, "rechunk", target, spec, pipeline, required_mem, num_tasks, x)
-    return CoreArray.new(name, target, plan)
+    return CoreArray._new(name, target, plan)
 
 
 def reduction(
