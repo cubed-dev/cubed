@@ -1,0 +1,21 @@
+# cubed
+apache-beam
+dask[array]
+fsspec
+lithops[aws] >= 2.7.0
+networkx < 2.8.3 # https://github.com/networkx/networkx/pull/5667
+numpy >= 1.22
+pydot
+pytest
+pytest-cov
+pytest-mock
+rechunker
+s3fs
+tenacity
+tqdm
+zarr
+
+# docs
+sphinx-book-theme
+sphinx-autobuild
+myst-parser
