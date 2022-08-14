@@ -62,36 +62,52 @@ class Array(CoreArray):
 
     def __add__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__add__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.add, self, other, dtype=result_type(self, other))
 
     def __sub__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__sub__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.subtract, self, other, dtype=result_type(self, other))
 
     def __mul__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__mul__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.multiply, self, other, dtype=result_type(self, other))
 
     def __truediv__(self, other, /):
         other = self._check_allowed_dtypes(other, "floating-point", "__truediv__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.divide, self, other, dtype=result_type(self, other))
 
     def __floordiv__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__floordiv__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.floor_divide, self, other, dtype=result_type(self, other))
 
     def __mod__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__mod__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.remainder, self, other, dtype=result_type(self, other))
 
     def __pow__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__pow__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.power, self, other, dtype=result_type(self, other))
 
     # Array Operators
 
     def __matmul__(self, other, /):
         other = self._check_allowed_dtypes(other, "numeric", "__matmul__")
+        if other is NotImplemented:
+            return other
         return matmul(self, other)
 
     # Bitwise Operators
@@ -103,48 +119,70 @@ class Array(CoreArray):
 
     def __and__(self, other, /):
         other = self._check_allowed_dtypes(other, "integer or boolean", "__and__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.bitwise_and, self, other, dtype=result_type(self, other))
 
     def __or__(self, other, /):
         other = self._check_allowed_dtypes(other, "integer or boolean", "__or__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.bitwise_or, self, other, dtype=result_type(self, other))
 
     def __xor__(self, other, /):
         other = self._check_allowed_dtypes(other, "integer or boolean", "__xor__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.bitwise_xor, self, other, dtype=result_type(self, other))
 
     def __lshift__(self, other, /):
         other = self._check_allowed_dtypes(other, "integer", "__lshift__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.left_shift, self, other, dtype=result_type(self, other))
 
     def __rshift__(self, other, /):
         other = self._check_allowed_dtypes(other, "integer", "__rshift__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.right_shift, self, other, dtype=result_type(self, other))
 
     # Comparison Operators
 
     def __eq__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__eq__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.equal, self, other, dtype=np.bool_)
 
     def __ge__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__ge__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.greater_equal, self, other, dtype=np.bool_)
 
     def __gt__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__gt__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.greater, self, other, dtype=np.bool_)
 
     def __le__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__le__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.less_equal, self, other, dtype=np.bool_)
 
     def __lt__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__lt__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.less, self, other, dtype=np.bool_)
 
     def __ne__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__ne__")
+        if other is NotImplemented:
+            return other
         return elemwise(np.not_equal, self, other, dtype=np.bool_)
 
     # Methods
@@ -192,7 +230,7 @@ class Array(CoreArray):
             if other.dtype not in _dtype_categories[dtype_category]:
                 raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
         else:
-            raise NotImplementedError()
+            return NotImplemented
 
         # TODO: more from numpy.array_api
 
