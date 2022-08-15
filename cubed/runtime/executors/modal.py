@@ -167,25 +167,7 @@ def execute_dag(dag, callbacks=None, **kwargs):
                         list(stage.mappable),
                         kwargs=dict(func=stage.function, config=pipeline.config),
                     ):
-                        if callbacks is not None:
-                            task_result_tstamp = time.time()
-                            (
-                                res,
-                                function_start_tstamp,
-                                function_end_tstamp,
-                                peak_memory_start,
-                                peak_memory_end,
-                            ) = result
-                            task_stats = dict(
-                                task_create_tstamp=task_create_tstamp,
-                                function_start_tstamp=function_start_tstamp,
-                                function_end_tstamp=function_end_tstamp,
-                                task_result_tstamp=task_result_tstamp,
-                                peak_memory_start=peak_memory_start,
-                                peak_memory_end=peak_memory_end,
-                            )
-                            event = TaskEndEvent(array_name=name, **task_stats)
-                            [callback.on_task_end(event) for callback in callbacks]
+                        handle_callbacks(callbacks, name, result, task_create_tstamp)
                 else:
                     raise NotImplementedError()
 
@@ -204,25 +186,7 @@ async def async_execute_dag(dag, callbacks=None, **kwargs):
                         list(stage.mappable),
                         kwargs=dict(func=stage.function, config=pipeline.config),
                     ):
-                        if callbacks is not None:
-                            task_result_tstamp = time.time()
-                            (
-                                res,
-                                function_start_tstamp,
-                                function_end_tstamp,
-                                peak_memory_start,
-                                peak_memory_end,
-                            ) = result
-                            task_stats = dict(
-                                task_create_tstamp=task_create_tstamp,
-                                function_start_tstamp=function_start_tstamp,
-                                function_end_tstamp=function_end_tstamp,
-                                task_result_tstamp=task_result_tstamp,
-                                peak_memory_start=peak_memory_start,
-                                peak_memory_end=peak_memory_end,
-                            )
-                            event = TaskEndEvent(array_name=name, **task_stats)
-                            [callback.on_task_end(event) for callback in callbacks]
+                        handle_callbacks(callbacks, name, result, task_create_tstamp)
                 else:
                     raise NotImplementedError()
 
@@ -244,27 +208,31 @@ async def async_execute_dag_with_backups(dag, callbacks=None, **kwargs):
                         func=stage.function,
                         config=pipeline.config,
                     ):
-                        if callbacks is not None:
-                            task_result_tstamp = time.time()
-                            (
-                                res,
-                                function_start_tstamp,
-                                function_end_tstamp,
-                                peak_memory_start,
-                                peak_memory_end,
-                            ) = result
-                            task_stats = dict(
-                                task_create_tstamp=task_create_tstamp,
-                                function_start_tstamp=function_start_tstamp,
-                                function_end_tstamp=function_end_tstamp,
-                                task_result_tstamp=task_result_tstamp,
-                                peak_memory_start=peak_memory_start,
-                                peak_memory_end=peak_memory_end,
-                            )
-                            event = TaskEndEvent(array_name=name, **task_stats)
-                            [callback.on_task_end(event) for callback in callbacks]
+                        handle_callbacks(callbacks, name, result, task_create_tstamp)
                 else:
                     raise NotImplementedError()
+
+
+def handle_callbacks(callbacks, array_name, result, task_create_tstamp):
+    if callbacks is not None:
+        task_result_tstamp = time.time()
+        (
+            res,
+            function_start_tstamp,
+            function_end_tstamp,
+            peak_memory_start,
+            peak_memory_end,
+        ) = result
+        task_stats = dict(
+            task_create_tstamp=task_create_tstamp,
+            function_start_tstamp=function_start_tstamp,
+            function_end_tstamp=function_end_tstamp,
+            task_result_tstamp=task_result_tstamp,
+            peak_memory_start=peak_memory_start,
+            peak_memory_end=peak_memory_end,
+        )
+        event = TaskEndEvent(array_name=array_name, **task_stats)
+        [callback.on_task_end(event) for callback in callbacks]
 
 
 class ModalDagExecutor(DagExecutor):
