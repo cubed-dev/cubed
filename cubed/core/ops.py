@@ -20,7 +20,7 @@ from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import chunk_memory, get_item, to_chunksize
 
 
-def from_array(x, chunks="auto", spec=None):
+def from_array(x, chunks="auto", asarray=None, spec=None):
     """Create a Cubed array from something that looks like an array."""
 
     if isinstance(x, CoreArray):
@@ -44,6 +44,9 @@ def from_array(x, chunks="auto", spec=None):
             arr = rechunk(arr, chunksize)
         return arr
 
+    if asarray is None:
+        asarray = not hasattr(x, "__array_function__")
+
     return map_direct(
         _from_array,
         x,
@@ -53,11 +56,15 @@ def from_array(x, chunks="auto", spec=None):
         extra_required_mem=0,
         spec=spec,
         outchunks=outchunks,
+        asarray=asarray,
     )
 
 
-def _from_array(e, x, outchunks=None, block_id=None):
-    return x[get_item(outchunks, block_id)]
+def _from_array(e, x, outchunks=None, asarray=None, block_id=None):
+    out = x[get_item(outchunks, block_id)]
+    if asarray:
+        out = np.asarray(out)
+    return out
 
 
 def from_zarr(store, spec=None):

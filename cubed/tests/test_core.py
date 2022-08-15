@@ -43,22 +43,24 @@ class WrappedArray:
         self.shape = x.shape
         self.ndim = len(x.shape)
 
+    def __array__(self, dtype=None):
+        return np.asarray(self.x, dtype=dtype)
+
     def __getitem__(self, i):
-        return self.x[i]
+        return WrappedArray(self.x[i])
 
 
 @pytest.mark.parametrize(
-    "x,chunks",
+    "x,chunks,asarray",
     [
-        (np.arange(25).reshape((5, 5)), (5, 5)),
-        (np.arange(25).reshape((5, 5)), (3, 2)),
-        (np.arange(25).reshape((5, 5)), -1),
-        (np.array([[1]]), 1),
-        (np.array(1), 1),
+        (np.arange(25).reshape((5, 5)), (5, 5), None),
+        (np.arange(25).reshape((5, 5)), (3, 2), True),
+        (np.arange(25).reshape((5, 5)), -1, True),
+        (np.array([[1]]), 1, None),
     ],
 )
-def test_from_array(x, chunks):
-    a = cubed.from_array(WrappedArray(x), chunks=chunks)
+def test_from_array(x, chunks, asarray):
+    a = cubed.from_array(WrappedArray(x), chunks=chunks, asarray=asarray)
     assert_array_equal(a, x)
 
 
