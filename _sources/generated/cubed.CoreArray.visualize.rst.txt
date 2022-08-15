@@ -1,0 +1,6 @@
+﻿cubed.CoreArray.visualize
+=========================
+
+.. currentmodule:: cubed
+
+.. automethod:: CoreArray.visualize

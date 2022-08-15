@@ -1,0 +1,6 @@
+﻿cubed.CoreArray.compute
+=======================
+
+.. currentmodule:: cubed
+
+.. automethod:: CoreArray.compute

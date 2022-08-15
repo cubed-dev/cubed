@@ -1,0 +1,6 @@
+﻿cubed.CoreArray.rechunk
+=======================
+
+.. currentmodule:: cubed
+
+.. automethod:: CoreArray.rechunk

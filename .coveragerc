@@ -1,0 +1,6 @@
+[run]
+omit =
+    */tests/*
+    cubed/array_api/*
+    cubed/extensions/*
+    cubed/runtime/executors/modal.py

@@ -1,0 +1,23 @@
+﻿cubed.runtime.executors.modal.AsyncModalDagExecutor
+===================================================
+
+.. currentmodule:: cubed.runtime.executors.modal
+
+.. autoclass:: AsyncModalDagExecutor
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AsyncModalDagExecutor.__init__
+      ~AsyncModalDagExecutor.execute_dag
+   
+   
+
+   
+   
+   
