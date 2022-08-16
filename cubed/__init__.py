@@ -17,10 +17,12 @@ from .core import (
     CoreArray,
     Spec,
     TaskEndEvent,
+    compute,
     from_array,
     from_zarr,
     map_blocks,
     to_zarr,
+    visualize,
 )
 
 __all__ = [
@@ -29,8 +31,10 @@ __all__ = [
     "CoreArray",
     "Spec",
     "TaskEndEvent",
+    "compute",
     "from_array",
     "from_zarr",
     "map_blocks",
     "to_zarr",
+    "visualize",
 ]

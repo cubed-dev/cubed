@@ -11,6 +11,8 @@ from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.utils import chunk_memory
 
+from .plan import arrays_to_dag, execute_dag, visualize_dag
+
 sym_counter = 0
 
 
@@ -92,6 +94,15 @@ class CoreArray:
         """Number of elements in the array."""
         return reduce(mul, self.shape, 1)
 
+    def _read_stored(self):
+        # Only works if the array has been computed
+        if self.size > 0:
+            # read back from zarr
+            return self.zarray[...]
+        else:
+            # this case fails for zarr, so just return an empty array of the correct shape
+            return np.empty(self.shape, dtype=self.dtype)
+
     def compute(
         self,
         *,
@@ -102,26 +113,16 @@ class CoreArray:
         **kwargs,
     ):
         """Compute this array, and any arrays that it depends on."""
-        if executor is None:
-            executor = self.spec.executor
-            if executor is None:
-                executor = PythonPipelineExecutor()
-
-        self.plan.execute(
-            self.name,
+        result = compute(
+            self,
+            return_stored=return_stored,
             executor=executor,
             callbacks=callbacks,
             optimize_graph=optimize_graph,
             **kwargs,
         )
-
         if return_stored:
-            if self.size > 0:
-                # read back from zarr
-                return self.zarray[...]
-            else:
-                # this case fails for zarr, so just return an empty array of the correct shape
-                return np.empty(self.shape, dtype=self.dtype)
+            return result[0]
 
     def rechunk(self, chunks):
         """Change the chunking of this array without changing its shape or data.
@@ -160,8 +161,8 @@ class CoreArray:
             An IPython SVG image if IPython can be imported (for rendering
             in a notebook), otherwise None.
         """
-        return self.plan.visualize(
-            filename=filename, format=format, optimize_graph=optimize_graph
+        return visualize(
+            self, filename=filename, format=format, optimize_graph=optimize_graph
         )
 
     def __getitem__(self, key, /):
@@ -255,3 +256,67 @@ class TaskEndEvent:
 
     peak_memory_end: Optional[int] = None
     """Peak memory usage on the remote worker after the function finishes executing."""
+
+
+def check_array_specs(arrays):
+    specs = [a.spec for a in arrays if hasattr(a, "spec")]
+    if not all(s == specs[0] for s in specs):
+        raise ValueError(
+            f"Arrays must have same spec in single computation. Specs: {specs}"
+        )
+    return arrays[0].spec
+
+
+def compute(
+    *arrays,
+    return_stored=True,
+    executor=None,
+    callbacks=None,
+    optimize_graph=True,
+    **kwargs,
+):
+    """Compute multiple arrays at once."""
+    dag = arrays_to_dag(*arrays)  # guarantees all arrays have same spec
+    if executor is None:
+        executor = arrays[0].spec.executor
+        if executor is None:
+            executor = PythonPipelineExecutor()
+
+    execute_dag(
+        dag,
+        executor=executor,
+        callbacks=callbacks,
+        optimize_graph=optimize_graph,
+        **kwargs,
+    )
+
+    if return_stored:
+        return tuple(a._read_stored() for a in arrays)
+
+
+def visualize(*arrays, filename="cubed", format=None, optimize_graph=True):
+    """Produce a visualization of the computation graph for multiple arrays.
+
+    Parameters
+    ----------
+    arrays : cubed.CoreArray
+        The arrays to include in the visualization.
+    filename : str
+        The name of the file to write to disk. If the provided ``filename``
+        doesn't include an extension, '.svg' will be used by default.
+    format : {'png', 'pdf', 'dot', 'svg', 'jpeg', 'jpg'}, optional
+        Format in which to write output file.  Default is 'svg'.
+    optimize_graph : bool, optional
+        If True, the graph is optimized before rendering.  Otherwise,
+        the graph is displayed as is. Default is True.
+
+    Returns
+    -------
+    IPython.display.SVG, or None
+        An IPython SVG image if IPython can be imported (for rendering
+        in a notebook), otherwise None.
+    """
+    dag = arrays_to_dag(*arrays)
+    return visualize_dag(
+        dag, filename=filename, format=format, optimize_graph=optimize_graph
+    )
