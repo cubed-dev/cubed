@@ -59,6 +59,13 @@ def test_object_transpose(spec):
     assert_array_equal(a.T.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).T)
 
 
+def test_reflected_operation(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = 1 - a
+
+    assert_array_equal(b.compute(), 1 - np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
 # Creation functions
 
 

@@ -185,6 +185,92 @@ class Array(CoreArray):
             return other
         return elemwise(np.not_equal, self, other, dtype=np.bool_)
 
+    # Reflected Operators
+
+    # (Reflected) Arithmetic Operators
+
+    def __radd__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__radd__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.add, other, self, dtype=result_type(self, other))
+
+    def __rsub__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__rsub__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.subtract, other, self, dtype=result_type(self, other))
+
+    def __rmul__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__rmul__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.multiply, other, self, dtype=result_type(self, other))
+
+    def __rtruediv__(self, other, /):
+        other = self._check_allowed_dtypes(other, "floating-point", "__rtruediv__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.divide, other, self, dtype=result_type(self, other))
+
+    def __rfloordiv__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__rfloordiv__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.floor_divide, other, self, dtype=result_type(self, other))
+
+    def __rmod__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__rmod__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.remainder, other, self, dtype=result_type(self, other))
+
+    def __rpow__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__rpow__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.power, other, self, dtype=result_type(self, other))
+
+    # (Reflected) Array Operators
+
+    def __rmatmul__(self, other, /):
+        other = self._check_allowed_dtypes(other, "numeric", "__rmatmul__")
+        if other is NotImplemented:
+            return other
+        return matmul(other, self)
+
+    # (Reflected) Bitwise Operators
+
+    def __rand__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer or boolean", "__rand__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.bitwise_and, other, self, dtype=result_type(self, other))
+
+    def __ror__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer or boolean", "__ror__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.bitwise_or, other, self, dtype=result_type(self, other))
+
+    def __rxor__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer or boolean", "__rxor__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.bitwise_xor, other, self, dtype=result_type(self, other))
+
+    def __rlshift__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer", "__rlshift__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.left_shift, other, self, dtype=result_type(self, other))
+
+    def __rrshift__(self, other, /):
+        other = self._check_allowed_dtypes(other, "integer", "__rrshift__")
+        if other is NotImplemented:
+            return other
+        return elemwise(np.right_shift, other, self, dtype=result_type(self, other))
+
     # Methods
 
     def __abs__(self, /):
