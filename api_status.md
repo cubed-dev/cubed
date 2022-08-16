@@ -2,75 +2,75 @@
 
 This table shows which parts of the the [Array API](https://data-apis.org/array-api/latest/API_specification/index.html) have been implemented in Cubed. For those that have not been implemented a rough level of difficulty is indicated (1=easy, 3=hard).
 
-| Category                 | Object/Function     | Implemented        | Difficulty | Notes                         |
-| ------------------------ | ------------------- | ------------------ | ---------- | ----------------------------- |
-| Array object             | Arithmetic Ops      | :white_check_mark: |            |                               |
-|                          | Array Ops           | :white_check_mark: |            |                               |
-|                          | Bitwise Ops         | :white_check_mark: |            |                               |
-|                          | Comparison Ops      | :white_check_mark: |            |                               |
-|                          | In-place Ops        |                    |            |                               |
-|                          | Reflected Ops       |                    |            |                               |
-|                          | Attributes          | :white_check_mark: |            |                               |
-|                          | Methods             | :white_check_mark: |            | Not device methods            |
-| Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                               |
-| Creation Functions       | `arange`            | :white_check_mark: |            |                               |
-|                          | `asarray`           | :white_check_mark: |            |                               |
-|                          | `empty`             | :white_check_mark: |            |                               |
-|                          | `empty_like`        | :white_check_mark: |            |                               |
-|                          | `eye`               | :white_check_mark: |            |                               |
-|                          | `from_dlpack`       |                    |            |                               |
-|                          | `full`              | :white_check_mark: |            |                               |
-|                          | `full_like`         | :white_check_mark: |            |                               |
-|                          | `linspace`          | :white_check_mark: |            |                               |
-|                          | `meshgrid`          | :white_check_mark: |            |                               |
-|                          | `ones`              | :white_check_mark: |            |                               |
-|                          | `ones_like`         | :white_check_mark: |            |                               |
-|                          | `tril`              | :white_check_mark: |            |                               |
-|                          | `triu`              | :white_check_mark: |            |                               |
-|                          | `zeros`             | :white_check_mark: |            |                               |
-|                          | `zeros_like`        | :white_check_mark: |            |                               |
-| Data Type Functions      | `astype`            | :white_check_mark: |            |                               |
-|                          | `can_cast`          | :white_check_mark: |            | Same as `numpy.array_api`     |
-|                          | `finfo`             | :white_check_mark: |            | Same as `numpy.array_api`     |
-|                          | `iinfo`             | :white_check_mark: |            | Same as `numpy.array_api`     |
-|                          | `result_type`       | :white_check_mark: |            | Same as `numpy.array_api`     |
-| Data Types               | `bool`, `int8`, ... | :white_check_mark: |            |                               |
-| Elementwise Functions    | `add`               | :white_check_mark: |            | Example of a binary function  |
-|                          | `negative`          | :white_check_mark: |            | Example of a unary function   |
-|                          | _others_            | :white_check_mark: |            |                               |
-| Indexing                 | Single-axis         | :white_check_mark: |            |                               |
-|                          | Multi-axis          | :white_check_mark: |            | Can't mix integers and slices |
-|                          | Boolean array       |                    | 3          | Shape is data dependent       |
-| Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                               |
-|                          | `matrix_transpose`  | :white_check_mark: |            |                               |
-|                          | `tensordot`         | :white_check_mark: |            |                               |
-|                          | `vecdot`            | :white_check_mark: |            |                               |
-| Manipulation Functions   | `broadcast_arrays`  | :white_check_mark: |            |                               |
-|                          | `broadcast_to`      | :white_check_mark: |            |                               |
-|                          | `concat`            | :white_check_mark: |            |                               |
-|                          | `expand_dims`       | :white_check_mark: |            |                               |
-|                          | `flip`              |                    | 3          | Needs indexing                |
-|                          | `permute_dims`      | :white_check_mark: |            |                               |
-|                          | `reshape`           | :white_check_mark: |            | Partial implementation        |
-|                          | `roll`              |                    | 3          | Needs `concat` and `reshape`  |
-|                          | `squeeze`           | :white_check_mark: |            |                               |
-|                          | `stack`             | :white_check_mark: |            |                               |
-| Searching Functions      | `argmax`            | :white_check_mark: |            |                               |
-|                          | `argmin`            | :white_check_mark: |            |                               |
-|                          | `nonzero`           |                    | 3          | Shape is data dependent       |
-|                          | `where`             | :white_check_mark: |            |                               |
-| Set Functions            | `unique_all`        |                    | 3          | Shape is data dependent       |
-|                          | `unique_counts`     |                    | 3          | Shape is data dependent       |
-|                          | `unique_inverse`    |                    | 3          | Shape is data dependent       |
-|                          | `unique_values`     |                    | 3          | Shape is data dependent       |
-| Sorting Functions        | `argsort`           |                    | 3          | Not in Dask                   |
-|                          | `sort`              |                    | 3          | Not in Dask                   |
-| Statistical Functions    | `max`               | :white_check_mark: |            |                               |
-|                          | `mean`              | :white_check_mark: |            |                               |
-|                          | `min`               | :white_check_mark: |            |                               |
-|                          | `prod`              | :white_check_mark: |            |                               |
-|                          | `std`               |                    | 2          | Like `mean`                   |
-|                          | `sum`               | :white_check_mark: |            |                               |
-|                          | `var`               |                    | 2          | Like `mean`                   |
-| Utility Functions        | `all`               | :white_check_mark: |            |                               |
-|                          | `any`               | :white_check_mark: |            |                               |
+| Category                 | Object/Function     | Implemented        | Difficulty | Notes                        |
+| ------------------------ | ------------------- | ------------------ | ---------- | ---------------------------- |
+| Array object             | Arithmetic Ops      | :white_check_mark: |            |                              |
+|                          | Array Ops           | :white_check_mark: |            |                              |
+|                          | Bitwise Ops         | :white_check_mark: |            |                              |
+|                          | Comparison Ops      | :white_check_mark: |            |                              |
+|                          | In-place Ops        |                    |            | Arrays are immutable         |
+|                          | Reflected Ops       | :white_check_mark: |            |                              |
+|                          | Attributes          | :white_check_mark: |            |                              |
+|                          | Methods             | :white_check_mark: |            | Not device methods           |
+| Constants                | `e`, `inf`, ...     | :white_check_mark: |            |                              |
+| Creation Functions       | `arange`            | :white_check_mark: |            |                              |
+|                          | `asarray`           | :white_check_mark: |            |                              |
+|                          | `empty`             | :white_check_mark: |            |                              |
+|                          | `empty_like`        | :white_check_mark: |            |                              |
+|                          | `eye`               | :white_check_mark: |            |                              |
+|                          | `from_dlpack`       |                    |            |                              |
+|                          | `full`              | :white_check_mark: |            |                              |
+|                          | `full_like`         | :white_check_mark: |            |                              |
+|                          | `linspace`          | :white_check_mark: |            |                              |
+|                          | `meshgrid`          | :white_check_mark: |            |                              |
+|                          | `ones`              | :white_check_mark: |            |                              |
+|                          | `ones_like`         | :white_check_mark: |            |                              |
+|                          | `tril`              | :white_check_mark: |            |                              |
+|                          | `triu`              | :white_check_mark: |            |                              |
+|                          | `zeros`             | :white_check_mark: |            |                              |
+|                          | `zeros_like`        | :white_check_mark: |            |                              |
+| Data Type Functions      | `astype`            | :white_check_mark: |            |                              |
+|                          | `can_cast`          | :white_check_mark: |            | Same as `numpy.array_api`    |
+|                          | `finfo`             | :white_check_mark: |            | Same as `numpy.array_api`    |
+|                          | `iinfo`             | :white_check_mark: |            | Same as `numpy.array_api`    |
+|                          | `result_type`       | :white_check_mark: |            | Same as `numpy.array_api`    |
+| Data Types               | `bool`, `int8`, ... | :white_check_mark: |            |                              |
+| Elementwise Functions    | `add`               | :white_check_mark: |            | Example of a binary function |
+|                          | `negative`          | :white_check_mark: |            | Example of a unary function  |
+|                          | _others_            | :white_check_mark: |            |                              |
+| Indexing                 | Single-axis         | :white_check_mark: |            |                              |
+|                          | Multi-axis          | :white_check_mark: |            |                              |
+|                          | Boolean array       |                    | 3          | Shape is data dependent      |
+| Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                              |
+|                          | `matrix_transpose`  | :white_check_mark: |            |                              |
+|                          | `tensordot`         | :white_check_mark: |            |                              |
+|                          | `vecdot`            | :white_check_mark: |            |                              |
+| Manipulation Functions   | `broadcast_arrays`  | :white_check_mark: |            |                              |
+|                          | `broadcast_to`      | :white_check_mark: |            |                              |
+|                          | `concat`            | :white_check_mark: |            |                              |
+|                          | `expand_dims`       | :white_check_mark: |            |                              |
+|                          | `flip`              |                    | 2          | Needs indexing with step=-1  |
+|                          | `permute_dims`      | :white_check_mark: |            |                              |
+|                          | `reshape`           | :white_check_mark: |            | Partial implementation       |
+|                          | `roll`              |                    | 2          | Use `concat` and `reshape`   |
+|                          | `squeeze`           | :white_check_mark: |            |                              |
+|                          | `stack`             | :white_check_mark: |            |                              |
+| Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
+|                          | `argmin`            | :white_check_mark: |            |                              |
+|                          | `nonzero`           |                    | 3          | Shape is data dependent      |
+|                          | `where`             | :white_check_mark: |            |                              |
+| Set Functions            | `unique_all`        |                    | 3          | Shape is data dependent      |
+|                          | `unique_counts`     |                    | 3          | Shape is data dependent      |
+|                          | `unique_inverse`    |                    | 3          | Shape is data dependent      |
+|                          | `unique_values`     |                    | 3          | Shape is data dependent      |
+| Sorting Functions        | `argsort`           |                    | 3          | Not in Dask                  |
+|                          | `sort`              |                    | 3          | Not in Dask                  |
+| Statistical Functions    | `max`               | :white_check_mark: |            |                              |
+|                          | `mean`              | :white_check_mark: |            |                              |
+|                          | `min`               | :white_check_mark: |            |                              |
+|                          | `prod`              | :white_check_mark: |            |                              |
+|                          | `std`               |                    | 2          | Like `mean`                  |
+|                          | `sum`               | :white_check_mark: |            |                              |
+|                          | `var`               |                    | 2          | Like `mean`                  |
+| Utility Functions        | `all`               | :white_check_mark: |            |                              |
+|                          | `any`               | :white_check_mark: |            |                              |
