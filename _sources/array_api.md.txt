@@ -10,7 +10,6 @@ The following parts of the standard are not implemented:
 | Category               | Object/Function  |
 | ---------------------- | ---------------- |
 | Array object           | In-place Ops     |
-|                        | Reflected Ops    |
 | Creation Functions     | `from_dlpack`    |
 | Indexing               | Boolean array    |
 | Manipulation Functions | `flip`           |
