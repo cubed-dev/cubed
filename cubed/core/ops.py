@@ -13,7 +13,7 @@ from tlz import concat, partition
 from toolz import accumulate, map
 from zarr.indexing import BasicIndexer, IntDimIndexer, is_slice, replace_ellipsis
 
-from cubed.core.array import CoreArray, gensym
+from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
@@ -200,12 +200,7 @@ def blockwise(
     extra_required_mem = kwargs.pop("extra_required_mem", 0)
 
     name = gensym()
-    specs = [a.spec for a in arrays]
-    if not all(s == specs[0] for s in specs):
-        raise ValueError(
-            f"Arrays must have same spec to be combined in blockwise. Specs: {specs}"
-        )
-    spec = arrays[0].spec
+    spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
     pipeline, target, required_mem, num_tasks = primitive_blockwise(
