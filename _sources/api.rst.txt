@@ -17,6 +17,8 @@ Creation Functions.
     CoreArray.compute
     CoreArray.rechunk
     CoreArray.visualize
+    compute
+    visualize
 
 IO
 ==
