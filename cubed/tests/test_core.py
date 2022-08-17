@@ -284,7 +284,7 @@ def test_retries(mocker, spec):
 
 
 class TaskCounter(Callback):
-    def on_compute_start(self, arr):
+    def on_compute_start(self, dag):
         self.value = 0
 
     def on_task_end(self, event):

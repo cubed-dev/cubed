@@ -173,7 +173,11 @@ class Plan:
                 dag.remove_nodes_from(no_dep_nodes)
 
         else:
+            if callbacks is not None:
+                [callback.on_compute_start(dag) for callback in callbacks]
             executor.execute_dag(dag, callbacks=callbacks, **kwargs)
+            if callbacks is not None:
+                [callback.on_compute_end(dag) for callback in callbacks]
 
     def visualize(
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True

@@ -15,14 +15,14 @@ pylab.switch_backend("Agg")
 
 
 class TimelineVisualizationCallback(Callback):
-    def on_compute_start(self, arr):
+    def on_compute_start(self, dag):
         self.start_tstamp = time.time()
         self.stats = []
 
     def on_task_end(self, event):
         self.stats.append(asdict(event))
 
-    def on_compute_end(self, arr):
+    def on_compute_end(self, dag):
         end_tstamp = time.time()
         create_timeline(self.stats, self.start_tstamp, end_tstamp)
 

@@ -14,12 +14,11 @@ class TqdmProgressBar(Callback):
         self.args = args
         self.kwargs = kwargs
 
-    def on_compute_start(self, arr):
+    def on_compute_start(self, dag):
         from tqdm.auto import tqdm
 
         self.pbars = {}
         i = 0
-        dag = arr.plan.optimize(arr.name)
         for name, node in visit_nodes(dag):
             num_tasks = node["num_tasks"]
             self.pbars[name] = tqdm(
@@ -27,7 +26,7 @@ class TqdmProgressBar(Callback):
             )
             i = i + 1
 
-    def on_compute_end(self, arr):
+    def on_compute_end(self, dag):
         for pbar in self.pbars.values():
             pbar.close()
 
