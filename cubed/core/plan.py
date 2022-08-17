@@ -3,18 +3,15 @@ import sysconfig
 import tempfile
 import traceback
 import uuid
-from dataclasses import dataclass
 from datetime import datetime
 
 import fsspec
 import networkx as nx
 import zarr
-from rechunker.executors.python import PythonPipelineExecutor
 from rechunker.types import PipelineExecutor
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
-from cubed.runtime.types import Executor
 from cubed.utils import chunk_memory, join_path, memory_repr
 
 # A unique ID with sensible ordering, used for making directory names
@@ -42,19 +39,14 @@ class Plan:
         name,
         op_name,
         target,
-        spec,
         pipeline=None,
         required_mem=None,
         num_tasks=None,
         *source_arrays,
     ):
-        # if no spec is supplied, use a default with local temp dir, and a modest amount of memory (100MB)
-        if spec is None:
-            spec = Spec(None, 100_000_000)
-
         # create an empty DAG or combine from sources
         if len(source_arrays) == 0:
-            dag = nx.MultiDiGraph(spec=spec)
+            dag = nx.MultiDiGraph()
         else:
             source_dags = [x.plan.dag for x in source_arrays if hasattr(x, "plan")]
             dag = nx.compose_all(source_dags)
@@ -82,10 +74,6 @@ class Plan:
                 dag.add_edge(x.name, name)
 
         self.dag = dag
-
-    @property
-    def spec(self):
-        return self.dag.graph["spec"]
 
     def transitive_dependencies(self, name):
         # prune DAG so it only has transitive dependencies of 'name'
@@ -162,11 +150,6 @@ class Plan:
     def execute(
         self, name=None, executor=None, callbacks=None, optimize_graph=True, **kwargs
     ):
-        if executor is None:
-            executor = self.spec.executor
-            if executor is None:
-                executor = PythonPipelineExecutor()
-
         dag = self.optimize() if optimize_graph else self.dag.copy()
 
         if isinstance(executor, PipelineExecutor):
@@ -246,16 +229,6 @@ class Plan:
             # Can't return a display object if no IPython.
             pass
         return None
-
-
-@dataclass
-class Spec:
-    """Specification of resources available to run a computation."""
-
-    work_dir: str
-    max_mem: int
-    executor: Executor = None
-    storage_options: dict = None
 
 
 def new_temp_path(name, suffix, spec=None):

@@ -4,9 +4,11 @@ from typing import Optional
 
 import numpy as np
 from dask.array.core import normalize_chunks
+from rechunker.executors.python import PythonPipelineExecutor
 from toolz import map, reduce
 
 from cubed.runtime.pipeline import already_computed
+from cubed.runtime.types import Executor
 from cubed.utils import chunk_memory
 
 sym_counter = 0
@@ -26,7 +28,7 @@ class CoreArray:
     The other array methods and attributes are provided in a subclass.
     """
 
-    def __init__(self, name, zarray, plan):
+    def __init__(self, name, zarray, spec, plan):
         self.name = name
         self.zarray = zarray
         self._shape = zarray.shape
@@ -34,14 +36,16 @@ class CoreArray:
         self._chunks = normalize_chunks(
             zarray.chunks, shape=self.shape, dtype=self.dtype
         )
+        # if no spec is supplied, use a default with local temp dir, and a modest amount of memory (100MB)
+        self.spec = spec or Spec(None, 100_000_000)
         self.plan = plan
 
     @classmethod
-    def _new(cls, name, zarray, plan):
+    def _new(cls, name, zarray, spec, plan):
         # Always create an Array object subclass that has array API methods and attributes
         from cubed.array_api.array_object import Array
 
-        return Array(name, zarray, plan)
+        return Array(name, zarray, spec, plan)
 
     @property
     def chunkmem(self):
@@ -100,6 +104,11 @@ class CoreArray:
         """Compute this array, and any arrays that it depends on."""
         if callbacks is not None:
             [callback.on_compute_start(self) for callback in callbacks]
+
+        if executor is None:
+            executor = self.spec.executor
+            if executor is None:
+                executor = PythonPipelineExecutor()
 
         self.plan.execute(
             self.name,
@@ -182,6 +191,16 @@ class CoreArray:
 
     def __repr__(self):
         return f"CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+
+
+@dataclass
+class Spec:
+    """Specification of resources available to run a computation."""
+
+    work_dir: str
+    max_mem: int
+    executor: Executor = None
+    storage_options: dict = None
 
 
 class Callback:

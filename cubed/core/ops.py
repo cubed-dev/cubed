@@ -36,8 +36,8 @@ def from_array(x, chunks="auto", asarray=None, spec=None):
     if isinstance(x, zarr.Array):  # zarr fast path
         name = gensym()
         target = x
-        plan = Plan(name, "from_array", target, spec)
-        arr = CoreArray._new(name, target, plan)
+        plan = Plan(name, "from_array", target)
+        arr = CoreArray._new(name, target, spec, plan)
 
         chunksize = to_chunksize(outchunks)
         if chunks != "auto" and previous_chunks != chunksize:
@@ -85,8 +85,8 @@ def from_zarr(store, spec=None):
     name = gensym()
     target = zarr.open(store, mode="r")
 
-    plan = Plan(name, "from_zarr", target, spec)
-    return CoreArray._new(name, target, plan)
+    plan = Plan(name, "from_zarr", target)
+    return CoreArray._new(name, target, spec, plan)
 
 
 def to_zarr(x, store, return_stored=False, executor=None):
@@ -200,7 +200,7 @@ def blockwise(
     extra_required_mem = kwargs.pop("extra_required_mem", 0)
 
     name = gensym()
-    spec = arrays[0].plan.spec
+    spec = arrays[0].spec
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
     pipeline, target, required_mem, num_tasks = primitive_blockwise(
@@ -219,13 +219,12 @@ def blockwise(
         name,
         "blockwise",
         target,
-        spec,
         pipeline,
         required_mem + extra_required_mem,
         num_tasks,
         *source_arrays,
     )
-    return CoreArray._new(name, target, plan)
+    return CoreArray._new(name, target, spec, plan)
 
 
 def elemwise(func, *args, dtype=None):
@@ -340,7 +339,7 @@ def map_blocks(
         # which we convert to block ids (chunk coordinates) later.
         a = args[0]
         offsets = np.arange(a.npartitions, dtype=np.int32).reshape(a.numblocks)
-        offsets = asarray(offsets, spec=a.plan.spec)
+        offsets = asarray(offsets, spec=a.spec)
         # rechunk in a separate operation to avoid potentially writing lots of zarr chunks from the client
         offsets_chunks = (1,) * len(a.numblocks)
         offsets = rechunk(offsets, offsets_chunks)
@@ -474,8 +473,8 @@ def map_direct(
 
     from cubed.array_api.creation_functions import empty
 
-    if spec is None and len(args) > 0 and hasattr(args[0], "plan"):
-        spec = args[0].plan.spec
+    if spec is None and len(args) > 0 and hasattr(args[0], "spec"):
+        spec = args[0].spec
 
     out = empty(shape, dtype=dtype, chunks=chunks, spec=spec)
 
@@ -502,7 +501,7 @@ def map_direct(
 
 def rechunk(x, chunks, target_store=None):
     name = gensym()
-    spec = x.plan.spec
+    spec = x.spec
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
     temp_store = new_temp_store(name=f"{name}-intermediate", spec=spec)
@@ -513,8 +512,8 @@ def rechunk(x, chunks, target_store=None):
         target_store=target_store,
         temp_store=temp_store,
     )
-    plan = Plan(name, "rechunk", target, spec, pipeline, required_mem, num_tasks, x)
-    return CoreArray._new(name, target, plan)
+    plan = Plan(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
+    return CoreArray._new(name, target, spec, plan)
 
 
 def reduction(
@@ -540,7 +539,7 @@ def reduction(
     inds = tuple(range(x.ndim))
 
     result = x
-    max_mem = x.plan.spec.max_mem
+    max_mem = x.spec.max_mem
 
     # reduce initial chunks (if any axis chunksize is > 1)
     if (
