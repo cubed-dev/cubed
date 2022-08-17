@@ -340,4 +340,4 @@ class Array(CoreArray):
                 )
         else:
             raise TypeError("'scalar' must be a Python scalar")
-        return asarray(scalar, dtype=self.dtype)
+        return asarray(scalar, dtype=self.dtype, spec=self.spec)

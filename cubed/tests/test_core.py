@@ -188,6 +188,15 @@ def test_default_spec_max_mem_exceeded():
         xp.negative(a)
 
 
+def test_different_specs(tmp_path):
+    spec1 = cubed.Spec(tmp_path, max_mem=100000)
+    spec2 = cubed.Spec(tmp_path, max_mem=200000)
+    a = xp.ones((3, 3), chunks=(2, 2), spec=spec1)
+    b = xp.ones((3, 3), chunks=(2, 2), spec=spec2)
+    with pytest.raises(ValueError):
+        xp.add(a, b)
+
+
 def test_reduction_multiple_rounds(tmp_path, executor):
     spec = cubed.Spec(tmp_path, max_mem=1000)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)

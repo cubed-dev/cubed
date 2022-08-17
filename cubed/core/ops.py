@@ -200,6 +200,11 @@ def blockwise(
     extra_required_mem = kwargs.pop("extra_required_mem", 0)
 
     name = gensym()
+    specs = [a.spec for a in arrays]
+    if not all(s == specs[0] for s in specs):
+        raise ValueError(
+            f"Arrays must have same spec to be combined in blockwise. Specs: {specs}"
+        )
     spec = arrays[0].spec
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
