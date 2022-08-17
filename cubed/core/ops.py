@@ -89,7 +89,7 @@ def from_zarr(store, spec=None):
     return CoreArray._new(name, target, spec, plan)
 
 
-def to_zarr(x, store, return_stored=False, executor=None):
+def to_zarr(x, store, executor=None, **kwargs):
     """Save an array to Zarr storage.
 
     Note that this operation is eager, and will run the computation
@@ -101,9 +101,6 @@ def to_zarr(x, store, return_stored=False, executor=None):
         Array to save
     store : string
         Path to output Zarr store
-    return_stored : bool, optional
-        Whether to return the array as a NumPy array.
-        (False by default.)
     executor : cubed.runtime.types.Executor, optional
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
@@ -115,7 +112,7 @@ def to_zarr(x, store, return_stored=False, executor=None):
     out = blockwise(
         identity, ind, x, ind, dtype=x.dtype, align_arrays=False, target_store=store
     )
-    return out.compute(return_stored=return_stored, executor=executor)
+    return out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
 
 
 def blockwise(

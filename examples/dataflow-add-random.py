@@ -29,7 +29,8 @@ def run(argv=None):
         (50000, 50000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.add(a, b)
-    c.compute(return_stored=False, executor=executor, options=beam_options)
+    # use store=None to write to temporary zarr
+    cubed.to_zarr(c, store=None, executor=executor, options=beam_options)
 
 
 if __name__ == "__main__":
