@@ -65,7 +65,7 @@ def broadcast_to(x, /, shape, *, chunks=None):
                 )
 
     # create an empty array as a template for blockwise to do broadcasting
-    template = empty(shape, dtype=np.int8, chunks=chunks, spec=x.plan.spec)
+    template = empty(shape, dtype=np.int8, chunks=chunks, spec=x.spec)
 
     return elemwise(_broadcast_like, x, template, dtype=x.dtype)
 

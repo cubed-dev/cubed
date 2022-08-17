@@ -17,8 +17,8 @@ from cubed.core.ops import elemwise
 
 
 class Array(CoreArray):
-    def __init__(self, name, zarray, plan):
-        super().__init__(name, zarray, plan)
+    def __init__(self, name, zarray, spec, plan):
+        super().__init__(name, zarray, spec, plan)
 
     def __array__(self, dtype=None):
         x = self.compute()

@@ -1,5 +1,5 @@
 # flake8: noqa
-from .array import Callback, CoreArray, TaskEndEvent, gensym
+from .array import Callback, CoreArray, Spec, TaskEndEvent, gensym
 from .ops import (
     blockwise,
     elemwise,
@@ -12,4 +12,4 @@ from .ops import (
     to_zarr,
     unify_chunks,
 )
-from .plan import Plan, Spec, new_temp_store, new_temp_zarr
+from .plan import Plan, new_temp_store, new_temp_zarr

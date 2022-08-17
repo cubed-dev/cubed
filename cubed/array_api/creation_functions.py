@@ -75,8 +75,8 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     if a.size > 0:
         target[...] = a
 
-    plan = Plan(name, "asarray", target, spec)
-    return CoreArray._new(name, target, plan)
+    plan = Plan(name, "asarray", target)
+    return CoreArray._new(name, target, spec, plan)
 
 
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None):
@@ -147,8 +147,8 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
         write_empty_chunks=False,
     )
 
-    plan = Plan(name, "full", target, spec)
-    return CoreArray._new(name, target, plan)
+    plan = Plan(name, "full", target)
+    return CoreArray._new(name, target, spec, plan)
 
 
 def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None):
@@ -301,5 +301,5 @@ def _like_args(x, dtype=None, device=None, chunks=None, spec=None):
     if chunks is None:
         chunks = x.chunks
     if spec is None:
-        spec = x.plan.spec
+        spec = x.spec
     return dict(shape=x.shape, dtype=dtype, device=device, chunks=chunks, spec=spec)
