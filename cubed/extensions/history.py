@@ -9,8 +9,7 @@ from cubed.core.plan import visit_nodes
 
 
 class HistoryCallback(Callback):
-    def on_compute_start(self, arr):
-        dag = arr.plan.optimize(arr.name)
+    def on_compute_start(self, dag):
         plan = []
         for name, node in visit_nodes(dag):
             plan.append(
@@ -28,7 +27,7 @@ class HistoryCallback(Callback):
     def on_task_end(self, event):
         self.stats.append(asdict(event))
 
-    def on_compute_end(self, arr):
+    def on_compute_end(self, dag):
         plan_df = pd.DataFrame(self.plan)
         stats_df = pd.DataFrame(self.stats)
         id = int(time.time())

@@ -102,9 +102,6 @@ class CoreArray:
         **kwargs,
     ):
         """Compute this array, and any arrays that it depends on."""
-        if callbacks is not None:
-            [callback.on_compute_start(self) for callback in callbacks]
-
         if executor is None:
             executor = self.spec.executor
             if executor is None:
@@ -117,9 +114,6 @@ class CoreArray:
             optimize_graph=optimize_graph,
             **kwargs,
         )
-
-        if callbacks is not None:
-            [callback.on_compute_end(self) for callback in callbacks]
 
         if return_stored:
             if self.size > 0:
@@ -206,23 +200,23 @@ class Spec:
 class Callback:
     """Object to receive callback events during array computation."""
 
-    def on_compute_start(self, arr):
+    def on_compute_start(self, dag):
         """Called when the computation is about to start.
 
         Parameters
         ----------
-        arr : cubed.CoreArray
-            The array being computed.
+        dag : networkx.MultiDiGraph
+            The computation DAG.
         """
         pass  # pragma: no cover
 
-    def on_compute_end(self, arr):
+    def on_compute_end(self, dag):
         """Called when the computation has finished.
 
         Parameters
         ----------
-        arr : cubed.CoreArray
-            The array being computed.
+        dag : networkx.MultiDiGraph
+            The computation DAG.
         """
         pass  # pragma: no cover
 
