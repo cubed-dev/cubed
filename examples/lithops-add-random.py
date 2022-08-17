@@ -32,8 +32,10 @@ if __name__ == "__main__":
         progress = TqdmProgressBar()
         hist = HistoryCallback()
         timeline_viz = TimelineVisualizationCallback()
-        c.compute(
-            return_stored=False,
+        # use store=None to write to temporary zarr
+        cubed.to_zarr(
+            c,
+            store=None,
             executor=executor,
             callbacks=[progress, hist, timeline_viz],
             runtime=runtime,

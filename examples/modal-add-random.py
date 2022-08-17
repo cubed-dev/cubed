@@ -20,4 +20,5 @@ if __name__ == "__main__":
     c = xp.add(a, b)
     hist = HistoryCallback()
     timeline_viz = TimelineVisualizationCallback()
-    c.compute(return_stored=False, executor=executor, callbacks=[timeline_viz, hist])
+    # use store=None to write to temporary zarr
+    cubed.to_zarr(c, store=None, executor=executor, callbacks=[timeline_viz, hist])

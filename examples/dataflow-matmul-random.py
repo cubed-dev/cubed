@@ -31,7 +31,8 @@ def run(argv=None):
     c = xp.astype(a, xp.float32)
     d = xp.astype(b, xp.float32)
     e = xp.matmul(c, d)
-    e.compute(return_stored=False, executor=executor, options=beam_options)
+    # use store=None to write to temporary zarr
+    cubed.to_zarr(e, store=None, executor=executor, options=beam_options)
 
 
 if __name__ == "__main__":

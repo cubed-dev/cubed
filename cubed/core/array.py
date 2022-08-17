@@ -106,7 +106,6 @@ class CoreArray:
     def compute(
         self,
         *,
-        return_stored=True,
         executor=None,
         callbacks=None,
         optimize_graph=True,
@@ -115,13 +114,12 @@ class CoreArray:
         """Compute this array, and any arrays that it depends on."""
         result = compute(
             self,
-            return_stored=return_stored,
             executor=executor,
             callbacks=callbacks,
             optimize_graph=optimize_graph,
             **kwargs,
         )
-        if return_stored:
+        if result:
             return result[0]
 
     def rechunk(self, chunks):
@@ -269,7 +267,6 @@ def check_array_specs(arrays):
 
 def compute(
     *arrays,
-    return_stored=True,
     executor=None,
     callbacks=None,
     optimize_graph=True,
@@ -282,6 +279,7 @@ def compute(
         if executor is None:
             executor = PythonPipelineExecutor()
 
+    _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
     execute_dag(
         dag,
         executor=executor,
@@ -290,7 +288,7 @@ def compute(
         **kwargs,
     )
 
-    if return_stored:
+    if _return_in_memory_array:
         return tuple(a._read_stored() for a in arrays)
 
 
