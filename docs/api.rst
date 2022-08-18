@@ -30,6 +30,7 @@ IO
 
     from_array
     from_zarr
+    store
     to_zarr
 
 Chunk-specific functions
