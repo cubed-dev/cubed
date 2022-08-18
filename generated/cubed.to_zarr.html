@@ -329,7 +329,7 @@ title="Edit this page"
 <h1>cubed.to_zarr<a class="headerlink" href="#cubed-to-zarr" title="Permalink to this headline">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cubed.to_zarr">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">to_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_stored</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.to_zarr" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">to_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.to_zarr" title="Permalink to this definition">#</a></dt>
 <dd><p>Save an array to Zarr storage.</p>
 <p>Note that this operation is eager, and will run the computation
 immediately.</p>
@@ -338,8 +338,6 @@ immediately.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference internal" href="cubed.CoreArray.html#cubed.CoreArray" title="cubed.CoreArray"><em>cubed.CoreArray</em></a>) – Array to save</p></li>
 <li><p><strong>store</strong> (<em>string</em>) – Path to output Zarr store</p></li>
-<li><p><strong>return_stored</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return the array as a NumPy array.
-(False by default.)</p></li>
 <li><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em><em>, </em><em>optional</em>) – The executor to use to run the computation.
 Defaults to using the in-process Python executor.</p></li>
 </ul>
