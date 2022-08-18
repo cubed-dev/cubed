@@ -13,7 +13,7 @@ from tlz import concat, partition
 from toolz import accumulate, map
 from zarr.indexing import BasicIndexer, IntDimIndexer, is_slice, replace_ellipsis
 
-from cubed.core.array import CoreArray, check_array_specs, gensym
+from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
@@ -21,7 +21,7 @@ from cubed.utils import chunk_memory, get_item, to_chunksize
 
 
 def from_array(x, chunks="auto", asarray=None, spec=None):
-    """Create a Cubed array from something that looks like an array."""
+    """Create a Cubed array from an array-like object."""
 
     if isinstance(x, CoreArray):
         raise ValueError(
@@ -89,6 +89,53 @@ def from_zarr(store, spec=None):
     return CoreArray._new(name, target, spec, plan)
 
 
+def store(sources, targets, executor=None, **kwargs):
+    """Save source arrays to array-like objects.
+
+    In the current implementation ``targets`` must be Zarr arrays.
+
+    Note that this operation is eager, and will run the computation
+    immediately.
+
+    Parameters
+    ----------
+    x : cubed.CoreArray or collection of cubed.CoreArray
+        Arrays to save
+    store : zarr.Array or collection of zarr.Array
+        Zarr arrays to write to
+    executor : cubed.runtime.types.Executor, optional
+        The executor to use to run the computation.
+        Defaults to using the in-process Python executor.
+    """
+    if isinstance(sources, CoreArray):
+        sources = [sources]
+        targets = [targets]
+
+    if any(not isinstance(s, CoreArray) for s in sources):
+        raise ValueError("All sources must be cubed array objects")
+
+    if len(sources) != len(targets):
+        raise ValueError(
+            f"Different number of sources ({len(sources)}) and targets ({len(targets)})"
+        )
+
+    arrays = []
+    for source, target in zip(sources, targets):
+        identity = lambda a: a
+        ind = tuple(range(source.ndim))
+        array = blockwise(
+            identity,
+            ind,
+            source,
+            ind,
+            dtype=source.dtype,
+            align_arrays=False,
+            target_store=target,
+        )
+        arrays.append(array)
+    compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
+
+
 def to_zarr(x, store, executor=None, **kwargs):
     """Save an array to Zarr storage.
 
@@ -112,7 +159,7 @@ def to_zarr(x, store, executor=None, **kwargs):
     out = blockwise(
         identity, ind, x, ind, dtype=x.dtype, align_arrays=False, target_store=store
     )
-    return out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
+    out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
 
 
 def blockwise(

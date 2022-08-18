@@ -70,8 +70,8 @@ def blockwise(
         Sequence like (x, 'ij', y, 'jk', z, 'i')
     max_mem : int
         Maximum memory allowed for a single task of this operation, measured in bytes
-    target_store : string
-        Path to output Zarr store
+    target_store : string or zarr.Array
+        Path to output Zarr store, or Zarr array
     shape : tuple
         The shape of the output array.
     dtype : np.dtype
@@ -139,7 +139,12 @@ def blockwise(
     # now use the graph_mappable in a pipeline
 
     chunksize = to_chunksize(chunks)
-    target_array = zarr.empty(shape, store=target_store, chunks=chunksize, dtype=dtype)
+    if isinstance(target_store, zarr.Array):
+        target_array = target_store
+    else:
+        target_array = zarr.empty(
+            shape, store=target_store, chunks=chunksize, dtype=dtype
+        )
 
     func_with_kwargs = partial(func, **kwargs)
     read_proxies = {

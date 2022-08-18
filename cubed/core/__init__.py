@@ -9,6 +9,7 @@ from .ops import (
     rechunk,
     reduction,
     squeeze,
+    store,
     to_zarr,
     unify_chunks,
 )

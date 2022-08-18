@@ -21,6 +21,7 @@ from .core import (
     from_array,
     from_zarr,
     map_blocks,
+    store,
     to_zarr,
     visualize,
 )
@@ -35,6 +36,7 @@ __all__ = [
     "from_array",
     "from_zarr",
     "map_blocks",
+    "store",
     "to_zarr",
     "visualize",
 ]
