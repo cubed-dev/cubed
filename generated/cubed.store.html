@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>cubed.random.random &#8212; Cubed</title>
+    <title>cubed.store &#8212; Cubed</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -33,8 +33,8 @@
     <script src="../_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.Callback" href="cubed.Callback.html" />
-    <link rel="prev" title="cubed.map_blocks" href="cubed.map_blocks.html" />
+    <link rel="next" title="cubed.to_zarr" href="cubed.to_zarr.html" />
+    <link rel="prev" title="cubed.from_zarr" href="cubed.from_zarr.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -132,8 +132,8 @@
      cubed.from_zarr
     </a>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="cubed.store.html">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
      cubed.store
     </a>
    </li>
@@ -147,8 +147,8 @@
      cubed.map_blocks
     </a>
    </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
+   <li class="toctree-l2">
+    <a class="reference internal" href="cubed.random.random.html">
      cubed.random.random
     </a>
    </li>
@@ -270,7 +270,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.random.random.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.store.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -287,7 +287,7 @@ title="Open an issue"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/edit/master/generated/cubed.random.random.rst"
+        <a href="https://github.com/tomwhite/cubed/edit/master/generated/cubed.store.rst"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -318,7 +318,7 @@ title="Edit this page"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>cubed.random.random</h1>
+                <h1>cubed.store</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -330,12 +330,25 @@ title="Edit this page"
                 
               <div>
                 
-  <section id="cubed-random-random">
-<h1>cubed.random.random<a class="headerlink" href="#cubed-random-random" title="Permalink to this headline">#</a></h1>
+  <section id="cubed-store">
+<h1>cubed.store<a class="headerlink" href="#cubed-store" title="Permalink to this headline">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="cubed.random.random">
-<span class="sig-prename descclassname"><span class="pre">cubed.random.</span></span><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.random.random" title="Permalink to this definition">#</a></dt>
-<dd><p>Return random floats in the half-open interval [0.0, 1.0).</p>
+<dt class="sig sig-object py" id="cubed.store">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.store" title="Permalink to this definition">#</a></dt>
+<dd><p>Save source arrays to array-like objects.</p>
+<p>In the current implementation <code class="docutils literal notranslate"><span class="pre">targets</span></code> must be Zarr arrays.</p>
+<p>Note that this operation is eager, and will run the computation
+immediately.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference internal" href="cubed.CoreArray.html#cubed.CoreArray" title="cubed.CoreArray"><em>cubed.CoreArray</em></a><em> or </em><em>collection of cubed.CoreArray</em>) – Arrays to save</p></li>
+<li><p><strong>store</strong> (<em>zarr.Array</em><em> or </em><em>collection of zarr.Array</em>) – Zarr arrays to write to</p></li>
+<li><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em><em>, </em><em>optional</em>) – The executor to use to run the computation.
+Defaults to using the in-process Python executor.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -348,17 +361,17 @@ title="Edit this page"
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="cubed.map_blocks.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="cubed.from_zarr.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">cubed.map_blocks</p>
+            <p class="prev-next-title">cubed.from_zarr</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="cubed.Callback.html" title="next page">
+    <a class='right-next' id="next-link" href="cubed.to_zarr.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.Callback</p>
+        <p class="prev-next-title">cubed.to_zarr</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
