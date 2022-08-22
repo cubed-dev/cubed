@@ -75,5 +75,5 @@ Executors
 
     beam.BeamDagExecutor
     lithops.LithopsDagExecutor
-    modal.AsyncModalDagExecutor
+    modal_async.AsyncModalDagExecutor
     python.PythonDagExecutor

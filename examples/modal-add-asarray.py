@@ -3,7 +3,7 @@ import sys
 import cubed
 import cubed.array_api as xp
 from cubed.extensions.tqdm import TqdmProgressBar, std_out_err_redirect_tqdm
-from cubed.runtime.executors.modal import AsyncModalDagExecutor
+from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]

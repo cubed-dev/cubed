@@ -7,7 +7,7 @@ import asyncio
 import fsspec
 import modal.aio
 
-from cubed.runtime.executors.modal import map_unordered
+from cubed.runtime.executors.modal_async import map_unordered
 from cubed.utils import join_path
 
 
@@ -47,8 +47,21 @@ def never_fail(i):
     return i
 
 
-@stub.function(image=image, secret=modal.ref("my-aws-secret"))
+@stub.function(image=image, secret=modal.ref("my-aws-secret"), retries=2)
 async def fail_on_first_invocation(i):
+    invocation_count_file = join_path(tmp_path, f"{i}")
+    fs = fsspec.open(invocation_count_file).fs
+    if fs.exists(invocation_count_file):
+        count = read_int_from_file(invocation_count_file)
+        write_int_to_file(invocation_count_file, count + 1)
+    else:
+        write_int_to_file(invocation_count_file, 1)
+        raise RuntimeError(f"Fail on {i}")
+    return i
+
+
+@stub.function(image=image, secret=modal.ref("my-aws-secret"))
+async def fail_on_first_invocation_no_retry(i):
     invocation_count_file = join_path(tmp_path, f"{i}")
     fs = fsspec.open(invocation_count_file).fs
     if fs.exists(invocation_count_file):
@@ -89,7 +102,7 @@ async def run_test(app_function, input, max_failures=3, use_backups=False):
 @pytest.mark.cloud
 def test_map_unordered_no_failures():
     try:
-        asyncio.run(run_test(app_function=never_fail, input=range(3), max_failures=0))
+        asyncio.run(run_test(app_function=never_fail, input=range(3)))
 
         assert read_int_from_file(join_path(tmp_path, "0")) == 1
         assert read_int_from_file(join_path(tmp_path, "1")) == 1
@@ -120,9 +133,8 @@ def test_map_unordered_too_many_failures():
         with pytest.raises(RuntimeError):
             asyncio.run(
                 run_test(
-                    app_function=fail_on_first_invocation,
+                    app_function=fail_on_first_invocation_no_retry,
                     input=range(3),
-                    max_failures=2,
                 )
             )
 
