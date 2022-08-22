@@ -1,3 +1,4 @@
+aiostream
 apache-beam
 dask[array]
 fsspec
