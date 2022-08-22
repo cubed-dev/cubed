@@ -6,7 +6,7 @@ import cubed.random
 from cubed.extensions.history import HistoryCallback
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar, std_out_err_redirect_tqdm
-from cubed.runtime.executors.modal import AsyncModalDagExecutor
+from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]

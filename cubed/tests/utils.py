@@ -39,7 +39,8 @@ except ImportError:
 MODAL_EXECUTORS = []
 
 try:
-    from cubed.runtime.executors.modal import AsyncModalDagExecutor, ModalDagExecutor
+    from cubed.runtime.executors.modal import ModalDagExecutor
+    from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
 
     MODAL_EXECUTORS.append(AsyncModalDagExecutor())
     MODAL_EXECUTORS.append(ModalDagExecutor())
