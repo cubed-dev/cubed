@@ -5,10 +5,15 @@ import zarr
 from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.runtime.executors.python import PythonDagExecutor
+from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
 
 LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
 
-ALL_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
+ALL_EXECUTORS = [
+    PythonPipelineExecutor(),
+    PythonDagExecutor(),
+    AsyncPythonDagExecutor(),
+]
 
 # don't run all tests on every executor as it's too slow, so just have a subset
 MAIN_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]

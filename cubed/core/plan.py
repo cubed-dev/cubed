@@ -256,3 +256,14 @@ def visit_nodes(dag):
         if already_computed(nodes[name]):
             continue
         yield name, nodes[name]
+
+
+def visit_node_generations(dag):
+    """Return a generator that visits the nodes in the DAG in groups of topological generations."""
+    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+    for names in nx.topological_generations(dag):
+        gen = [
+            (name, nodes[name]) for name in names if not already_computed(nodes[name])
+        ]
+        if len(gen) > 0:
+            yield gen

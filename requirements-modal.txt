@@ -1,3 +1,4 @@
+aiostream
 dask[array]
 fsspec
 networkx < 2.8.3 # https://github.com/networkx/networkx/pull/5667
