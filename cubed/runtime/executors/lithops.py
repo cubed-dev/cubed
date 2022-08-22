@@ -50,6 +50,11 @@ class LithopsPipelineExecutor(PipelineExecutor[Task]):
             plan(executor)
 
 
+def run_func(input, func=None, config=None, name=None):
+    result = func(input, config=config)
+    return result
+
+
 def map_unordered(
     lithops_function_executor,
     map_function,
@@ -58,6 +63,7 @@ def map_unordered(
     max_failures=3,
     use_backups=False,
     return_stats=False,
+    **kwargs,
 ):
     """
     Apply a function to items of an input list, yielding results as they are completed
@@ -85,10 +91,12 @@ def map_unordered(
     backups = {}
     pending = []
 
+    # can't use functools.partial here as we get an error in lithops
+    # also, lithops extra_args doesn't work for this case
+    partial_map_function = lambda x: map_function(x, **kwargs)
+
     futures = lithops_function_executor.map(
-        map_function,
-        inputs,
-        include_modules=include_modules,
+        partial_map_function, inputs, include_modules=include_modules
     )
     tasks.update({k: v for (k, v) in zip(futures, inputs)})
     start_times.update({k: time.monotonic() for k in futures})
@@ -130,7 +138,7 @@ def map_unordered(
             inputs = [v for (fut, v) in tasks.items() if fut in failed]
             # TODO: de-duplicate code from above
             futures = lithops_function_executor.map(
-                map_function,
+                partial_map_function,
                 inputs,
                 include_modules=include_modules,
             )
@@ -147,7 +155,7 @@ def map_unordered(
                     inputs = [v for (fut, v) in tasks.items() if fut == future]
                     logger.info("Running backup task for %s", inputs)
                     futures = lithops_function_executor.map(
-                        map_function,
+                        partial_map_function,
                         inputs,
                         include_modules=include_modules,
                     )
@@ -159,6 +167,31 @@ def map_unordered(
                     backups[future] = backup
                     backups[backup] = future
             time.sleep(1)
+
+
+def execute_dag(dag, callbacks=None, **kwargs):
+    use_backups = kwargs.pop("use_backups", False)
+    with FunctionExecutor(**kwargs) as executor:
+        for name, node in visit_nodes(dag):
+            pipeline = node["pipeline"]
+            for stage in pipeline.stages:
+                if stage.mappable is not None:
+                    for _, stats in map_unordered(
+                        executor,
+                        run_func,
+                        list(stage.mappable),
+                        func=stage.function,
+                        config=pipeline.config,
+                        name=name,
+                        include_modules=["cubed"],
+                        use_backups=use_backups,
+                        return_stats=True,
+                    ):
+                        if callbacks is not None:
+                            event = lithops_stats_to_task_end_event(name, stats)
+                            [callback.on_task_end(event) for callback in callbacks]
+                else:
+                    raise NotImplementedError()
 
 
 def lithops_stats_to_task_end_event(name, stats):
@@ -221,21 +254,4 @@ class LithopsDagExecutor(DagExecutor):
 
     def execute_dag(self, dag, callbacks=None, **kwargs):
         merged_kwargs = {**self.kwargs, **kwargs}
-        use_backups = merged_kwargs.pop("use_backups", False)
-        with FunctionExecutor(**merged_kwargs) as executor:
-            for name, node in visit_nodes(dag):
-                pipeline = node["pipeline"]
-                for stage in pipeline.stages:
-                    if stage.mappable is not None:
-                        stage_func = build_stage_mappable_func(
-                            stage,
-                            pipeline.config,
-                            name=name,
-                            callbacks=callbacks,
-                            use_backups=use_backups,
-                        )
-                    else:
-                        stage_func = build_stage_func(stage, pipeline.config)
-
-                    # execute each stage in series
-                    stage_func(executor)
+        execute_dag(dag, callbacks=callbacks, **merged_kwargs)
