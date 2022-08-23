@@ -17,7 +17,7 @@ class HistoryCallback(Callback):
                     array_name=name,
                     op_name=node["op_name"],
                     required_mem=node["required_mem"],
-                    num_tasks=node["required_mem"],
+                    num_tasks=node["num_tasks"],
                 )
             )
 
@@ -30,7 +30,9 @@ class HistoryCallback(Callback):
     def on_compute_end(self, dag):
         plan_df = pd.DataFrame(self.plan)
         stats_df = pd.DataFrame(self.stats)
-        id = int(time.time())
         Path("history").mkdir(exist_ok=True)
-        plan_df.to_csv(f"history/plan-{id}.csv", index=False)
-        stats_df.to_csv(f"history/stats-{id}.csv", index=False)
+        id = int(time.time())
+        self.plan_df_path = Path(f"history/plan-{id}.csv")
+        self.stats_df_path = Path(f"history/stats-{id}.csv")
+        plan_df.to_csv(self.plan_df_path, index=False)
+        stats_df.to_csv(self.stats_df_path, index=False)
