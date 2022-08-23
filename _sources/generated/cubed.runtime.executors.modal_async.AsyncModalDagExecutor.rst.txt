@@ -1,7 +1,7 @@
-﻿cubed.runtime.executors.modal.AsyncModalDagExecutor
-===================================================
+﻿cubed.runtime.executors.modal\_async.AsyncModalDagExecutor
+==========================================================
 
-.. currentmodule:: cubed.runtime.executors.modal
+.. currentmodule:: cubed.runtime.executors.modal_async
 
 .. autoclass:: AsyncModalDagExecutor
 
