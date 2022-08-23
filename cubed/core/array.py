@@ -139,7 +139,7 @@ class CoreArray:
 
         return rechunk(self, chunks)
 
-    def visualize(self, *, filename="cubed", format=None, optimize_graph=True):
+    def visualize(self, filename="cubed", format=None, optimize_graph=True):
         """Produce a visualization of the computation graph for this array.
 
         Parameters
