@@ -20,10 +20,10 @@ def executor(request):
 
 
 def test_random(spec, executor):
-    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    a = cubed.random.random((10, 10), chunks=(4, 5), spec=spec)
 
     assert a.shape == (10, 10)
-    assert a.chunks == ((5, 5), (5, 5))
+    assert a.chunks == ((4, 4, 2), (5, 5))
 
     x = set(a.compute(executor=executor).flat)
     assert len(x) > 90

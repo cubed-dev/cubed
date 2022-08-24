@@ -7,7 +7,6 @@ from numpy.random import Generator, Philox
 from zarr.util import normalize_shape
 
 from cubed.core.ops import map_direct
-from cubed.utils import to_chunksize
 
 
 def random(size, *, chunks=None, spec=None):
@@ -15,7 +14,6 @@ def random(size, *, chunks=None, spec=None):
     shape = normalize_shape(size)
     dtype = nxp.float64
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
-    chunksize = to_chunksize(chunks)
     numblocks = tuple(map(len, chunks))
     root_seed = pyrandom.getrandbits(128)
 
@@ -30,16 +28,15 @@ def random(size, *, chunks=None, spec=None):
         chunks=chunks,
         extra_required_mem=extra_required_mem,
         spec=spec,
-        size=chunksize,
         numblocks=numblocks,
         root_seed=root_seed,
     )
 
 
-def _random(x, *arrays, size=None, numblocks=None, root_seed=None, block_id=None):
+def _random(x, *arrays, numblocks=None, root_seed=None, block_id=None):
     stream_id = block_id_to_offset(block_id, numblocks)
     rg = Generator(Philox(key=root_seed + stream_id))
-    return rg.random(size)
+    return rg.random(x.shape)
 
 
 def block_id_to_offset(block_id, numblocks):
