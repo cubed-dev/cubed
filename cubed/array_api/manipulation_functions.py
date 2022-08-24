@@ -163,8 +163,17 @@ def permute_dims(x, /, axes):
     else:
         axes = tuple(range(x.ndim))[::-1]
     axes = tuple(d + x.ndim if d < 0 else d for d in axes)
+
+    # extra memory copy due to Zarr enforcing C order on transposed array
+    extra_required_mem = x.chunkmem
     return blockwise(
-        np.transpose, axes, x, tuple(range(x.ndim)), dtype=x.dtype, axes=axes
+        np.transpose,
+        axes,
+        x,
+        tuple(range(x.ndim)),
+        dtype=x.dtype,
+        axes=axes,
+        extra_required_mem=extra_required_mem,
     )
 
 
