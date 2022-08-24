@@ -212,6 +212,8 @@ def visualize_dag(
         # remove pipeline attribute since it is a long string that causes graphviz to fail
         if "pipeline" in d:
             del d["pipeline"]
+        if "target" in d:
+            del d["target"]
     gv = nx.drawing.nx_pydot.to_pydot(dag)
     if format is None:
         format = "svg"
