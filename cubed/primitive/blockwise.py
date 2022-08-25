@@ -30,7 +30,7 @@ def apply_blockwise(graph_item, *, config=BlockwiseSpec):
     out_chunk_key, in_name_chunk_keys = graph_item
     args = []
     for name, in_chunk_key in in_name_chunk_keys:
-        arg = np.asarray(config.reads_map[name].array[in_chunk_key])
+        arg = config.reads_map[name].array[in_chunk_key]
         args.append(arg)
     config.write.array[out_chunk_key] = config.function(*args)
 
