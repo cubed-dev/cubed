@@ -79,7 +79,8 @@ def concat(arrays, /, *, axis=0):
         raise ValueError("Need array(s) to concat")
 
     if axis is None:
-        raise NotImplementedError("None axis not supported in concat")
+        arrays = [flatten(array) for array in arrays]
+        axis = 0
 
     # TODO: check arrays all have same shape (except in the dimension specified by axis)
     # TODO: type promotion
@@ -153,6 +154,10 @@ def expand_dims(x, /, *, axis):
     return map_blocks(
         np.expand_dims, x, dtype=x.dtype, chunks=chunks, new_axis=axis, axis=axis
     )
+
+
+def flatten(x):
+    return reshape(x, (-1,))
 
 
 def permute_dims(x, /, axes):
