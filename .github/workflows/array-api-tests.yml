@@ -83,11 +83,8 @@ jobs:
           # don't test signatures yet as most are not implemented
           array_api_tests/test_signatures.py
 
-          # partially implemented (some edge cases fail)
-          array_api_tests/test_creation_functions.py::test_asarray_arrays
+          # very slow
           array_api_tests/test_creation_functions.py::test_eye
-          array_api_tests/test_linalg.py::test_matmul
-          array_api_tests/test_manipulation_functions.py::test_stack
 
           # not implemented
           array_api_tests/test_array_object.py::test_getitem
