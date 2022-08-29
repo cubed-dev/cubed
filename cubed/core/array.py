@@ -318,3 +318,31 @@ def visualize(*arrays, filename="cubed", format=None, optimize_graph=True):
     return visualize_dag(
         dag, filename=filename, format=format, optimize_graph=optimize_graph
     )
+
+
+class PeakMemoryCallback(Callback):
+    def on_task_end(self, event):
+        self.peak_memory = event.peak_memory_end
+
+
+def measure_baseline_memory(executor):
+    """Measures the baseline memory use for a given executor runtime.
+
+    Parameters
+    ----------
+    executor : cubed.runtime.types.Executor
+        The executor to use to run the computation. It must be an executor that
+        reports peak memory, such as Lithops or Modal.
+
+    Returns
+    -------
+    int
+        The memory used by the runtime in bytes.
+    """
+    import cubed.array_api as xp
+
+    a = xp.ones((1,))
+    b = xp.negative(a)
+    peak_memory_callback = PeakMemoryCallback()
+    b.compute(executor=executor, callbacks=[peak_memory_callback])
+    return peak_memory_callback.peak_memory
