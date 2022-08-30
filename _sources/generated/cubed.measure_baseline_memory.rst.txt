@@ -1,0 +1,6 @@
+﻿cubed.measure\_baseline\_memory
+===============================
+
+.. currentmodule:: cubed
+
+.. autofunction:: measure_baseline_memory
