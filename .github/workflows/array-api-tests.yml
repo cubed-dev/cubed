@@ -80,17 +80,15 @@ jobs:
           # don't run special cases yet
           array_api_tests/test_special_cases.py
 
-          # don't test signatures yet as most are not implemented
+          # don't test signatures yet as some are not implemented
           array_api_tests/test_signatures.py
 
           # very slow
           array_api_tests/test_creation_functions.py::test_eye
 
           # not implemented
-          array_api_tests/test_array_object.py::test_getitem
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
-          array_api_tests/test_array_object.py::test_scalar_casting
           array_api_tests/test_manipulation_functions.py::test_flip
           array_api_tests/test_manipulation_functions.py::test_roll
           array_api_tests/test_sorting_functions.py
