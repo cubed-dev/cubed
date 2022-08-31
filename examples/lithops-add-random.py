@@ -1,5 +1,6 @@
 import logging
 import sys
+from pathlib import Path
 
 from tqdm.contrib.logging import logging_redirect_tqdm
 
@@ -10,6 +11,10 @@ from cubed.extensions.history import HistoryCallback
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
+
+# add project base dir to python path
+cubed_dir = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(cubed_dir))
 
 logging.basicConfig(level=logging.INFO)
 # suppress harmless connection pool warnings
