@@ -183,7 +183,6 @@ def execute_dag(dag, callbacks=None, **kwargs):
                         func=stage.function,
                         config=pipeline.config,
                         name=name,
-                        include_modules=["cubed"],
                         use_backups=use_backups,
                         return_stats=True,
                     ):
@@ -217,7 +216,6 @@ def build_stage_mappable_func(
             lithops_function_executor,
             sf,
             list(stage.mappable),
-            include_modules=["cubed"],
             use_backups=use_backups,
             return_stats=True,
         ):
