@@ -3,7 +3,6 @@ from math import ceil, prod
 from rechunker.api import _setup_rechunk
 
 from cubed.runtime.pipeline import spec_to_pipeline
-from cubed.utils import chunk_memory
 
 
 def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
@@ -28,20 +27,9 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     required_mem: minimum memory required per-task, in bytes
     """
 
-    # don't give the full max_mem to rechunker, since it doesn't take
-    # compressed copies into account
-    # instead, force it to use no more than a single source or target chunk
-    # (whichever is larger)
-    # this may mean an intermediate copy is needed, but ensures that memory is controlled
-    dtype = source.dtype  # dtype doesn't change
-    adjusted_max_mem = max(
-        chunk_memory(dtype, source.chunks),
-        chunk_memory(dtype, target_chunks),
-    )
-    if adjusted_max_mem > max_mem:
-        raise ValueError(
-            f"Source/target chunk memory ({adjusted_max_mem}) exceeds max_mem ({max_mem})"
-        )
+    # rechunker doesn't take account of uncompressed and compressed copies of the
+    # input and output array chunk/selection, so adjust appropriately
+    adjusted_max_mem = max_mem / 4
 
     copy_specs, intermediate, target = _setup_rechunk(
         source=source,
@@ -56,15 +44,11 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
         raise ValueError(f"Source must be a Zarr array, but was {source}")
     copy_spec = copy_specs[0]
 
-    # calculate memory requirement
-    # memory for {compressed, uncompressed} x {input, output} array chunk/selection
-    required_mem = adjusted_max_mem * 4
-
     num_tasks = total_chunks(copy_spec.write.array.shape, copy_spec.write.chunks)
     if intermediate is not None:
         num_tasks += total_chunks(copy_spec.read.array.shape, copy_spec.read.chunks)
 
-    return spec_to_pipeline(copy_spec), target, required_mem, num_tasks
+    return spec_to_pipeline(copy_spec), target, max_mem, num_tasks
 
 
 def total_chunks(shape, chunks):
