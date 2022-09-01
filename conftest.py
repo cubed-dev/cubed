@@ -8,20 +8,29 @@ def pytest_addoption(parser):
     parser.addoption(
         "--runcloud", action="store_true", default=False, help="run cloud tests"
     )
+    parser.addoption(
+        "--runslow", action="store_true", default=False, help="run slow tests"
+    )
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "cloud: mark test as cloud to run")
+    config.addinivalue_line("markers", "cloud: mark test as needing cloud to run")
+    config.addinivalue_line("markers", "slow: mark test as slow to run")
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--runcloud"):
-        # --runcloud given in cli: do not skip cloud tests
-        return
-    skip_cloud = pytest.mark.skip(reason="need --runcloud option to run")
-    for item in items:
-        if "cloud" in item.keywords:
-            item.add_marker(skip_cloud)
+    if not config.getoption("--runcloud"):
+        # --runcloud not given in cli: skip cloud tests
+        skip_cloud = pytest.mark.skip(reason="need --runcloud option to run")
+        for item in items:
+            if "cloud" in item.keywords:
+                item.add_marker(skip_cloud)
+    if not config.getoption("--runslow"):
+        # --runslow not given in cli: skip slow tests
+        skip_slow = pytest.mark.skip(reason="need --runslow option to run")
+        for item in items:
+            if "slow" in item.keywords:
+                item.add_marker(skip_slow)
 
 
 # from https://github.com/streamlit/streamlit/pull/5047/files
