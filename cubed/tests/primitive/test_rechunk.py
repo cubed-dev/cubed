@@ -22,14 +22,14 @@ def executor(request):
             (1, 2),
             1000,
             (1, 4),
-            4 * 8 * 4,  # elts x itemsize x copies
-            4,
+            1000,
+            1,
         ),
         # only enough memory for one source/target chunk
         (
             (4, 4),
             (1, 4),
-            4 * 8,
+            4 * 8 * 4,  # elts x itemsize x copies
             (4, 1),
             4 * 8 * 4,  # elts x itemsize x copies
             8,
@@ -80,8 +80,9 @@ def test_rechunk_max_mem_exceeded(tmp_path):
     target_store = tmp_path / "target.zarr"
     temp_store = tmp_path / "temp.zarr"
 
+    # max mem is reduced by a factor of 4 from 16 to 4
     with pytest.raises(
-        ValueError, match=r"Source/target chunk memory \(32\) exceeds max_mem \(16\)"
+        ValueError, match=r"Source chunk memory \(32\) exceeds max_mem \(4\)"
     ):
         rechunk(
             source,
