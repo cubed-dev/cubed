@@ -17,46 +17,46 @@ def spec(tmp_path):
 
 
 @pytest.fixture()
-def baseline_mem():
+def reserved_mem():
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
-    return cubed.measure_baseline_memory(executor)
+    return cubed.measure_reserved_memory(executor)
 
 
 # Array Object
 
 
 @pytest.mark.slow
-def test_index(spec, baseline_mem):
+def test_index(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = a[1:, :]
-    run_operation("index", b, baseline_mem)
+    run_operation("index", b, reserved_mem)
 
 
 # Creation Functions
 
 
 @pytest.mark.slow
-def test_eye(spec, baseline_mem):
+def test_eye(spec, reserved_mem):
     a = xp.eye(10000, 10000, chunks=(5000, 5000), spec=spec)
-    run_operation("eye", a, baseline_mem)
+    run_operation("eye", a, reserved_mem)
 
 
 @pytest.mark.slow
-def test_tril(spec, baseline_mem):
+def test_tril(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = xp.tril(a)
-    run_operation("tril", b, baseline_mem)
+    run_operation("tril", b, reserved_mem)
 
 
 # Elementwise Functions
 
 
 @pytest.mark.slow
-def test_add(spec, baseline_mem):
+def test_add(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
@@ -64,23 +64,23 @@ def test_add(spec, baseline_mem):
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.add(a, b)
-    run_operation("add", c, baseline_mem)
+    run_operation("add", c, reserved_mem)
 
 
 @pytest.mark.slow
-def test_negative(spec, baseline_mem):
+def test_negative(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = xp.negative(a)
-    run_operation("negative", b, baseline_mem)
+    run_operation("negative", b, reserved_mem)
 
 
 # Linear Algebra Functions
 
 
 @pytest.mark.slow
-def test_matmul(spec, baseline_mem):
+def test_matmul(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
@@ -90,20 +90,20 @@ def test_matmul(spec, baseline_mem):
     c = xp.astype(a, xp.float32)
     d = xp.astype(b, xp.float32)
     e = xp.matmul(c, d)
-    run_operation("matmul", e, baseline_mem)
+    run_operation("matmul", e, reserved_mem)
 
 
 @pytest.mark.slow
-def test_matrix_transpose(spec, baseline_mem):
+def test_matrix_transpose(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = xp.matrix_transpose(a)
-    run_operation("matrix_transpose", b, baseline_mem)
+    run_operation("matrix_transpose", b, reserved_mem)
 
 
 @pytest.mark.slow
-def test_tensordot(spec, baseline_mem):
+def test_tensordot(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
@@ -113,14 +113,14 @@ def test_tensordot(spec, baseline_mem):
     c = xp.astype(a, xp.float32)
     d = xp.astype(b, xp.float32)
     e = xp.tensordot(c, d, axes=1)
-    run_operation("tensordot", e, baseline_mem)
+    run_operation("tensordot", e, reserved_mem)
 
 
 # Manipulation Functions
 
 
 @pytest.mark.slow
-def test_concat(spec, baseline_mem):
+def test_concat(spec, reserved_mem):
     # Note 'a' has one fewer element in axis=0 to force chunking to cross array boundaries
     a = cubed.random.random(
         (9999, 10000), chunks=(5000, 5000), spec=spec
@@ -129,22 +129,22 @@ def test_concat(spec, baseline_mem):
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.concat((a, b), axis=0)
-    run_operation("concat", c, baseline_mem)
+    run_operation("concat", c, reserved_mem)
 
 
 @pytest.mark.slow
-def test_reshape(spec, baseline_mem):
+def test_reshape(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     # need intermediate reshape due to limitations in Dask's reshape_rechunk
     b = xp.reshape(a, (5000, 2, 10000))
     c = xp.reshape(b, (5000, 20000))
-    run_operation("reshape", c, baseline_mem)
+    run_operation("reshape", c, reserved_mem)
 
 
 @pytest.mark.slow
-def test_stack(spec, baseline_mem):
+def test_stack(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
@@ -152,46 +152,46 @@ def test_stack(spec, baseline_mem):
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.stack((a, b), axis=0)
-    run_operation("stack", c, baseline_mem)
+    run_operation("stack", c, reserved_mem)
 
 
 # Searching Functions
 
 
 @pytest.mark.slow
-def test_argmax(spec, baseline_mem):
+def test_argmax(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = xp.argmax(a, axis=0)
-    run_operation("argmax", b, baseline_mem)
+    run_operation("argmax", b, reserved_mem)
 
 
 # Statistical Functions
 
 
 @pytest.mark.slow
-def test_max(spec, baseline_mem):
+def test_max(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = xp.max(a, axis=0)
-    run_operation("max", b, baseline_mem)
+    run_operation("max", b, reserved_mem)
 
 
 @pytest.mark.slow
-def test_mean(spec, baseline_mem):
+def test_mean(spec, reserved_mem):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     b = xp.mean(a, axis=0)
-    run_operation("mean", b, baseline_mem)
+    run_operation("mean", b, reserved_mem)
 
 
 # Internal functions
 
 
-def run_operation(name, result_array, baseline_mem):
+def run_operation(name, result_array, reserved_mem):
     # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
     # result_array.visualize(f"cubed-{name}")
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
@@ -201,21 +201,21 @@ def run_operation(name, result_array, baseline_mem):
 
     plan_df = pd.read_csv(hist.plan_df_path)
     stats_df = pd.read_csv(hist.stats_df_path)
-    df = analyze(plan_df, stats_df, baseline_mem)
+    df = analyze(plan_df, stats_df, reserved_mem)
     print(df)
 
     # check utilization does not exceed 1
     assert (df["utilization"] <= 1.0).all()
 
 
-def analyze(plan_df, stats_df, baseline_mem):
+def analyze(plan_df, stats_df, reserved_mem):
 
-    baseline_mem_mb = baseline_mem / 1_000_000
-    baseline_mem_mb *= 1.05  # add some wiggle room
+    reserved_mem_mb = reserved_mem / 1_000_000
+    reserved_mem_mb *= 1.05  # add some wiggle room
 
     # convert memory to MB
     plan_df["required_mem_mb"] = plan_df["required_mem"] / 1_000_000
-    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + baseline_mem_mb
+    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + reserved_mem_mb
     plan_df = plan_df[
         ["array_name", "op_name", "required_mem_mb", "total_mem_mb", "num_tasks"]
     ]

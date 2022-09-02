@@ -6,7 +6,7 @@ from .array import (
     TaskEndEvent,
     compute,
     gensym,
-    measure_baseline_memory,
+    measure_reserved_memory,
     visualize,
 )
 from .ops import (

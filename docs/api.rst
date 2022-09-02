@@ -64,7 +64,7 @@ Runtime
     Callback
     Spec
     TaskEndEvent
-    measure_baseline_memory
+    measure_reserved_memory
 
 Executors
 =========

@@ -509,11 +509,11 @@ def test_no_fusion_multiple_edges(spec):
     assert_array_equal(result, np.full((2, 2), True))
 
 
-def test_measure_baseline_memory(executor):
+def test_measure_reserved_memory(executor):
     from cubed.runtime.executors.lithops import LithopsDagExecutor
 
     if not isinstance(executor, LithopsDagExecutor):
-        pytest.skip(f"{type(executor)} does not support measure_baseline_memory")
+        pytest.skip(f"{type(executor)} does not support measure_reserved_memory")
 
-    baseline_memory = cubed.measure_baseline_memory(executor=executor)
-    assert baseline_memory > 1_000_000  # over 1MB
+    reserved_memory = cubed.measure_reserved_memory(executor=executor)
+    assert reserved_memory > 1_000_000  # over 1MB
