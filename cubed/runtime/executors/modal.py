@@ -27,7 +27,7 @@ image = modal.DebianSlim().pip_install(
 
 
 # Use a generator, since we want results to be returned as they finish and we don't care about order
-@stub.generator(image=image, secret=modal.ref("my-aws-secret"), retries=2)
+@stub.generator(image=image, secret=modal.ref("my-aws-secret"), memory=2000, retries=2)
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
     peak_memory_start = peak_memory()

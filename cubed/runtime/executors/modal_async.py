@@ -30,7 +30,9 @@ image = modal.DebianSlim().pip_install(
 )
 
 
-@async_stub.generator(image=image, secret=modal.ref("my-aws-secret"), retries=2)
+@async_stub.generator(
+    image=image, secret=modal.ref("my-aws-secret"), memory=2000, retries=2
+)
 async def async_run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
     peak_memory_start = peak_memory()
