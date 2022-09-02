@@ -1,6 +1,8 @@
 import pandas as pd
 import pytest
 
+pytest.importorskip("lithops")
+
 import cubed
 import cubed.array_api as xp
 import cubed.random
