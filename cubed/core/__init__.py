@@ -9,6 +9,7 @@ from .array import (
     measure_baseline_memory,
     visualize,
 )
+from .gufunc import apply_gufunc
 from .ops import (
     blockwise,
     elemwise,

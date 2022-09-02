@@ -41,6 +41,7 @@ Chunk-specific functions
     :nosignatures:
     :toctree: generated/
 
+    apply_gufunc
     map_blocks
 
 Random number generation
