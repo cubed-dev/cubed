@@ -3,10 +3,12 @@ from operator import mul
 from typing import Optional
 
 import numpy as np
+import zarr
 from dask.array.core import normalize_chunks
 from rechunker.executors.python import PythonPipelineExecutor
 from toolz import map, reduce
 
+from cubed.runtime.executors.xarray_beam import XarrayBeamPlanExecutor
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.utils import chunk_memory
@@ -98,7 +100,11 @@ class CoreArray:
         # Only works if the array has been computed
         if self.size > 0:
             # read back from zarr
-            return self.zarray[...]
+            if isinstance(self.spec.executor, XarrayBeamPlanExecutor):
+                # xarray-beam always writes zarr groups so we have to workaround that here (assume single group called 'a')
+                return zarr.open(self.zarray.store, mode="r", path="a")[...]
+            else:
+                return self.zarray[...]
         else:
             # this case fails for zarr, so just return an empty array of the correct shape
             return np.empty(self.shape, dtype=self.dtype)

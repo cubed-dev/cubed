@@ -1,6 +1,8 @@
 from typing import Iterable
 
 import numpy as np
+import xarray as xr
+import xarray_beam as xbeam
 import zarr
 from dask.array.core import normalize_chunks
 from zarr.util import normalize_shape
@@ -14,6 +16,8 @@ from cubed.core import (
     new_temp_zarr,
 )
 from cubed.core.ops import map_direct
+from cubed.core.xarray_beam_plan import XarrayBeamPlan
+from cubed.runtime.executors.xarray_beam import XarrayBeamPlanExecutor
 from cubed.utils import to_chunksize
 
 
@@ -68,14 +72,29 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     if dtype is None:
         dtype = a.dtype
 
-    # write to zarr
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
     target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
-    if a.size > 0:
-        target[...] = a
 
-    plan = Plan._new(name, "asarray", target)
+    if spec is not None and isinstance(spec.executor, XarrayBeamPlanExecutor):
+        # create an xarray dataset in memory, then chunk
+        dims = tuple(f"dim_{i}" for i in range(a.ndim))
+        xchunks = dict(zip(dims, chunksize))
+        ds = xr.Dataset({"a": (dims, a)})
+        pipeline = spec.executor.pipeline
+        ptransform = xbeam.DatasetToChunks(ds, chunks=xchunks)
+        pcollection = pipeline | gensym("asarray") >> ptransform
+
+        plan = XarrayBeamPlan._new(
+            name, "asarray", target, beam_pipeline=pipeline, pcollection=pcollection
+        )
+    else:
+        # write to zarr
+        if a.size > 0:
+            target[...] = a
+
+        plan = Plan._new(name, "asarray", target)
+
     return CoreArray._new(name, target, spec, plan)
 
 
@@ -138,16 +157,42 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
     store = new_temp_store(name=name, spec=spec)
-    target = zarr.full(
-        shape,
-        fill_value,
-        store=store,
-        dtype=dtype,
-        chunks=chunksize,
-        write_empty_chunks=False,
-    )
 
-    plan = Plan._new(name, "full", target)
+    if spec is not None and isinstance(spec.executor, XarrayBeamPlanExecutor):
+        # TODO: optimize by not writing zarr and doing all in memory?
+        dims = tuple(f"dim_{i}" for i in range(len(shape)))
+        target = zarr.full(
+            shape,
+            fill_value,
+            store=store,
+            dtype=dtype,
+            chunks=chunksize,
+            write_empty_chunks=False,
+            path="a",
+        )
+        target.attrs["_ARRAY_DIMENSIONS"] = dims
+
+        xchunks = dict(zip(dims, chunksize))
+        ds = xr.open_zarr(store, chunks=None, decode_cf=False)
+        ds["a"].attrs.pop("_FillValue", None)  # fails otherwise
+        pipeline = spec.executor.pipeline
+        ptransform = xbeam.DatasetToChunks(ds, chunks=xchunks)
+        pcollection = pipeline | gensym("full") >> ptransform
+
+        plan = XarrayBeamPlan._new(
+            name, "full", target, beam_pipeline=pipeline, pcollection=pcollection
+        )
+    else:
+        target = zarr.full(
+            shape,
+            fill_value,
+            store=store,
+            dtype=dtype,
+            chunks=chunksize,
+            write_empty_chunks=False,
+        )
+        plan = Plan._new(name, "full", target)
+
     return CoreArray._new(name, target, spec, plan)
 
 

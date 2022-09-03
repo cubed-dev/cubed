@@ -13,4 +13,5 @@ rechunker
 s3fs
 tenacity
 tqdm
+xarray-beam
 zarr

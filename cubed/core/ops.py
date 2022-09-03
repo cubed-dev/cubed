@@ -15,8 +15,8 @@ from zarr.indexing import BasicIndexer, IntDimIndexer, is_slice, replace_ellipsi
 
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_store
-from cubed.primitive.blockwise import blockwise as primitive_blockwise
-from cubed.primitive.rechunk import rechunk as primitive_rechunk
+from cubed.core.xarray_beam_plan import XarrayBeamPlan
+from cubed.runtime.executors.xarray_beam import XarrayBeamPlanExecutor
 from cubed.utils import chunk_memory, get_item, to_chunksize
 
 
@@ -247,27 +247,66 @@ def blockwise(
     spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
-    pipeline, target, required_mem, num_tasks = primitive_blockwise(
-        func,
-        out_ind,
-        *zargs,
-        max_mem=spec.max_mem,
-        target_store=target_store,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
-        new_axes=new_axes,
-        **kwargs,
-    )
-    plan = Plan._new(
-        name,
-        "blockwise",
-        target,
-        pipeline,
-        required_mem + extra_required_mem,
-        num_tasks,
-        *source_arrays,
-    )
+
+    if isinstance(arrays[0].spec.executor, XarrayBeamPlanExecutor):
+
+        from cubed.primitive.xarray_beam_blockwise import (
+            blockwise as primitive_blockwise,
+        )
+
+        (
+            beam_pipeline,
+            pcollection,
+            target,
+            required_mem,
+            num_tasks,
+        ) = primitive_blockwise(
+            func,
+            out_ind,
+            *args,
+            max_mem=spec.max_mem,
+            target_store=target_store,
+            shape=shape,
+            dtype=dtype,
+            chunks=chunks,
+            new_axes=new_axes,
+            **kwargs,
+        )
+        plan = XarrayBeamPlan._new(
+            name,
+            "blockwise",
+            target,
+            beam_pipeline,
+            pcollection,
+            required_mem + extra_required_mem,
+            num_tasks,
+            *source_arrays,
+        )
+    else:
+        from cubed.primitive.blockwise import blockwise as primitive_blockwise
+
+        pipeline, target, required_mem, num_tasks = primitive_blockwise(
+            func,
+            out_ind,
+            *zargs,
+            max_mem=spec.max_mem,
+            target_store=target_store,
+            shape=shape,
+            dtype=dtype,
+            chunks=chunks,
+            new_axes=new_axes,
+            **kwargs,
+        )
+        plan = Plan._new(
+            name,
+            "blockwise",
+            target,
+            pipeline,
+            required_mem + extra_required_mem,
+            num_tasks,
+            *source_arrays,
+        )
+
     return CoreArray._new(name, target, spec, plan)
 
 
@@ -548,15 +587,33 @@ def rechunk(x, chunks, target_store=None):
     spec = x.spec
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
-    temp_store = new_temp_store(name=f"{name}-intermediate", spec=spec)
-    pipeline, target, required_mem, num_tasks = primitive_rechunk(
-        x.zarray,
-        target_chunks=chunks,
-        max_mem=spec.max_mem,
-        target_store=target_store,
-        temp_store=temp_store,
-    )
-    plan = Plan._new(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
+
+    if isinstance(x.spec.executor, XarrayBeamPlanExecutor):
+        from cubed.primitive.xarray_beam_rechunk import rechunk as primitive_rechunk
+
+        pipeline, pcollection, target, required_mem, num_tasks = primitive_rechunk(
+            x,
+            target_chunks=chunks,
+            max_mem=spec.max_mem,
+            target_store=target_store,
+            name=name,
+        )
+        plan = XarrayBeamPlan._new(
+            name, "rechunk", target, pipeline, pcollection, required_mem, num_tasks, x
+        )
+    else:
+        from cubed.primitive.rechunk import rechunk as primitive_rechunk
+
+        temp_store = new_temp_store(name=f"{name}-intermediate", spec=spec)
+        pipeline, target, required_mem, num_tasks = primitive_rechunk(
+            x.zarray,
+            target_chunks=chunks,
+            max_mem=spec.max_mem,
+            target_store=target_store,
+            temp_store=temp_store,
+        )
+        plan = Plan._new(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
+
     return CoreArray._new(name, target, spec, plan)
 
 
