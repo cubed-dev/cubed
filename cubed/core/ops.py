@@ -36,7 +36,7 @@ def from_array(x, chunks="auto", asarray=None, spec=None):
     if isinstance(x, zarr.Array):  # zarr fast path
         name = gensym()
         target = x
-        plan = Plan(name, "from_array", target)
+        plan = Plan._new(name, "from_array", target)
         arr = CoreArray._new(name, target, spec, plan)
 
         chunksize = to_chunksize(outchunks)
@@ -85,7 +85,7 @@ def from_zarr(store, spec=None):
     name = gensym()
     target = zarr.open(store, mode="r")
 
-    plan = Plan(name, "from_zarr", target)
+    plan = Plan._new(name, "from_zarr", target)
     return CoreArray._new(name, target, spec, plan)
 
 
@@ -259,7 +259,7 @@ def blockwise(
         new_axes=new_axes,
         **kwargs,
     )
-    plan = Plan(
+    plan = Plan._new(
         name,
         "blockwise",
         target,
@@ -556,7 +556,7 @@ def rechunk(x, chunks, target_store=None):
         target_store=target_store,
         temp_store=temp_store,
     )
-    plan = Plan(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
+    plan = Plan._new(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
     return CoreArray._new(name, target, spec, plan)
 
 
