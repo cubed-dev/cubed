@@ -49,7 +49,7 @@ def run_remotely(input, func=None, config=None):
     retry=retry_if_exception_type((TimeoutError, ConnectionError)),
     stop=stop_after_attempt(3),
 )
-def execute_dag(dag, callbacks=None, **kwargs):
+def execute_dag(dag, callbacks=None, array_names=None, **kwargs):
     with stub.run():
         for name, node in visit_nodes(dag):
             pipeline = node["pipeline"]
@@ -91,5 +91,5 @@ def handle_callbacks(callbacks, array_name, result, task_create_tstamp):
 class ModalDagExecutor(DagExecutor):
     """An execution engine that uses Modal."""
 
-    def execute_dag(self, dag, callbacks=None, **kwargs):
-        execute_dag(dag, callbacks=callbacks)
+    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
+        execute_dag(dag, callbacks=callbacks, array_names=array_names)

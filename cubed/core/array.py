@@ -284,6 +284,7 @@ def compute(
         executor=executor,
         callbacks=callbacks,
         optimize_graph=optimize_graph,
+        array_names=[a.name for a in arrays],
         **kwargs,
     )
 
