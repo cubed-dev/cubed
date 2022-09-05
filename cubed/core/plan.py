@@ -78,6 +78,10 @@ class Plan:
 
         return Plan(dag)
 
+    @classmethod
+    def arrays_to_plan(cls, *arrays):
+        return Plan(arrays_to_dag(*arrays))
+
     def optimize(self):
         # note there is no need to prune the dag, since the way it is built
         # ensures that only the transitive dependencies of the target arrays are included
@@ -232,7 +236,10 @@ def arrays_to_dag(*arrays):
 
 
 def arrays_to_plan(*arrays):
-    return Plan(arrays_to_dag(*arrays))
+    plans = [x.plan for x in arrays if hasattr(x, "plan")]
+    if len(plans) == 0:
+        raise ValueError(f"No plans found for arrays: {arrays}")
+    return plans[0].arrays_to_plan(*arrays)
 
 
 def new_temp_path(name, suffix, spec=None):
