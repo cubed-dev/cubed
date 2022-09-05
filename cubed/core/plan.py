@@ -33,9 +33,13 @@ class Plan:
     we use a NetworkX `MultiDiGraph` rather than just as `DiGraph`.
     """
 
+    def __init__(self, dag):
+        self.dag = dag
+
     # args from pipeline onwards are omitted for creation functions when no computation is needed
-    def __init__(
-        self,
+    @classmethod
+    def _new(
+        cls,
         name,
         op_name,
         target,
@@ -72,7 +76,151 @@ class Plan:
             if hasattr(x, "name"):
                 dag.add_edge(x.name, name)
 
-        self.dag = dag
+        return Plan(dag)
+
+    def optimize(self):
+        # note there is no need to prune the dag, since the way it is built
+        # ensures that only the transitive dependencies of the target arrays are included
+
+        # fuse map blocks
+        dag = self.dag.copy()
+        nodes = {n: d for (n, d) in dag.nodes(data=True)}
+
+        def can_fuse(n):
+            # node must have a single predecessor
+            #   - not multiple edges pointing to a single predecessor
+            # node must be the single successor to the predecessor
+            # and both must have pipelines that can be fused
+            if dag.in_degree(n) != 1:
+                return False
+            pre = next(dag.predecessors(n))
+            if dag.out_degree(pre) != 1:
+                return False
+            return can_fuse_pipelines(nodes[pre], nodes[n])
+
+        for n in list(dag.nodes()):
+            if can_fuse(n):
+                pre = next(dag.predecessors(n))
+                n1_dict = nodes[pre]
+                n2_dict = nodes[n]
+                pipeline, target, required_mem, num_tasks = fuse(
+                    n1_dict["pipeline"],
+                    n1_dict["target"],
+                    n1_dict["required_mem"],
+                    n1_dict["num_tasks"],
+                    n2_dict["pipeline"],
+                    n2_dict["target"],
+                    n2_dict["required_mem"],
+                    n2_dict["num_tasks"],
+                )
+                nodes[n]["pipeline"] = pipeline
+                nodes[n]["target"] = target
+                nodes[n]["required_mem"] = required_mem
+                nodes[n]["num_tasks"] = num_tasks
+
+                for p in dag.predecessors(pre):
+                    dag.add_edge(p, n)
+                dag.remove_node(pre)
+
+        return Plan(dag)
+
+    def execute(self, executor=None, callbacks=None, optimize_graph=True, **kwargs):
+        dag = self.optimize().dag if optimize_graph else self.dag.copy()
+
+        if isinstance(executor, PipelineExecutor):
+            while len(dag) > 0:
+                # Find nodes (and their pipelines) that have no dependencies
+                no_dep_nodes = [x for x in dag.nodes() if dag.in_degree(x) == 0]
+                pipelines = [
+                    p
+                    for (n, p) in nx.get_node_attributes(dag, "pipeline").items()
+                    if n in no_dep_nodes
+                ]
+
+                # and execute them in parallel
+                if len(pipelines) > 0:
+                    plan = executor.pipelines_to_plan(pipelines)
+                    executor.execute_plan(plan, **kwargs)
+
+                # Remove them from the DAG, and repeat
+                dag.remove_nodes_from(no_dep_nodes)
+
+        else:
+            if callbacks is not None:
+                [callback.on_compute_start(dag) for callback in callbacks]
+            executor.execute_dag(dag, callbacks=callbacks, **kwargs)
+            if callbacks is not None:
+                [callback.on_compute_end(dag) for callback in callbacks]
+
+    def num_tasks(self, optimize_graph=True):
+        """Return the number of tasks needed to execute this plan."""
+        dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        tasks = 0
+        for _, node in visit_nodes(dag):
+            pipeline = node["pipeline"]
+            for stage in pipeline.stages:
+                if stage.mappable is not None:
+                    tasks += len(list(stage.mappable))
+                else:
+                    tasks += 1
+        return tasks
+
+    def visualize(
+        self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
+    ):
+        dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        dag.graph["graph"] = {"rankdir": rankdir}
+        dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
+        for (n, d) in dag.nodes(data=True):
+            d["label"] = f"{n} ({d['op_name']})"
+            target = d["target"]
+            chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
+            tooltip = (
+                f"shape: {target.shape}\n"
+                f"chunks: {target.chunks}\n"
+                f"dtype: {target.dtype}\n"
+                f"chunk memory: {chunkmem}\n"
+            )
+            if "required_mem" in d:
+                tooltip += f"\ntask memory: {memory_repr(d['required_mem'])}"
+            if "num_tasks" in d:
+                tooltip += f"\ntasks: {d['num_tasks']}"
+            if "stack_summaries" in d:
+                # add call stack information
+                stack_summaries = d["stack_summaries"]
+                python_lib_path = sysconfig.get_path("purelib")
+                calls = " -> ".join(
+                    [
+                        s.name
+                        for s in stack_summaries
+                        if not s.filename.startswith(python_lib_path)
+                    ]
+                )
+                tooltip += f"\ncalls: {calls}"
+                del d["stack_summaries"]
+
+            d["tooltip"] = tooltip
+
+            # remove pipeline attribute since it is a long string that causes graphviz to fail
+            if "pipeline" in d:
+                del d["pipeline"]
+            if "target" in d:
+                del d["target"]
+        gv = nx.drawing.nx_pydot.to_pydot(dag)
+        if format is None:
+            format = "svg"
+        full_filename = f"{filename}.{format}"
+        gv.write(full_filename, format=format)
+
+        try:  # pragma: no cover
+            import IPython.display as display
+
+            if format == "svg":
+                return display.SVG(filename=full_filename)
+        except ImportError:
+            # Can't return a display object if no IPython.
+            pass
+        return None
 
 
 def arrays_to_dag(*arrays):
@@ -83,152 +231,8 @@ def arrays_to_dag(*arrays):
     return nx.compose_all(dags)
 
 
-def num_tasks(dag, optimize_graph=True):
-    """Return the number of tasks needed to execute this dag."""
-    dag = optimize_dag(dag) if optimize_graph else dag.copy()
-    tasks = 0
-    for _, node in visit_nodes(dag):
-        pipeline = node["pipeline"]
-        for stage in pipeline.stages:
-            if stage.mappable is not None:
-                tasks += len(list(stage.mappable))
-            else:
-                tasks += 1
-    return tasks
-
-
-def execute_dag(dag, executor=None, callbacks=None, optimize_graph=True, **kwargs):
-    dag = optimize_dag(dag) if optimize_graph else dag.copy()
-
-    if isinstance(executor, PipelineExecutor):
-        while len(dag) > 0:
-            # Find nodes (and their pipelines) that have no dependencies
-            no_dep_nodes = [x for x in dag.nodes() if dag.in_degree(x) == 0]
-            pipelines = [
-                p
-                for (n, p) in nx.get_node_attributes(dag, "pipeline").items()
-                if n in no_dep_nodes
-            ]
-
-            # and execute them in parallel
-            if len(pipelines) > 0:
-                plan = executor.pipelines_to_plan(pipelines)
-                executor.execute_plan(plan, **kwargs)
-
-            # Remove them from the DAG, and repeat
-            dag.remove_nodes_from(no_dep_nodes)
-
-    else:
-        if callbacks is not None:
-            [callback.on_compute_start(dag) for callback in callbacks]
-        executor.execute_dag(dag, callbacks=callbacks, **kwargs)
-        if callbacks is not None:
-            [callback.on_compute_end(dag) for callback in callbacks]
-
-
-def optimize_dag(dag):
-    # note there is no need to prune the dag, since the way it is built
-    # ensures that only the transitive dependencies of the target arrays are included
-
-    # fuse map blocks
-    dag = dag.copy()
-    nodes = {n: d for (n, d) in dag.nodes(data=True)}
-
-    def can_fuse(n):
-        # node must have a single predecessor
-        #   - not multiple edges pointing to a single predecessor
-        # node must be the single successor to the predecessor
-        # and both must have pipelines that can be fused
-        if dag.in_degree(n) != 1:
-            return False
-        pre = next(dag.predecessors(n))
-        if dag.out_degree(pre) != 1:
-            return False
-        return can_fuse_pipelines(nodes[pre], nodes[n])
-
-    for n in list(dag.nodes()):
-        if can_fuse(n):
-            pre = next(dag.predecessors(n))
-            n1_dict = nodes[pre]
-            n2_dict = nodes[n]
-            pipeline, target, required_mem, num_tasks = fuse(
-                n1_dict["pipeline"],
-                n1_dict["target"],
-                n1_dict["required_mem"],
-                n1_dict["num_tasks"],
-                n2_dict["pipeline"],
-                n2_dict["target"],
-                n2_dict["required_mem"],
-                n2_dict["num_tasks"],
-            )
-            nodes[n]["pipeline"] = pipeline
-            nodes[n]["target"] = target
-            nodes[n]["required_mem"] = required_mem
-            nodes[n]["num_tasks"] = num_tasks
-
-            for p in dag.predecessors(pre):
-                dag.add_edge(p, n)
-            dag.remove_node(pre)
-
-    return dag
-
-
-def visualize_dag(
-    dag, filename="cubed", format=None, rankdir="TB", optimize_graph=True
-):
-    dag = optimize_dag(dag) if optimize_graph else dag.copy()
-    dag.graph["graph"] = {"rankdir": rankdir}
-    dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
-    for (n, d) in dag.nodes(data=True):
-        d["label"] = f"{n} ({d['op_name']})"
-        target = d["target"]
-        chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
-        tooltip = (
-            f"shape: {target.shape}\n"
-            f"chunks: {target.chunks}\n"
-            f"dtype: {target.dtype}\n"
-            f"chunk memory: {chunkmem}\n"
-        )
-        if "required_mem" in d:
-            tooltip += f"\ntask memory: {memory_repr(d['required_mem'])}"
-        if "num_tasks" in d:
-            tooltip += f"\ntasks: {d['num_tasks']}"
-        if "stack_summaries" in d:
-            # add call stack information
-            stack_summaries = d["stack_summaries"]
-            python_lib_path = sysconfig.get_path("purelib")
-            calls = " -> ".join(
-                [
-                    s.name
-                    for s in stack_summaries
-                    if not s.filename.startswith(python_lib_path)
-                ]
-            )
-            tooltip += f"\ncalls: {calls}"
-            del d["stack_summaries"]
-
-        d["tooltip"] = tooltip
-
-        # remove pipeline attribute since it is a long string that causes graphviz to fail
-        if "pipeline" in d:
-            del d["pipeline"]
-        if "target" in d:
-            del d["target"]
-    gv = nx.drawing.nx_pydot.to_pydot(dag)
-    if format is None:
-        format = "svg"
-    full_filename = f"{filename}.{format}"
-    gv.write(full_filename, format=format)
-
-    try:  # pragma: no cover
-        import IPython.display as display
-
-        if format == "svg":
-            return display.SVG(filename=full_filename)
-    except ImportError:
-        # Can't return a display object if no IPython.
-        pass
-    return None
+def arrays_to_plan(*arrays):
+    return Plan(arrays_to_dag(*arrays))
 
 
 def new_temp_path(name, suffix, spec=None):

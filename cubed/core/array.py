@@ -11,7 +11,7 @@ from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.utils import chunk_memory
 
-from .plan import arrays_to_dag, execute_dag, visualize_dag
+from .plan import arrays_to_plan
 
 sym_counter = 0
 
@@ -273,15 +273,14 @@ def compute(
     **kwargs,
 ):
     """Compute multiple arrays at once."""
-    dag = arrays_to_dag(*arrays)  # guarantees all arrays have same spec
+    plan = arrays_to_plan(*arrays)  # guarantees all arrays have same spec
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
             executor = PythonPipelineExecutor()
 
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
-    execute_dag(
-        dag,
+    plan.execute(
         executor=executor,
         callbacks=callbacks,
         optimize_graph=optimize_graph,
@@ -314,9 +313,9 @@ def visualize(*arrays, filename="cubed", format=None, optimize_graph=True):
         An IPython SVG image if IPython can be imported (for rendering
         in a notebook), otherwise None.
     """
-    dag = arrays_to_dag(*arrays)
-    return visualize_dag(
-        dag, filename=filename, format=format, optimize_graph=optimize_graph
+    plan = arrays_to_plan(*arrays)
+    return plan.visualize(
+        filename=filename, format=format, optimize_graph=optimize_graph
     )
 
 
