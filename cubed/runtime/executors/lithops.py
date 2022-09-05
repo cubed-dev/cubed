@@ -169,7 +169,7 @@ def map_unordered(
             time.sleep(1)
 
 
-def execute_dag(dag, callbacks=None, **kwargs):
+def execute_dag(dag, callbacks=None, array_names=None, **kwargs):
     use_backups = kwargs.pop("use_backups", False)
     with FunctionExecutor(**kwargs) as executor:
         for name, node in visit_nodes(dag):
@@ -250,6 +250,6 @@ class LithopsDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def execute_dag(self, dag, callbacks=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
         merged_kwargs = {**self.kwargs, **kwargs}
-        execute_dag(dag, callbacks=callbacks, **merged_kwargs)
+        execute_dag(dag, callbacks=callbacks, array_names=array_names, **merged_kwargs)

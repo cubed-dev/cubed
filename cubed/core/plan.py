@@ -128,7 +128,14 @@ class Plan:
 
         return Plan(dag)
 
-    def execute(self, executor=None, callbacks=None, optimize_graph=True, **kwargs):
+    def execute(
+        self,
+        executor=None,
+        callbacks=None,
+        optimize_graph=True,
+        array_names=None,
+        **kwargs,
+    ):
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
 
         if isinstance(executor, PipelineExecutor):
@@ -152,7 +159,9 @@ class Plan:
         else:
             if callbacks is not None:
                 [callback.on_compute_start(dag) for callback in callbacks]
-            executor.execute_dag(dag, callbacks=callbacks, **kwargs)
+            executor.execute_dag(
+                dag, callbacks=callbacks, array_names=array_names, **kwargs
+            )
             if callbacks is not None:
                 [callback.on_compute_end(dag) for callback in callbacks]
 
