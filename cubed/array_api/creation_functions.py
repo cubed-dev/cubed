@@ -75,7 +75,7 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     if a.size > 0:
         target[...] = a
 
-    plan = Plan(name, "asarray", target)
+    plan = Plan._new(name, "asarray", target)
     return CoreArray._new(name, target, spec, plan)
 
 
@@ -147,7 +147,7 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
         write_empty_chunks=False,
     )
 
-    plan = Plan(name, "full", target)
+    plan = Plan._new(name, "full", target)
     return CoreArray._new(name, target, spec, plan)
 
 

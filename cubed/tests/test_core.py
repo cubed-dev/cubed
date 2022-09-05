@@ -9,7 +9,6 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed import Callback
-from cubed.core.plan import num_tasks
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.executors.python import PythonDagExecutor
@@ -440,7 +439,7 @@ def test_already_computed(spec):
     c = xp.add(a, b)
     d = xp.negative(c)
 
-    assert num_tasks(d.plan.dag, optimize_graph=False) == 8
+    assert d.plan.num_tasks(optimize_graph=False) == 8
 
     task_counter = TaskCounter()
     c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
@@ -459,8 +458,8 @@ def test_fusion(spec):
     c = xp.astype(b, np.float32)
     d = xp.negative(c)
 
-    assert num_tasks(d.plan.dag, optimize_graph=False) == 12
-    assert num_tasks(d.plan.dag, optimize_graph=True) == 4
+    assert d.plan.num_tasks(optimize_graph=False) == 12
+    assert d.plan.num_tasks(optimize_graph=True) == 4
 
     task_counter = TaskCounter()
     result = d.compute(executor=executor, callbacks=[task_counter])
@@ -480,8 +479,8 @@ def test_no_fusion(spec):
     c = xp.positive(b)
     d = xp.equal(b, c)
 
-    assert num_tasks(d.plan.dag, optimize_graph=False) == 3
-    assert num_tasks(d.plan.dag, optimize_graph=True) == 3
+    assert d.plan.num_tasks(optimize_graph=False) == 3
+    assert d.plan.num_tasks(optimize_graph=True) == 3
 
     task_counter = TaskCounter()
     result = d.compute(executor=executor, callbacks=[task_counter])
@@ -500,8 +499,8 @@ def test_no_fusion_multiple_edges(spec):
     # this should not be fused under the current logic
     d = xp.equal(b, c)
 
-    assert num_tasks(d.plan.dag, optimize_graph=False) == 2
-    assert num_tasks(d.plan.dag, optimize_graph=True) == 2
+    assert d.plan.num_tasks(optimize_graph=False) == 2
+    assert d.plan.num_tasks(optimize_graph=True) == 2
 
     task_counter = TaskCounter()
     result = d.compute(executor=executor, callbacks=[task_counter])
