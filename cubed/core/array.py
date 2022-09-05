@@ -280,10 +280,10 @@ def compute(
 ):
     """Compute multiple arrays at once."""
     plan = arrays_to_plan(*arrays)  # guarantees all arrays have same spec
+    # if executor is None:
+    executor = arrays[0].spec.executor
     if executor is None:
-        executor = arrays[0].spec.executor
-        if executor is None:
-            executor = PythonPipelineExecutor()
+        executor = PythonPipelineExecutor()
 
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
     plan.execute(

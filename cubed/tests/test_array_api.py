@@ -6,12 +6,13 @@ from numpy.testing import assert_allclose, assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed.array_api.manipulation_functions import reshape_chunks
+from cubed.runtime.executors.xarray_beam import XarrayBeamPlanExecutor
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
 
 
 @pytest.fixture()
 def spec(tmp_path):
-    return cubed.Spec(tmp_path, max_mem=100000)
+    return cubed.Spec(tmp_path, max_mem=100000, executor=XarrayBeamPlanExecutor())
 
 
 @pytest.fixture(scope="module", params=MAIN_EXECUTORS)
