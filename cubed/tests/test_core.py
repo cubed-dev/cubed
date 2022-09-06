@@ -360,6 +360,7 @@ def mock_apply_blockwise(*args, **kwargs):
     return apply_blockwise(*args, **kwargs)
 
 
+@pytest.mark.skip(reason="no retries")
 def test_retries(mocker, spec):
     # Inject faults into the primitive layer
     mocker.patch(
@@ -391,6 +392,7 @@ class TaskCounter(Callback):
         self.value += 1
 
 
+@pytest.mark.skip(reason="callbacks not supported")
 def test_callbacks(spec, executor):
     from cubed.runtime.executors.lithops import LithopsDagExecutor
 
@@ -431,6 +433,7 @@ def test_callbacks_modal(spec, modal_executor):
         fs.rm(tmp_path, recursive=True)
 
 
+@pytest.mark.skip(reason="callbacks not supported")
 def test_already_computed(spec):
     executor = PythonDagExecutor()
 
@@ -451,6 +454,7 @@ def test_already_computed(spec):
     assert task_counter.value == 4
 
 
+@pytest.mark.skip(reason="callbacks not supported")
 def test_fusion(spec):
     executor = PythonDagExecutor()
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
@@ -471,6 +475,7 @@ def test_fusion(spec):
     )
 
 
+@pytest.mark.skip(reason="callbacks not supported")
 def test_no_fusion(spec):
     executor = PythonDagExecutor()
     # b can't be fused with c because d also depends on b
@@ -489,6 +494,7 @@ def test_no_fusion(spec):
     assert_array_equal(result, np.ones((2, 2)))
 
 
+@pytest.mark.skip(reason="callbacks not supported")
 def test_no_fusion_multiple_edges(spec):
     executor = PythonDagExecutor()
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
