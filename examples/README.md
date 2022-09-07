@@ -166,3 +166,44 @@ INFO:apache_beam.runners.portability.sdk_container_builder:Python SDK container 
 ```
 
 Use this name with the `--sdk_container_image` option instead of specifying `--setup_file` in the examples of the previous section.
+
+## Xarray-Beam
+
+Follow the same set up for Apache Beam (Google Cloud Dataflow) above.
+
+### Running
+
+Run the following script to run a small computation.
+
+- `DATAFLOW_REGION` should be the same region as the GCS bucket created above.
+- `PROJECT_ID` is your GCP project ID.
+
+```shell
+DATAFLOW_REGION=...
+PROJECT_ID=...
+python examples/xarray-beam-dataflow-add-asarray.py --tmp_path gs://cubed-$USER-temp \
+    --runner DataflowRunner \
+    --project $PROJECT_ID \
+    --region $DATAFLOW_REGION \
+    --temp_location gs://cubed-$USER-temp \
+    --dataflow_service_options use_runner_v2 \
+    --experiments use_runner_v2 \
+    --setup_file $PWD/setup.py
+```
+
+If successful it should print a 4x4 matrix.
+
+**Note: the following currently fails with out of memory errors!**
+
+```shell
+python examples/xarray-beam-dataflow-add-random.py --tmp_path gs://cubed-$USER-temp \
+    --runner DataflowRunner \
+    --project $PROJECT_ID \
+    --region $DATAFLOW_REGION \
+    --temp_location gs://cubed-$USER-temp \
+    --dataflow_service_options use_runner_v2 \
+    --experiments use_runner_v2 \
+    --autoscaling_algorithm NONE \
+    --num_workers 4 \
+    --setup_file $PWD/setup.py
+```
