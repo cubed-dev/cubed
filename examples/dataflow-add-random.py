@@ -2,10 +2,12 @@ import argparse
 import logging
 
 from apache_beam.options.pipeline_options import PipelineOptions
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.runtime.executors.beam import BeamDagExecutor
 
 
@@ -29,8 +31,12 @@ def run(argv=None):
         (50000, 50000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.add(a, b)
-    # use store=None to write to temporary zarr
-    cubed.to_zarr(c, store=None, executor=executor, options=beam_options)
+    with logging_redirect_tqdm():
+        progress = TqdmProgressBar()
+        # use store=None to write to temporary zarr
+        cubed.to_zarr(
+            c, store=None, executor=executor, callbacks=[progress], options=beam_options
+        )
 
 
 if __name__ == "__main__":
