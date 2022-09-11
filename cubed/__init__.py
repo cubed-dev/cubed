@@ -12,25 +12,28 @@ try:
 except Exception:  # pragma: no cover
     __version__ = "unknown"
 
-from .core import (
+from .array_api import Array
+from .core.array import (
     Callback,
-    CoreArray,
     Spec,
     TaskEndEvent,
     compute,
+    measure_baseline_memory,
+    visualize,
+)
+from .core.ops import (
     from_array,
     from_zarr,
     map_blocks,
-    measure_baseline_memory,
     store,
     to_zarr,
-    visualize,
 )
+
 
 __all__ = [
     "__version__",
     "Callback",
-    "CoreArray",
+    "Array",
     "Spec",
     "TaskEndEvent",
     "compute",
