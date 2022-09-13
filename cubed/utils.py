@@ -29,8 +29,8 @@ def join_path(dir_url: PathType, child_path: str) -> str:
     """Combine a URL for a directory with a child path"""
     parts = urlsplit(str(dir_url))
     new_path = quote(join(unquote(parts.path), child_path))
-    parts = (parts.scheme, parts.netloc, new_path, parts.query, parts.fragment)
-    return urlunsplit(parts)
+    split_parts = (parts.scheme, parts.netloc, new_path, parts.query, parts.fragment)
+    return urlunsplit(split_parts)
 
 
 def memory_repr(num):

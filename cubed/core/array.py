@@ -208,7 +208,7 @@ class Spec:
     executor: Executor = None
     """The default executor for running computations."""
 
-    storage_options: dict = None
+    storage_options: dict = None  # type: ignore[assignment]
     """Storage options to be passed to fsspec"""
 
 

@@ -221,6 +221,7 @@ def blockwise(
             v = (v,)
         chunkss[k] = v
 
+
     chunks = [chunkss[i] for i in out_ind]
     if adjust_chunks:
         for i, ind in enumerate(out_ind):
@@ -240,8 +241,8 @@ def blockwise(
                     raise NotImplementedError(
                         "adjust_chunks values must be callable, int, or tuple"
                     )
-    chunks = tuple(chunks)
-    shape = tuple(map(sum, chunks))
+    _chunks = tuple(chunks)
+    shape = tuple(map(sum, _chunks))
 
     # replace arrays with zarr arrays
     zargs = list(args)
@@ -264,7 +265,7 @@ def blockwise(
         target_store=target_store,
         shape=shape,
         dtype=dtype,
-        chunks=chunks,
+        chunks=_chunks,
         new_axes=new_axes,
         **kwargs,
     )
@@ -636,8 +637,8 @@ def reduction(
                             f"Not enough memory for reduction. Increase max_mem ({max_mem}) or decrease chunk size"
                         )
                     target_chunks[i] = min(s, target_chunk_size)
-        target_chunks = tuple(target_chunks)
-        result = rechunk(result, target_chunks)
+        _target_chunks = tuple(target_chunks)
+        result = rechunk(result, _target_chunks)
 
         # reduce chunks (if any axis chunksize is > 1)
         if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
