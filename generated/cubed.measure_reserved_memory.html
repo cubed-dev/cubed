@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>cubed.measure_baseline_memory &#8212; Cubed</title>
+    <title>cubed.measure_reserved_memory &#8212; Cubed</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -169,7 +169,7 @@
    </li>
    <li class="toctree-l2 current active">
     <a class="current reference internal" href="#">
-     cubed.measure_baseline_memory
+     cubed.measure_reserved_memory
     </a>
    </li>
    <li class="toctree-l2">
@@ -275,7 +275,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.measure_baseline_memory.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.measure_reserved_memory.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -292,7 +292,7 @@ title="Open an issue"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/edit/master/generated/cubed.measure_baseline_memory.rst"
+        <a href="https://github.com/tomwhite/cubed/edit/master/generated/cubed.measure_reserved_memory.rst"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -323,7 +323,7 @@ title="Edit this page"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>cubed.measure_baseline_memory</h1>
+                <h1>cubed.measure_reserved_memory</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -335,12 +335,19 @@ title="Edit this page"
                 
               <div>
                 
-  <section id="cubed-measure-baseline-memory">
-<h1>cubed.measure_baseline_memory<a class="headerlink" href="#cubed-measure-baseline-memory" title="Permalink to this headline">#</a></h1>
+  <section id="cubed-measure-reserved-memory">
+<h1>cubed.measure_reserved_memory<a class="headerlink" href="#cubed-measure-reserved-memory" title="Permalink to this headline">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="cubed.measure_baseline_memory">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">measure_baseline_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.measure_baseline_memory" title="Permalink to this definition">#</a></dt>
-<dd><p>Measures the baseline memory use for a given executor runtime.</p>
+<dt class="sig sig-object py" id="cubed.measure_reserved_memory">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">measure_reserved_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.measure_reserved_memory" title="Permalink to this definition">#</a></dt>
+<dd><p>Measures the reserved memory use for a given executor runtime.</p>
+<p>This is the memory used by the Python process for running a task,
+excluding any memory used for data for the computation. It can vary by
+operating system, Python version, executor runtime, and installed package
+versions.</p>
+<p>It can be used as a guide to set <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> when creating a <code class="docutils literal notranslate"><span class="pre">Spec</span></code> object.</p>
+<p>This implementation works by running a trivial computation on a tiny amount of
+data and measuring the peak memory use.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em>) – The executor to use to run the computation. It must be an executor that
