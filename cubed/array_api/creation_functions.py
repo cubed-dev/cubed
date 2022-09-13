@@ -153,8 +153,10 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
         write_empty_chunks=False,
     )
 
+    from .array_object import Array
+
     plan = Plan._new(name, "full", target)
-    return CoreArray._new(name, target, spec, plan)
+    return Array(name, target, spec, plan)
 
 
 def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
