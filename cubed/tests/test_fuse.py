@@ -54,3 +54,21 @@ def test_two_ops():
 
     res = compute_dag(dag, "c")
     assert res == [4, 5, 6, 7]
+
+
+def test_complex():
+    # b = a + 1
+    # c = a * b
+    dag = nx.MultiDiGraph()
+
+    dag.add_node("a", array=[1, 2, 3, 4])
+
+    dag.add_node("b", func=add_one)
+    dag.add_edge("a", "b")
+
+    dag.add_node("c", func=times)
+    dag.add_edge("a", "c")
+    dag.add_edge("b", "c")
+
+    res = compute_dag(dag, "c")
+    assert res == [2, 6, 12, 20]
