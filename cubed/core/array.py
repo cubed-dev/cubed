@@ -38,8 +38,9 @@ class CoreArray:
         self._chunks = normalize_chunks(
             zarray.chunks, shape=self.shape, dtype=self.dtype
         )
-        # if no spec is supplied, use a default with local temp dir, and a modest amount of memory (100MB)
-        self.spec = spec or Spec(None, 100_000_000)
+        # if no spec is supplied, use a default with local temp dir, a modest amount of memory (100MB),
+        # and a conservative amount of reserved memory (200MB)
+        self.spec = spec or Spec(None, max_mem=100_000_000, reserved_mem=200_000_000)
         self.plan = plan
 
     @classmethod
@@ -190,10 +191,25 @@ class CoreArray:
 class Spec:
     """Specification of resources available to run a computation."""
 
-    work_dir: str
-    max_mem: int
+    work_dir: Optional[str] = None
+    """The directory path (specified as an fsspec URL) used for storing intermediate data."""
+
+    max_mem: Optional[int] = None
+    """The maximum memory available to a worker for data use for the computation, in bytes."""
+
+    reserved_mem: Optional[int] = None
+    """The memory reserved on a worker for non-data use, in bytes.
+
+    The sum of ``max_mem`` and ``reserved_mem`` should not exceed the total memory of the worker.
+
+    See ``cubed.measure_reserved_memory``.
+    """
+
     executor: Executor = None
+    """The default executor for running computations."""
+
     storage_options: dict = None
+    """Storage options to be passed to fsspec"""
 
 
 class Callback:
@@ -325,8 +341,18 @@ class PeakMemoryCallback(Callback):
         self.peak_memory = event.peak_memory_end
 
 
-def measure_baseline_memory(executor):
-    """Measures the baseline memory use for a given executor runtime.
+def measure_reserved_memory(executor):
+    """Measures the reserved memory use for a given executor runtime.
+
+    This is the memory used by the Python process for running a task,
+    excluding any memory used for data for the computation. It can vary by
+    operating system, Python version, executor runtime, and installed package
+    versions.
+
+    It can be used as a guide to set ``reserved_mem`` when creating a ``Spec`` object.
+
+    This implementation works by running a trivial computation on a tiny amount of
+    data and measuring the peak memory use.
 
     Parameters
     ----------
