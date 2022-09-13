@@ -16,7 +16,8 @@ from cubed.core import (
 from cubed.core.ops import map_direct
 from cubed.utils import to_chunksize
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, List, Union
+
 
 if TYPE_CHECKING:
     from .array_object import Array
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
 
 def arange(
     start, /, stop=None, step=1, *, dtype=None, device=None, chunks="auto", spec=None
-) -> Array:
+) -> "Array":
     if stop is None:
         start, stop = 0, start
     num = int(max(np.ceil((stop - start) / step), 0))
@@ -56,7 +57,7 @@ def _arange(a, size, start, stop, step):
     return np.arange(blockstart, min(blockstop, stop), step)
 
 
-def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None) -> Array:
+def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None) -> "Array":
     a = obj
     from cubed.array_api.array_object import Array
 
@@ -84,19 +85,19 @@ def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=N
     return Array(name, target, spec, plan)
 
 
-def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> Array:
+def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
         dtype = np.float64
     return full(shape, None, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
-def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> Array:
+def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
     return empty(**_like_args(x, dtype, device, chunks, spec))
 
 
 def eye(
     n_rows, n_cols=None, /, *, k=0, dtype=None, device=None, chunks="auto", spec=None
-) -> Array:
+) -> "Array":
     if n_cols is None:
         n_cols = n_rows
     if dtype is None:
@@ -127,7 +128,7 @@ def _eye(x, *arrays, k=None, chunksize=None, block_id=None):
         return np.zeros_like(x)
 
 
-def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None) -> Array:
+def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
@@ -156,7 +157,7 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     return CoreArray._new(name, target, spec, plan)
 
 
-def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None) -> Array:
+def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
     return full(fill_value=fill_value, **_like_args(x, dtype, device, chunks, spec))
 
 
@@ -171,7 +172,7 @@ def linspace(
     endpoint=True,
     chunks="auto",
     spec=None,
-) -> Array:
+) -> "Array":
     range_ = stop - start
     div = (num - 1) if endpoint else num
     if div == 0:
@@ -212,8 +213,8 @@ def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=
     )
 
 
-def meshgrid(*arrays, indexing="xy") -> Tuple[Array, ...]:
-    if len({a.dtype for a in arrays}) > 1:
+def meshgrid(*arrs, indexing="xy") -> Tuple["Array", ...]:
+    if len({a.dtype for a in arrs}) > 1:
         raise ValueError("meshgrid inputs must all have the same dtype")
 
     from cubed.array_api.manipulation_functions import broadcast_arrays
@@ -222,17 +223,16 @@ def meshgrid(*arrays, indexing="xy") -> Tuple[Array, ...]:
     if indexing not in ("ij", "xy"):
         raise ValueError("`indexing` must be `'ij'` or `'xy'`")
 
-    if indexing == "xy" and len(arrays) > 1:
-        arrays = list(arrays)
-        arrays[0], arrays[1] = arrays[1], arrays[0]
+    if indexing == "xy" and len(arrs) > 1:
+        arrays = list(arrs)  # type: ignore[assignment]
+        arrays[0], arrays[1] = arrs[1], arrs[0]
 
     grid = []
     for i in range(len(arrays)):
         s = len(arrays) * [None]
-        s[i] = slice(None)
-        s = tuple(s)
+        s[i] = slice(None)  # type: ignore[call-overload]
 
-        r = arrays[i][s]
+        r = arrays[i][tuple(s)]
 
         grid.append(r)
 
@@ -241,36 +241,36 @@ def meshgrid(*arrays, indexing="xy") -> Tuple[Array, ...]:
     if indexing == "xy" and len(arrays) > 1:
         grid[0], grid[1] = grid[1], grid[0]
 
-    return grid
+    return tuple(grid)
 
 
-def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> Array:
+def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
         dtype = np.float64
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
-def ones_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> Array:
+def ones_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
     return ones(**_like_args(x, dtype, device, chunks, spec))
 
 
-def tril(x, /, *, k=0) -> Array:
+def tril(x, /, *, k=0) -> "Array":
     from cubed.array_api.searching_functions import where
 
     if x.ndim < 2:
         raise ValueError("x must be at least 2-dimensional for tril")
 
-    mask = _tri_mask(*x.shape[-2:], k, x.chunks[-2:], x.spec)
+    mask = _tri_mask(x.shape[-2], x.shape[-1], k, x.chunks[-2:], x.spec)
     return where(mask, x, zeros_like(x))
 
 
-def triu(x, /, *, k=0) -> Array:
+def triu(x, /, *, k=0) -> "Array":
     from cubed.array_api.searching_functions import where
 
     if x.ndim < 2:
         raise ValueError("x must be at least 2-dimensional for triu")
 
-    mask = _tri_mask(*x.shape[-2:], k - 1, x.chunks[-2:], x.spec)
+    mask = _tri_mask(x.shape[-2], x.shape[-1], k - 1, x.chunks[-2:], x.spec)
     return where(mask, zeros_like(x), x)
 
 
@@ -290,13 +290,13 @@ def _tri_mask(N, M, k, chunks, spec):
     return m
 
 
-def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> Array:
+def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
         dtype = np.float64
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
-def zeros_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> Array:
+def zeros_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
     return zeros(**_like_args(x, dtype, device, chunks, spec))
 
 

@@ -394,8 +394,8 @@ def map_blocks(
         # Create an array of index offsets with the same chunk structure as the args,
         # which we convert to block ids (chunk coordinates) later.
         a = args[0]
-        offsets = np.arange(a.npartitions, dtype=np.int32).reshape(a.numblocks)
-        offsets = asarray(offsets, spec=a.spec)
+        _offsets = np.arange(a.npartitions, dtype=np.int32).reshape(a.numblocks)
+        offsets = asarray(_offsets, spec=a.spec)
         # rechunk in a separate operation to avoid potentially writing lots of zarr chunks from the client
         offsets_chunks = (1,) * len(a.numblocks)
         offsets = rechunk(offsets, offsets_chunks)
