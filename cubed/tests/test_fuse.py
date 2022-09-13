@@ -26,6 +26,63 @@ def compute_dag(dag, array_name):
     return nodes[array_name]["array"]
 
 
+def optimize_dag(dag):
+    dag = dag.copy()
+    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+
+    def can_fuse(n):
+        # node must have a single predecessor
+        #   - not multiple edges pointing to a single predecessor
+        # node must be the single successor to the predecessor
+        # and both must have nodes that can be fused
+        if dag.in_degree(n) != 1:
+            return False
+        pre = next(dag.predecessors(n))
+        if dag.out_degree(pre) != 1:
+            return False
+        return can_fuse_nodes(nodes[pre], nodes[n])
+
+    for n in list(dag.nodes()):
+        if can_fuse(n):
+            print(f"can fuse {n}")
+            pre = next(dag.predecessors(n))
+            n1_dict = nodes[pre]
+            n2_dict = nodes[n]
+            fused_func = fuse(
+                n1_dict["func"],
+                n2_dict["func"],
+            )
+            nodes[n]["func"] = fused_func
+            for p in dag.predecessors(pre):
+                dag.add_edge(p, n)
+            dag.remove_node(pre)
+    return dag
+
+
+def is_fuse_candidate(node_dict):
+    """
+    Return True if the array for a node is a candidate for map fusion.
+    """
+    func = node_dict.get("func", None)
+    if func is None:
+        return False
+
+    return True
+
+
+def can_fuse_nodes(n1_dict, n2_dict):
+    if is_fuse_candidate(n1_dict) and is_fuse_candidate(n2_dict):
+        return True
+    return False
+
+
+def fuse(func1, func2):
+    def fused_func(*args):
+        return func2(func1(*args))
+
+    return fused_func
+
+
 def visualize_dag(dag, filename="cubed-fuse", format=None):
     dag.graph["graph"] = {"rankdir": "TB"}
     dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
@@ -68,6 +125,8 @@ def test_two_ops():
 
     dag.add_node("c", func=add_two)
     dag.add_edge("b", "c")
+
+    dag = optimize_dag(dag)
 
     visualize_dag(dag, filename="cubed-fuse-two")
 
