@@ -248,10 +248,13 @@ class Callback:
 
 @dataclass
 class TaskEndEvent:
-    """Callback information about a completed task."""
+    """Callback information about a completed task (or tasks)."""
 
     array_name: str
     """Name of the array that the task is for."""
+
+    num_tasks: int = 1
+    """Number of tasks that this event applies to (default 1)."""
 
     task_create_tstamp: Optional[float] = None
     """Timestamp of when the task was created by the client."""
