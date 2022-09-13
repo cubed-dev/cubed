@@ -107,6 +107,8 @@ def test_one_op():
     dag.add_node("b", func=add_one)
     dag.add_edge("a", "b")
 
+    dag = optimize_dag(dag)
+
     visualize_dag(dag, filename="cubed-fuse-one")
 
     res = compute_dag(dag, "b")
@@ -126,6 +128,7 @@ def test_two_ops():
     dag.add_node("c", func=add_two)
     dag.add_edge("b", "c")
 
+    # gets fused
     dag = optimize_dag(dag)
 
     visualize_dag(dag, filename="cubed-fuse-two")
@@ -147,6 +150,9 @@ def test_complex():
     dag.add_node("c", func=times)
     dag.add_edge("a", "c")
     dag.add_edge("b", "c")
+
+    # no fuse
+    dag = optimize_dag(dag)
 
     visualize_dag(dag, filename="cubed-fuse-complex")
 
