@@ -193,7 +193,7 @@ class Spec:
     work_dir: str
     max_mem: int
     executor: Executor = None
-    storage_options: dict = None
+    storage_options: dict = None  # type: ignore[assignment]
 
 
 class Callback:
