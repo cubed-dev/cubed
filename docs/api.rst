@@ -13,10 +13,10 @@ Creation Functions.
     :nosignatures:
     :toctree: generated/
 
-    CoreArray
-    CoreArray.compute
-    CoreArray.rechunk
-    CoreArray.visualize
+    Array
+    Array.compute
+    Array.rechunk
+    Array.visualize
     compute
     visualize
 

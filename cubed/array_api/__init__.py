@@ -1,5 +1,9 @@
 __all__ = []
 
+from .array_object import Array
+
+__all__ += ["Array"]
+
 from .constants import e, inf, nan, newaxis, pi
 
 __all__ += ["e", "inf", "nan", "newaxis", "pi"]

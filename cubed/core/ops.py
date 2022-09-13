@@ -20,7 +20,12 @@ from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import chunk_memory, get_item, to_chunksize
 
 
-def from_array(x, chunks="auto", asarray=None, spec=None):
+from typing import Any, Sequence, Union
+
+T_Array = Any
+
+
+def from_array(x, chunks="auto", asarray=None, spec=None) -> T_Array:
     """Create a Cubed array from an array-like object."""
 
     if isinstance(x, CoreArray):
@@ -34,10 +39,12 @@ def from_array(x, chunks="auto", asarray=None, spec=None):
     )
 
     if isinstance(x, zarr.Array):  # zarr fast path
+        from cubed.array_api import Array
+
         name = gensym()
         target = x
         plan = Plan._new(name, "from_array", target)
-        arr = CoreArray._new(name, target, spec, plan)
+        arr = Array._new(name, target, spec, plan)
 
         chunksize = to_chunksize(outchunks)
         if chunks != "auto" and previous_chunks != chunksize:
@@ -67,7 +74,7 @@ def _from_array(e, x, outchunks=None, asarray=None, block_id=None):
     return out
 
 
-def from_zarr(store, spec=None):
+def from_zarr(store, spec=None) -> T_Array:
     """Load an array from Zarr storage.
 
     Parameters
@@ -79,17 +86,19 @@ def from_zarr(store, spec=None):
 
     Returns
     -------
-    cubed.CoreArray
+    cubed.Array
         The array loaded from Zarr storage.
     """
     name = gensym()
     target = zarr.open(store, mode="r")
 
+    from cubed.array_api import Array
+
     plan = Plan._new(name, "from_zarr", target)
-    return CoreArray._new(name, target, spec, plan)
+    return Array._new(name, target, spec, plan)
 
 
-def store(sources, targets, executor=None, **kwargs):
+def store(sources: Union[T_Array, Sequence[T_Array]], targets, executor=None, **kwargs):
     """Save source arrays to array-like objects.
 
     In the current implementation ``targets`` must be Zarr arrays.
@@ -99,7 +108,7 @@ def store(sources, targets, executor=None, **kwargs):
 
     Parameters
     ----------
-    x : cubed.CoreArray or collection of cubed.CoreArray
+    x : cubed.Array or collection of cubed.Array
         Arrays to save
     store : zarr.Array or collection of zarr.Array
         Zarr arrays to write to
@@ -136,7 +145,7 @@ def store(sources, targets, executor=None, **kwargs):
     compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
 
 
-def to_zarr(x, store, executor=None, **kwargs):
+def to_zarr(x: T_Array, store, executor=None, **kwargs):
     """Save an array to Zarr storage.
 
     Note that this operation is eager, and will run the computation
@@ -144,7 +153,7 @@ def to_zarr(x, store, executor=None, **kwargs):
 
     Parameters
     ----------
-    x : cubed.CoreArray
+    x : cubed.Array
         Array to save
     store : string
         Path to output Zarr store
@@ -165,14 +174,14 @@ def to_zarr(x, store, executor=None, **kwargs):
 def blockwise(
     func,
     out_ind,
-    *args,
+    *args: T_Array,
     dtype=None,
     adjust_chunks=None,
     new_axes=None,
     align_arrays=True,
     target_store=None,
     **kwargs,
-):
+) -> T_Array:
     arrays = args[::2]
 
     assert len(arrays) > 0
@@ -268,10 +277,12 @@ def blockwise(
         num_tasks,
         *source_arrays,
     )
-    return CoreArray._new(name, target, spec, plan)
+    from cubed.array_api import Array
+
+    return Array._new(name, target, spec, plan)
 
 
-def elemwise(func, *args, dtype=None):
+def elemwise(func, *args: T_Array, dtype=None) -> T_Array:
     shapes = [arg.shape for arg in args]
     out_ndim = len(np.broadcast_shapes(*shapes))
     expr_inds = tuple(range(out_ndim))[::-1]
@@ -373,8 +384,8 @@ def _integers_and_slices_selection(target_chunks, idx, selection):
 
 
 def map_blocks(
-    func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
-):
+    func, *args: T_Array, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+) -> T_Array:
     """Apply a function to corresponding blocks from multiple input arrays."""
     if has_keyword(func, "block_id"):
         from cubed.array_api import asarray
@@ -489,8 +500,8 @@ def _map_blocks(
 
 
 def map_direct(
-    func, *args, shape, dtype, chunks, extra_required_mem, spec=None, **kwargs
-):
+    func, *args: T_Array, shape, dtype, chunks, extra_required_mem, spec=None, **kwargs
+) -> T_Array:
     """
     Map a function across blocks of a new array, using side-input arrays to read directly from.
 
@@ -543,7 +554,7 @@ def map_direct(
     )
 
 
-def rechunk(x, chunks, target_store=None):
+def rechunk(x: T_Array, chunks, target_store=None) -> T_Array:
     name = gensym()
     spec = x.spec
     if target_store is None:
@@ -557,11 +568,14 @@ def rechunk(x, chunks, target_store=None):
         temp_store=temp_store,
     )
     plan = Plan._new(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
-    return CoreArray._new(name, target, spec, plan)
+
+    from cubed.array_api import Array
+
+    return Array._new(name, target, spec, plan)
 
 
 def reduction(
-    x,
+    x: T_Array,
     func,
     combine_func=None,
     aggegrate_func=None,
@@ -569,7 +583,7 @@ def reduction(
     intermediate_dtype=None,
     dtype=None,
     keepdims=False,
-):
+) -> T_Array:
     if combine_func is None:
         combine_func = func
     if axis is None:
@@ -733,7 +747,7 @@ def squeeze(x, /, axis):
     )
 
 
-def unify_chunks(*args, **kwargs):
+def unify_chunks(*args: T_Array, **kwargs):
     # From dask unify_chunks
     if not args:
         return {}, []
