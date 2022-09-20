@@ -20,16 +20,6 @@ class Array(CoreArray):
     def __init__(self, name, zarray, spec, plan):
         super().__init__(name, zarray, spec, plan)
 
-    @classmethod
-    def _maybe_promote(cls, arr: ChunkedArray) -> "Array":
-        """Can be used to coerce a CoreArray to Array. On an Array this should be a no-op."""
-        return Array(
-            name=arr.name,
-            zarray=arr.zarray,
-            spec=arr.spec,
-            plan=arr.plan,
-        )
-
     def __array__(self, dtype=None):
         x = self.compute()
         if dtype and x.dtype != dtype:
