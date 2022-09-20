@@ -20,7 +20,7 @@ from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import chunk_memory, get_item, to_chunksize
 
 
-from typing import Any, Sequence, Union, TYPE_CHECKING
+from typing import Any, Sequence, Union, TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array
@@ -175,7 +175,7 @@ def to_zarr(x: "Array", store, executor=None, **kwargs):
 def blockwise(
     func,
     out_ind,
-    *args: "Array",
+    *args: Any,  # can't type this as mypy assumes args are all same type, but blockwise args alternate types
     dtype=None,
     adjust_chunks=None,
     new_axes=None,
@@ -434,8 +434,8 @@ def map_blocks(
 
 
 def _map_blocks(
-    func, *args, dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
-):
+    func, *args: "Array", dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+) -> "Array":
     # based on dask
 
     new_axes = {}
@@ -468,15 +468,15 @@ def _map_blocks(
         new_axis = range(len(chunks) - len(out_ind))
     if new_axis:
         # new_axis = [x + len(drop_axis) for x in new_axis]
-        out_ind = list(out_ind)
+        temp_out_ind = list(out_ind)
         for ax in sorted(new_axis):
-            n = len(out_ind) + len(drop_axis)
-            out_ind.insert(ax, n)
+            n = len(temp_out_ind) + len(drop_axis)
+            temp_out_ind.insert(ax, n)
             if chunks is not None:
                 new_axes[n] = chunks[ax]
             else:
                 new_axes[n] = 1
-        out_ind = tuple(out_ind)
+        out_ind = tuple(temp_out_ind)
         if max(new_axis) > max(out_ind):
             raise ValueError("New_axis values do not fill in all dimensions")
 
@@ -556,7 +556,7 @@ def map_direct(
     )
 
 
-def rechunk(x: "Array", chunks, target_store=None) -> "Array":
+def rechunk(x, chunks, target_store=None):
     name = gensym()
     spec = x.spec
     if target_store is None:
