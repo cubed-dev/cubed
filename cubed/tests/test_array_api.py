@@ -93,6 +93,13 @@ def test_asarray_from_array(spec):
     assert_array_equal(b.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+def test_from_array(spec):
+    nparr = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    ca = cubed.from_array(nparr, chunks=(2, 2), spec=spec)
+    assert isinstance(ca, cubed.Array)
+    assert_array_equal(ca.compute(), nparr)
+
+
 @pytest.mark.parametrize("k", [-1, 0, 1])
 def test_eye(spec, k):
     a = xp.eye(5, k=k, chunks=(2, 2), spec=spec)
