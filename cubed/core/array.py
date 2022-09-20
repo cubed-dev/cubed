@@ -184,7 +184,7 @@ class CoreArray:
         self.zarray.__setitem__(key, value)
 
     def __repr__(self):
-        return f"CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+        return f"cubed.core.CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
 @dataclass

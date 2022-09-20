@@ -38,6 +38,9 @@ class Array(CoreArray):
             x = np.array(x)
         return x
 
+    def __repr__(self):
+        return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+
     # Attributes
 
     @property
