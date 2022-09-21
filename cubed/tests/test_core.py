@@ -62,6 +62,7 @@ class WrappedArray:
 )
 def test_from_array(x, chunks, asarray):
     a = cubed.from_array(WrappedArray(x), chunks=chunks, asarray=asarray)
+    assert isinstance(a, cubed.Array)
     assert_array_equal(a, x)
 
 
