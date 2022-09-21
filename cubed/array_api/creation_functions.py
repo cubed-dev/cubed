@@ -215,8 +215,8 @@ def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=
     )
 
 
-def meshgrid(*arrs, indexing="xy") -> Tuple["Array", ...]:
-    if len({a.dtype for a in arrs}) > 1:
+def meshgrid(*arrays, indexing="xy") -> Tuple["Array", ...]:
+    if len({a.dtype for a in arrays}) > 1:
         raise ValueError("meshgrid inputs must all have the same dtype")
 
     from cubed.array_api.manipulation_functions import broadcast_arrays
@@ -225,22 +225,22 @@ def meshgrid(*arrs, indexing="xy") -> Tuple["Array", ...]:
     if indexing not in ("ij", "xy"):
         raise ValueError("`indexing` must be `'ij'` or `'xy'`")
 
+    arrs = list(arrays)
     if indexing == "xy" and len(arrs) > 1:
-        arrays = list(arrs)  # type: ignore[assignment]
-        arrays[0], arrays[1] = arrs[1], arrs[0]
+        arrs[0], arrs[1] = arrs[1], arrs[0]
 
     grid = []
-    for i in range(len(arrays)):
-        s = len(arrays) * [None]
-        s[i] = slice(None)  # type: ignore[call-overload]
+    for i in range(len(arrs)):
+        s = len(arrs) * [None]
+        s[i] = slice(None) # type: ignore[call-overload]
 
-        r = arrays[i][tuple(s)]
+        r = arrs[i][s]
 
         grid.append(r)
 
     grid = broadcast_arrays(*grid)
 
-    if indexing == "xy" and len(arrays) > 1:
+    if indexing == "xy" and len(arrs) > 1:
         grid[0], grid[1] = grid[1], grid[0]
 
     return tuple(grid)
