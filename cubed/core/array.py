@@ -27,7 +27,7 @@ def gensym(name="array"):
 
 
 # type representing either a CoreArray or a public-facing Array
-ChunkedArray = TypeVar("ChunkedArray", bound="CoreArray")
+T_ChunkedArray = TypeVar("T_ChunkedArray", bound="CoreArray")
 
 
 class CoreArray:
@@ -123,7 +123,7 @@ class CoreArray:
         if result:
             return result[0]
 
-    def rechunk(self: ChunkedArray, chunks) -> ChunkedArray:
+    def rechunk(self: T_ChunkedArray, chunks) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
         Parameters
@@ -164,7 +164,7 @@ class CoreArray:
             self, filename=filename, format=format, optimize_graph=optimize_graph
         )
 
-    def __getitem__(self: ChunkedArray, key, /) -> ChunkedArray:
+    def __getitem__(self: T_ChunkedArray, key, /) -> T_ChunkedArray:
         from cubed.core.ops import index
 
         return index(self, key)

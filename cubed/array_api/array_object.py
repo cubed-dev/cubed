@@ -12,7 +12,7 @@ from cubed.array_api.dtypes import (
     _numeric_dtypes,
 )
 from cubed.array_api.linear_algebra_functions import matmul
-from cubed.core.array import CoreArray, ChunkedArray
+from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
 
 
@@ -20,7 +20,7 @@ class Array(CoreArray):
     def __init__(self, name, zarray, spec, plan):
         super().__init__(name, zarray, spec, plan)
 
-    def __array__(self, dtype=None):
+    def __array__(self, dtype=None) -> np.ndarray:
         x = self.compute()
         if dtype and x.dtype != dtype:
             x = x.astype(dtype)
