@@ -28,7 +28,7 @@ def broadcast_arrays(*arrays):
     shape = np.broadcast_shapes(*(e.shape for e in args))
     chunks = broadcast_chunks(*(e.chunks for e in args))
 
-    result = [broadcast_to(e, shape=shape, chunks=chunks) for e in args]
+    result = tuple(broadcast_to(e, shape=shape, chunks=chunks) for e in args)
 
     return result
 

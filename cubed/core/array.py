@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from operator import mul
-from typing import Optional
+from typing import Optional, TypeVar, TYPE_CHECKING
 
 import numpy as np
 from dask.array.core import normalize_chunks
@@ -15,12 +15,19 @@ from .plan import arrays_to_plan
 
 sym_counter = 0
 
+if TYPE_CHECKING:
+    from ..array_api.array_object import Array
+
 
 def gensym(name="array"):
     """Generate a name with an incrementing counter"""
     global sym_counter
     sym_counter += 1
     return f"{name}-{sym_counter:03}"
+
+
+# type representing either a CoreArray or a public-facing Array
+T_ChunkedArray = TypeVar("T_ChunkedArray", bound="CoreArray")
 
 
 class CoreArray:
@@ -42,13 +49,6 @@ class CoreArray:
         # and a conservative amount of reserved memory (200MB)
         self.spec = spec or Spec(None, max_mem=100_000_000, reserved_mem=200_000_000)
         self.plan = plan
-
-    @classmethod
-    def _new(cls, name, zarray, spec, plan):
-        # Always create an Array object subclass that has array API methods and attributes
-        from cubed.array_api.array_object import Array
-
-        return Array(name, zarray, spec, plan)
 
     @property
     def chunkmem(self):
@@ -123,7 +123,7 @@ class CoreArray:
         if result:
             return result[0]
 
-    def rechunk(self, chunks):
+    def rechunk(self: T_ChunkedArray, chunks) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
         Parameters
@@ -164,7 +164,7 @@ class CoreArray:
             self, filename=filename, format=format, optimize_graph=optimize_graph
         )
 
-    def __getitem__(self, key, /):
+    def __getitem__(self: T_ChunkedArray, key, /) -> T_ChunkedArray:
         from cubed.core.ops import index
 
         return index(self, key)
@@ -184,7 +184,7 @@ class CoreArray:
         self.zarray.__setitem__(key, value)
 
     def __repr__(self):
-        return f"CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+        return f"cubed.core.CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
 @dataclass
@@ -208,7 +208,7 @@ class Spec:
     executor: Executor = None
     """The default executor for running computations."""
 
-    storage_options: dict = None
+    storage_options: dict = None  # type: ignore[assignment]
     """Storage options to be passed to fsspec"""
 
 

@@ -20,13 +20,16 @@ class Array(CoreArray):
     def __init__(self, name, zarray, spec, plan):
         super().__init__(name, zarray, spec, plan)
 
-    def __array__(self, dtype=None):
+    def __array__(self, dtype=None) -> np.ndarray:
         x = self.compute()
         if dtype and x.dtype != dtype:
             x = x.astype(dtype)
         if not isinstance(x, np.ndarray):
             x = np.array(x)
         return x
+
+    def __repr__(self):
+        return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
     # Attributes
 
