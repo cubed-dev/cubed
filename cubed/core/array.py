@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from operator import mul
-from typing import Optional, TypeVar, TYPE_CHECKING
+from typing import Optional, TypeVar
 
 import numpy as np
 from dask.array.core import normalize_chunks
@@ -14,9 +14,6 @@ from cubed.utils import chunk_memory
 from .plan import arrays_to_plan
 
 sym_counter = 0
-
-if TYPE_CHECKING:
-    from ..array_api.array_object import Array
 
 
 def gensym(name="array"):
