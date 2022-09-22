@@ -1,23 +1,13 @@
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable, List
 
 import numpy as np
 import zarr
 from dask.array.core import normalize_chunks
 from zarr.util import normalize_shape
 
-from cubed.core import (
-    CoreArray,
-    Plan,
-    gensym,
-    map_blocks,
-    new_temp_store,
-    new_temp_zarr,
-)
+from cubed.core import Plan, gensym, map_blocks, new_temp_store, new_temp_zarr
 from cubed.core.ops import map_direct
 from cubed.utils import to_chunksize
-
-from typing import TYPE_CHECKING, Tuple, List, Union
-
 
 if TYPE_CHECKING:
     from .array_object import Array
@@ -57,7 +47,9 @@ def _arange(a, size, start, stop, step):
     return np.arange(blockstart, min(blockstop, stop), step)
 
 
-def asarray(obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None) -> "Array":
+def asarray(
+    obj, /, *, dtype=None, device=None, copy=None, chunks="auto", spec=None
+) -> "Array":
     a = obj
     from cubed.array_api.array_object import Array
 
@@ -128,7 +120,9 @@ def _eye(x, *arrays, k=None, chunksize=None, block_id=None):
         return np.zeros_like(x)
 
 
-def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
+def full(
+    shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
+) -> "Array":
     # write to zarr
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
@@ -159,7 +153,9 @@ def full(shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
     return Array(name, target, spec, plan)
 
 
-def full_like(x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
+def full_like(
+    x, /, fill_value, *, dtype=None, device=None, chunks=None, spec=None
+) -> "Array":
     return full(fill_value=fill_value, **_like_args(x, dtype, device, chunks, spec))
 
 
@@ -215,7 +211,7 @@ def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=
     )
 
 
-def meshgrid(*arrays, indexing="xy") -> Tuple["Array", ...]:
+def meshgrid(*arrays, indexing="xy") -> List["Array"]:
     if len({a.dtype for a in arrays}) > 1:
         raise ValueError("meshgrid inputs must all have the same dtype")
 
@@ -232,18 +228,18 @@ def meshgrid(*arrays, indexing="xy") -> Tuple["Array", ...]:
     grid = []
     for i in range(len(arrs)):
         s = len(arrs) * [None]
-        s[i] = slice(None) # type: ignore[call-overload]
+        s[i] = slice(None)  # type: ignore[call-overload]
 
-        r = arrs[i][s]
+        r = arrs[i][tuple(s)]
 
         grid.append(r)
 
-    grid = broadcast_arrays(*grid)
+    grid = list(broadcast_arrays(*grid))
 
     if indexing == "xy" and len(arrs) > 1:
         grid[0], grid[1] = grid[1], grid[0]
 
-    return tuple(grid)
+    return grid
 
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
