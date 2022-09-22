@@ -21,14 +21,7 @@ from .core.array import (
     measure_reserved_memory,
     visualize,
 )
-from .core.ops import (
-    from_array,
-    from_zarr,
-    map_blocks,
-    store,
-    to_zarr,
-)
-
+from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
 
 __all__ = [
     "__version__",
