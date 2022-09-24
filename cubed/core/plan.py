@@ -1,7 +1,5 @@
 import inspect
-import sysconfig
 import tempfile
-import traceback
 import uuid
 from datetime import datetime
 
@@ -12,7 +10,7 @@ from rechunker.types import PipelineExecutor
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
-from cubed.utils import chunk_memory, join_path, memory_repr
+from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -56,7 +54,7 @@ class Plan:
 
         # add new node and edges
         frame = inspect.currentframe().f_back  # go back one in the stack
-        stack_summaries = traceback.extract_stack(frame, 10)
+        stack_summaries = extract_stack_summaries(frame, limit=10)
 
         if pipeline is None:
             dag.add_node(
@@ -178,14 +176,37 @@ class Plan:
                     tasks += 1
         return tasks
 
+    def max_required_mem(self, optimize_graph=True):
+        """Return the maximum required memory (for a task) to execute this plan."""
+        dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        return max(node.get("required_mem", 0) for _, node in visit_nodes(dag))
+
     def visualize(
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
     ):
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        dag.graph["graph"] = {"rankdir": rankdir}
-        dag.graph["node"] = {"fontname": "helvetica", "shape": "box"}
+        dag.graph["graph"] = {
+            "rankdir": rankdir,
+            "label": (
+                f"num tasks: {self.num_tasks(optimize_graph=optimize_graph)}\n"
+                f"max required memory: {memory_repr(self.max_required_mem(optimize_graph=optimize_graph))}"
+            ),
+            "labelloc": "bottom",
+            "labeljust": "left",
+            "fontsize": "10",
+        }
+        dag.graph["node"] = {"fontname": "helvetica", "shape": "box", "fontsize": "10"}
         for (n, d) in dag.nodes(data=True):
-            d["label"] = f"{n} ({d['op_name']})"
+            if d["op_name"] == "blockwise":
+                d["style"] = "filled"
+                d["fillcolor"] = "#dcbeff"
+                op_name_summary = "(bw)"
+            elif d["op_name"] == "rechunk":
+                d["style"] = "filled"
+                d["fillcolor"] = "#aaffc3"
+                op_name_summary = "(rc)"
+            else:  # creation function
+                op_name_summary = ""
             target = d["target"]
             chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
             tooltip = (
@@ -201,15 +222,23 @@ class Plan:
             if "stack_summaries" in d:
                 # add call stack information
                 stack_summaries = d["stack_summaries"]
-                python_lib_path = sysconfig.get_path("purelib")
-                calls = " -> ".join(
-                    [
-                        s.name
-                        for s in stack_summaries
-                        if not s.filename.startswith(python_lib_path)
-                    ]
+
+                first_cubed_i = min(
+                    i for i, s in enumerate(stack_summaries) if s.is_cubed()
                 )
+                first_cubed_summary = stack_summaries[first_cubed_i]
+                caller_summary = stack_summaries[first_cubed_i - 1]
+
+                d["label"] = f"{n}\n{first_cubed_summary.name} {op_name_summary}"
+
+                calls = " -> ".join(
+                    [s.name for s in stack_summaries if not s.is_on_python_lib_path()]
+                )
+
+                line = f"{caller_summary.lineno} in {caller_summary.name}"
+
                 tooltip += f"\ncalls: {calls}"
+                tooltip += f"\nline: {line}"
                 del d["stack_summaries"]
 
             d["tooltip"] = tooltip

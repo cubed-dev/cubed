@@ -247,6 +247,7 @@ def test_reduction_multiple_rounds(tmp_path, executor):
         n for (n, d) in b.plan.dag.nodes(data=True) if d["op_name"] == "rechunk"
     ]
     assert len(rechunks) > 1
+    assert b.plan.max_required_mem() == 1000
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
 
 

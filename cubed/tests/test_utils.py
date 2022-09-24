@@ -1,7 +1,16 @@
+import inspect
+
 import numpy as np
 import pytest
 
-from cubed.utils import chunk_memory, join_path, memory_repr, peak_memory, to_chunksize
+from cubed.utils import (
+    chunk_memory,
+    extract_stack_summaries,
+    join_path,
+    memory_repr,
+    peak_memory,
+    to_chunksize,
+)
 
 
 def test_chunk_memory():
@@ -49,3 +58,11 @@ def test_memory_repr():
 
 def test_peak_memory():
     assert peak_memory() > 0
+
+
+def test_extract_stack_summaries():
+    frame = inspect.currentframe()
+    stack_summaries = extract_stack_summaries(frame)
+    assert stack_summaries[-1].name == "test_extract_stack_summaries"
+    assert stack_summaries[-1].module == "cubed.tests.test_utils"
+    assert stack_summaries[-1].is_cubed()
