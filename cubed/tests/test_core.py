@@ -11,7 +11,6 @@ import cubed.array_api as xp
 from cubed import Callback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
-from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.runtime.types import DagExecutor
 from cubed.tests.utils import MAIN_EXECUTORS, MODAL_EXECUTORS, create_zarr
 
@@ -369,13 +368,10 @@ def test_retries(mocker, spec):
         "cubed.primitive.blockwise.apply_blockwise", side_effect=mock_apply_blockwise
     )
 
-    executor = PythonDagExecutor()
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
-    assert_array_equal(
-        c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
-    )
+    assert_array_equal(c.compute(), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]))
 
 
 class TaskCounter(Callback):
@@ -433,8 +429,6 @@ def test_callbacks_modal(spec, modal_executor):
 
 
 def test_already_computed(spec):
-    executor = PythonDagExecutor()
-
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
@@ -443,17 +437,16 @@ def test_already_computed(spec):
     assert d.plan.num_tasks(optimize_graph=False) == 8
 
     task_counter = TaskCounter()
-    c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
+    c.compute(callbacks=[task_counter], optimize_graph=False)
     assert task_counter.value == 4
 
     # since c has already been computed, when computing d only 4 tasks are run, instead of 8
     task_counter = TaskCounter()
-    d.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
+    d.compute(callbacks=[task_counter], optimize_graph=False)
     assert task_counter.value == 4
 
 
 def test_fusion(spec):
-    executor = PythonDagExecutor()
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
     c = xp.astype(b, np.float32)
@@ -463,7 +456,7 @@ def test_fusion(spec):
     assert d.plan.num_tasks(optimize_graph=True) == 4
 
     task_counter = TaskCounter()
-    result = d.compute(executor=executor, callbacks=[task_counter])
+    result = d.compute(callbacks=[task_counter])
     assert task_counter.value == 4
 
     assert_array_equal(
@@ -473,7 +466,6 @@ def test_fusion(spec):
 
 
 def test_no_fusion(spec):
-    executor = PythonDagExecutor()
     # b can't be fused with c because d also depends on b
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
     b = xp.positive(a)
@@ -484,14 +476,13 @@ def test_no_fusion(spec):
     assert d.plan.num_tasks(optimize_graph=True) == 3
 
     task_counter = TaskCounter()
-    result = d.compute(executor=executor, callbacks=[task_counter])
+    result = d.compute(callbacks=[task_counter])
     assert task_counter.value == 3
 
     assert_array_equal(result, np.ones((2, 2)))
 
 
 def test_no_fusion_multiple_edges(spec):
-    executor = PythonDagExecutor()
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
     b = xp.positive(a)
     c = xp.asarray(b)
@@ -504,7 +495,7 @@ def test_no_fusion_multiple_edges(spec):
     assert d.plan.num_tasks(optimize_graph=True) == 2
 
     task_counter = TaskCounter()
-    result = d.compute(executor=executor, callbacks=[task_counter])
+    result = d.compute(callbacks=[task_counter])
     assert task_counter.value == 2
 
     assert_array_equal(result, np.full((2, 2), True))
