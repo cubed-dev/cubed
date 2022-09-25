@@ -11,7 +11,7 @@ def exec_stage_func(func, *args, **kwargs):
 
 
 class PythonDagExecutor(DagExecutor):
-    """An execution engine that uses Python loops."""
+    """The default execution engine that runs tasks sequentially uses Python loops."""
 
     def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
         for name, node in visit_nodes(dag):

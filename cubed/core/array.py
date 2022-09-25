@@ -4,7 +4,6 @@ from typing import Optional, TypeVar
 
 import numpy as np
 from dask.array.core import normalize_chunks
-from rechunker.executors.python import PythonPipelineExecutor
 from toolz import map, reduce
 
 from cubed.runtime.pipeline import already_computed
@@ -293,7 +292,9 @@ def compute(
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
-            executor = PythonPipelineExecutor()
+            from cubed.runtime.executors.python import PythonDagExecutor
+
+            executor = PythonDagExecutor()
 
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
     plan.execute(
