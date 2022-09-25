@@ -1,4 +1,10 @@
+import collections
+import itertools
 import platform
+import sys
+import sysconfig
+import traceback
+from dataclasses import dataclass
 from math import prod
 from pathlib import Path
 from posixpath import join
@@ -80,3 +86,54 @@ def to_chunksize(chunkset):
         raise ValueError("Array must have regular chunks")
 
     return tuple(c[0] for c in chunkset)
+
+
+@dataclass
+class StackSummary:
+    """Like Python's ``FrameSummary``, but with module information."""
+
+    filename: str
+    lineno: int
+    name: str
+    module: str
+
+    def is_cubed(self):
+        """Return True if this stack frame is a Cubed call."""
+        return self.module.startswith("cubed.")
+
+    def is_on_python_lib_path(self):
+        """Return True if this stack frame is from a library on Python's library path."""
+        python_lib_path = sysconfig.get_path("purelib")
+
+        return self.filename.startswith(python_lib_path)
+
+
+def extract_stack_summaries(frame, limit=None):
+    """Like Python's ``StackSummary.extract``, but returns module information."""
+    frame_gen = traceback.walk_stack(frame)
+
+    # from StackSummary.extract
+    if limit is None:
+        limit = getattr(sys, "tracebacklimit", None)
+        if limit is not None and limit < 0:
+            limit = 0
+    if limit is not None:
+        if limit >= 0:
+            frame_gen = itertools.islice(frame_gen, limit)
+        else:
+            frame_gen = collections.deque(frame_gen, maxlen=-limit)
+    # end from StackSummary.extract
+
+    stack_summaries = []
+    for f, _ in frame_gen:
+        module = f.f_globals.get("__name__", "")
+        summary = StackSummary(
+            filename=f.f_code.co_filename,
+            lineno=f.f_lineno,
+            name=f.f_code.co_name,
+            module=module,
+        )
+        stack_summaries.append(summary)
+    stack_summaries.reverse()
+
+    return stack_summaries
