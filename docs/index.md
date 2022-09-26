@@ -18,4 +18,5 @@ maxdepth: 3
 ---
 api
 array_api
+operations
 ```

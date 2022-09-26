@@ -1,0 +1,72 @@
+// Generate svg with `dot images/ops.dot -Tsvg -O`
+digraph {
+    graph [fontname = "courier"];
+    node [fontname = "courier"; shape="box"];
+    edge [fontname = "courier"];
+
+    // primitive
+    blockwise [style="filled"; fillcolor="#dcbeff";];
+    rechunk [style="filled"; fillcolor="#aaffc3";];
+
+    // core
+    elemwise [style="filled"; fillcolor="#ffd8b1";];
+    map_blocks [style="filled"; fillcolor="#ffd8b1";];
+    map_direct [style="filled"; fillcolor="#ffd8b1";];
+    reduction [style="filled"; fillcolor="#ffd8b1";];
+    arg_reduction [style="filled"; fillcolor="#ffd8b1";];
+
+    elemwise -> blockwise;
+    map_blocks -> blockwise;
+    map_direct -> map_blocks;
+    reduction -> blockwise;
+    reduction -> rechunk;
+    arg_reduction -> reduction;
+
+    // array API
+
+    // array object
+    __getitem__ -> map_direct
+
+    // elementwise
+    add -> elemwise
+    negative -> elemwise
+
+    // linear algebra
+    matmul -> blockwise;
+    matmul -> reduction;
+    outer -> blockwise;
+
+    // manipulation
+    concat -> map_direct;
+    reshape -> rechunk;
+    reshape -> map_direct;
+    squeeze -> map_blocks;
+
+    // searching
+    argmax -> arg_reduction;
+
+    // statistical
+    sum -> reduction;
+
+    // utility
+    all -> reduction;
+
+
+    {
+        rank = min;
+
+        // fix horizontal placing with invisible edges
+        edge[style=invis];
+        add -> negative -> outer -> matmul -> __getitem__ -> concat -> reshape -> squeeze -> argmax -> sum -> all;
+        rankdir = LR;
+    }
+    {
+        rank = same;
+        elemwise; map_blocks; reduction;
+    }
+    {
+        rank = max;
+        blockwise; rechunk;
+    }
+
+}
