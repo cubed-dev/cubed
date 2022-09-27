@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>API Reference &#8212; Cubed</title>
+    <title>Operations &#8212; Cubed</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -33,8 +33,8 @@
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="cubed.Array" href="generated/cubed.Array.html" />
-    <link rel="prev" title="Getting Started" href="getting_started.html" />
+    <link rel="next" title="Computation" href="computation.html" />
+    <link rel="prev" title="Design" href="design.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -86,17 +86,17 @@
   For users
  </span>
 </p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="getting_started.html">
    Getting Started
   </a>
  </li>
- <li class="toctree-l1 current active has-children">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="api.html">
    API Reference
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
    <i class="fas fa-chevron-down">
    </i>
@@ -225,14 +225,14 @@
   For developers
  </span>
 </p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="design.html">
    Design
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="operations.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Operations
   </a>
  </li>
@@ -322,7 +322,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fapi.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Foperations.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -339,7 +339,7 @@ title="Open an issue"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/edit/master/api.rst"
+        <a href="https://github.com/tomwhite/cubed/edit/master/operations.md"
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -381,33 +381,68 @@ title="Edit this page"
     <nav id="bd-toc-nav" aria-label="Page">
         <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#array">
-   Array
+  <a class="reference internal nav-link" href="#dependency-tree">
+   Dependency Tree
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#io">
-   IO
+  <a class="reference internal nav-link" href="#elemwise">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     elemwise
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#chunk-specific-functions">
-   Chunk-specific functions
+  <a class="reference internal nav-link" href="#map-blocks">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     map_blocks
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#random-number-generation">
-   Random number generation
+  <a class="reference internal nav-link" href="#map-direct">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     map_direct
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#runtime">
-   Runtime
+  <a class="reference internal nav-link" href="#blockwise">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     blockwise
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#executors">
-   Executors
+  <a class="reference internal nav-link" href="#rechunk">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     rechunk
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reduction-and-arg-reduction">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     reduction
+    </span>
+   </code>
+   and
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     arg_reduction
+    </span>
+   </code>
   </a>
  </li>
 </ul>
@@ -419,7 +454,7 @@ title="Edit this page"
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1>API Reference</h1>
+                <h1>Operations</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
@@ -430,33 +465,68 @@ title="Edit this page"
                         <nav aria-label="Page">
                             <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#array">
-   Array
+  <a class="reference internal nav-link" href="#dependency-tree">
+   Dependency Tree
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#io">
-   IO
+  <a class="reference internal nav-link" href="#elemwise">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     elemwise
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#chunk-specific-functions">
-   Chunk-specific functions
+  <a class="reference internal nav-link" href="#map-blocks">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     map_blocks
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#random-number-generation">
-   Random number generation
+  <a class="reference internal nav-link" href="#map-direct">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     map_direct
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#runtime">
-   Runtime
+  <a class="reference internal nav-link" href="#blockwise">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     blockwise
+    </span>
+   </code>
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#executors">
-   Executors
+  <a class="reference internal nav-link" href="#rechunk">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     rechunk
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reduction-and-arg-reduction">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     reduction
+    </span>
+   </code>
+   and
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     arg_reduction
+    </span>
+   </code>
   </a>
  </li>
 </ul>
@@ -469,135 +539,80 @@ title="Edit this page"
                 
               <div>
                 
-  <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">#</a></h1>
-<section id="array">
-<h2>Array<a class="headerlink" href="#array" title="Permalink to this headline">#</a></h2>
-<p>A Cubed array can be created by <code class="docutils literal notranslate"><span class="pre">from_array</span></code>, <code class="docutils literal notranslate"><span class="pre">from_zarr</span></code>, or by one of the Python Array API
-Creation Functions.</p>
-<table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.Array.html#cubed.Array" title="cubed.Array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array.compute</span></code></a></p></td>
-<td><p>Compute this array, and any arrays that it depends on.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.Array.rechunk.html#cubed.Array.rechunk" title="cubed.Array.rechunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array.rechunk</span></code></a></p></td>
-<td><p>Change the chunking of this array without changing its shape or data.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.Array.visualize.html#cubed.Array.visualize" title="cubed.Array.visualize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array.visualize</span></code></a></p></td>
-<td><p>Produce a visualization of the computation graph for this array.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.compute.html#cubed.compute" title="cubed.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code></a></p></td>
-<td><p>Compute multiple arrays at once.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.visualize.html#cubed.visualize" title="cubed.visualize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize</span></code></a></p></td>
-<td><p>Produce a visualization of the computation graph for multiple arrays.</p></td>
-</tr>
-</tbody>
-</table>
+  <section id="operations">
+<h1>Operations<a class="headerlink" href="#operations" title="Permalink to this headline">#</a></h1>
+<p>Here we look in more depth at the core and primitive operations in Cubed.</p>
+<section id="dependency-tree">
+<h2>Dependency Tree<a class="headerlink" href="#dependency-tree" title="Permalink to this headline">#</a></h2>
+<p>The following diagram shows the dependencies between operations. Array API functions are shown at the top (in white), the core operations are in the middle (in orange), and the primitive operations are at the bottom (<code class="docutils literal notranslate"><span class="pre">blockwise</span></code> in pink and <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> in green). Not all Array API functions are shown, just a representative selection.</p>
+<p><img alt="Operations dependency tree" src="_images/ops.dot.svg" /></p>
+<p>Note how fundamental <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> is - all array API functions depend on it.</p>
 </section>
-<section id="io">
-<h2>IO<a class="headerlink" href="#io" title="Permalink to this headline">#</a></h2>
-<table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.from_array.html#cubed.from_array" title="cubed.from_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_array</span></code></a></p></td>
-<td><p>Create a Cubed array from an array-like object.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.from_zarr.html#cubed.from_zarr" title="cubed.from_zarr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_zarr</span></code></a></p></td>
-<td><p>Load an array from Zarr storage.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store</span></code></a></p></td>
-<td><p>Save source arrays to array-like objects.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.to_zarr.html#cubed.to_zarr" title="cubed.to_zarr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_zarr</span></code></a></p></td>
-<td><p>Save an array to Zarr storage.</p></td>
-</tr>
-</tbody>
-</table>
+<section id="elemwise">
+<h2><code class="docutils literal notranslate"><span class="pre">elemwise</span></code><a class="headerlink" href="#elemwise" title="Permalink to this headline">#</a></h2>
+<p>The simplest core operation is <code class="docutils literal notranslate"><span class="pre">elemwise</span></code>, which maps input array elements to output array elements, a block at a time.</p>
+<ul class="simple">
+<li><p>Preserves: <code class="docutils literal notranslate"><span class="pre">shape</span></code>, <code class="docutils literal notranslate"><span class="pre">chunks</span></code>, <code class="docutils literal notranslate"><span class="pre">numblocks</span></code></p></li>
+<li><p><strong>Multiple</strong> inputs, <strong>single</strong> output</p></li>
+</ul>
+<p>It is a core operation that is implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code>.</p>
+<p>Here’s an example with two inputs, such as for <code class="docutils literal notranslate"><span class="pre">add</span></code>. (Arrows are only shown for two input blocks, in order to avoid cluttering the diagram.)</p>
+<p><img alt="The elemwise core operation" src="_images/elemwise.svg" /></p>
+<p>(Note that <code class="docutils literal notranslate"><span class="pre">elemwise</span></code> supports broadcasting, but that is not shown here.)</p>
 </section>
-<section id="chunk-specific-functions">
-<h2>Chunk-specific functions<a class="headerlink" href="#chunk-specific-functions" title="Permalink to this headline">#</a></h2>
-<table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.map_blocks.html#cubed.map_blocks" title="cubed.map_blocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_blocks</span></code></a></p></td>
-<td><p>Apply a function to corresponding blocks from multiple input arrays.</p></td>
-</tr>
-</tbody>
-</table>
+<section id="map-blocks">
+<h2><code class="docutils literal notranslate"><span class="pre">map_blocks</span></code><a class="headerlink" href="#map-blocks" title="Permalink to this headline">#</a></h2>
+<p>Like <code class="docutils literal notranslate"><span class="pre">elemwise</span></code>, <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> operates on corresponding input blocks, but they need not match in shape, and the output block shape may differ too.</p>
+<ul class="simple">
+<li><p>Preserves: <code class="docutils literal notranslate"><span class="pre">numblocks</span></code></p></li>
+<li><p><strong>Multiple</strong> inputs, <strong>single</strong> output</p></li>
+</ul>
+<p>It is a core operation that is implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code>.</p>
+<p>This example shows how the <code class="docutils literal notranslate"><span class="pre">squeeze</span></code> operation is implemented using <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> (with a single input). Note that although the number of blocks is preserved, the shape and chunk size of the output is different to the input since the second dimension is dropped.</p>
+<p><img alt="The map_blocks core operation" src="_images/map_blocks.svg" /></p>
 </section>
-<section id="random-number-generation">
-<h2>Random number generation<a class="headerlink" href="#random-number-generation" title="Permalink to this headline">#</a></h2>
-<table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.random.random.html#cubed.random.random" title="cubed.random.random"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random</span></code></a></p></td>
-<td><p>Return random floats in the half-open interval [0.0, 1.0).</p></td>
-</tr>
-</tbody>
-</table>
+<section id="map-direct">
+<h2><code class="docutils literal notranslate"><span class="pre">map_direct</span></code><a class="headerlink" href="#map-direct" title="Permalink to this headline">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">map_direct</span></code> operation is more general than <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> since it allows input arrays to be read directly, without regard for block boundaries.</p>
+<ul class="simple">
+<li><p>No input array attributes are preserved in general</p></li>
+<li><p><strong>Multiple</strong> inputs, <strong>single</strong> output</p></li>
+</ul>
+<p>It is a core operation that is implemented using <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code>, which is in turn implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code>. It works by creating an empty array that has the same shape and chunk structure as the output, and calling <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> on this empty array, passing in the input arrays as side inputs to the function, which may access them in whatever way is needed.</p>
+<p>This example shows how <code class="docutils literal notranslate"><span class="pre">concat</span></code> is implemented using <code class="docutils literal notranslate"><span class="pre">map_direct</span></code>. Each block in the output array is read directly from one or more blocks from the inputs.</p>
+<p><img alt="The map_direct core operation" src="_images/map_direct.svg" /></p>
 </section>
-<section id="runtime">
-<h2>Runtime<a class="headerlink" href="#runtime" title="Permalink to this headline">#</a></h2>
-<table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.Callback.html#cubed.Callback" title="cubed.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
-<td><p>Object to receive callback events during array computation.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.Spec.html#cubed.Spec" title="cubed.Spec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Spec</span></code></a></p></td>
-<td><p>Specification of resources available to run a computation.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.TaskEndEvent.html#cubed.TaskEndEvent" title="cubed.TaskEndEvent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TaskEndEvent</span></code></a></p></td>
-<td><p>Callback information about a completed task (or tasks).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.measure_reserved_memory.html#cubed.measure_reserved_memory" title="cubed.measure_reserved_memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">measure_reserved_memory</span></code></a></p></td>
-<td><p>Measures the reserved memory use for a given executor runtime.</p></td>
-</tr>
-</tbody>
-</table>
+<section id="blockwise">
+<h2><code class="docutils literal notranslate"><span class="pre">blockwise</span></code><a class="headerlink" href="#blockwise" title="Permalink to this headline">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation is a primitive operation that operates on input array blocks, while allowing an input block to be sent to multiple output blocks.</p>
+<ul class="simple">
+<li><p>No input array attributes are preserved in general</p></li>
+<li><p><strong>Multiple</strong> inputs, <strong>single</strong> output</p></li>
+</ul>
+<p>This example shows how <code class="docutils literal notranslate"><span class="pre">outer</span></code> is implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code>. Each block from the input is sent to three blocks in the output. (Arrows are only shown for two input blocks, in order to avoid cluttering the diagram.)</p>
+<p><img alt="The blockwise primitive operation" src="_images/blockwise.svg" /></p>
 </section>
-<section id="executors">
-<h2>Executors<a class="headerlink" href="#executors" title="Permalink to this headline">#</a></h2>
-<table class="autosummary longtable table autosummary">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html#cubed.runtime.executors.beam.BeamDagExecutor" title="cubed.runtime.executors.beam.BeamDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beam.BeamDagExecutor</span></code></a></p></td>
-<td><p>An execution engine that uses Apache Beam.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html#cubed.runtime.executors.lithops.LithopsDagExecutor" title="cubed.runtime.executors.lithops.LithopsDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lithops.LithopsDagExecutor</span></code></a></p></td>
-<td><p>An execution engine that uses Lithops.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html#cubed.runtime.executors.modal_async.AsyncModalDagExecutor" title="cubed.runtime.executors.modal_async.AsyncModalDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modal_async.AsyncModalDagExecutor</span></code></a></p></td>
-<td><p>An execution engine that uses Modal's async API.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html#cubed.runtime.executors.python.PythonDagExecutor" title="cubed.runtime.executors.python.PythonDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">python.PythonDagExecutor</span></code></a></p></td>
-<td><p>The default execution engine that runs tasks sequentially uses Python loops.</p></td>
-</tr>
-</tbody>
-</table>
+<section id="rechunk">
+<h2><code class="docutils literal notranslate"><span class="pre">rechunk</span></code><a class="headerlink" href="#rechunk" title="Permalink to this headline">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> operation is a primitive operation for changing the chunking of an array, without changing its shape or dtype.</p>
+<ul class="simple">
+<li><p>Preserves: <code class="docutils literal notranslate"><span class="pre">shape</span></code>, <code class="docutils literal notranslate"><span class="pre">dtype</span></code></p></li>
+<li><p><strong>Single</strong> input, <strong>single</strong> output</p></li>
+</ul>
+<p>This example shows how there is no one-to-one correspondence between blocks in the input and output. In general, an output block is composed of parts of many input blocks. Consult <a class="reference external" href="https://rechunker.readthedocs.io/en/latest/algorithm.html">this page on the rechunker algorithm</a> for details of how it is implemented.</p>
+<p><img alt="The rechunk primitive operation" src="_images/rechunk.svg" /></p>
+</section>
+<section id="reduction-and-arg-reduction">
+<h2><code class="docutils literal notranslate"><span class="pre">reduction</span></code> and <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code><a class="headerlink" href="#reduction-and-arg-reduction" title="Permalink to this headline">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">reduction</span></code> operation reduces an array along one or more axes.</p>
+<ul class="simple">
+<li><p>No input array attributes are preserved in general</p></li>
+<li><p><strong>Single</strong> input, <strong>single</strong> output</p></li>
+</ul>
+<p>It is a core operation that is implemented using repeated calls to <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> and <code class="docutils literal notranslate"><span class="pre">rechunk</span></code>.</p>
+<p>Here is an example of reducing over the first axis, with a single round of <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> and <code class="docutils literal notranslate"><span class="pre">combine</span></code> - in general there would be multiple rounds until there’s a single block in each reduction axis.</p>
+<p><img alt="The reduction core operation" src="_images/reduction.svg" /></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code> works similarly, but uses different functions to return indexes rather than values.</p>
 </section>
 </section>
 
@@ -609,17 +624,17 @@ Creation Functions.</p>
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="getting_started.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="design.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Getting Started</p>
+            <p class="prev-next-title">Design</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="generated/cubed.Array.html" title="next page">
+    <a class='right-next' id="next-link" href="computation.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.Array</p>
+        <p class="prev-next-title">Computation</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

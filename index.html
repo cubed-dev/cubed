@@ -33,7 +33,7 @@
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API reference" href="api.html" />
+    <link rel="next" title="Getting Started" href="getting_started.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -80,10 +80,20 @@
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item active">
-        <ul class="nav bd-sidenav">
+        <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  For users
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="getting_started.html">
+   Getting Started
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="api.html">
-   API reference
+   API Reference
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
@@ -196,6 +206,43 @@
  <li class="toctree-l1">
   <a class="reference internal" href="array_api.html">
    Python Array API
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="related_projects.html">
+   Related Projects
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">
+   Examples
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  For developers
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="design.html">
+   Design
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="operations.html">
+   Operations
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="computation.html">
+   Computation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="contributing.html">
+   Contributing
   </a>
  </li>
 </ul>
@@ -338,9 +385,16 @@ title="Edit this page"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#motivation">
+   Motivation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#documentation">
    Documentation
   </a>
+  <ul class="nav section-nav flex-column">
+  </ul>
  </li>
 </ul>
 
@@ -367,9 +421,16 @@ title="Edit this page"
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#motivation">
+   Motivation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#documentation">
    Documentation
   </a>
+  <ul class="nav section-nav flex-column">
+  </ul>
  </li>
 </ul>
 
@@ -394,54 +455,76 @@ title="Edit this page"
 <li><p>Multiple serverless runtimes: Python (in-process), <a class="reference external" href="https://lithops-cloud.github.io/">Lithops</a>, <a class="reference external" href="https://modal.com/">Modal</a>, <a class="reference external" href="https://beam.apache.org/">Apache Beam</a></p></li>
 </ul>
 </section>
+<section id="motivation">
+<h2>Motivation<a class="headerlink" href="#motivation" title="Permalink to this headline">#</a></h2>
+<p>Managing memory is one of the major challenges in designing and running distributed systems. Computation frameworks like Apache Hadoop’s MapReduce, Apache Spark, Beam, and Dask all provide a general-purpose processing model, which has lead to their widespread adoption. Successful use at scale however requires the user to carefully configure memory for worker nodes, and to understand how work is allocated to workers, which breaks the high-level programming abstraction. A disproportionate amount of time is often spent tuning the memory configuration of a large computation.</p>
+<p>A common theme here is that most interesting computations are not embarrassingly parallel, but involve shuffling data between nodes. A lot of engineering effort has been put into optimizing the shuffle in Hadoop, Spark, Beam (Google Dataflow), and to a lesser extent Dask. This has undoubtedly improved performance, but has not made the memory problems go away.</p>
+<p>Another approach has started gaining traction in the last few years. <a class="reference external" href="https://lithops-cloud.github.io/">Lithops</a> (formerly Pywren) and <a class="reference external" href="https://rechunker.readthedocs.io/">Rechunker</a>, eschew centralized systems like the shuffle, and do everything via serverless cloud services and cloud storage.</p>
+<p>Rechunker is interesting, since it implements a very targeted use case (rechunking persistent N-dimensional arrays), using only stateless (serverless) operations, with guaranteed memory usage. Even though it can run on systems like Beam and Dask, it deliberately avoids passing array chunks between worker nodes using the shuffle. Instead, all bulk data operations are reads from, or writes to, cloud storage (Zarr in this case). Since chunks are always of known size it is possible to tightly control memory usage, thereby avoiding unpredictable memory use at runtime.</p>
+<p>This project is an attempt to go further: implement all distributed array operations using a bounded-memory serverless model.</p>
+</section>
 <section id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">#</a></h2>
 <div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#array">Array</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.Array.html">cubed.Array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.Array.visualize.html">cubed.Array.visualize</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.compute.html">cubed.compute</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.visualize.html">cubed.visualize</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#io">IO</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.from_array.html">cubed.from_array</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.from_zarr.html">cubed.from_zarr</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.store.html">cubed.store</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.to_zarr.html">cubed.to_zarr</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#chunk-specific-functions">Chunk-specific functions</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.map_blocks.html">cubed.map_blocks</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#random-number-generation">Random number generation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.random.random.html">cubed.random.random</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#runtime">Runtime</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.Callback.html">cubed.Callback</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.measure_reserved_memory.html">cubed.measure_reserved_memory</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#executors">Executors</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
-<li class="toctree-l3"><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#array">Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#io">IO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#chunk-specific-functions">Chunk-specific functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#random-number-generation">Random number generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#runtime">Runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#executors">Executors</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="array_api.html">Python Array API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="array_api.html#missing-from-cubed">Missing from Cubed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="array_api.html#differences-between-cubed-and-the-standard">Differences between Cubed and the standard</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="related_projects.html">Related Projects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="related_projects.html#dask">Dask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="related_projects.html#previous-work">Previous work</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="design.html#storage">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#runtime">Runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#primitive-operations">Primitive operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#core-operations">Core operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design.html#array-api">Array API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="operations.html">Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#dependency-tree">Dependency Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#elemwise"><code class="docutils literal notranslate"><span class="pre">elemwise</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#map-blocks"><code class="docutils literal notranslate"><span class="pre">map_blocks</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#map-direct"><code class="docutils literal notranslate"><span class="pre">map_direct</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#blockwise"><code class="docutils literal notranslate"><span class="pre">blockwise</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#rechunk"><code class="docutils literal notranslate"><span class="pre">rechunk</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="operations.html#reduction-and-arg-reduction"><code class="docutils literal notranslate"><span class="pre">reduction</span></code> and <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="computation.html">Computation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="computation.html#plan">Plan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computation.html#memory">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computation.html#execution">Execution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="computation.html#runtime-features">Runtime Features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#development">Development</a></li>
 </ul>
 </li>
 </ul>
@@ -457,10 +540,10 @@ title="Edit this page"
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='right-next' id="next-link" href="api.html" title="next page">
+    <a class='right-next' id="next-link" href="getting_started.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API reference</p>
+        <p class="prev-next-title">Getting Started</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

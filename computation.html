@@ -4,8 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Search &#8212; Cubed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Computation &#8212; Cubed</title>
     
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -25,25 +26,21 @@
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
 
-    
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
-    <script src="_static/searchtools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" />
-  <script src="searchindex.js" defer></script>
-  
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="Operations" href="operations.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
 
     <!-- Google Analytics -->
     
-
   </head>
   <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
 <!-- Checkboxes to toggle the left sidebar -->
@@ -79,7 +76,7 @@
       <h1 class="site-logo" id="site-title">Cubed</h1>
       
     </a>
-</div><form class="bd-search d-flex align-items-center" action="#" method="get">
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -228,7 +225,7 @@
   For developers
  </span>
 </p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1">
   <a class="reference internal" href="design.html">
    Design
@@ -239,8 +236,8 @@
    Operations
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="computation.html">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
    Computation
   </a>
  </li>
@@ -325,7 +322,7 @@ title="Source repository"
       </li>
       
       <li>
-        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fsearch.html&body=Your%20issue%20content%20here."
+        <a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fcomputation.html&body=Your%20issue%20content%20here."
    class="headerbtn"
    data-toggle="tooltip"
 data-placement="left"
@@ -341,26 +338,110 @@ title="Open an issue"
 
       </li>
       
+      <li>
+        <a href="https://github.com/tomwhite/cubed/edit/master/computation.md"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Edit this page"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="headerbtn__text-container">suggest edit</span>
+</a>
+
+      </li>
+      
     </ul>
   </div>
 </div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
 
     </div>
 </div>
 
 <!-- Table of contents -->
 <div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#plan">
+   Plan
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#memory">
+   Memory
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#execution">
+   Execution
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#runtime-features">
+   Runtime Features
+  </a>
+ </li>
+</ul>
+
+    </nav>
 </div>
     </div>
     <div class="article row">
         <div class="col pl-md-3 pl-lg-5 content-container">
             <!-- Table of contents that is only displayed when printing the page -->
             <div id="jb-print-docs-body" class="onlyprint">
-                <h1></h1>
+                <h1>Computation</h1>
                 <!-- Table of contents -->
                 <div id="print-main-content">
                     <div id="jb-print-toc">
                         
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#plan">
+   Plan
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#memory">
+   Memory
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#execution">
+   Execution
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#runtime-features">
+   Runtime Features
+  </a>
+ </li>
+</ul>
+
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -368,36 +449,41 @@ title="Open an issue"
                 
               <div>
                 
-  <h1 id="search-documentation">Search</h1>
-  
-  <noscript>
-  <div class="admonition warning">
-  <p>
-    Please activate JavaScript to enable the search
-    functionality.
-  </p>
-  </div>
-  </noscript>
-  
-  
-  <p>
-    Searching for multiple words only shows matches that contain
-    all words.
-  </p>
-  
-  
-  <form action="" method="get">
-    <input type="text" name="q" aria-labelledby="search-documentation" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-    <input type="submit" value="search" />
-    <span id="search-progress" style="padding-left: 10px"></span>
-  </form>
-  
-  
-  
-  <div id="search-results">
-  
-  </div>
-  
+  <section id="computation">
+<h1>Computation<a class="headerlink" href="#computation" title="Permalink to this headline">#</a></h1>
+<section id="plan">
+<h2>Plan<a class="headerlink" href="#plan" title="Permalink to this headline">#</a></h2>
+<p>Cubed has a lazy computation model. As array functions are invoked, a computation <em>plan</em> is built up, and it is only executed when explicitly triggered with
+a call to <code class="docutils literal notranslate"><span class="pre">compute</span></code>, or when implicitly triggered by converting an array to an in-memory (NumPy) or on-disk (Zarr) representation.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Plan</span></code> object is a directed acyclic graph (DAG), where the nodes are arrays and the edges express primitive operations. For example, one array may be rechunked to another using a <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> operation. Or a pair of arrays may be added together using a <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation.</p>
+</section>
+<section id="memory">
+<h2>Memory<a class="headerlink" href="#memory" title="Permalink to this headline">#</a></h2>
+<p>The primitive operations, <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> and <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> both have memory requirements that are known ahead of time. Each operation runs a <em>task</em> to compute each chunk of the output. The memory needed for each task is a function of chunk size, dtype, and the nature of the operation, which can be computed while building the plan.</p>
+<p>While it is not possible in general to compute the precise amount of memory that will be used (since it is not known ahead of time how well a Zarr chunk will compress), it is possible to put a conservative upper bound on the memory usage. This upper bound is the <code class="docutils literal notranslate"><span class="pre">required_mem</span></code> for a task, and it is calculated automatically by Cubed.</p>
+<p><img alt="Memory" src="_images/memory.svg" /></p>
+<p>The maximum amount of memory that tasks are allowed to use must be specified by the user. This is done by setting the <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> and <code class="docutils literal notranslate"><span class="pre">max_mem</span></code> parameters on the <code class="docutils literal notranslate"><span class="pre">Spec</span></code> object. The <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> is the amount of memory reserved on a worker for non-data use - it’s whatever is needed by the Python process for running a task, and can be estimated using the <code class="docutils literal notranslate"><span class="pre">measure_reserved_memory</span></code> function. The <code class="docutils literal notranslate"><span class="pre">max_mem</span></code> setting is the memory available to a worker for data use - for loading arrays into memory and processing them. It can be set to be the total memory available to a worker, less the <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code>.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">required_mem</span></code> calculated by Cubed is greater than the value of <code class="docutils literal notranslate"><span class="pre">max_mem</span></code> set by the user, an exception is raised during the planning phase. This check means that the user can have high confidence that the operation will run within its memory budget.</p>
+</section>
+<section id="execution">
+<h2>Execution<a class="headerlink" href="#execution" title="Permalink to this headline">#</a></h2>
+<p>A plan is executed by traversing the DAG and materializing arrays by writing them to Zarr storage. Details of how a plan is executed depends on the runtime. Distributed runtimes, for example, may choose to materialize arrays that don’t depend on one another in parallel for efficiency.</p>
+<p>This processing model has advantages and disadvantages. One advantage is that since there is no shuffle involved, it is a straightforward model that can scale up with very high-levels of parallelism - for example in a serverless environment. This also makes it straightforward to make it run on multiple execution engines.</p>
+<p>The main disadvantage of this model is that every intermediate array is written to storage, which can be slow. However, there are opportunities to optimize the DAG before running it (such as map fusion).</p>
+</section>
+<section id="runtime-features">
+<h2>Runtime Features<a class="headerlink" href="#runtime-features" title="Permalink to this headline">#</a></h2>
+<dl>
+  <dt>Task failure handling</dt>
+  <dd>If a task fails - with an IO exception when reading or writing to Zarr, for example - it will be retried (up to a total of three attempts).</dd>
+  <dt>Resume a computation from a checkpoint</dt>
+  <dd>Since intermediate arrays are persisted to Zarr, it is possible to resume a computation without starting from scratch. To do this, the Cubed <code>Array</code> object should be stored persistently (using <code>pickle</code>), so it can be reloaded in a new process and then <code>compute()</code> called on it to finish the computation.</dd>
+  <dt>Straggler mitigation</dt>
+  <dd>A few slow running tasks (called stragglers) can disproportionately slow down the whole computation. To mitigate this, speculative duplicate tasks are launched in certain circumstances, acting as backups that complete more quickly than the straggler, hence bringing down the overall time taken.</dd>
+</dl>
+</section>
+</section>
+
 
               </div>
               
@@ -406,6 +492,20 @@ title="Open an issue"
                 
     <!-- Previous / next buttons -->
 <div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="operations.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Operations</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="contributing.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Contributing</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
 </div>
             </footer>
         </div>
