@@ -6,7 +6,7 @@ Here we look in more depth at the core and primitive operations in Cubed.
 
 The following diagram shows the dependencies between operations. Array API functions are shown at the top (in white), the core operations are in the middle (in orange), and the primitive operations are at the bottom (`blockwise` in pink and `rechunk` in green). Not all Array API functions are shown, just a representative selection.
 
-![The elemwise core operation](images/ops.dot.svg)
+![Operations dependency tree](images/ops.dot.svg)
 
 Note how fundamental `blockwise` is - all array API functions depend on it.
 
