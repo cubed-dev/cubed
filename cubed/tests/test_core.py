@@ -204,6 +204,17 @@ def test_rechunk(spec, executor):
     )
 
 
+def test_rechunk_same_chunks(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
+    b = a.rechunk((2, 1))
+    task_counter = TaskCounter()
+    res = b.compute(callbacks=[task_counter])
+    # no tasks should have run since chunks are same
+    assert task_counter.value == 0
+
+    assert_array_equal(res, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
 def test_compute_is_idempotent(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     b = xp.negative(a)

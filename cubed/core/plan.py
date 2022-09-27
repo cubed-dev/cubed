@@ -179,7 +179,10 @@ class Plan:
     def max_required_mem(self, optimize_graph=True):
         """Return the maximum required memory (for a task) to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        return max(node.get("required_mem", 0) for _, node in visit_nodes(dag))
+        required_mem_values = [
+            node.get("required_mem", 0) for _, node in visit_nodes(dag)
+        ]
+        return max(required_mem_values) if len(required_mem_values) > 0 else 0
 
     def visualize(
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True

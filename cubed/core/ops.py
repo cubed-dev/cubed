@@ -554,6 +554,8 @@ def map_direct(
 
 
 def rechunk(x, chunks, target_store=None):
+    if x.chunks == normalize_chunks(chunks, x.shape, dtype=x.dtype):
+        return x
     name = gensym()
     spec = x.spec
     if target_store is None:
