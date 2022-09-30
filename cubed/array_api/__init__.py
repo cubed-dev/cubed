@@ -1,5 +1,9 @@
 __all__ = []
 
+__array_api_version__ = "2021.12"
+
+__all__ += ["__array_api_version__"]
+
 from .array_object import Array
 
 __all__ += ["Array"]
