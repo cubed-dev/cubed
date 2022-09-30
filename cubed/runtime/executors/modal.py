@@ -1,3 +1,4 @@
+import os
 import time
 from asyncio.exceptions import TimeoutError
 
@@ -12,18 +13,23 @@ from cubed.utils import peak_memory
 
 stub = modal.Stub()
 
-image = modal.DebianSlim().pip_install(
-    [
-        "dask[array]",
-        "fsspec",
-        "networkx",
-        "pytest-mock",  # TODO: only needed for tests
-        "rechunker",
-        "s3fs",
-        "tenacity",
-        "zarr",
-    ]
-)
+requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
+
+if requirements_file:
+    image = modal.DebianSlim().pip_install_from_requirements(requirements_file)
+else:
+    image = modal.DebianSlim().pip_install(
+        [
+            "dask[array]",
+            "fsspec",
+            "networkx",
+            "pytest-mock",  # TODO: only needed for tests
+            "rechunker",
+            "s3fs",
+            "tenacity",
+            "zarr",
+        ]
+    )
 
 
 # Use a generator, since we want results to be returned as they finish and we don't care about order

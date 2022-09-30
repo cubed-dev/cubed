@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import os
 import time
 from asyncio.exceptions import TimeoutError
 
@@ -16,18 +17,23 @@ from cubed.utils import peak_memory
 
 async_stub = modal.aio.AioStub()
 
-image = modal.DebianSlim().pip_install(
-    [
-        "dask[array]",
-        "fsspec",
-        "networkx",
-        "pytest-mock",  # TODO: only needed for tests
-        "rechunker",
-        "s3fs",
-        "tenacity",
-        "zarr",
-    ]
-)
+requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
+
+if requirements_file:
+    image = modal.DebianSlim().pip_install_from_requirements(requirements_file)
+else:
+    image = modal.DebianSlim().pip_install(
+        [
+            "dask[array]",
+            "fsspec",
+            "networkx",
+            "pytest-mock",  # TODO: only needed for tests
+            "rechunker",
+            "s3fs",
+            "tenacity",
+            "zarr",
+        ]
+    )
 
 
 @async_stub.generator(
