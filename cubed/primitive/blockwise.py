@@ -1,7 +1,6 @@
 from functools import partial
 from typing import Callable, Dict, NamedTuple
 
-import numpy as np
 import zarr
 from dask.array.core import normalize_chunks
 from dask.blockwise import make_blockwise_graph
@@ -32,18 +31,12 @@ def apply_blockwise(graph_item, *, config=BlockwiseSpec):
     for name, in_chunk_key in in_name_chunk_keys:
         arg = config.reads_map[name].array[in_chunk_key]
         args.append(arg)
-    config.write.array[out_chunk_key] = config.function(*args)
-
-
-def apply_blockwise_structured(graph_item, *, config=BlockwiseSpec):
-    out_chunk_key, in_name_chunk_keys = graph_item
-    args = []
-    for name, in_chunk_key in in_name_chunk_keys:
-        arg = np.asarray(config.reads_map[name].array[in_chunk_key])
-        args.append(arg)
     result = config.function(*args)
-    for k, v in result.items():
-        config.write.array.set_basic_selection(out_chunk_key, v, fields=k)
+    if isinstance(result, dict):  # structured array with named fields
+        for k, v in result.items():
+            config.write.array.set_basic_selection(out_chunk_key, v, fields=k)
+    else:
+        config.write.array[out_chunk_key] = result
 
 
 def blockwise(
@@ -153,13 +146,9 @@ def blockwise(
     write_proxy = ArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(func_with_kwargs, read_proxies, write_proxy)
 
-    if np.dtype(dtype).fields is None:
-        apply_blockwise_func = apply_blockwise
-    else:
-        apply_blockwise_func = apply_blockwise_structured
     stages = [
         Stage(
-            apply_blockwise_func,
+            apply_blockwise,
             gensym("apply_blockwise"),
             mappable=graph_mappable,
         )
