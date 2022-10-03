@@ -50,6 +50,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 .highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
 .highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
 .highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight .pm { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation.Marker */
 .highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
 .highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
 .highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
@@ -14658,7 +14659,7 @@ div.jp-OutputPrompt {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Cubed:-an-introduction">Cubed: an introduction<a class="anchor-link" href="#Cubed:-an-introduction">&#182;</a></h1><p>Tom White, August 2022</p>
+<h1 id="Cubed:-an-introduction">Cubed: an introduction<a class="anchor-link" href="#Cubed:-an-introduction">&#182;</a></h1><p>Tom White, October 2022</p>
 
 </div>
 </div>
@@ -14674,36 +14675,6 @@ div.jp-OutputPrompt {
 <p><img src="cubed-idea.svg" alt="Cubed idea"></p>
 <p>Tasks operate on Zarr chunks.</p>
 <p>Tasks are embarassingly parallel, and their runtime memory can be tightly controlled.</p>
-
-</div>
-</div>
-</div>
-</div></section></section><section><section>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Primitives">Primitives<a class="anchor-link" href="#Primitives">&#182;</a></h1><ul>
-<li><strong>Blockwise</strong>: applies a function to multiple blocks from multiple inputs</li>
-<li><strong>Rechunk</strong>: changes chunking, without changing shape/dtype</li>
-</ul>
-<p>Dask introduced both of these operations.</p>
-<p><strong>Almost all</strong> array operations can be implemented using these two primitives!</p>
-
-</div>
-</div>
-</div>
-</div></section></section><section><section>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Design">Design<a class="anchor-link" href="#Design">&#182;</a></h1><p>Cubed is composed of five layers: from the storage layer at the bottom, to the Array API layer at the top:</p>
-<p><img src="../design.svg" alt="Five layer diagram"></p>
 
 </div>
 </div>
@@ -14828,6 +14799,75 @@ div.jp-OutputPrompt {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Primitives">Primitives<a class="anchor-link" href="#Primitives">&#182;</a></h1><ul>
+<li><strong>Blockwise</strong>: applies a function to multiple blocks from multiple inputs</li>
+<li><strong>Rechunk</strong>: changes chunking, without changing shape/dtype</li>
+</ul>
+<p>Dask introduced both of these operations.</p>
+<p><strong>Almost all</strong> array operations can be implemented using these two primitives!</p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Design">Design<a class="anchor-link" href="#Design">&#182;</a></h1><p>Cubed is composed of five layers: from the storage layer at the bottom, to the Array API layer at the top:</p>
+<p><img src="../docs/images/design.svg" alt="Five layer diagram"></p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Core-and-Primitive-Operations">Core and Primitive Operations<a class="anchor-link" href="#Core-and-Primitive-Operations">&#182;</a></h1><p><img src="../docs/images/ops.dot.svg" alt="Core and Primitive Operations"></p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Example:-map_direct">Example: <code>map_direct</code><a class="anchor-link" href="#Example:-map_direct">&#182;</a></h1><p><img src="../docs/images/map_direct.svg" alt="`map_direct`"></p>
+<p>Each block in the output array is read directly from one or more blocks from the inputs.</p>
+<p>Can cross block boundaries.</p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Example:-reduction">Example: <code>reduction</code><a class="anchor-link" href="#Example:-reduction">&#182;</a></h1><p><img src="../docs/images/reduction.svg" alt="`reduction`"></p>
+<p>Implemented using multiple rounds of calls to <code>blockwise</code> and <code>rechunk</code>.</p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h1 id="Computation-plan">Computation plan<a class="anchor-link" href="#Computation-plan">&#182;</a></h1><p>Cubed creates a computation <em>plan</em>, which is a directed acyclic graph (DAG).</p>
 
 </div>
@@ -14841,7 +14881,8 @@ div.jp-OutputPrompt {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
 </pre></div>
 
      </div>
@@ -14864,9 +14905,11 @@ div.jp-OutputPrompt {
 
 
 <div class="jp-RenderedSVG jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="image/svg+xml">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="290pt" height="116pt" viewBox="0.00 0.00 290.00 116.00">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-112 286,-112 286,4 -4,4"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="157pt" height="146pt" viewBox="0.00 0.00 157.00 146.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 142)">
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-142 153,-142 153,4 -4,4"/>
+<text text-anchor="middle" x="74.5" y="-18" font-family="Times,serif" font-size="10.00">num tasks: 4</text>
+<text text-anchor="middle" x="74.5" y="-7" font-family="Times,serif" font-size="10.00">max required memory: 192 bytes</text>
 <!-- array&#45;001 -->
 <g id="node1" class="node">
 <title>array-001</title>
@@ -14875,15 +14918,17 @@ chunks: (2, 2)
 dtype: int64
 chunk memory: 32 bytes
 
-calls: &lt;cell line: 2&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64">
-<polygon fill="none" stroke="black" points="132,-108 0,-108 0,-72 132,-72 132,-108"/>
-<text text-anchor="middle" x="66" y="-86.3" font-family="Helvetica,sans-Serif" font-size="14.00">array-001 (asarray)</text>
+calls: &lt;module&gt; -&gt; asarray
+line: 2 in &lt;module&gt;">
+<polygon fill="none" stroke="black" points="65.5,-138 6.5,-138 6.5,-102 65.5,-102 65.5,-138"/>
+<text text-anchor="middle" x="36" y="-123" font-family="Helvetica,sans-Serif" font-size="10.00">array-001</text>
+<text text-anchor="middle" x="36" y="-112" font-family="Helvetica,sans-Serif" font-size="10.00">asarray </text>
 </a>
 </g>
 </g>
-<!-- array&#45;003 -->
+<!-- array&#45;004 -->
 <g id="node3" class="node">
-<title>array-003</title>
+<title>array-004</title>
 <g id="a_node3"><a xlink:title="shape: (3, 3)
 chunks: (2, 2)
 dtype: int64
@@ -14891,17 +14936,19 @@ chunk memory: 32 bytes
 
 task memory: 192 bytes
 tasks: 4
-calls: &lt;cell line: 2&gt; -&gt; add -&gt; elemwise -&gt; blockwise" target="zarr.core.Array (3, 3) int64">
-<polygon fill="none" stroke="black" points="214,-36 68,-36 68,0 214,0 214,-36"/>
-<text text-anchor="middle" x="141" y="-14.3" font-family="Helvetica,sans-Serif" font-size="14.00">array-003 (blockwise)</text>
+calls: &lt;module&gt; -&gt; add -&gt; elemwise -&gt; blockwise
+line: 1 in &lt;module&gt;">
+<polygon fill="#dcbeff" stroke="black" points="103.5,-66 44.5,-66 44.5,-30 103.5,-30 103.5,-66"/>
+<text text-anchor="middle" x="74" y="-51" font-family="Helvetica,sans-Serif" font-size="10.00">array-004</text>
+<text text-anchor="middle" x="74" y="-40" font-family="Helvetica,sans-Serif" font-size="10.00">add (bw)</text>
 </a>
 </g>
 </g>
-<!-- array&#45;001&#45;&gt;array&#45;003 -->
+<!-- array&#45;001&#45;&gt;array&#45;004 -->
 <g id="edge1" class="edge">
-<title>array-001-&gt;array-003</title>
-<path fill="none" stroke="black" d="M84.54,-71.7C93.8,-63.05 105.16,-52.45 115.26,-43.03"/>
-<polygon fill="black" stroke="black" points="117.75,-45.49 122.67,-36.1 112.98,-40.37 117.75,-45.49"/>
+<title>array-001-&gt;array-004</title>
+<path fill="none" stroke="black" d="M45.39,-101.7C49.76,-93.64 55.06,-83.89 59.9,-74.98"/>
+<polygon fill="black" stroke="black" points="63.02,-76.56 64.71,-66.1 56.87,-73.22 63.02,-76.56"/>
 </g>
 <!-- array&#45;002 -->
 <g id="node2" class="node">
@@ -14911,17 +14958,19 @@ chunks: (2, 2)
 dtype: int64
 chunk memory: 32 bytes
 
-calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64">
-<polygon fill="none" stroke="black" points="282,-108 150,-108 150,-72 282,-72 282,-108"/>
-<text text-anchor="middle" x="216" y="-86.3" font-family="Helvetica,sans-Serif" font-size="14.00">array-002 (asarray)</text>
+calls: &lt;module&gt; -&gt; asarray
+line: 1 in &lt;module&gt;">
+<polygon fill="none" stroke="black" points="142.5,-138 83.5,-138 83.5,-102 142.5,-102 142.5,-138"/>
+<text text-anchor="middle" x="113" y="-123" font-family="Helvetica,sans-Serif" font-size="10.00">array-002</text>
+<text text-anchor="middle" x="113" y="-112" font-family="Helvetica,sans-Serif" font-size="10.00">asarray </text>
 </a>
 </g>
 </g>
-<!-- array&#45;002&#45;&gt;array&#45;003 -->
+<!-- array&#45;002&#45;&gt;array&#45;004 -->
 <g id="edge2" class="edge">
-<title>array-002-&gt;array-003</title>
-<path fill="none" stroke="black" d="M197.46,-71.7C188.2,-63.05 176.84,-52.45 166.74,-43.03"/>
-<polygon fill="black" stroke="black" points="169.02,-40.37 159.33,-36.1 164.25,-45.49 169.02,-40.37"/>
+<title>array-002-&gt;array-004</title>
+<path fill="none" stroke="black" d="M103.36,-101.7C98.87,-93.64 93.44,-83.89 88.48,-74.98"/>
+<polygon fill="black" stroke="black" points="91.45,-73.14 83.53,-66.1 85.34,-76.54 91.45,-73.14"/>
 </g>
 </g>
 </svg>
@@ -14940,7 +14989,6 @@ calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64"
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Cubed will optimize the graph before computing it - by fusing blockwise (map) operations, for example.</p>
 <p>Unlike a Dask graph which is at the task level, a Cubed graph is at the Zarr array level.</p>
 
 </div>
@@ -14953,13 +15001,41 @@ calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64"
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Memory">Memory<a class="anchor-link" href="#Memory">&#182;</a></h1><p>Cubed models the memory used by every operation.</p>
+<h1 id="Optimization">Optimization<a class="anchor-link" href="#Optimization">&#182;</a></h1><p>Cubed will optimize the graph before computing it - by fusing blockwise (map) operations.</p>
+<p float="left">
+  <img src="fusion-unoptimized.png" />
+  <img src="fusion.png" />
+</p><p>This is a simple case - still lots of optimizations left to do.</p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Memory">Memory<a class="anchor-link" href="#Memory">&#182;</a></h1><p>Cubed models the memory used by every operation, and predicts the <code>required_mem</code> for each task.</p>
+<p><img src="../docs/images/memory.svg" width="600"></p>
+
+</div>
+</div>
+</div>
+</div></section></section><section><section>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <p>If required memory is less than what user specifies then an exception is raised <strong>during planning</strong></p>
 
 </div>
 </div>
 </div>
-</div></section></section><section><section><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+</div><div class="fragment"><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -15005,7 +15081,7 @@ calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64"
 
 </div>
 
-</div></section></section><section><section>
+</div></div></section></section><section><section>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -15032,22 +15108,72 @@ calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64"
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Runtimes">Runtimes<a class="anchor-link" href="#Runtimes">&#182;</a></h1><ul>
+<h1 id="Runtimes">Runtimes<a class="anchor-link" href="#Runtimes">&#182;</a></h1>
+</div>
+</div>
+</div>
+</div><div class="fragment">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
 <li><strong>Modal</strong>: new serverless platform, in private beta<ul>
-<li>Very easy to set up</li>
-<li>Limited scalability (during beta)</li>
+<li>Very easy to set up (if you have an account!)</li>
+<li>Tested with ~50 workers</li>
 </ul>
 </li>
+</ul>
+
+</div>
+</div>
+</div>
+</div></div><div class="fragment">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
 <li><strong>Lithops</strong>: multi-cloud serverless computing framework<ul>
 <li>Set up more involved (create a docker image)</li>
-<li>Only tested on AWS Lambda with Cubed</li>
+<li>Only tested on AWS Lambda with Cubed, with hundreds of workers</li>
 </ul>
 </li>
+</ul>
+
+</div>
+</div>
+</div>
+</div></div><div class="fragment">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
 <li><strong>Apache Beam (Google Cloud Dataflow)</strong>: fully managed pipeline processing service<ul>
-<li>Some initial testing</li>
 <li>Slow to spin up</li>
+<li>Only tested with ~20 workers, but most mature so will scale out</li>
 </ul>
 </li>
+</ul>
+
+</div>
+</div>
+</div>
+</div></div><div class="fragment">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
 <li><strong>Other Rechunker runtimes</strong><ul>
 <li>Dask, Prefect etc - not tried</li>
 </ul>
@@ -15057,7 +15183,7 @@ calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64"
 </div>
 </div>
 </div>
-</div></section></section><section><section>
+</div></div></section></section><section><section>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -15104,28 +15230,25 @@ calls: &lt;cell line: 1&gt; -&gt; asarray" target="zarr.core.Array (3, 3) int64"
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h1 id="Next-steps">Next steps<a class="anchor-link" href="#Next-steps">&#182;</a></h1><ul>
-<li>Xarray integration<ul>
-<li>Improve Xarray integration with the Python Array API<ul>
-<li>Started in <a href="https://github.com/pydata/xarray/issues/3232">https://github.com/pydata/xarray/issues/3232</a></li>
-</ul>
-</li>
-<li>Add <code>gufunc</code> to Cubed: <a href="https://github.com/tomwhite/cubed/issues/67">https://github.com/tomwhite/cubed/issues/67</a></li>
-</ul>
-</li>
-<li>Improve Array API coverage<ul>
-<li><a href="https://github.com/tomwhite/cubed/blob/main/api_status.md">https://github.com/tomwhite/cubed/blob/main/api_status.md</a></li>
+<li>Community</li>
+<li>Xarray integration - Tom N<ul>
+<li><a href="https://github.com/pydata/xarray/pull/7019">Integrate cubed in xarray</a></li>
+<li><a href="https://github.com/tomwhite/cubed/pull/119">Add <code>gufunc</code> to Cubed</a></li>
 </ul>
 </li>
 <li>Use cases<ul>
-<li>Pangeo</li>
+<li><a href="https://github.com/pangeo-data/distributed-array-examples/issues/1">Pangeo</a></li>
 <li>sgkit</li>
 </ul>
 </li>
-<li>Ease of use<ul>
-<li>Build Lithops image on cloud: <a href="https://github.com/lithops-cloud/lithops/issues/972">https://github.com/lithops-cloud/lithops/issues/972</a></li>
-<li>Realtime UI</li>
+<li>Optimization<ul>
+<li><a href="https://github.com/tomwhite/cubed/issues/136">Fuse connected blockwise subgraphs</a></li>
+<li><a href="https://github.com/tomwhite/cubed/issues/69">Support multiple outputs in blockwise</a></li>
+<li>Use <a href="https://github.com/tomwhite/cubed/issues/117">Xarray-Beam</a></li>
 </ul>
 </li>
+<li>Ease of use</li>
+<li>Improve <a href="https://github.com/tomwhite/cubed/blob/main/api_status.md">Array API coverage</a></li>
 </ul>
 
 </div>
