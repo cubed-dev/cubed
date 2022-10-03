@@ -8,7 +8,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | Array Ops           | :white_check_mark: |            |                              |
 |                          | Bitwise Ops         | :white_check_mark: |            |                              |
 |                          | Comparison Ops      | :white_check_mark: |            |                              |
-|                          | In-place Ops        |                    |            | Arrays are immutable         |
+|                          | In-place Ops        | :x:                |            | Arrays are immutable         |
 |                          | Reflected Ops       | :white_check_mark: |            |                              |
 |                          | Attributes          | :white_check_mark: |            |                              |
 |                          | Methods             | :white_check_mark: |            | Not device methods           |
@@ -18,7 +18,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `empty`             | :white_check_mark: |            |                              |
 |                          | `empty_like`        | :white_check_mark: |            |                              |
 |                          | `eye`               | :white_check_mark: |            |                              |
-|                          | `from_dlpack`       |                    |            |                              |
+|                          | `from_dlpack`       | :x:                |            |                              |
 |                          | `full`              | :white_check_mark: |            |                              |
 |                          | `full_like`         | :white_check_mark: |            |                              |
 |                          | `linspace`          | :white_check_mark: |            |                              |
@@ -40,7 +40,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | _others_            | :white_check_mark: |            |                              |
 | Indexing                 | Single-axis         | :white_check_mark: |            |                              |
 |                          | Multi-axis          | :white_check_mark: |            |                              |
-|                          | Boolean array       |                    | 3          | Shape is data dependent      |
+|                          | Boolean array       | :x:                | 3          | Shape is data dependent      |
 | Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                              |
 |                          | `matrix_transpose`  | :white_check_mark: |            |                              |
 |                          | `tensordot`         | :white_check_mark: |            |                              |
@@ -49,28 +49,28 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `broadcast_to`      | :white_check_mark: |            |                              |
 |                          | `concat`            | :white_check_mark: |            |                              |
 |                          | `expand_dims`       | :white_check_mark: |            |                              |
-|                          | `flip`              |                    | 2          | Needs indexing with step=-1  |
+|                          | `flip`              | :x:                | 2          | Needs indexing with step=-1  |
 |                          | `permute_dims`      | :white_check_mark: |            |                              |
 |                          | `reshape`           | :white_check_mark: |            | Partial implementation       |
-|                          | `roll`              |                    | 2          | Use `concat` and `reshape`   |
+|                          | `roll`              | :x:                | 2          | Use `concat` and `reshape`   |
 |                          | `squeeze`           | :white_check_mark: |            |                              |
 |                          | `stack`             | :white_check_mark: |            |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
 |                          | `argmin`            | :white_check_mark: |            |                              |
-|                          | `nonzero`           |                    | 3          | Shape is data dependent      |
+|                          | `nonzero`           | :x:                | 3          | Shape is data dependent      |
 |                          | `where`             | :white_check_mark: |            |                              |
-| Set Functions            | `unique_all`        |                    | 3          | Shape is data dependent      |
-|                          | `unique_counts`     |                    | 3          | Shape is data dependent      |
-|                          | `unique_inverse`    |                    | 3          | Shape is data dependent      |
-|                          | `unique_values`     |                    | 3          | Shape is data dependent      |
-| Sorting Functions        | `argsort`           |                    | 3          | Not in Dask                  |
-|                          | `sort`              |                    | 3          | Not in Dask                  |
+| Set Functions            | `unique_all`        | :x:                | 3          | Shape is data dependent      |
+|                          | `unique_counts`     | :x:                | 3          | Shape is data dependent      |
+|                          | `unique_inverse`    | :x:                | 3          | Shape is data dependent      |
+|                          | `unique_values`     | :x:                | 3          | Shape is data dependent      |
+| Sorting Functions        | `argsort`           | :x:                | 3          | Not in Dask                  |
+|                          | `sort`              | :x:                | 3          | Not in Dask                  |
 | Statistical Functions    | `max`               | :white_check_mark: |            |                              |
 |                          | `mean`              | :white_check_mark: |            |                              |
 |                          | `min`               | :white_check_mark: |            |                              |
 |                          | `prod`              | :white_check_mark: |            |                              |
-|                          | `std`               |                    | 2          | Like `mean`                  |
+|                          | `std`               | :x:                | 2          | Like `mean`                  |
 |                          | `sum`               | :white_check_mark: |            |                              |
-|                          | `var`               |                    | 2          | Like `mean`                  |
+|                          | `var`               | :x:                | 2          | Like `mean`                  |
 | Utility Functions        | `all`               | :white_check_mark: |            |                              |
 |                          | `any`               | :white_check_mark: |            |                              |
