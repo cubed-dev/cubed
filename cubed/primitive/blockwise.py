@@ -201,19 +201,20 @@ def can_fuse_pipelines(n1_dict, n2_dict):
     return False
 
 
-def fuse(
-    pipeline1,
-    target_array1,
-    required_mem1,
-    num_tasks1,
-    pipeline2,
-    target_array2,
-    required_mem2,
-    num_tasks2,
-):
+def fuse(n1_dict, n2_dict):
     """
     Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
     """
+
+    pipeline1 = n1_dict["pipeline"]
+    required_mem1 = n1_dict["required_mem"]
+    num_tasks1 = n1_dict["num_tasks"]
+
+    pipeline2 = n2_dict["pipeline"]
+    target_array2 = n2_dict["target"]
+    required_mem2 = n2_dict["required_mem"]
+    num_tasks2 = n2_dict["num_tasks"]
+
     assert num_tasks1 == num_tasks2
 
     # combine mappables by using input keys for first pipeline, and output keys for second
