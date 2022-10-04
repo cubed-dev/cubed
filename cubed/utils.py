@@ -99,7 +99,9 @@ class StackSummary:
 
     def is_cubed(self):
         """Return True if this stack frame is a Cubed call."""
-        return self.module.startswith("cubed.")
+        return self.module.startswith("cubed.") and not self.module.startswith(
+            "cubed.tests."
+        )
 
     def is_on_python_lib_path(self):
         """Return True if this stack frame is from a library on Python's library path."""
