@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -84,3 +86,49 @@ def test_no_fusion_multiple_edges(spec):
     assert task_counter.value == 2
 
     assert_array_equal(result, np.full((2, 2), True))
+
+
+def test_fusion_multiple_inputs(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.negative(a)
+    d = xp.negative(b)
+    e = c + d
+
+    e.visualize("cubed-fusion-multiple-inputs-unoptimized", optimize_graph=False)
+    e.visualize("cubed-fusion-multiple-inputs", optimize_graph=True)
+
+    assert e.plan.num_tasks(optimize_graph=False) == 12
+    assert e.plan.num_tasks(optimize_graph=True) == 4  # TODO: this fails
+
+    task_counter = TaskCounter()
+    result = e.compute(callbacks=[task_counter])
+    assert task_counter.value == 12
+
+    assert_array_equal(
+        result,
+        np.array([[-2, -3, -4], [-5, -6, -7], [-8, -9, -10]]),
+    )
+
+
+def test_blockwise_subgraph_fusion(spec):
+    # test that a large subgraph of blockwise operations is fused
+
+    random.seed(42)
+
+    a = cubed.random.random((100, 90, 80), chunks=10, spec=spec)
+    b = cubed.random.random((100, 90, 80), chunks=10, spec=spec)
+    x = cubed.random.random((90, 80), chunks=10, spec=spec)
+    y = cubed.random.random((90, 80), chunks=10, spec=spec)
+
+    result = a[1:] * x + b[1:] * y
+    result = xp.mean(result)
+
+    result.visualize("cubed-geo-unoptimized", optimize_graph=False)
+    result.visualize("cubed-geo", optimize_graph=True)
+
+    # TODO: add assert for num_tasks for optimize_graph=False/True
+
+    assert_array_equal(
+        result.compute(optimize_graph=False), result.compute(optimize_graph=True)
+    )
