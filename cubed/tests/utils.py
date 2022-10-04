@@ -4,6 +4,7 @@ import numpy as np
 import zarr
 from rechunker.executors.python import PythonPipelineExecutor
 
+from cubed.core.array import Callback
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
 
@@ -51,6 +52,22 @@ try:
     MODAL_EXECUTORS.append(ModalDagExecutor())
 except ImportError:
     pass
+
+
+class TaskCounter(Callback):
+    def on_compute_start(self, dag):
+        self.value = 0
+
+    def on_task_end(self, event):
+        if event.task_create_tstamp is not None:
+            assert (
+                event.task_result_tstamp
+                >= event.function_end_tstamp
+                >= event.function_start_tstamp
+                >= event.task_create_tstamp
+                > 0
+            )
+        self.value += event.num_tasks
 
 
 def create_zarr(a, /, store, *, dtype=None, chunks=None):

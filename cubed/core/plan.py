@@ -103,18 +103,7 @@ class Plan:
         for n in list(dag.nodes()):
             if can_fuse(n):
                 pre = next(dag.predecessors(n))
-                n1_dict = nodes[pre]
-                n2_dict = nodes[n]
-                pipeline, target, required_mem, num_tasks = fuse(
-                    n1_dict["pipeline"],
-                    n1_dict["target"],
-                    n1_dict["required_mem"],
-                    n1_dict["num_tasks"],
-                    n2_dict["pipeline"],
-                    n2_dict["target"],
-                    n2_dict["required_mem"],
-                    n2_dict["num_tasks"],
-                )
+                pipeline, target, required_mem, num_tasks = fuse(nodes[pre], nodes[n])
                 nodes[n]["pipeline"] = pipeline
                 nodes[n]["target"] = target
                 nodes[n]["required_mem"] = required_mem

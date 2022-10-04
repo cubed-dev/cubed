@@ -65,4 +65,4 @@ def test_extract_stack_summaries():
     stack_summaries = extract_stack_summaries(frame)
     assert stack_summaries[-1].name == "test_extract_stack_summaries"
     assert stack_summaries[-1].module == "cubed.tests.test_utils"
-    assert stack_summaries[-1].is_cubed()
+    assert not stack_summaries[-1].is_cubed()

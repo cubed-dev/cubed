@@ -8,11 +8,10 @@ from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
-from cubed import Callback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.types import DagExecutor
-from cubed.tests.utils import MAIN_EXECUTORS, MODAL_EXECUTORS, create_zarr
+from cubed.tests.utils import MAIN_EXECUTORS, MODAL_EXECUTORS, TaskCounter, create_zarr
 
 
 @pytest.fixture()
@@ -385,22 +384,6 @@ def test_retries(mocker, spec):
     assert_array_equal(c.compute(), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]))
 
 
-class TaskCounter(Callback):
-    def on_compute_start(self, dag):
-        self.value = 0
-
-    def on_task_end(self, event):
-        if event.task_create_tstamp is not None:
-            assert (
-                event.task_result_tstamp
-                >= event.function_end_tstamp
-                >= event.function_start_tstamp
-                >= event.task_create_tstamp
-                > 0
-            )
-        self.value += event.num_tasks
-
-
 def test_callbacks(spec, executor):
     if not isinstance(executor, DagExecutor):
         pytest.skip(f"{type(executor)} does not support callbacks")
@@ -455,61 +438,6 @@ def test_already_computed(spec):
     task_counter = TaskCounter()
     d.compute(callbacks=[task_counter], optimize_graph=False)
     assert task_counter.value == 4
-
-
-def test_fusion(spec):
-    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-    b = xp.negative(a)
-    c = xp.astype(b, np.float32)
-    d = xp.negative(c)
-
-    assert d.plan.num_tasks(optimize_graph=False) == 12
-    assert d.plan.num_tasks(optimize_graph=True) == 4
-
-    task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 4
-
-    assert_array_equal(
-        result,
-        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.float32),
-    )
-
-
-def test_no_fusion(spec):
-    # b can't be fused with c because d also depends on b
-    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    b = xp.positive(a)
-    c = xp.positive(b)
-    d = xp.equal(b, c)
-
-    assert d.plan.num_tasks(optimize_graph=False) == 3
-    assert d.plan.num_tasks(optimize_graph=True) == 3
-
-    task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 3
-
-    assert_array_equal(result, np.ones((2, 2)))
-
-
-def test_no_fusion_multiple_edges(spec):
-    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    b = xp.positive(a)
-    c = xp.asarray(b)
-    # b and c are the same array, so d has a single dependency
-    # with multiple edges
-    # this should not be fused under the current logic
-    d = xp.equal(b, c)
-
-    assert d.plan.num_tasks(optimize_graph=False) == 2
-    assert d.plan.num_tasks(optimize_graph=True) == 2
-
-    task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 2
-
-    assert_array_equal(result, np.full((2, 2), True))
 
 
 def test_measure_reserved_memory(executor):

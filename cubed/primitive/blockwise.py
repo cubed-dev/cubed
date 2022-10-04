@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Dict, NamedTuple
+from typing import Callable, Dict, NamedTuple, Optional
 
 import zarr
 from dask.array.core import normalize_chunks
@@ -200,26 +201,37 @@ def can_fuse_pipelines(n1_dict, n2_dict):
     return False
 
 
-def fuse(
-    pipeline1,
-    target_array1,
-    required_mem1,
-    num_tasks1,
-    pipeline2,
-    target_array2,
-    required_mem2,
-    num_tasks2,
-):
+def fuse(n1_dict, n2_dict):
     """
     Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
     """
+
+    pipeline1 = n1_dict["pipeline"]
+    required_mem1 = n1_dict["required_mem"]
+    num_tasks1 = n1_dict["num_tasks"]
+
+    pipeline2 = n2_dict["pipeline"]
+    target_array2 = n2_dict["target"]
+    required_mem2 = n2_dict["required_mem"]
+    num_tasks2 = n2_dict["num_tasks"]
+
     assert num_tasks1 == num_tasks2
 
     # combine mappables by using input keys for first pipeline, and output keys for second
-    out_keys1, in_keys1 = list(zip(*pipeline1.stages[0].mappable))
-    out_keys2, in_keys2 = list(zip(*pipeline2.stages[0].mappable))
-    # following has to be a list of lists, not of tuples, otherwise lithops breaks
-    mappable = [list(a) for a in zip(out_keys2, in_keys1)]
+
+    map1 = {}
+    for out_chunk_key1, in_name_chunk_keys1 in pipeline1.stages[0].mappable:
+        key = tuple(SliceHolder.from_slice(sl) for sl in out_chunk_key1)
+        map1[key] = in_name_chunk_keys1
+
+    mappable = []
+    for out_chunk_key2, in_name_chunk_keys2 in pipeline2.stages[0].mappable:
+        in_chunk_keys2 = [in_chunk_key2 for _, in_chunk_key2 in in_name_chunk_keys2]
+        for in_chunk_key2 in in_chunk_keys2:
+            key = tuple(SliceHolder.from_slice(sl) for sl in in_chunk_key2)
+            in_name_chunk_keys1 = map1[key]
+            # mappable has to be a list of lists, not of tuples, otherwise lithops breaks
+            mappable.append([out_chunk_key2, in_name_chunk_keys1])
 
     stages = [
         Stage(
@@ -242,3 +254,19 @@ def fuse(
     num_tasks = num_tasks2
 
     return pipeline, target_array, required_mem, num_tasks
+
+
+# Python slice is not hashable so can't be used as a dict key
+# so use this wrapper instead
+@dataclass(eq=True, frozen=True)
+class SliceHolder:
+    start: int
+    stop: int
+    step: Optional[int]
+
+    @classmethod
+    def from_slice(cls, sl):
+        return cls(sl.start, sl.stop, sl.step)
+
+    def to_slice(self):
+        return slice(self.start, self.stop, self.step)
