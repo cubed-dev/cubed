@@ -31,6 +31,25 @@ def test_fusion(spec):
     )
 
 
+def test_fusion_transpose(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.negative(a)
+    c = xp.astype(b, np.float32)
+    d = c.T
+
+    assert d.plan.num_tasks(optimize_graph=False) == 12
+    assert d.plan.num_tasks(optimize_graph=True) == 4
+
+    task_counter = TaskCounter()
+    result = d.compute(callbacks=[task_counter])
+    assert task_counter.value == 4
+
+    assert_array_equal(
+        result,
+        np.array([[-1, -4, -7], [-2, -5, -8], [-3, -6, -9]]).astype(np.float32),
+    )
+
+
 def test_no_fusion(spec):
     # b can't be fused with c because d also depends on b
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
