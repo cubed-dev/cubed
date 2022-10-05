@@ -1,10 +1,11 @@
-from dataclasses import dataclass
+import itertools
 from functools import partial
-from typing import Callable, Dict, NamedTuple, Optional
+from typing import Callable, Dict, NamedTuple
 
+import toolz
 import zarr
 from dask.array.core import normalize_chunks
-from dask.blockwise import make_blockwise_graph
+from dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from dask.core import flatten
 from rechunker.types import ArrayProxy, Pipeline, Stage
 from toolz import map
@@ -21,23 +22,41 @@ def gensym(name):
 
 
 class BlockwiseSpec(NamedTuple):
+    block_function: Callable
     function: Callable
     reads_map: Dict[str, ArrayProxy]
     write: ArrayProxy
 
 
-def apply_blockwise(graph_item, *, config=BlockwiseSpec):
-    out_chunk_key, in_name_chunk_keys = graph_item
+def apply_blockwise(out_key, *, config=BlockwiseSpec):
+    # lithops needs params to be lists not tuples, so convert back
+    out_key = tuple(out_key)
+    out_chunk_key = key_to_slices(out_key, config.write.array, config.write.chunks)
     args = []
-    for name, in_chunk_key in in_name_chunk_keys:
-        arg = config.reads_map[name].array[in_chunk_key]
+    name_chunk_inds = config.block_function(("out",) + out_key)[1:]
+    # flatten (nested) lists indicating contraction
+    if isinstance(name_chunk_inds[0], list):
+        name_chunk_inds = list(flatten(name_chunk_inds))
+    for name_chunk_ind in name_chunk_inds:
+        name = name_chunk_ind[0]
+        chunk_ind = name_chunk_ind[1:]
+        arr = config.reads_map[name].array
+        chunk_key = key_to_slices(chunk_ind, arr)
+        arg = arr[chunk_key]
         args.append(arg)
+
     result = config.function(*args)
     if isinstance(result, dict):  # structured array with named fields
         for k, v in result.items():
             config.write.array.set_basic_selection(out_chunk_key, v, fields=k)
     else:
         config.write.array[out_chunk_key] = result
+
+
+def key_to_slices(key, arr, chunks=None):
+    """Convert a chunk index key to a tuple of slices"""
+    chunks = normalize_chunks(chunks or arr.chunks, shape=arr.shape, dtype=arr.dtype)
+    return get_item(chunks, key)
 
 
 def blockwise(
@@ -107,7 +126,9 @@ def blockwise(
     # TODO: check output shape and chunks are consistent with inputs
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    graph = make_blockwise_graph(
+    # block func
+
+    block_function = make_blockwise_function(
         func,
         out_name or "out",
         out_ind,
@@ -116,28 +137,16 @@ def blockwise(
         new_axes=new_axes,
     )
 
-    # convert chunk indexes to chunk keys (slices)
-    graph_mappable = []
-    for k, v in graph.items():
-        out_chunk_key = get_item(chunks, k[1:])
-        name_chunk_keys = []
-        name_chunk_inds = v[1:]  # remove func
-        # flatten (nested) lists indicating contraction
-        if isinstance(name_chunk_inds[0], list):
-            name_chunk_inds = list(flatten(name_chunk_inds))
-        for name_chunk_ind in name_chunk_inds:
-            name = name_chunk_ind[0]
-            chunk_ind = name_chunk_ind[1:]
-            arr = array_map[name]
-            chks = normalize_chunks(
-                arr.chunks, shape=arr.shape, dtype=arr.dtype
-            )  # have to normalize zarr chunks
-            chunk_key = get_item(chks, chunk_ind)
-            name_chunk_keys.append((name, chunk_key))
-        # following has to be a list, not a tuple, otherwise lithops breaks
-        graph_mappable.append([out_chunk_key, name_chunk_keys])
+    output_blocks = get_output_blocks(
+        func,
+        out_name or "out",
+        out_ind,
+        *argindsstr,
+        numblocks=numblocks,
+        new_axes=new_axes,
+    )
 
-    # now use the graph_mappable in a pipeline
+    # end block func
 
     chunksize = to_chunksize(chunks)
     if isinstance(target_store, zarr.Array):
@@ -152,13 +161,13 @@ def blockwise(
         name: ArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
     write_proxy = ArrayProxy(target_array, chunksize)
-    spec = BlockwiseSpec(func_with_kwargs, read_proxies, write_proxy)
+    spec = BlockwiseSpec(block_function, func_with_kwargs, read_proxies, write_proxy)
 
     stages = [
         Stage(
             apply_blockwise,
             gensym("apply_blockwise"),
-            mappable=graph_mappable,
+            mappable=output_blocks,
         )
     ]
 
@@ -182,7 +191,7 @@ def blockwise(
             f"Blockwise memory ({required_mem}) exceeds max_mem ({max_mem})"
         )
 
-    num_tasks = len(graph)
+    num_tasks = len(output_blocks)
 
     return Pipeline(stages, config=spec), target_array, required_mem, num_tasks
 
@@ -224,21 +233,7 @@ def fuse(n1_dict, n2_dict):
 
     assert num_tasks1 == num_tasks2
 
-    # combine mappables by using input keys for first pipeline, and output keys for second
-
-    map1 = {}
-    for out_chunk_key1, in_name_chunk_keys1 in pipeline1.stages[0].mappable:
-        key = tuple(SliceHolder.from_slice(sl) for sl in out_chunk_key1)
-        map1[key] = in_name_chunk_keys1
-
-    mappable = []
-    for out_chunk_key2, in_name_chunk_keys2 in pipeline2.stages[0].mappable:
-        in_chunk_keys2 = [in_chunk_key2 for _, in_chunk_key2 in in_name_chunk_keys2]
-        for in_chunk_key2 in in_chunk_keys2:
-            key = tuple(SliceHolder.from_slice(sl) for sl in in_chunk_key2)
-            in_name_chunk_keys1 = map1[key]
-            # mappable has to be a list of lists, not of tuples, otherwise lithops breaks
-            mappable.append([out_chunk_key2, in_name_chunk_keys1])
+    mappable = pipeline2.stages[0].mappable
 
     stages = [
         Stage(
@@ -248,12 +243,20 @@ def fuse(n1_dict, n2_dict):
         )
     ]
 
+    def fused_blockwise_func(out_key):
+        name_chunk_inds = pipeline2.config.block_function(out_key)[1:]
+        # flatten (nested) lists indicating contraction
+        if isinstance(name_chunk_inds[0], list):
+            name_chunk_inds = list(flatten(name_chunk_inds))
+        name_chunk_ind = name_chunk_inds[0]  # assumes one input
+        return pipeline1.config.block_function(name_chunk_ind)
+
     def fused_func(*args):
         return pipeline2.config.function(pipeline1.config.function(*args))
 
     read_proxies = pipeline1.config.reads_map
     write_proxy = pipeline2.config.write
-    spec = BlockwiseSpec(fused_func, read_proxies, write_proxy)
+    spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
     pipeline = Pipeline(stages, config=spec)
 
     target_array = target_array2
@@ -263,17 +266,76 @@ def fuse(n1_dict, n2_dict):
     return pipeline, target_array, required_mem, num_tasks
 
 
-# Python slice is not hashable so can't be used as a dict key
-# so use this wrapper instead
-@dataclass(eq=True, frozen=True)
-class SliceHolder:
-    start: int
-    stop: int
-    step: Optional[int]
+# blockwise functions
 
-    @classmethod
-    def from_slice(cls, sl):
-        return cls(sl.start, sl.stop, sl.step)
 
-    def to_slice(self):
-        return slice(self.start, self.stop, self.step)
+def make_blockwise_function(
+    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
+):
+    """Make a function that is the equivalent of make_blockwise_graph."""
+
+    if numblocks is None:
+        raise ValueError("Missing required numblocks argument.")
+    new_axes = new_axes or {}
+    argpairs = list(toolz.partition(2, arrind_pairs))
+
+    # Dictionary mapping {i: 3, j: 4, ...} for i, j, ... the dimensions
+    dims = _make_dims(argpairs, numblocks, new_axes)
+
+    # Generate the abstract "plan" before constructing
+    # the actual graph
+    (coord_maps, concat_axes, dummies) = _get_coord_mapping(
+        dims,
+        output,
+        out_indices,
+        numblocks,
+        argpairs,
+        False,
+    )
+
+    def blockwise_fn(out_key):
+        out_coords = out_key[1:]
+
+        # from Dask make_blockwise_graph
+        deps = set()
+        coords = out_coords + dummies
+        args = []
+        for cmap, axes, (arg, ind) in zip(coord_maps, concat_axes, argpairs):
+            if ind is None:
+                args.append(arg)
+            else:
+                arg_coords = tuple(coords[c] for c in cmap)
+                if axes:
+                    tups = lol_product((arg,), arg_coords)
+                    deps.update(flatten(tups))
+                else:
+                    tups = (arg,) + arg_coords
+                    deps.add(tups)
+                args.append(tups)
+
+        args.insert(0, func)
+        val = tuple(args)
+        # end from make_blockwise_graph
+
+        return val
+
+    return blockwise_fn
+
+
+def get_output_blocks(
+    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
+):
+
+    if numblocks is None:
+        raise ValueError("Missing required numblocks argument.")
+    new_axes = new_axes or {}
+    argpairs = list(toolz.partition(2, arrind_pairs))
+
+    # Dictionary mapping {i: 3, j: 4, ...} for i, j, ... the dimensions
+    dims = _make_dims(argpairs, numblocks, new_axes)
+
+    # return a list of lists, not of tuples, otherwise lithops breaks
+    output_blocks_lists = [
+        list(tup) for tup in itertools.product(*[range(dims[i]) for i in out_indices])
+    ]
+    return output_blocks_lists
