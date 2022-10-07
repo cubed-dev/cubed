@@ -50,6 +50,8 @@ def blockwise(
     dtype,
     chunks,
     new_axes=None,
+    in_names=None,
+    out_name=None,
     **kwargs,
 ):
     """Apply a function across blocks from multiple source Zarr arrays.
@@ -86,7 +88,7 @@ def blockwise(
 
     # Use dask's make_blockwise_graph
     arrays = args[::2]
-    array_names = [f"in_{i}" for i in range(len(arrays))]
+    array_names = in_names or [f"in_{i}" for i in range(len(arrays))]
     array_map = {name: array for name, array in zip(array_names, arrays)}
 
     inds = args[1::2]
@@ -106,7 +108,12 @@ def blockwise(
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
     graph = make_blockwise_graph(
-        func, "out", out_ind, *argindsstr, numblocks=numblocks, new_axes=new_axes
+        func,
+        out_name or "out",
+        out_ind,
+        *argindsstr,
+        numblocks=numblocks,
+        new_axes=new_axes,
     )
 
     # convert chunk indexes to chunk keys (slices)

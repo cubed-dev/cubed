@@ -245,6 +245,7 @@ def blockwise(
     # replace arrays with zarr arrays
     zargs = list(args)
     zargs[::2] = [a.zarray for a in arrays]
+    in_names = [a.name for a in arrays]
 
     extra_source_arrays = kwargs.pop("extra_source_arrays", [])
     source_arrays = list(arrays) + list(extra_source_arrays)
@@ -265,6 +266,8 @@ def blockwise(
         dtype=dtype,
         chunks=_chunks,
         new_axes=new_axes,
+        in_names=in_names,
+        out_name=name,
         **kwargs,
     )
     plan = Plan._new(
