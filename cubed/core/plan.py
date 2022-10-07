@@ -58,11 +58,16 @@ class Plan:
 
         if pipeline is None:
             dag.add_node(
-                name, op_name=op_name, target=target, stack_summaries=stack_summaries
+                name,
+                name=name,
+                op_name=op_name,
+                target=target,
+                stack_summaries=stack_summaries,
             )
         else:
             dag.add_node(
                 name,
+                name=name,
                 op_name=op_name,
                 target=target,
                 stack_summaries=stack_summaries,
@@ -240,6 +245,8 @@ class Plan:
                 del d["pipeline"]
             if "target" in d:
                 del d["target"]
+            if "name" in d:  # pydot already has name
+                del d["name"]
         gv = nx.drawing.nx_pydot.to_pydot(dag)
         if format is None:
             format = "svg"
