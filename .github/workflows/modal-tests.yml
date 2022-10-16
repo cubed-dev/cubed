@@ -36,7 +36,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-modal.txt
           python -m pip install --no-deps -e .
-          python -m pip install ${{ secrets.MODAL_WHEEL_URL }}
 
       - name: Run tests
         run: |
