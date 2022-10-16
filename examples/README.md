@@ -64,8 +64,6 @@ pip install -r requirements-modal.txt
 pip install -e .
 ```
 
-4. Install Modal via `pip` using the command on your home page when logged in to Modal: https://modal.com/home.
-
 ### Examples
 
 Start with the simplest example:
