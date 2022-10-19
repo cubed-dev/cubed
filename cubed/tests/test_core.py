@@ -1,5 +1,4 @@
-import pickle
-
+import dill
 import fsspec
 import numpy as np
 import pytest
@@ -352,7 +351,8 @@ def test_array_pickle(spec, executor):
     c = xp.matmul(a, b)
 
     # we haven't computed c yet, so pickle and unpickle, and check it still works
-    c = pickle.loads(pickle.dumps(c))
+    # note we have to use dill which can serialize local functions, unlike pickle
+    c = dill.loads(dill.dumps(c))
 
     x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])

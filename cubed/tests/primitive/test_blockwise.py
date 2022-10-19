@@ -1,10 +1,11 @@
 import numpy as np
 import pytest
 import zarr
+from dask.blockwise import make_blockwise_graph
 from numpy.testing import assert_array_equal
 from rechunker.executors.python import PythonPipelineExecutor
 
-from cubed.primitive.blockwise import blockwise
+from cubed.primitive.blockwise import blockwise, make_blockwise_function
 from cubed.tests.utils import create_zarr, execute_pipeline
 
 
@@ -143,3 +144,80 @@ def test_blockwise_max_mem_exceeded(tmp_path):
             dtype=int,
             chunks=(2, 2),
         )
+
+
+def test_make_blockwise_function_map():
+    func = lambda x: 0
+
+    block_fn = make_blockwise_function(
+        func, "z", "ij", "x", "ij", numblocks={"x": (2, 2)}
+    )
+
+    graph = make_blockwise_graph(func, "z", "ij", "x", "ij", numblocks={"x": (2, 2)})
+    check_consistent_with_graph(block_fn, graph)
+
+
+def test_make_blockwise_function_elemwise():
+    func = lambda x: 0
+
+    block_fn = make_blockwise_function(
+        func, "z", "ij", "x", "ij", "y", "ij", numblocks={"x": (2, 2), "y": (2, 2)}
+    )
+
+    graph = make_blockwise_graph(
+        func, "z", "ij", "x", "ij", "y", "ij", numblocks={"x": (2, 2), "y": (2, 2)}
+    )
+    check_consistent_with_graph(block_fn, graph)
+
+
+def test_make_blockwise_function_flip():
+    func = lambda x: 0
+
+    block_fn = make_blockwise_function(
+        func, "z", "ij", "x", "ij", "y", "ji", numblocks={"x": (2, 2), "y": (2, 2)}
+    )
+
+    graph = make_blockwise_graph(
+        func, "z", "ij", "x", "ij", "y", "ji", numblocks={"x": (2, 2), "y": (2, 2)}
+    )
+    check_consistent_with_graph(block_fn, graph)
+
+
+def test_make_blockwise_function_contract():
+    func = lambda x: 0
+
+    block_fn = make_blockwise_function(
+        func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 2), "y": (2, 2)}
+    )
+
+    graph = make_blockwise_graph(
+        func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 2), "y": (2, 2)}
+    )
+    check_consistent_with_graph(block_fn, graph)
+
+
+def test_make_blockwise_function_contract_1d():
+    func = lambda x: 0
+
+    block_fn = make_blockwise_function(
+        func, "z", "j", "x", "ij", numblocks={"x": (1, 2)}
+    )
+
+    graph = make_blockwise_graph(func, "z", "j", "x", "ij", numblocks={"x": (1, 2)})
+    check_consistent_with_graph(block_fn, graph)
+
+
+def test_make_blockwise_function_contract_0d():
+    func = lambda x: 0
+
+    block_fn = make_blockwise_function(
+        func, "z", "", "x", "ij", numblocks={"x": (2, 2)}
+    )
+
+    graph = make_blockwise_graph(func, "z", "", "x", "ij", numblocks={"x": (2, 2)})
+    check_consistent_with_graph(block_fn, graph)
+
+
+def check_consistent_with_graph(block_fn, graph):
+    for k, v in graph.items():
+        assert block_fn(k) == v
