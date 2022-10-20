@@ -256,7 +256,7 @@ def blockwise(
     spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
-    pipeline, target, required_mem, num_tasks = primitive_blockwise(
+    pipeline = primitive_blockwise(
         func,
         out_ind,
         *zargs,
@@ -273,15 +273,15 @@ def blockwise(
     plan = Plan._new(
         name,
         "blockwise",
-        target,
+        pipeline.target_array,
         pipeline,
-        required_mem + extra_required_mem,
-        num_tasks,
+        pipeline.required_mem + extra_required_mem,
+        pipeline.num_tasks,
         *source_arrays,
     )
     from cubed.array_api import Array
 
-    return Array(name, target, spec, plan)
+    return Array(name, pipeline.target_array, spec, plan)
 
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
@@ -564,18 +564,26 @@ def rechunk(x, chunks, target_store=None):
     if target_store is None:
         target_store = new_temp_store(name=name, spec=spec)
     temp_store = new_temp_store(name=f"{name}-intermediate", spec=spec)
-    pipeline, target, required_mem, num_tasks = primitive_rechunk(
+    pipeline = primitive_rechunk(
         x.zarray,
         target_chunks=chunks,
         max_mem=spec.max_mem,
         target_store=target_store,
         temp_store=temp_store,
     )
-    plan = Plan._new(name, "rechunk", target, pipeline, required_mem, num_tasks, x)
+    plan = Plan._new(
+        name,
+        "rechunk",
+        pipeline.target_array,
+        pipeline,
+        pipeline.required_mem,
+        pipeline.num_tasks,
+        x,
+    )
 
     from cubed.array_api import Array
 
-    return Array(name, target, spec, plan)
+    return Array(name, pipeline.target_array, spec, plan)
 
 
 def reduction(

@@ -1,16 +1,19 @@
 import itertools
+from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Dict, NamedTuple
+from typing import Callable, Dict
 
 import toolz
 import zarr
 from dask.array.core import normalize_chunks
 from dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from dask.core import flatten
-from rechunker.types import ArrayProxy, Pipeline, Stage
+from rechunker.types import ArrayProxy, Stage
 from toolz import map
 
 from cubed.utils import chunk_memory, get_item, to_chunksize
+
+from .types import CubedPipeline
 
 sym_counter = 0
 
@@ -21,7 +24,24 @@ def gensym(name):
     return f"{name}-{sym_counter:03}"
 
 
-class BlockwiseSpec(NamedTuple):
+@dataclass(frozen=True)
+class BlockwiseSpec:
+    """Specification for how to run blockwise on an array.
+
+    This is similar to ``CopySpec`` in rechunker.
+
+    Attributes
+    ----------
+    block_function : Callable
+        A function that maps input chunk indexes to an output chunk index.
+    function : Callable
+        A function that maps input chunks to an output chunk.
+    reads_map : Dict[str, ArrayProxy]
+        Read proxy dictionary keyed by array name.
+    write : ArrayProxy
+        Write proxy with an ``array`` attribute that supports ``__setitem__``.
+    """
+
     block_function: Callable
     function: Callable
     reads_map: Dict[str, ArrayProxy]
@@ -29,6 +49,7 @@ class BlockwiseSpec(NamedTuple):
 
 
 def apply_blockwise(out_key, *, config=BlockwiseSpec):
+    """Stage function for blockwise."""
     # lithops needs params to be lists not tuples, so convert back
     out_key = tuple(out_key)
     out_chunk_key = key_to_slices(out_key, config.write.array, config.write.chunks)
@@ -193,45 +214,32 @@ def blockwise(
 
     num_tasks = len(output_blocks)
 
-    return Pipeline(stages, config=spec), target_array, required_mem, num_tasks
+    return CubedPipeline(stages, spec, target_array, required_mem, num_tasks)
 
 
 # Code for fusing pipelines
 
 
-def is_fuse_candidate(node_dict):
+def is_fuse_candidate(pipeline):
     """
-    Return True if the array for a node is a candidate for map fusion.
+    Return True if a pipeline is a candidate for blockwise fusion.
     """
-    pipeline = node_dict.get("pipeline", None)
-    if pipeline is None:
-        return False
-
     stages = pipeline.stages
     return len(stages) == 1 and stages[0].function == apply_blockwise
 
 
-def can_fuse_pipelines(n1_dict, n2_dict):
-    if is_fuse_candidate(n1_dict) and is_fuse_candidate(n2_dict):
-        return n1_dict["num_tasks"] == n2_dict["num_tasks"]
+def can_fuse_pipelines(pipeline1, pipeline2):
+    if is_fuse_candidate(pipeline1) and is_fuse_candidate(pipeline2):
+        return pipeline1.num_tasks == pipeline2.num_tasks
     return False
 
 
-def fuse(n1_dict, n2_dict):
+def fuse(pipeline1, pipeline2):
     """
     Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
     """
 
-    pipeline1 = n1_dict["pipeline"]
-    required_mem1 = n1_dict["required_mem"]
-    num_tasks1 = n1_dict["num_tasks"]
-
-    pipeline2 = n2_dict["pipeline"]
-    target_array2 = n2_dict["target"]
-    required_mem2 = n2_dict["required_mem"]
-    num_tasks2 = n2_dict["num_tasks"]
-
-    assert num_tasks1 == num_tasks2
+    assert pipeline1.num_tasks == pipeline2.num_tasks
 
     mappable = pipeline2.stages[0].mappable
 
@@ -257,13 +265,12 @@ def fuse(n1_dict, n2_dict):
     read_proxies = pipeline1.config.reads_map
     write_proxy = pipeline2.config.write
     spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
-    pipeline = Pipeline(stages, config=spec)
 
-    target_array = target_array2
-    required_mem = max(required_mem1, required_mem2)
-    num_tasks = num_tasks2
+    target_array = pipeline2.target_array
+    required_mem = max(pipeline1.required_mem, pipeline2.required_mem)
+    num_tasks = pipeline2.num_tasks
 
-    return pipeline, target_array, required_mem, num_tasks
+    return CubedPipeline(stages, spec, target_array, required_mem, num_tasks)
 
 
 # blockwise functions

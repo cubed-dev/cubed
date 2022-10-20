@@ -51,7 +51,7 @@ def test_rechunk(
     target_store = tmp_path / "target.zarr"
     temp_store = tmp_path / "temp.zarr"
 
-    pipeline, target, required_mem, num_tasks = rechunk(
+    pipeline = rechunk(
         source,
         target_chunks=target_chunks,
         max_mem=max_mem,
@@ -59,13 +59,13 @@ def test_rechunk(
         temp_store=temp_store,
     )
 
-    assert target.shape == shape
-    assert target.dtype == source.dtype
-    assert target.chunks == target_chunks
+    assert pipeline.target_array.shape == shape
+    assert pipeline.target_array.dtype == source.dtype
+    assert pipeline.target_array.chunks == target_chunks
 
-    assert required_mem == expected_required_mem
+    assert pipeline.required_mem == expected_required_mem
 
-    assert num_tasks == expected_num_tasks
+    assert pipeline.num_tasks == expected_num_tasks
 
     execute_pipeline(pipeline, executor=executor)
 

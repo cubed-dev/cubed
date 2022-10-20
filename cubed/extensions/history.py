@@ -12,12 +12,13 @@ class HistoryCallback(Callback):
     def on_compute_start(self, dag):
         plan = []
         for name, node in visit_nodes(dag):
+            pipeline = node["pipeline"]
             plan.append(
                 dict(
                     array_name=name,
                     op_name=node["op_name"],
-                    required_mem=node["required_mem"],
-                    num_tasks=node["num_tasks"],
+                    required_mem=pipeline.required_mem,
+                    num_tasks=pipeline.num_tasks,
                 )
             )
 

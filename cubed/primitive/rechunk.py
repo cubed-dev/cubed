@@ -48,7 +48,7 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     if intermediate is not None:
         num_tasks += total_chunks(copy_spec.read.array.shape, copy_spec.read.chunks)
 
-    return spec_to_pipeline(copy_spec), target, max_mem, num_tasks
+    return spec_to_pipeline(copy_spec, target, max_mem, num_tasks)
 
 
 def total_chunks(shape, chunks):
