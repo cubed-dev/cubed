@@ -54,10 +54,7 @@ def apply_blockwise(out_key, *, config=BlockwiseSpec):
     out_key = tuple(out_key)
     out_chunk_key = key_to_slices(out_key, config.write.array, config.write.chunks)
     args = []
-    name_chunk_inds = config.block_function(("out",) + out_key)[1:]
-    # flatten (nested) lists indicating contraction
-    if isinstance(name_chunk_inds[0], list):
-        name_chunk_inds = list(flatten(name_chunk_inds))
+    name_chunk_inds = config.block_function(("out",) + out_key)
     for name_chunk_ind in name_chunk_inds:
         name = name_chunk_ind[0]
         chunk_ind = name_chunk_ind[1:]
@@ -149,7 +146,7 @@ def blockwise(
 
     # block func
 
-    block_function = make_blockwise_function(
+    block_function = make_blockwise_function_flattened(
         func,
         out_name or "out",
         out_ind,
@@ -252,12 +249,9 @@ def fuse(pipeline1, pipeline2):
     ]
 
     def fused_blockwise_func(out_key):
-        name_chunk_inds = pipeline2.config.block_function(out_key)[1:]
-        # flatten (nested) lists indicating contraction
-        if isinstance(name_chunk_inds[0], list):
-            name_chunk_inds = list(flatten(name_chunk_inds))
-        name_chunk_ind = name_chunk_inds[0]  # assumes one input
-        return pipeline1.config.block_function(name_chunk_ind)
+        return pipeline1.config.block_function(
+            *pipeline2.config.block_function(out_key)
+        )
 
     def fused_func(*args):
         return pipeline2.config.function(pipeline1.config.function(*args))
@@ -327,6 +321,24 @@ def make_blockwise_function(
         return val
 
     return blockwise_fn
+
+
+def make_blockwise_function_flattened(
+    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
+):
+    # TODO: make this a part of make_blockwise_function?
+    blockwise_fn = make_blockwise_function(
+        func, output, out_indices, *arrind_pairs, numblocks=numblocks, new_axes=new_axes
+    )
+
+    def blockwise_fn_flattened(out_key):
+        name_chunk_inds = blockwise_fn(out_key)[1:]  # drop function in position 0
+        # flatten (nested) lists indicating contraction
+        if isinstance(name_chunk_inds[0], list):
+            name_chunk_inds = list(flatten(name_chunk_inds))
+        return name_chunk_inds
+
+    return blockwise_fn_flattened
 
 
 def get_output_blocks(
