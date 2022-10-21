@@ -1,10 +1,12 @@
 import itertools
 import math
-from typing import Iterable, Iterator, List, Tuple
+from typing import Any, Iterable, Iterator, List, Tuple
 
 import dask
 import numpy as np
-from rechunker.types import CopySpec, Pipeline, Stage
+from rechunker.types import CopySpec, Stage
+
+from cubed.primitive.types import CubedPipeline
 
 from .utils import gensym
 
@@ -64,7 +66,9 @@ def copy_intermediate_to_write(chunk_key, *, config=CopySpec):
     config.write.array[chunk_key] = data
 
 
-def spec_to_pipeline(spec: CopySpec) -> Pipeline:
+def spec_to_pipeline(
+    spec: CopySpec, target_array: Any, max_mem: int, num_tasks: int
+) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
     if spec.intermediate.array is None:
@@ -88,7 +92,7 @@ def spec_to_pipeline(spec: CopySpec) -> Pipeline:
                 mappable=ChunkKeys(shape, spec.write.chunks),
             ),
         ]
-    return Pipeline(stages, config=spec)
+    return CubedPipeline(stages, spec, target_array, max_mem, num_tasks)
 
 
 def already_computed(node_dict):

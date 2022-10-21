@@ -24,7 +24,7 @@ def test_blockwise(tmp_path, executor):
     max_mem = 1000
     target_store = tmp_path / "target.zarr"
 
-    pipeline, target, required_mem, num_tasks = blockwise(
+    pipeline = blockwise(
         np.outer,
         "ij",
         source1,
@@ -38,12 +38,12 @@ def test_blockwise(tmp_path, executor):
         chunks=(2, 2),
     )
 
-    assert target.shape == (3, 3)
-    assert target.dtype == int
-    assert target.chunks == (2, 2)
+    assert pipeline.target_array.shape == (3, 3)
+    assert pipeline.target_array.dtype == int
+    assert pipeline.target_array.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert required_mem == (
+    assert pipeline.required_mem == (
         (itemsize * 2)  # source1 compressed chunk
         + (itemsize * 2)  # source1 uncompressed chunk
         + (itemsize * 2)  # source2 compressed chunk
@@ -52,7 +52,7 @@ def test_blockwise(tmp_path, executor):
         + (itemsize * 2 * 2)  # output uncompressed chunk
     )
 
-    assert num_tasks == 4
+    assert pipeline.num_tasks == 4
 
     execute_pipeline(pipeline, executor=executor)
 
@@ -92,23 +92,23 @@ def test_blockwise_with_args(tmp_path, executor):
     max_mem = 1000
     target_store = tmp_path / "target.zarr"
 
-    pipeline, target, required_mem, num_tasks = _permute_dims(
+    pipeline = _permute_dims(
         source, axes=(1, 0), max_mem=max_mem, target_store=target_store
     )
 
-    assert target.shape == (3, 3)
-    assert target.dtype == int
-    assert target.chunks == (2, 2)
+    assert pipeline.target_array.shape == (3, 3)
+    assert pipeline.target_array.dtype == int
+    assert pipeline.target_array.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert required_mem == (
+    assert pipeline.required_mem == (
         (itemsize * 2 * 2)  # source compressed chunk
         + (itemsize * 2 * 2)  # source uncompressed chunk
         + (itemsize * 2 * 2)  # output compressed chunk
         + (itemsize * 2 * 2)  # output uncompressed chunk
     )
 
-    assert num_tasks == 4
+    assert pipeline.num_tasks == 4
 
     execute_pipeline(pipeline, executor=executor)
 

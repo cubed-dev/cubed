@@ -58,11 +58,16 @@ class Plan:
 
         if pipeline is None:
             dag.add_node(
-                name, op_name=op_name, target=target, stack_summaries=stack_summaries
+                name,
+                name=name,
+                op_name=op_name,
+                target=target,
+                stack_summaries=stack_summaries,
             )
         else:
             dag.add_node(
                 name,
+                name=name,
                 op_name=op_name,
                 target=target,
                 stack_summaries=stack_summaries,
@@ -98,16 +103,16 @@ class Plan:
             pre = next(dag.predecessors(n))
             if dag.out_degree(pre) != 1:
                 return False
-            return can_fuse_pipelines(nodes[pre], nodes[n])
+            if "pipeline" not in nodes[pre] or "pipeline" not in nodes[n]:
+                return False
+            return can_fuse_pipelines(nodes[pre]["pipeline"], nodes[n]["pipeline"])
 
         for n in list(dag.nodes()):
             if can_fuse(n):
                 pre = next(dag.predecessors(n))
-                pipeline, target, required_mem, num_tasks = fuse(nodes[pre], nodes[n])
+                pipeline = fuse(nodes[pre]["pipeline"], nodes[n]["pipeline"])
                 nodes[n]["pipeline"] = pipeline
-                nodes[n]["target"] = target
-                nodes[n]["required_mem"] = required_mem
-                nodes[n]["num_tasks"] = num_tasks
+                assert nodes[n]["target"] == pipeline.target_array
 
                 for p in dag.predecessors(pre):
                     dag.add_edge(p, n)
@@ -169,7 +174,7 @@ class Plan:
         """Return the maximum required memory (for a task) to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
         required_mem_values = [
-            node.get("required_mem", 0) for _, node in visit_nodes(dag)
+            node["pipeline"].required_mem for _, node in visit_nodes(dag)
         ]
         return max(required_mem_values) if len(required_mem_values) > 0 else 0
 
@@ -207,10 +212,10 @@ class Plan:
                 f"dtype: {target.dtype}\n"
                 f"chunk memory: {chunkmem}\n"
             )
-            if "required_mem" in d:
-                tooltip += f"\ntask memory: {memory_repr(d['required_mem'])}"
-            if "num_tasks" in d:
-                tooltip += f"\ntasks: {d['num_tasks']}"
+            if "pipeline" in d:
+                pipeline = d["pipeline"]
+                tooltip += f"\ntask memory: {memory_repr(pipeline.required_mem)}"
+                tooltip += f"\ntasks: {pipeline.num_tasks}"
             if "stack_summaries" in d:
                 # add call stack information
                 stack_summaries = d["stack_summaries"]
@@ -240,6 +245,8 @@ class Plan:
                 del d["pipeline"]
             if "target" in d:
                 del d["target"]
+            if "name" in d:  # pydot already has name
+                del d["name"]
         gv = nx.drawing.nx_pydot.to_pydot(dag)
         if format is None:
             format = "svg"
