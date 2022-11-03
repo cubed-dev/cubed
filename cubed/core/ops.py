@@ -12,7 +12,13 @@ from dask.blockwise import broadcast_dimensions
 from dask.utils import has_keyword
 from tlz import concat, partition
 from toolz import accumulate, map
-from zarr.indexing import BasicIndexer, IntDimIndexer, is_slice, replace_ellipsis
+from zarr.indexing import (
+    IntDimIndexer,
+    OrthogonalIndexer,
+    is_integer_list,
+    is_slice,
+    replace_ellipsis,
+)
 
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_store
@@ -314,11 +320,16 @@ def index(x, key):
             where_none[i] -= n
     key = tuple(ind for ind in key if ind is not None)
 
+    # Replace arrays with lists - note that this may trigger a computation!
+    selection = tuple(
+        dim_sel.compute().tolist() if isinstance(dim_sel, CoreArray) else dim_sel
+        for dim_sel in key
+    )
     # Replace ellipsis with slices
-    selection = replace_ellipsis(key, x.shape)
+    selection = replace_ellipsis(selection, x.shape)
 
-    # Use a Zarr BasicIndexer just to find the resulting array shape and chunks
-    indexer = BasicIndexer(selection, x.zarray)
+    # Use a Zarr indexer just to find the resulting array shape and chunks
+    indexer = OrthogonalIndexer(selection, x.zarray)
 
     shape = indexer.shape
     dtype = x.dtype
@@ -329,9 +340,12 @@ def index(x, key):
     )
     chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
-    assert all(isinstance(s, (slice, Integral)) for s in selection)
+    assert all(isinstance(s, (slice, list, Integral)) for s in selection)
     if any(s.step is not None and s.step != 1 for s in selection if is_slice(s)):
         raise NotImplementedError(f"Slice step must be 1: {key}")
+    where_list = [i for i, ind in enumerate(selection) if is_integer_list(ind)]
+    if len(where_list) > 1:
+        raise NotImplementedError("Only one integer array index is allowed.")
 
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks, zarr will
@@ -360,28 +374,35 @@ def index(x, key):
 def _read_index_chunk(x, *arrays, target_chunks=None, selection=None, block_id=None):
     array = arrays[0]
     idx = block_id
-    out = array.zarray[_integers_and_slices_selection(target_chunks, idx, selection)]
+    out = array.zarray.oindex[_target_chunk_selection(target_chunks, idx, selection)]
     return out
 
 
-def _integers_and_slices_selection(target_chunks, idx, selection):
-    # integer and slice indexes can be interspersed in selection
+def _target_chunk_selection(target_chunks, idx, selection):
+    # integer, integer array, and slice indexes can be interspersed in selection
     # idx is the chunk index for the output (target_chunks)
 
-    # these are just for slices
-    offsets = tuple(s.start or 0 for s in selection if is_slice(s))
-    starts = tuple(tuple(accumulate(add, c, o)) for c, o in zip(target_chunks, offsets))
-
     sel = []
-    slice_count = 0  # keep track of slices in selection
+    i = 0  # index into target_chunks and idx
     for s in selection:
         if is_slice(s):
-            i = idx[slice_count]
-            start = starts[slice_count]
-            sel.append(slice(start[i], start[i + 1]))
-            slice_count += 1
+            offset = s.start or 0
+            start = tuple(accumulate(add, target_chunks[i], offset))
+            j = idx[i]
+            sel.append(slice(start[j], start[j + 1]))
+            i += 1
+        elif is_integer_list(s):
+            # find the cumulative chunk starts
+            target_chunk_starts = [0] + list(
+                accumulate(add, [c for c in target_chunks[i]])
+            )
+            # and use to slice the integer array
+            j = idx[i]
+            sel.append(s[target_chunk_starts[j] : target_chunk_starts[j + 1]])
+            i += 1
         else:
             sel.append(s)
+            # don't increment i since integer indexes don't have a dimension in the target
     return tuple(sel)
 
 

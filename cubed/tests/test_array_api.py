@@ -256,6 +256,19 @@ def test_setitem_fails_not_computed(spec):
         a[1] = b
 
 
+@pytest.mark.parametrize("axis", [0, 1])
+def test_take(spec, axis):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.asarray([1, 2], spec=spec)
+    c = xp.take(a, b, axis=axis)
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    assert_array_equal(c.compute(), x.take([1, 2], axis=axis))
+
+
 # Linear algebra functions
 
 
