@@ -325,6 +325,13 @@ def index(x, key):
         dim_sel.compute().tolist() if isinstance(dim_sel, CoreArray) else dim_sel
         for dim_sel in key
     )
+    # Replace np.ndarray with lists
+    # Note that this shouldn't be needed, instead change xarray to return array API types
+    # (Variable.__getitem__ -> _broadcast_indexes creates an OuterIndexer that always uses np.array)
+    selection = tuple(
+        dim_sel.tolist() if isinstance(dim_sel, np.ndarray) else dim_sel
+        for dim_sel in selection
+    )
     # Replace ellipsis with slices
     selection = replace_ellipsis(selection, x.shape)
 
