@@ -26,7 +26,7 @@ tmp_path = "s3://cubed-unittest/map_unordered"
 
 stub = modal.aio.AioStub()
 
-image = modal.DebianSlim().pip_install(
+image = modal.Image.debian_slim().pip_install(
     [
         "dask[array]",
         "fsspec",
@@ -40,14 +40,14 @@ image = modal.DebianSlim().pip_install(
 )
 
 
-@stub.function(image=image, secret=modal.ref("my-aws-secret"))
+@stub.function(image=image, secret=modal.Secret.from_name("my-aws-secret"))
 def never_fail(i):
     invocation_count_file = join_path(tmp_path, f"{i}")
     write_int_to_file(invocation_count_file, 1)
     return i
 
 
-@stub.function(image=image, secret=modal.ref("my-aws-secret"), retries=2)
+@stub.function(image=image, secret=modal.Secret.from_name("my-aws-secret"), retries=2)
 async def fail_on_first_invocation(i):
     invocation_count_file = join_path(tmp_path, f"{i}")
     fs = fsspec.open(invocation_count_file).fs
@@ -60,7 +60,7 @@ async def fail_on_first_invocation(i):
     return i
 
 
-@stub.function(image=image, secret=modal.ref("my-aws-secret"))
+@stub.function(image=image, secret=modal.Secret.from_name("my-aws-secret"))
 async def fail_on_first_invocation_no_retry(i):
     invocation_count_file = join_path(tmp_path, f"{i}")
     fs = fsspec.open(invocation_count_file).fs
@@ -73,7 +73,7 @@ async def fail_on_first_invocation_no_retry(i):
     return i
 
 
-@stub.function(image=image, secret=modal.ref("my-aws-secret"))
+@stub.function(image=image, secret=modal.Secret.from_name("my-aws-secret"))
 async def sleep_on_first_invocation(i):
     print(f"sleep_on_first_invocation {i}")
     invocation_count_file = join_path(tmp_path, f"{i}")

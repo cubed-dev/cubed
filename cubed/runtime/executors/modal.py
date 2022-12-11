@@ -16,9 +16,9 @@ stub = modal.Stub()
 requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 
 if requirements_file:
-    image = modal.DebianSlim().pip_install_from_requirements(requirements_file)
+    image = modal.Image.debian_slim().pip_install_from_requirements(requirements_file)
 else:
-    image = modal.DebianSlim().pip_install(
+    image = modal.Image.debian_slim().pip_install(
         [
             "dask[array]",
             "fsspec",
@@ -33,7 +33,9 @@ else:
 
 
 # Use a generator, since we want results to be returned as they finish and we don't care about order
-@stub.generator(image=image, secret=modal.ref("my-aws-secret"), memory=2000, retries=2)
+@stub.generator(
+    image=image, secret=modal.Secret.from_name("my-aws-secret"), memory=2000, retries=2
+)
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
     peak_memory_start = peak_memory()
