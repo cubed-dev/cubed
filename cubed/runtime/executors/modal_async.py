@@ -36,8 +36,12 @@ else:
     )
 
 
-@async_stub.generator(
-    image=image, secret=modal.Secret.from_name("my-aws-secret"), memory=2000, retries=2
+@async_stub.function(
+    image=image,
+    secret=modal.Secret.from_name("my-aws-secret"),
+    memory=2000,
+    retries=2,
+    is_generator=True,
 )
 async def async_run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
@@ -76,7 +80,7 @@ async def map_unordered(
             yield result
         return
 
-    tasks = {asyncio.ensure_future(app_function(i, **kwargs)): i for i in input}
+    tasks = {asyncio.ensure_future(app_function.call(i, **kwargs)): i for i in input}
     pending = set(tasks.keys())
     t = time.monotonic()
     start_times = {f: t for f in pending}
@@ -112,7 +116,7 @@ async def map_unordered(
                 ):
                     # launch backup task
                     i = tasks[task]
-                    new_task = asyncio.ensure_future(app_function(i, **kwargs))
+                    new_task = asyncio.ensure_future(app_function.call(i, **kwargs))
                     tasks[new_task] = i
                     start_times[new_task] = time.monotonic()
                     pending.add(new_task)

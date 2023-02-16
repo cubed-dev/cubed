@@ -33,8 +33,12 @@ else:
 
 
 # Use a generator, since we want results to be returned as they finish and we don't care about order
-@stub.generator(
-    image=image, secret=modal.Secret.from_name("my-aws-secret"), memory=2000, retries=2
+@stub.function(
+    image=image,
+    secret=modal.Secret.from_name("my-aws-secret"),
+    memory=2000,
+    retries=2,
+    is_generator=True,
 )
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
