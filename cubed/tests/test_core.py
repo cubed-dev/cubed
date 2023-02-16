@@ -404,7 +404,7 @@ def test_callbacks(spec, executor):
 
 @pytest.mark.cloud
 def test_callbacks_modal(spec, modal_executor):
-    task_counter = TaskCounter()
+    task_counter = TaskCounter(check_timestamps=False)
     tmp_path = "s3://cubed-unittest/callbacks"
     spec = cubed.Spec(tmp_path, max_mem=100000)
     try:

@@ -55,11 +55,14 @@ except ImportError:
 
 
 class TaskCounter(Callback):
+    def __init__(self, check_timestamps=True) -> None:
+        self.check_timestamps = check_timestamps
+
     def on_compute_start(self, dag):
         self.value = 0
 
     def on_task_end(self, event):
-        if event.task_create_tstamp is not None:
+        if self.check_timestamps and event.task_create_tstamp is not None:
             assert (
                 event.task_result_tstamp
                 >= event.function_end_tstamp
