@@ -17,11 +17,11 @@ from .core.array import (
     Callback,
     Spec,
     TaskEndEvent,
-    apply_gufunc,
     compute,
     measure_reserved_memory,
     visualize,
 )
+from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
 
 __all__ = [
