@@ -10,6 +10,7 @@ def apply_gufunc(
     axes=None,
     axis=None,
     output_dtypes=None,
+    output_sizes=None,
     vectorize=None,
     **kwargs,
 ):
@@ -20,7 +21,7 @@ def apply_gufunc(
     `equivalent function <https://docs.dask.org/en/stable/generated/dask.array.gufunc.apply_gufunc.html>`_
     in Dask. Refer there for usage information.
 
-    Current limitations: ``keepdims``, ``output_sizes``, and ``allow_rechunk`` are not supported;
+    Current limitations: ``keepdims``, and ``allow_rechunk`` are not supported;
     and multiple outputs are not supported.
 
     Cubed assumes that ``func`` will allocate a new output array. However, if it allocates more memory
@@ -30,7 +31,6 @@ def apply_gufunc(
 
     # Currently the following parameters cannot be changed
     keepdims = False
-    output_sizes = None
     allow_rechunk = False
 
     # based on dask's apply_gufunc
@@ -142,4 +142,6 @@ significantly.".format(
     # Note (cubed): use blockwise on all output dimensions, not just loop_output_dims like in original
     out_ind = loop_output_dims + output_coredimss
 
-    return blockwise(func, out_ind, *arginds, dtype=output_dtypes, **kwargs)
+    return blockwise(
+        func, out_ind, *arginds, dtype=output_dtypes, new_axes=output_sizes, **kwargs
+    )

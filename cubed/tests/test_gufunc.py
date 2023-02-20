@@ -80,3 +80,24 @@ def test_apply_gufunc_axes_two_kept_coredims(spec):
 
     c = apply_gufunc(outer_product, "(i),(j)->(i,j)", a, b, vectorize=True)
     assert c.compute().shape == (10, 20, 30, 40)
+
+
+def test_gufunc_output_sizes(spec):
+    def foo(x):
+        return np.broadcast_to(x[:, np.newaxis], (x.shape[0], 3))
+
+    a = cubed.from_array(np.array([1, 2, 3, 4, 5], dtype=int), spec=spec)
+    x = apply_gufunc(foo, "()->(i_0)", a, output_dtypes=int, output_sizes={"i_0": 3})
+    assert x.chunks == ((5,), (3,))
+    assert_equal(
+        x,
+        np.array(
+            [
+                [1, 1, 1],
+                [2, 2, 2],
+                [3, 3, 3],
+                [4, 4, 4],
+                [5, 5, 5],
+            ]
+        ),
+    )
