@@ -5,12 +5,12 @@ from typing import Callable, Dict
 
 import toolz
 import zarr
-from dask.array.core import normalize_chunks
-from dask.blockwise import _get_coord_mapping, _make_dims, lol_product
-from dask.core import flatten
 from toolz import map
 
 from cubed.utils import chunk_memory, get_item, to_chunksize
+from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
+from cubed.vendor.dask.core import flatten
 from cubed.vendor.rechunker.types import ArrayProxy, Stage
 
 from .types import CubedPipeline

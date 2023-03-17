@@ -1,9 +1,10 @@
 """User-facing functions."""
 from collections import defaultdict
 
-import dask
 import dask.array
 import zarr
+
+import cubed.vendor.dask
 
 from .algorithm import rechunking_plan
 from .types import ArrayProxy, CopySpec
@@ -299,7 +300,7 @@ def _setup_array_rechunk(
             )
 
     # TODO: rewrite to avoid the hard dependency on dask
-    max_mem = dask.utils.parse_bytes(max_mem)
+    max_mem = cubed.vendor.dask.utils.parse_bytes(max_mem)
 
     # don't consolidate reads for Dask arrays
     consolidate_reads = isinstance(source_array, zarr.core.Array)

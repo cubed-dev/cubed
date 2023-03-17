@@ -3,12 +3,12 @@ from operator import mul
 from typing import Optional, TypeVar
 
 import numpy as np
-from dask.array.core import normalize_chunks
 from toolz import map, reduce
 
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.utils import chunk_memory
+from cubed.vendor.dask.array.core import normalize_chunks
 
 from .plan import arrays_to_plan
 

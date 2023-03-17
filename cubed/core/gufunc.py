@@ -1,6 +1,7 @@
 import numpy as np
-from dask.array.gufunc import _parse_gufunc_signature
 from tlz import concat, merge, unique
+
+from cubed.vendor.dask.array.gufunc import _parse_gufunc_signature
 
 
 def apply_gufunc(

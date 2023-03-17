@@ -15,7 +15,8 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
 import tlz as toolz
-from dask.array.core import _check_regular_chunks
+
+from cubed.vendor.dask.array.core import _check_regular_chunks
 
 PathType = Union[str, Path]
 
