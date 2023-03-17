@@ -1,5 +1,5 @@
 import numpy as np
-from dask.array.gufunc import _parse_gufunc_signature, _validate_normalize_axes
+from dask.array.gufunc import _parse_gufunc_signature
 from tlz import concat, merge, unique
 
 
@@ -30,7 +30,7 @@ def apply_gufunc(
     """
 
     # Currently the following parameters cannot be changed
-    keepdims = False
+    # keepdims = False
     allow_rechunk = False
 
     # based on dask's apply_gufunc
@@ -60,9 +60,9 @@ def apply_gufunc(
         output_sizes = {}
 
     # Axes
-    input_axes, output_axes = _validate_normalize_axes(
-        axes, axis, keepdims, input_coredimss, output_coredimss
-    )
+    # input_axes, output_axes = _validate_normalize_axes(
+    #     axes, axis, keepdims, input_coredimss, output_coredimss
+    # )
 
     # Main code:
 
