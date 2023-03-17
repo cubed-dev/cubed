@@ -2,7 +2,6 @@ import itertools
 import math
 from typing import Any, Iterable, Iterator, List, Tuple
 
-import dask
 import numpy as np
 
 from cubed.primitive.types import CubedPipeline
@@ -43,8 +42,7 @@ def copy_read_to_write(chunk_key, *, config=CopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
-    with dask.config.set(scheduler="single-threaded"):
-        data = np.asarray(config.read.array[chunk_key])
+    data = np.asarray(config.read.array[chunk_key])
     config.write.array[chunk_key] = data
 
 
@@ -52,8 +50,7 @@ def copy_read_to_intermediate(chunk_key, *, config=CopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
-    with dask.config.set(scheduler="single-threaded"):
-        data = np.asarray(config.read.array[chunk_key])
+    data = np.asarray(config.read.array[chunk_key])
     config.intermediate.array[chunk_key] = data
 
 
@@ -61,8 +58,7 @@ def copy_intermediate_to_write(chunk_key, *, config=CopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
-    with dask.config.set(scheduler="single-threaded"):
-        data = np.asarray(config.intermediate.array[chunk_key])
+    data = np.asarray(config.intermediate.array[chunk_key])
     config.write.array[chunk_key] = data
 
 
