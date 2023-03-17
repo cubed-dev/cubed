@@ -1,5 +1,6 @@
+import math
+
 import numpy as np
-from dask.array.reductions import numel
 
 from cubed.array_api.dtypes import (
     _numeric_dtypes,
@@ -37,7 +38,7 @@ def mean(x, /, *, axis=None, keepdims=False):
 
 
 def _mean_func(a, **kwargs):
-    n = numel(a, **kwargs)
+    n = _numel(a, **kwargs)
     total = np.sum(a, **kwargs)
     return {"n": n, "total": total}
 
@@ -50,6 +51,37 @@ def _mean_combine(a, **kwargs):
 
 def _mean_aggregate(a):
     return np.divide(a["total"], a["n"])
+
+
+# based on dask
+def _numel(x, **kwargs):
+    """
+    A reduction to count the number of elements.
+    """
+    shape = x.shape
+    keepdims = kwargs.get("keepdims", False)
+    axis = kwargs.get("axis", None)
+    dtype = kwargs.get("dtype", np.float64)
+
+    if axis is None:
+        prod = np.prod(shape, dtype=dtype)
+        if keepdims is False:
+            return prod
+
+        return np.full(shape=(1,) * len(shape), fill_value=prod, dtype=dtype)
+
+    if not isinstance(axis, (tuple, list)):
+        axis = [axis]
+
+    prod = math.prod(shape[dim] for dim in axis)
+    if keepdims is True:
+        new_shape = tuple(
+            shape[dim] if dim not in axis else 1 for dim in range(len(shape))
+        )
+    else:
+        new_shape = tuple(shape[dim] for dim in range(len(shape)) if dim not in axis)
+
+    return np.broadcast_to(np.array(prod, dtype=dtype), new_shape)
 
 
 def min(x, /, *, axis=None, keepdims=False):
