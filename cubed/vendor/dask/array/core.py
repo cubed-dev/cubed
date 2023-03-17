@@ -4,12 +4,9 @@ import math
 from numbers import Number
 
 import numpy as np
-from dask import config
 from tlz import first, frequencies
 
 from ..utils import is_integer, parse_bytes
-
-config.update_defaults({"array": {"chunk-size": "128MiB", "rechunk-threshold": 4}})
 
 unknown_chunk_message = (
     "\n\n"
@@ -315,7 +312,7 @@ def auto_chunks(chunks, shape, limit, dtype, previous_chunks=None):
         return tuple(chunks)
 
     if limit is None:
-        limit = config.get("array.chunk-size")
+        limit = "128MiB" # config.get("array.chunk-size")
     if isinstance(limit, str):
         limit = parse_bytes(limit)
 
