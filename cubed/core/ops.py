@@ -6,10 +6,6 @@ from typing import TYPE_CHECKING, Any, Sequence, Union
 
 import numpy as np
 import zarr
-from dask.array.core import common_blockdim, normalize_chunks
-from dask.array.utils import validate_axis
-from dask.blockwise import broadcast_dimensions
-from dask.utils import has_keyword
 from tlz import concat, partition
 from toolz import accumulate, map
 from zarr.indexing import (
@@ -25,6 +21,10 @@ from cubed.core.plan import Plan, new_temp_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import chunk_memory, get_item, to_chunksize
+from cubed.vendor.dask.array.core import common_blockdim, normalize_chunks
+from cubed.vendor.dask.array.utils import validate_axis
+from cubed.vendor.dask.blockwise import broadcast_dimensions
+from cubed.vendor.dask.utils import has_keyword
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array

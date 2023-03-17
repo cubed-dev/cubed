@@ -2,12 +2,12 @@ from typing import TYPE_CHECKING, Iterable, List
 
 import numpy as np
 import zarr
-from dask.array.core import normalize_chunks
 from zarr.util import normalize_shape
 
 from cubed.core import Plan, gensym, map_blocks, new_temp_store, new_temp_zarr
 from cubed.core.ops import map_direct
 from cubed.utils import to_chunksize
+from cubed.vendor.dask.array.core import normalize_chunks
 
 if TYPE_CHECKING:
     from .array_object import Array

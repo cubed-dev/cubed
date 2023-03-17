@@ -4,9 +4,6 @@ from operator import add, mul
 
 import numpy as np
 import tlz
-from dask.array.core import broadcast_chunks, normalize_chunks
-from dask.array.reshape import reshape_rechunk
-from dask.array.utils import validate_axis
 from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
@@ -14,6 +11,9 @@ from cubed.core import squeeze  # noqa: F401
 from cubed.core import blockwise, rechunk, unify_chunks
 from cubed.core.ops import elemwise, map_blocks, map_direct
 from cubed.utils import get_item, to_chunksize
+from cubed.vendor.dask.array.core import broadcast_chunks, normalize_chunks
+from cubed.vendor.dask.array.reshape import reshape_rechunk
+from cubed.vendor.dask.array.utils import validate_axis
 
 
 def broadcast_arrays(*arrays):
