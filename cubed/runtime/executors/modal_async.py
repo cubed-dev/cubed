@@ -26,9 +26,9 @@ else:
         [
             "dask[array]",
             "fsspec",
+            "mypy_extensions",  # for rechunker
             "networkx",
             "pytest-mock",  # TODO: only needed for tests
-            "rechunker",
             "s3fs",
             "tenacity",
             "zarr",

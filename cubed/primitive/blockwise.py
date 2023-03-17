@@ -8,10 +8,10 @@ import zarr
 from dask.array.core import normalize_chunks
 from dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from dask.core import flatten
-from rechunker.types import ArrayProxy, Stage
 from toolz import map
 
 from cubed.utils import chunk_memory, get_item, to_chunksize
+from cubed.vendor.rechunker.types import ArrayProxy, Stage
 
 from .types import CubedPipeline
 

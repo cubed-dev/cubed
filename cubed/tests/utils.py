@@ -2,11 +2,11 @@ from typing import Iterable
 
 import numpy as np
 import zarr
-from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.core.array import Callback
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+from cubed.vendor.rechunker.executors.python import PythonPipelineExecutor
 
 LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
 

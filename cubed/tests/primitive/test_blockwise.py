@@ -3,10 +3,10 @@ import pytest
 import zarr
 from dask.blockwise import make_blockwise_graph
 from numpy.testing import assert_array_equal
-from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.primitive.blockwise import blockwise, make_blockwise_function
 from cubed.tests.utils import create_zarr, execute_pipeline
+from cubed.vendor.rechunker.executors.python import PythonPipelineExecutor
 
 
 @pytest.fixture(scope="module", params=[PythonPipelineExecutor()])

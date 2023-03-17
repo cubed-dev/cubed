@@ -61,8 +61,8 @@ RUN unzip lithops_lambda.zip \
 RUN pip install \
         dask[array] \
         fsspec \
+        mypy_extensions \
         networkx \
-        rechunker \
         s3fs \
         tenacity \
         zarr

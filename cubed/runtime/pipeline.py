@@ -4,9 +4,9 @@ from typing import Any, Iterable, Iterator, List, Tuple
 
 import dask
 import numpy as np
-from rechunker.types import CopySpec, Stage
 
 from cubed.primitive.types import CubedPipeline
+from cubed.vendor.rechunker.types import CopySpec, Stage
 
 from .utils import gensym
 

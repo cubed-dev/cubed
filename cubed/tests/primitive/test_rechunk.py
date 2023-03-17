@@ -2,10 +2,10 @@ import numpy as np
 import pytest
 import zarr
 from numpy.testing import assert_array_equal
-from rechunker.executors.python import PythonPipelineExecutor
 
 from cubed.primitive.rechunk import rechunk
 from cubed.tests.utils import execute_pipeline
+from cubed.vendor.rechunker.executors.python import PythonPipelineExecutor
 
 
 @pytest.fixture(scope="module", params=[PythonPipelineExecutor()])

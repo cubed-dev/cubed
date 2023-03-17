@@ -7,17 +7,17 @@ from typing import Any, Iterable, List, Optional, Tuple, cast
 import apache_beam as beam
 import networkx as nx
 from apache_beam.runners.runner import PipelineState
-from rechunker.types import (
+
+from cubed.core.array import TaskEndEvent
+from cubed.core.plan import visit_nodes
+from cubed.runtime.types import DagExecutor
+from cubed.vendor.rechunker.types import (
     Config,
     NoArgumentStageFunction,
     ParallelPipelines,
     PipelineExecutor,
     Stage,
 )
-
-from cubed.core.array import TaskEndEvent
-from cubed.core.plan import visit_nodes
-from cubed.runtime.types import DagExecutor
 
 from ..utils import gensym
 

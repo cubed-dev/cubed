@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable
 
-from rechunker.types import Config, Stage
+from cubed.vendor.rechunker.types import Config, Stage
 
 
 @dataclass(frozen=True)

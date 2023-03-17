@@ -6,13 +6,13 @@ from typing import Callable, Iterable
 
 from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
-from rechunker.types import ParallelPipelines, PipelineExecutor
 from six import reraise
 
 from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.types import DagExecutor
+from cubed.vendor.rechunker.types import ParallelPipelines, PipelineExecutor
 
 logger = logging.getLogger(__name__)
 
