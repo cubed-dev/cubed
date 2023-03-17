@@ -6,7 +6,6 @@ import numpy as np
 import tlz
 from dask.array.core import broadcast_chunks, normalize_chunks
 from dask.array.reshape import reshape_rechunk
-from dask.array.slicing import sanitize_index
 from dask.array.utils import validate_axis
 from toolz import reduce
 
@@ -185,7 +184,6 @@ def permute_dims(x, /, axes):
 def reshape(x, /, shape):
     # based on dask reshape
 
-    shape = tuple(map(sanitize_index, shape))
     known_sizes = [s for s in shape if s != -1]
     if len(known_sizes) != len(shape):
         if len(shape) - len(known_sizes) > 1:
@@ -193,7 +191,7 @@ def reshape(x, /, shape):
         # Fastpath for x.reshape(-1) on 1D arrays
         if len(shape) == 1 and x.ndim == 1:
             return x
-        missing_size = sanitize_index(x.size / reduce(mul, known_sizes, 1))
+        missing_size = x.size // reduce(mul, known_sizes, 1)
         shape = tuple(missing_size if s == -1 else s for s in shape)
 
     if reduce(mul, shape, 1) != x.size:
