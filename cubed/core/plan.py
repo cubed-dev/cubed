@@ -6,11 +6,11 @@ from datetime import datetime
 import fsspec
 import networkx as nx
 import zarr
-from rechunker.types import PipelineExecutor
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
+from cubed.vendor.rechunker.types import PipelineExecutor
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"

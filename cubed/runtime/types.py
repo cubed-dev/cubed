@@ -1,6 +1,6 @@
 from typing import Union
 
-from rechunker.types import PipelineExecutor
+from cubed.vendor.rechunker.types import PipelineExecutor
 
 
 class DagExecutor:

@@ -1,8 +1,7 @@
 from math import ceil, prod
 
-from rechunker.api import _setup_rechunk
-
 from cubed.runtime.pipeline import spec_to_pipeline
+from cubed.vendor.rechunker.api import _setup_rechunk
 
 
 def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
