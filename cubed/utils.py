@@ -6,6 +6,7 @@ import sysconfig
 import traceback
 from dataclasses import dataclass
 from math import prod
+from operator import add
 from pathlib import Path
 from posixpath import join
 from resource import RUSAGE_SELF, getrusage
@@ -13,8 +14,8 @@ from typing import Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
+import tlz as toolz
 from dask.array.core import _check_regular_chunks
-from dask.utils import cached_cumsum
 
 PathType = Union[str, Path]
 
@@ -26,9 +27,17 @@ def chunk_memory(dtype, chunksize):
 
 def get_item(chunks, idx):
     """Convert a chunk index to a tuple of slices."""
-    starts = tuple(cached_cumsum(c, initial_zero=True) for c in chunks)
+    # could use Dask's cached_cumsum here if it improves performance
+    starts = tuple(_cumsum(c, initial_zero=True) for c in chunks)
     loc = tuple((start[i], start[i + 1]) for i, start in zip(idx, starts))
     return tuple(slice(*s, None) for s in loc)
+
+
+def _cumsum(seq, initial_zero=False):
+    if initial_zero:
+        return tuple(toolz.accumulate(add, seq, 0))
+    else:
+        return tuple(toolz.accumulate(add, seq))
 
 
 def join_path(dir_url: PathType, child_path: str) -> str:
