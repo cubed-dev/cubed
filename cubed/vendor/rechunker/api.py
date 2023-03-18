@@ -1,7 +1,6 @@
 """User-facing functions."""
 from collections import defaultdict
 
-import dask.array
 import zarr
 
 import cubed.vendor.dask
@@ -70,11 +69,11 @@ def get_dim_chunk(da, dim, target_chunks):
         else:
             dim_chunk = target_chunks[dim]
     else:
-        if not isinstance(da.data, dask.array.Array):
-            dim_chunk = len(da[dim])
-        else:
-            existing_chunksizes = {k: v for k, v in zip(da.dims, da.data.chunksize)}
-            dim_chunk = existing_chunksizes[dim]
+        # if not isinstance(da.data, dask.array.Array):
+        dim_chunk = len(da[dim])
+        # else:
+        #     existing_chunksizes = {k: v for k, v in zip(da.dims, da.data.chunksize)}
+        #     dim_chunk = existing_chunksizes[dim]
     return dim_chunk
 
 
@@ -139,6 +138,8 @@ def _setup_rechunk(
         xarray = None
 
     if xarray and isinstance(source, xarray.Dataset):
+        import dask.array
+
         if not isinstance(target_chunks, dict):
             raise ValueError(
                 "You must specify ``target-chunks`` as a dict when rechunking a dataset."
@@ -243,7 +244,8 @@ def _setup_rechunk(
 
         return copy_specs, temp_group, target_group
 
-    elif isinstance(source, (zarr.core.Array, dask.array.Array)):
+    # elif isinstance(source, (zarr.core.Array, dask.array.Array)):
+    elif isinstance(source, zarr.core.Array):
 
         copy_spec = _setup_array_rechunk(
             source,
@@ -277,11 +279,12 @@ def _setup_array_rechunk(
     _validate_options(target_options)
     _validate_options(temp_options)
     shape = source_array.shape
-    source_chunks = (
-        source_array.chunksize
-        if isinstance(source_array, dask.array.Array)
-        else source_array.chunks
-    )
+    # source_chunks = (
+    #     source_array.chunksize
+    #     if isinstance(source_array, dask.array.Array)
+    #     else source_array.chunks
+    # )
+    source_chunks = source_array.chunks
     dtype = source_array.dtype
     itemsize = dtype.itemsize
 
