@@ -24,13 +24,13 @@ if requirements_file:
 else:
     image = modal.Image.debian_slim().pip_install(
         [
-            "dask[array]",
             "fsspec",
             "mypy_extensions",  # for rechunker
             "networkx",
             "pytest-mock",  # TODO: only needed for tests
             "s3fs",
             "tenacity",
+            "toolz",
             "zarr",
         ]
     )

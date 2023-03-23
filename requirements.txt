@@ -1,6 +1,5 @@
 aiostream
 apache-beam
-dask[array]
 dill
 fsspec
 lithops[aws] >= 2.7.0
@@ -13,5 +12,6 @@ pytest-cov
 pytest-mock
 s3fs
 tenacity
+toolz
 tqdm
 zarr

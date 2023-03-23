@@ -1,6 +1,5 @@
 # cubed
 apache-beam
-dask[array]
 fsspec
 lithops[aws] >= 2.7.0
 mypy_extensions # for rechunker
@@ -12,6 +11,7 @@ pytest-cov
 pytest-mock
 s3fs
 tenacity
+toolz
 tqdm
 zarr
 
