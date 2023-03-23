@@ -59,12 +59,12 @@ RUN unzip lithops_lambda.zip \
 # Put your dependencies here, using RUN pip install... or RUN apt install...
 
 RUN pip install \
-        dask[array] \
         fsspec \
         mypy_extensions \
         networkx \
         s3fs \
         tenacity \
+        toolz \
         zarr
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]

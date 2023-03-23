@@ -1,5 +1,4 @@
 aiostream
-dask[array]
 dill
 fsspec
 modal-client
@@ -13,5 +12,6 @@ pytest-cov
 pytest-mock
 s3fs
 tenacity
+toolz
 tqdm
 zarr
