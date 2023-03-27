@@ -24,6 +24,7 @@ from .core.array import (
 )
 from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
+from .nan_functions import nanmean, nansum
 
 __all__ = [
     "__version__",
@@ -38,6 +39,8 @@ __all__ = [
     "map_blocks",
     "measure_reserved_mem",
     "measure_reserved_memory",
+    "nanmean",
+    "nansum",
     "store",
     "to_zarr",
     "visualize",
