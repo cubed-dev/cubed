@@ -39,8 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           pushd array-api-tests
-          pip install -e '../cubed'
-          pip install -r requirements.txt
+          pip install -e '../cubed[test]'
           pip install pytest-cov
       - name: Run Array API tests
         env:
