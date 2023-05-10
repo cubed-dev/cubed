@@ -34,7 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 persist = ["dill"]
-diagnostics = ["tqdm", "graphviz"]
+diagnostics = ["tqdm", "graphviz", "pandas"]
 beam = ["apache-beam", "gcsfs"]
 lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
@@ -45,8 +45,7 @@ modal = [
 ]
 complete = ["cubed[beam,lithops,modal]"]
 test = [
-    "cubed[persist]",
-    "pandas",  # for testing memory utilization
+    "cubed[persist,diagnostics]",
     "pytest",
     "pytest-cov",
     "pytest-mock",
