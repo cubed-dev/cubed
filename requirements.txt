@@ -1,17 +1,13 @@
+# This file is redundant with pyproject.toml;
+# it exists to let GitHub build the repository dependency graph
+# https://help.github.com/en/github/visualizing-repository-data-with-graphs/listing-the-packages-that-a-repository-depends-on
+
 aiostream
-apache-beam
-dill
 fsspec
-lithops[aws] >= 2.7.0
 mypy_extensions # for rechunker
-networkx < 2.8.3 # https://github.com/networkx/networkx/pull/5667
+networkx < 2.8.3
 numpy >= 1.22
 pydot
-pytest
-pytest-cov
-pytest-mock
-s3fs
 tenacity
 toolz
-tqdm
 zarr
