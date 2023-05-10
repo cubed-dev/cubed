@@ -1,5 +1,9 @@
 #!/usr/bin/env python
-import setuptools
+from setuptools import setup, find_packages
 
 if __name__ == "__main__":
-    setuptools.setup()
+    setup(
+        name='cubed',
+        packages=['cubed'],
+        package_dir={'cubed': 'cubed'},  # avoids pip install problems if one creates a tmp directory alongside cubed directory
+    )
