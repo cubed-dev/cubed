@@ -46,6 +46,7 @@ modal = [
 complete = ["cubed[beam,lithops,modal]"]
 test = [
     "cubed[persist]",
+    "pandas",  # for testing memory utilization
     "pytest",
     "pytest-cov",
     "pytest-mock",
