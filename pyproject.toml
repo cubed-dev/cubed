@@ -45,6 +45,7 @@ modal = [
 ]
 complete = ["cubed[beam,lithops,modal]"]
 test = [
+    "cubed[persist]",
     "pytest",
     "pytest-cov",
     "pytest-mock",
