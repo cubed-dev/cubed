@@ -1,3 +1,35 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.8"
+dependencies = [
+    "aiostream",
+    "fsspec",
+    "mypy_extensions", # for rechunker
+    "networkx < 2.8.3",
+    "numpy >= 1.22",
+    "pydot",
+    "tenacity",
+    "toolz",
+    "zarr",
+]
+
+[project.optional-dependencies]
+persist = ["dill"]
+diagnostics = ["tqdm"]
+beam = ["apache-beam", "gcsfs"]
+lithops = ["lithops[aws] >= 2.7.0"]
+modal = [
+    "cubed[persist,diagnostics]",
+    "modal-client",
+    "pandas",
+    "s3fs",
+]
+complete = ["cubed[beam,lithops,modal]"]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
