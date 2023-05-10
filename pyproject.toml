@@ -34,7 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 persist = ["dill"]
-diagnostics = ["tqdm"]
+diagnostics = ["tqdm", "graphviz"]
 beam = ["apache-beam", "gcsfs"]
 lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
