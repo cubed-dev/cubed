@@ -1,3 +1,61 @@
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "cubed"
+version = "0.6.0"
+authors = [
+    {name = "Tom White", email = "tom.e.white@gmail.com"},
+]
+license = {text = "Apache License 2.0"}
+description = "Bounded-memory serverless distributed N-dimensional array processing"
+readme = {file = "README.md", content-type = "text/markdown"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "aiostream",
+    "fsspec",
+    "mypy_extensions", # for rechunker
+    "networkx < 2.8.3",
+    "numpy >= 1.22",
+    "tenacity",
+    "toolz",
+    "zarr",
+]
+
+[project.optional-dependencies]
+diagnostics = [
+    "tqdm",
+    "graphviz",
+    "pydot",
+    "pandas"
+]
+beam = ["apache-beam", "gcsfs"]
+lithops = ["lithops[aws] >= 2.7.0"]
+modal = [
+    "cubed[diagnostics]",
+    "modal-client",
+    "s3fs",
+]
+complete = ["cubed[beam,lithops,modal]"]
+test = [
+    "apache-beam",  # beam but not gcsfs as tests use local beam runner
+    "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
+    "dill",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+
+[project.urls]
+homepage = "https://github.com/tomwhite/cubed"
+documentation = "https://tomwhite.github.io/cubed"
+repository = "https://github.com/tomwhite/cubed"
