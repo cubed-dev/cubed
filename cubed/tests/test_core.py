@@ -441,6 +441,8 @@ def test_already_computed(spec):
 
 
 def test_measure_reserved_memory(executor):
+    pytest.importorskip("lithops")
+
     from cubed.runtime.executors.lithops import LithopsDagExecutor
 
     if not isinstance(executor, LithopsDagExecutor):
