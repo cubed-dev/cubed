@@ -47,7 +47,8 @@ modal = [
 ]
 complete = ["cubed[beam,lithops,modal]"]
 test = [
-    "cubed[diagnostics]",
+    "apache-beam",  # beam but not gcsfs as tests use local beam runner
+    "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
     "dill",
     "pytest",
     "pytest-cov",
