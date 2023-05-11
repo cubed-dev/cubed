@@ -282,6 +282,7 @@ def blockwise(
         pipeline.target_array,
         pipeline,
         pipeline.required_mem + extra_required_mem,
+        spec.reserved_mem,
         pipeline.num_tasks,
         *source_arrays,
     )
@@ -605,6 +606,7 @@ def rechunk(x, chunks, target_store=None):
         pipeline.target_array,
         pipeline,
         pipeline.required_mem,
+        spec.reserved_mem,
         pipeline.num_tasks,
         x,
     )

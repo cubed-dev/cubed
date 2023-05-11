@@ -43,6 +43,7 @@ class Plan:
         target,
         pipeline=None,
         required_mem=None,
+        reserved_mem=None,
         num_tasks=None,
         *source_arrays,
     ):
@@ -73,6 +74,7 @@ class Plan:
                 stack_summaries=stack_summaries,
                 pipeline=pipeline,
                 required_mem=required_mem,
+                reserved_mem=reserved_mem,
                 num_tasks=num_tasks,
             )
         for x in source_arrays:

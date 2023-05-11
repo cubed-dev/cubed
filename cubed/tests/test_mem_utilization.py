@@ -201,23 +201,27 @@ def run_operation(name, result_array):
 
     plan_df = pd.read_csv(hist.plan_df_path)
     stats_df = pd.read_csv(hist.stats_df_path)
-    df = analyze(plan_df, stats_df, result_array.spec.reserved_mem)
+    df = analyze(plan_df, stats_df)
     print(df)
 
     # check utilization does not exceed 1
     assert (df["utilization"] <= 1.0).all()
 
 
-def analyze(plan_df, stats_df, reserved_mem):
-
-    reserved_mem_mb = reserved_mem / 1_000_000
-    reserved_mem_mb *= 1.05  # add some wiggle room
-
+def analyze(plan_df, stats_df):
     # convert memory to MB
     plan_df["required_mem_mb"] = plan_df["required_mem"] / 1_000_000
-    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + reserved_mem_mb
+    plan_df["reserved_mem_mb"] = plan_df["reserved_mem"] / 1_000_000
+    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + plan_df["reserved_mem_mb"]
     plan_df = plan_df[
-        ["array_name", "op_name", "required_mem_mb", "total_mem_mb", "num_tasks"]
+        [
+            "array_name",
+            "op_name",
+            "required_mem_mb",
+            "reserved_mem_mb",
+            "total_mem_mb",
+            "num_tasks",
+        ]
     ]
     stats_df["peak_mem_start_mb"] = stats_df["peak_memory_start"] / 1_000_000
     stats_df["peak_mem_end_mb"] = stats_df["peak_memory_end"] / 1_000_000
@@ -251,6 +255,7 @@ def analyze(plan_df, stats_df, reserved_mem):
             "peak_mem_end_mb_max",
             "peak_mem_delta_mb_max",
             "required_mem_mb",
+            "reserved_mem_mb",
             "total_mem_mb",
             "utilization",
         ]
