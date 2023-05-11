@@ -26,7 +26,6 @@ dependencies = [
     "mypy_extensions", # for rechunker
     "networkx < 2.8.3",
     "numpy >= 1.22",
-    "pydot",
     "tenacity",
     "toolz",
     "zarr",
@@ -34,7 +33,12 @@ dependencies = [
 
 [project.optional-dependencies]
 persist = ["dill"]
-diagnostics = ["tqdm", "graphviz", "pandas"]
+diagnostics = [
+    "tqdm",
+    "graphviz",
+    "pydot",
+    "pandas"
+]
 beam = ["apache-beam", "gcsfs"]
 lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
