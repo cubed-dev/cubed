@@ -1,4 +1,3 @@
-import pandas as pd
 import pytest
 
 pytest.importorskip("lithops")
@@ -199,66 +198,8 @@ def run_operation(name, result_array):
     # use store=None to write to temporary zarr
     cubed.to_zarr(result_array, store=None, executor=executor, callbacks=[hist])
 
-    plan_df = pd.read_csv(hist.plan_df_path)
-    stats_df = pd.read_csv(hist.stats_df_path)
-    df = analyze(plan_df, stats_df)
+    df = hist.stats_df
     print(df)
 
     # check utilization does not exceed 1
     assert (df["utilization"] <= 1.0).all()
-
-
-def analyze(plan_df, stats_df):
-    # convert memory to MB
-    plan_df["required_mem_mb"] = plan_df["required_mem"] / 1_000_000
-    plan_df["reserved_mem_mb"] = plan_df["reserved_mem"] / 1_000_000
-    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + plan_df["reserved_mem_mb"]
-    plan_df = plan_df[
-        [
-            "array_name",
-            "op_name",
-            "required_mem_mb",
-            "reserved_mem_mb",
-            "total_mem_mb",
-            "num_tasks",
-        ]
-    ]
-    stats_df["peak_mem_start_mb"] = stats_df["peak_memory_start"] / 1_000_000
-    stats_df["peak_mem_end_mb"] = stats_df["peak_memory_end"] / 1_000_000
-    stats_df["peak_mem_delta_mb"] = (
-        stats_df["peak_mem_end_mb"] - stats_df["peak_mem_start_mb"]
-    )
-
-    # find per-array stats
-    df = stats_df.groupby("array_name", as_index=False).agg(
-        {
-            "peak_mem_start_mb": ["min", "mean", "max"],
-            "peak_mem_end_mb": ["max"],
-            "peak_mem_delta_mb": ["min", "mean", "max"],
-        }
-    )
-
-    # flatten multi-index
-    df.columns = ["_".join(a).rstrip("_") for a in df.columns.to_flat_index()]
-    df = df.merge(plan_df, on="array_name")
-
-    def utilization(row):
-        return row["peak_mem_end_mb_max"] / row["total_mem_mb"]
-
-    df["utilization"] = df.apply(lambda row: utilization(row), axis=1)
-    df = df[
-        [
-            "array_name",
-            "op_name",
-            "num_tasks",
-            "peak_mem_start_mb_max",
-            "peak_mem_end_mb_max",
-            "peak_mem_delta_mb_max",
-            "required_mem_mb",
-            "reserved_mem_mb",
-            "total_mem_mb",
-            "utilization",
-        ]
-    ]
-
-    return df

@@ -24,17 +24,77 @@ class HistoryCallback(Callback):
             )
 
         self.plan = plan
-        self.stats = []
+        self.events = []
 
     def on_task_end(self, event):
-        self.stats.append(asdict(event))
+        self.events.append(asdict(event))
 
     def on_compute_end(self, dag):
-        plan_df = pd.DataFrame(self.plan)
-        stats_df = pd.DataFrame(self.stats)
+        self.plan_df = pd.DataFrame(self.plan)
+        self.events_df = pd.DataFrame(self.events)
         Path("history").mkdir(exist_ok=True)
         id = int(time.time())
         self.plan_df_path = Path(f"history/plan-{id}.csv")
+        self.events_df_path = Path(f"history/events-{id}.csv")
         self.stats_df_path = Path(f"history/stats-{id}.csv")
-        plan_df.to_csv(self.plan_df_path, index=False)
-        stats_df.to_csv(self.stats_df_path, index=False)
+        self.plan_df.to_csv(self.plan_df_path, index=False)
+        self.events_df.to_csv(self.events_df_path, index=False)
+
+        self.stats_df = analyze(self.plan_df, self.events_df)
+        self.stats_df.to_csv(self.stats_df_path, index=False)
+
+
+def analyze(plan_df, events_df):
+    # convert memory to MB
+    plan_df["required_mem_mb"] = plan_df["required_mem"] / 1_000_000
+    plan_df["reserved_mem_mb"] = plan_df["reserved_mem"] / 1_000_000
+    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + plan_df["reserved_mem_mb"]
+    plan_df = plan_df[
+        [
+            "array_name",
+            "op_name",
+            "required_mem_mb",
+            "reserved_mem_mb",
+            "total_mem_mb",
+            "num_tasks",
+        ]
+    ]
+    events_df["peak_mem_start_mb"] = events_df["peak_memory_start"] / 1_000_000
+    events_df["peak_mem_end_mb"] = events_df["peak_memory_end"] / 1_000_000
+    events_df["peak_mem_delta_mb"] = (
+        events_df["peak_mem_end_mb"] - events_df["peak_mem_start_mb"]
+    )
+
+    # find per-array stats
+    df = events_df.groupby("array_name", as_index=False).agg(
+        {
+            "peak_mem_start_mb": ["min", "mean", "max"],
+            "peak_mem_end_mb": ["max"],
+            "peak_mem_delta_mb": ["min", "mean", "max"],
+        }
+    )
+
+    # flatten multi-index
+    df.columns = ["_".join(a).rstrip("_") for a in df.columns.to_flat_index()]
+    df = df.merge(plan_df, on="array_name")
+
+    def utilization(row):
+        return row["peak_mem_end_mb_max"] / row["total_mem_mb"]
+
+    df["utilization"] = df.apply(lambda row: utilization(row), axis=1)
+    df = df[
+        [
+            "array_name",
+            "op_name",
+            "num_tasks",
+            "peak_mem_start_mb_max",
+            "peak_mem_end_mb_max",
+            "peak_mem_delta_mb_max",
+            "required_mem_mb",
+            "reserved_mem_mb",
+            "total_mem_mb",
+            "utilization",
+        ]
+    ]
+
+    return df
