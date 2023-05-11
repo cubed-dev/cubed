@@ -32,7 +32,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-persist = ["dill"]
 diagnostics = [
     "tqdm",
     "graphviz",
@@ -42,14 +41,15 @@ diagnostics = [
 beam = ["apache-beam", "gcsfs"]
 lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
-    "cubed[persist,diagnostics]",
+    "cubed[diagnostics]",
     "modal-client",
     "pandas",
     "s3fs",
 ]
 complete = ["cubed[beam,lithops,modal]"]
 test = [
-    "cubed[persist,diagnostics]",
+    "cubed[diagnostics]",
+    "dill",
     "pytest",
     "pytest-cov",
     "pytest-mock",
