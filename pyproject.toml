@@ -43,7 +43,6 @@ lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
     "cubed[diagnostics]",
     "modal-client",
-    "pandas",
     "s3fs",
 ]
 complete = ["cubed[beam,lithops,modal]"]
