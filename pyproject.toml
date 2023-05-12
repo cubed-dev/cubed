@@ -54,6 +54,13 @@ test = [
     "pytest-cov",
     "pytest-mock",
 ]
+test-modal = [
+    "cubed[modal]",
+    "dill",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
 
 [project.urls]
 homepage = "https://github.com/tomwhite/cubed"
