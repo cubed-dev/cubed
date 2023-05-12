@@ -60,8 +60,7 @@ python examples/lithops-add-random.py "s3://cubed-$USER-temp" cubed-runtime
 ```shell
 conda create --name cubed-modal python=3.8
 conda activate cubed-modal
-pip install -r requirements-modal.txt
-pip install -e .
+pip install -e '.[modal]'
 ```
 
 ### Examples
