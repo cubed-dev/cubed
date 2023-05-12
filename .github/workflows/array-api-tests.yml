@@ -1,6 +1,8 @@
 name: Array API Tests
 
 on:
+  push:
+  pull_request:
   schedule:
     # Every weekday at 03:19 UTC, see https://crontab.guru/
     - cron: "19 3 * * 1-5"
@@ -40,7 +42,7 @@ jobs:
         run: |
           pushd array-api-tests
           pip install -e '../cubed[test]'
-          pip install pytest-cov
+          pip install -r requirements.txt  # from Array API tests repo
       - name: Run Array API tests
         env:
           ARRAY_API_TESTS_MODULE: cubed.array_api
