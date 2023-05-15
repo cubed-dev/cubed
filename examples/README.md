@@ -2,7 +2,7 @@
 
 ## Which cloud service should I use?
 
-**Modal** is the easiest to get started with (if you have an account - it's currently in private beta). It has been tested with ~50 workers.
+**Modal** is the easiest to get started with (note that it requires that you sign up for a free account). It has been tested with ~50 workers.
 
 **Lithops** requires more work to get started since you have to build a docker container first. It has been tested with hundreds of workers, but only on AWS Lambda, although Lithops has support for many more serverless services on various cloud providers.
 
@@ -46,47 +46,7 @@ python examples/lithops-add-random.py "s3://cubed-$USER-temp" cubed-runtime
 
 ## Modal
 
-### Pre-requisites
-
-1. A [Modal account](https://modal.com/)
-2. An AWS account (for S3 storage)
-
-### Set up
-
-1. Add a new [Modal secret](https://modal.com/secrets), by following the AWS wizard. This will prompt you to fill in values for `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. Call the secret `my-aws-secret`.
-2. Create a new S3 bucket (called `cubed-<username>-temp`, for example) in the `us-east-1` region. This will be used for intermediate data.
-3. Install a Python environment by running the following from this directory:
-
-```shell
-conda create --name cubed-modal-examples -y python=3.8
-conda activate cubed-modal-examples
-pip install 'cubed[modal]'
-export CUBED_MODAL_REQUIREMENTS_FILE=$(pwd)/requirements.txt
-```
-
-### Examples
-
-Start with the simplest example:
-
-```shell
-python modal-add-asarray.py "s3://cubed-modal-$USER-temp"
-```
-
-If successful it should print a 4x4 matrix.
-
-Run the other examples in a similar way
-
-```shell
-python modal-add-random.py "s3://cubed-modal-$USER-temp"
-```
-
-and
-
-```shell
-python modal-matmul-random.py "s3://cubed-modal-$USER-temp"
-```
-
-These will take longer to run as they operate on more data.
+See [Modal](modal/README.md)
 
 ## Apache Beam (Google Cloud Dataflow)
 
