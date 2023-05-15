@@ -1,9 +1,4 @@
 import sys
-from pathlib import Path
-
-# add project base dir to python path
-cubed_dir = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(cubed_dir))
 
 import cubed
 import cubed.array_api as xp
