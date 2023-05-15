@@ -1,0 +1,4 @@
+cubed
+lithops[aws]
+s3fs
+tqdm
