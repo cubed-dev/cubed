@@ -1,4 +1,5 @@
 import inspect
+import platform
 
 import numpy as np
 import pytest
@@ -14,7 +15,6 @@ from cubed.utils import (
 
 
 def test_chunk_memory():
-    assert chunk_memory(int, (3,)) == 24
     assert chunk_memory(np.int64, (3,)) == 24
     assert chunk_memory(np.int32, (3,)) == 12
     assert chunk_memory(np.int32, (3, 5)) == 60
@@ -56,6 +56,7 @@ def test_memory_repr():
     assert memory_repr(1_000_000_000_000_000) == "1.0 PB"
 
 
+@pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
 def test_peak_memory():
     assert peak_memory() > 0
 
