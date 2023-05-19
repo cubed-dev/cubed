@@ -42,7 +42,7 @@ class Plan:
         op_name,
         target,
         pipeline=None,
-        required_mem=None,
+        projected_mem=None,
         reserved_mem=None,
         num_tasks=None,
         *source_arrays,
@@ -73,7 +73,7 @@ class Plan:
                 target=target,
                 stack_summaries=stack_summaries,
                 pipeline=pipeline,
-                required_mem=required_mem,
+                projected_mem=projected_mem,
                 reserved_mem=reserved_mem,
                 num_tasks=num_tasks,
             )
@@ -172,13 +172,13 @@ class Plan:
                     tasks += 1
         return tasks
 
-    def max_required_mem(self, optimize_graph=True):
-        """Return the maximum required memory (for a task) to execute this plan."""
+    def max_projected_mem(self, optimize_graph=True):
+        """Return the maximum projected memory across all tasks to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        required_mem_values = [
-            node["pipeline"].required_mem for _, node in visit_nodes(dag)
+        projected_mem_values = [
+            node["pipeline"].projected_mem for _, node in visit_nodes(dag)
         ]
-        return max(required_mem_values) if len(required_mem_values) > 0 else 0
+        return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
     def visualize(
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
@@ -188,7 +188,7 @@ class Plan:
             "rankdir": rankdir,
             "label": (
                 f"num tasks: {self.num_tasks(optimize_graph=optimize_graph)}\n"
-                f"max required memory: {memory_repr(self.max_required_mem(optimize_graph=optimize_graph))}"
+                f"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph=optimize_graph))}"
             ),
             "labelloc": "bottom",
             "labeljust": "left",
@@ -216,7 +216,7 @@ class Plan:
             )
             if "pipeline" in d:
                 pipeline = d["pipeline"]
-                tooltip += f"\ntask memory: {memory_repr(pipeline.required_mem)}"
+                tooltip += f"\nprojected memory: {memory_repr(pipeline.projected_mem)}"
                 tooltip += f"\ntasks: {pipeline.num_tasks}"
             if "stack_summaries" in d:
                 # add call stack information

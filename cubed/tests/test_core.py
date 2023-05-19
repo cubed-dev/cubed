@@ -17,7 +17,7 @@ from cubed.tests.utils import MAIN_EXECUTORS, MODAL_EXECUTORS, TaskCounter, crea
 
 @pytest.fixture()
 def spec(tmp_path):
-    return cubed.Spec(tmp_path, max_mem=100000)
+    return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
 @pytest.fixture(scope="module", params=MAIN_EXECUTORS)
@@ -232,7 +232,7 @@ def test_default_spec(executor):
     )
 
 
-def test_default_spec_max_mem_exceeded():
+def test_default_spec_allowed_mem_exceeded():
     # default spec fails for large computations
     a = xp.ones((100000, 100000), chunks=(10000, 10000))
     with pytest.raises(ValueError):
@@ -240,8 +240,8 @@ def test_default_spec_max_mem_exceeded():
 
 
 def test_different_specs(tmp_path):
-    spec1 = cubed.Spec(tmp_path, max_mem=100000)
-    spec2 = cubed.Spec(tmp_path, max_mem=200000)
+    spec1 = cubed.Spec(tmp_path, allowed_mem=100000)
+    spec2 = cubed.Spec(tmp_path, allowed_mem=200000)
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec1)
     b = xp.ones((3, 3), chunks=(2, 2), spec=spec2)
     with pytest.raises(ValueError):
@@ -249,7 +249,7 @@ def test_different_specs(tmp_path):
 
 
 def test_reduction_multiple_rounds(tmp_path, executor):
-    spec = cubed.Spec(tmp_path, max_mem=1000)
+    spec = cubed.Spec(tmp_path, allowed_mem=1000)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
     # check that there is > 1 rechunk step
@@ -257,12 +257,12 @@ def test_reduction_multiple_rounds(tmp_path, executor):
         n for (n, d) in b.plan.dag.nodes(data=True) if d["op_name"] == "rechunk"
     ]
     assert len(rechunks) > 1
-    assert b.plan.max_required_mem() == 1000
+    assert b.plan.max_projected_mem() == 1000
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
 
 
 def test_reduction_not_enough_memory(tmp_path):
-    spec = cubed.Spec(tmp_path, max_mem=50)
+    spec = cubed.Spec(tmp_path, allowed_mem=50)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     with pytest.raises(ValueError, match=r"Not enough memory for reduction"):
         xp.sum(a, axis=0, dtype=np.uint8)
@@ -295,8 +295,8 @@ def test_compute_multiple():
 
 
 def test_compute_multiple_different_specs(tmp_path):
-    spec1 = cubed.Spec(tmp_path, max_mem=100000)
-    spec2 = cubed.Spec(tmp_path, max_mem=200000)
+    spec1 = cubed.Spec(tmp_path, allowed_mem=100000)
+    spec2 = cubed.Spec(tmp_path, allowed_mem=200000)
 
     a1 = xp.ones((3, 3), chunks=(2, 2), spec=spec1)
     b1 = xp.ones((3, 3), chunks=(2, 2), spec=spec1)
@@ -408,7 +408,7 @@ def test_callbacks(spec, executor):
 def test_callbacks_modal(spec, modal_executor):
     task_counter = TaskCounter(check_timestamps=False)
     tmp_path = "s3://cubed-unittest/callbacks"
-    spec = cubed.Spec(tmp_path, max_mem=100000)
+    spec = cubed.Spec(tmp_path, allowed_mem=100000)
     try:
         a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
         b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)

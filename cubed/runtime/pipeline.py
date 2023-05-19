@@ -63,7 +63,7 @@ def copy_intermediate_to_write(chunk_key, *, config=CopySpec):
 
 
 def spec_to_pipeline(
-    spec: CopySpec, target_array: Any, max_mem: int, num_tasks: int
+    spec: CopySpec, target_array: Any, projected_mem: int, num_tasks: int
 ) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
@@ -88,7 +88,7 @@ def spec_to_pipeline(
                 mappable=ChunkKeys(shape, spec.write.chunks),
             ),
         ]
-    return CubedPipeline(stages, spec, target_array, max_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
 
 
 def already_computed(node_dict):

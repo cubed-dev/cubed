@@ -14,14 +14,15 @@ def executor(request):
     return request.param
 
 
-def test_blockwise(tmp_path, executor):
+@pytest.mark.parametrize("reserved_mem", [0, 100])
+def test_blockwise(tmp_path, executor, reserved_mem):
     source1 = create_zarr(
         [0, 1, 2], dtype=int, chunks=2, store=tmp_path / "source1.zarr"
     )
     source2 = create_zarr(
         [10, 50, 100], dtype=int, chunks=2, store=tmp_path / "source2.zarr"
     )
-    max_mem = 1000
+    allowed_mem = 1000
     target_store = tmp_path / "target.zarr"
 
     pipeline = blockwise(
@@ -31,7 +32,8 @@ def test_blockwise(tmp_path, executor):
         "i",
         source2,
         "j",
-        max_mem=max_mem,
+        allowed_mem=allowed_mem,
+        reserved_mem=reserved_mem,
         target_store=target_store,
         shape=(3, 3),
         dtype=int,
@@ -43,8 +45,9 @@ def test_blockwise(tmp_path, executor):
     assert pipeline.target_array.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert pipeline.required_mem == (
-        (itemsize * 2)  # source1 compressed chunk
+    assert pipeline.projected_mem == (
+        reserved_mem  # projected includes reserved
+        + (itemsize * 2)  # source1 compressed chunk
         + (itemsize * 2)  # source1 uncompressed chunk
         + (itemsize * 2)  # source2 compressed chunk
         + (itemsize * 2)  # source2 uncompressed chunk
@@ -60,7 +63,7 @@ def test_blockwise(tmp_path, executor):
     assert_array_equal(res[:], np.outer([0, 1, 2], [10, 50, 100]))
 
 
-def _permute_dims(x, /, axes, max_mem, target_store):
+def _permute_dims(x, /, axes, allowed_mem, reserved_mem, target_store):
     # From dask transpose
     if axes:
         if len(axes) != x.ndim:
@@ -73,7 +76,8 @@ def _permute_dims(x, /, axes, max_mem, target_store):
         axes,
         x,
         tuple(range(x.ndim)),
-        max_mem=max_mem,
+        allowed_mem=allowed_mem,
+        reserved_mem=reserved_mem,
         target_store=target_store,
         shape=x.shape,
         dtype=x.dtype,
@@ -89,11 +93,15 @@ def test_blockwise_with_args(tmp_path, executor):
         chunks=(2, 2),
         store=tmp_path / "source.zarr",
     )
-    max_mem = 1000
+    allowed_mem = 1000
     target_store = tmp_path / "target.zarr"
 
     pipeline = _permute_dims(
-        source, axes=(1, 0), max_mem=max_mem, target_store=target_store
+        source,
+        axes=(1, 0),
+        allowed_mem=allowed_mem,
+        reserved_mem=0,
+        target_store=target_store,
     )
 
     assert pipeline.target_array.shape == (3, 3)
@@ -101,7 +109,7 @@ def test_blockwise_with_args(tmp_path, executor):
     assert pipeline.target_array.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert pipeline.required_mem == (
+    assert pipeline.projected_mem == (
         (itemsize * 2 * 2)  # source compressed chunk
         + (itemsize * 2 * 2)  # source uncompressed chunk
         + (itemsize * 2 * 2)  # output compressed chunk
@@ -118,18 +126,20 @@ def test_blockwise_with_args(tmp_path, executor):
     )
 
 
-def test_blockwise_max_mem_exceeded(tmp_path):
+@pytest.mark.parametrize("reserved_mem", [0, 10])
+def test_blockwise_allowed_mem_exceeded(tmp_path, reserved_mem):
     source1 = create_zarr(
         [0, 1, 2], dtype=np.int64, chunks=2, store=tmp_path / "source1.zarr"
     )
     source2 = create_zarr(
         [10, 50, 100], dtype=np.int64, chunks=2, store=tmp_path / "source2.zarr"
     )
-    max_mem = 100
+    allowed_mem = 100
     target_store = tmp_path / "target.zarr"
 
     with pytest.raises(
-        ValueError, match=r"Blockwise memory \(\d+\) exceeds max_mem \(100\)"
+        ValueError,
+        match=r"Projected blockwise memory \(\d+\) exceeds allowed_mem \(100\), including reserved_mem \(\d+\)",
     ):
         blockwise(
             np.outer,
@@ -138,7 +148,8 @@ def test_blockwise_max_mem_exceeded(tmp_path):
             "i",
             source2,
             "j",
-            max_mem=max_mem,
+            allowed_mem=allowed_mem,
+            reserved_mem=reserved_mem,
             target_store=target_store,
             shape=(3, 3),
             dtype=np.int64,

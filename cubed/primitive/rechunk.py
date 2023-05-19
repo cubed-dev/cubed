@@ -4,7 +4,9 @@ from cubed.runtime.pipeline import spec_to_pipeline
 from cubed.vendor.rechunker.api import _setup_rechunk
 
 
-def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
+def rechunk(
+    source, target_chunks, allowed_mem, reserved_mem, target_store, temp_store=None
+):
     """Rechunk a Zarr array to have target_chunks.
 
     Parameters
@@ -12,8 +14,10 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     source : Zarr array
     target_chunks : tuple
         The desired chunks of the array after rechunking.
-    max_mem : int
-        Maximum memory allowed for a single task of this operation, measured in bytes
+    allowed_mem : int
+        The memory available to a worker for running a task, in bytes. Includes ``reserved_mem``.
+    reserved_mem : int
+        The memory reserved on a worker for non-data use when running a task, in bytes
     target_store : str
         Path to output Zarr store.
     temp_store : str, optional
@@ -21,19 +25,18 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
 
     Returns
     -------
-    pipeline:  Pipeline to run the operation
-    target:  Array for the Zarr array output
-    required_mem: minimum memory required per-task, in bytes
+    CubedPipeline to run the operation
     """
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
     # input and output array chunk/selection, so adjust appropriately
-    adjusted_max_mem = max_mem / 4
+    reserved_mem = reserved_mem or 0
+    rechunker_max_mem = (allowed_mem - reserved_mem) / 4
 
     copy_specs, intermediate, target = _setup_rechunk(
         source=source,
         target_chunks=target_chunks,
-        max_mem=adjusted_max_mem,
+        max_mem=rechunker_max_mem,
         target_store=target_store,
         temp_store=temp_store,
     )
@@ -47,7 +50,9 @@ def rechunk(source, target_chunks, max_mem, target_store, temp_store=None):
     if intermediate is not None:
         num_tasks += total_chunks(copy_spec.read.array.shape, copy_spec.read.chunks)
 
-    return spec_to_pipeline(copy_spec, target, max_mem, num_tasks)
+    # we assume that rechunker is going to use all the memory it is allowed to
+    projected_mem = allowed_mem
+    return spec_to_pipeline(copy_spec, target, projected_mem, num_tasks)
 
 
 def total_chunks(shape, chunks):

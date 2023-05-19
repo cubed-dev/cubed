@@ -11,5 +11,5 @@ class CubedPipeline:
     stages: Iterable[Stage]
     config: Config
     target_array: Any
-    required_mem: int
+    projected_mem: int
     num_tasks: int

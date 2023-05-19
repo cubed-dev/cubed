@@ -15,7 +15,7 @@ Start with a simple example that runs using the local Python executor.
 ```python
 >>> import cubed.array_api as xp
 >>> import cubed.random
->>> spec = cubed.Spec(work_dir="tmp", max_mem=100_000)
+>>> spec = cubed.Spec(work_dir="tmp", allowed_mem=100_000)
 >>> a = cubed.random.random((4, 4), chunks=(2, 2), spec=spec)
 >>> b = cubed.random.random((4, 4), chunks=(2, 2), spec=spec)
 >>> c = xp.matmul(a, b)
