@@ -1,3 +1,4 @@
+import platform
 from typing import Iterable
 
 import numpy as np
@@ -13,11 +14,16 @@ LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhos
 ALL_EXECUTORS = [
     PythonPipelineExecutor(),
     PythonDagExecutor(),
-    AsyncPythonDagExecutor(),
 ]
 
 # don't run all tests on every executor as it's too slow, so just have a subset
 MAIN_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
+
+
+if platform.system() != "Windows":
+    # AsyncPythonDagExecutor calls `peak_memory` which is not supported on Windows
+    ALL_EXECUTORS.append(AsyncPythonDagExecutor())
+
 
 try:
     from cubed.runtime.executors.beam import BeamDagExecutor, BeamPipelineExecutor

@@ -120,10 +120,10 @@ def test_blockwise_with_args(tmp_path, executor):
 
 def test_blockwise_max_mem_exceeded(tmp_path):
     source1 = create_zarr(
-        [0, 1, 2], dtype=int, chunks=2, store=tmp_path / "source1.zarr"
+        [0, 1, 2], dtype=np.int64, chunks=2, store=tmp_path / "source1.zarr"
     )
     source2 = create_zarr(
-        [10, 50, 100], dtype=int, chunks=2, store=tmp_path / "source2.zarr"
+        [10, 50, 100], dtype=np.int64, chunks=2, store=tmp_path / "source2.zarr"
     )
     max_mem = 100
     target_store = tmp_path / "target.zarr"
@@ -141,7 +141,7 @@ def test_blockwise_max_mem_exceeded(tmp_path):
             max_mem=max_mem,
             target_store=target_store,
             shape=(3, 3),
-            dtype=int,
+            dtype=np.int64,
             chunks=(2, 2),
         )
 

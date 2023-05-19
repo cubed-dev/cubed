@@ -1,3 +1,5 @@
+import platform
+
 import dill
 import fsspec
 import numpy as np
@@ -440,6 +442,7 @@ def test_already_computed(spec):
     assert task_counter.value == 4
 
 
+@pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
 def test_measure_reserved_memory(executor):
     pytest.importorskip("lithops")
 

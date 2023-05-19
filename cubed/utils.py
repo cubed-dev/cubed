@@ -9,7 +9,6 @@ from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
-from resource import RUSAGE_SELF, getrusage
 from typing import Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
@@ -72,7 +71,16 @@ def memory_repr(num):
 
 
 def peak_memory():
-    """Return the peak memory usage in bytes."""
+    """Return the peak memory usage in bytes.
+
+    Note: this function currently doesn't work on Windows.
+    """
+
+    if platform.system() == "Windows":
+        raise NotImplementedError("`peak_memory` is not implemented on Windows")
+
+    from resource import RUSAGE_SELF, getrusage
+
     ru_maxrss = getrusage(RUSAGE_SELF).ru_maxrss
     # note that on Linux ru_maxrss is in KiB, while on Mac it is in bytes
     # see https://pythonspeed.com/articles/estimating-memory-usage/#measuring-peak-memory-usage
