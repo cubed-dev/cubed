@@ -17,7 +17,7 @@ class HistoryCallback(Callback):
                 dict(
                     array_name=name,
                     op_name=node["op_name"],
-                    required_mem=pipeline.required_mem,
+                    projected_mem=pipeline.projected_mem,
                     reserved_mem=node["reserved_mem"],
                     num_tasks=pipeline.num_tasks,
                 )
@@ -46,16 +46,14 @@ class HistoryCallback(Callback):
 
 def analyze(plan_df, events_df):
     # convert memory to MB
-    plan_df["required_mem_mb"] = plan_df["required_mem"] / 1_000_000
+    plan_df["projected_mem_mb"] = plan_df["projected_mem"] / 1_000_000
     plan_df["reserved_mem_mb"] = plan_df["reserved_mem"] / 1_000_000
-    plan_df["total_mem_mb"] = plan_df["required_mem_mb"] + plan_df["reserved_mem_mb"]
     plan_df = plan_df[
         [
             "array_name",
             "op_name",
-            "required_mem_mb",
+            "projected_mem_mb",
             "reserved_mem_mb",
-            "total_mem_mb",
             "num_tasks",
         ]
     ]
@@ -78,10 +76,12 @@ def analyze(plan_df, events_df):
     df.columns = ["_".join(a).rstrip("_") for a in df.columns.to_flat_index()]
     df = df.merge(plan_df, on="array_name")
 
-    def utilization(row):
-        return row["peak_mem_end_mb_max"] / row["total_mem_mb"]
+    def projected_mem_utilization(row):
+        return row["peak_mem_end_mb_max"] / row["projected_mem_mb"]
 
-    df["utilization"] = df.apply(lambda row: utilization(row), axis=1)
+    df["projected_mem_utilization"] = df.apply(
+        lambda row: projected_mem_utilization(row), axis=1
+    )
     df = df[
         [
             "array_name",
@@ -90,10 +90,9 @@ def analyze(plan_df, events_df):
             "peak_mem_start_mb_max",
             "peak_mem_end_mb_max",
             "peak_mem_delta_mb_max",
-            "required_mem_mb",
+            "projected_mem_mb",
             "reserved_mem_mb",
-            "total_mem_mb",
-            "utilization",
+            "projected_mem_utilization",
         ]
     ]
 

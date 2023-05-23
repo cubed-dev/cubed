@@ -18,7 +18,7 @@ def run(argv=None):
     known_args, pipeline_args = parser.parse_known_args(argv)
     beam_options = PipelineOptions(pipeline_args)
 
-    spec = cubed.Spec(known_args.tmp_path, max_mem=100000)
+    spec = cubed.Spec(known_args.tmp_path, allowed_mem=100000)
     executor = BeamDagExecutor()
 
     a = xp.asarray(

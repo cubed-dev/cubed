@@ -26,7 +26,7 @@ def apply_gufunc(
     and multiple outputs are not supported.
 
     Cubed assumes that ``func`` will allocate a new output array. However, if it allocates more memory
-    than than, then you need to tell Cubed about it by setting the ``extra_required_mem`` parameter
+    than than, then you need to tell Cubed about it by setting the ``extra_projected_mem`` parameter
     to the amount needed in bytes (per task).
     """
 

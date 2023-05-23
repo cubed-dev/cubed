@@ -65,7 +65,7 @@ def from_array(x, chunks="auto", asarray=None, spec=None) -> "Array":
         shape=x.shape,
         dtype=x.dtype,
         chunks=outchunks,
-        extra_required_mem=0,
+        extra_projected_mem=0,
         spec=spec,
         outchunks=outchunks,
         asarray=asarray,
@@ -256,7 +256,7 @@ def blockwise(
     extra_source_arrays = kwargs.pop("extra_source_arrays", [])
     source_arrays = list(arrays) + list(extra_source_arrays)
 
-    extra_required_mem = kwargs.pop("extra_required_mem", 0)
+    extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -266,7 +266,8 @@ def blockwise(
         func,
         out_ind,
         *zargs,
-        max_mem=spec.max_mem,
+        allowed_mem=spec.allowed_mem,
+        reserved_mem=spec.reserved_mem,
         target_store=target_store,
         shape=shape,
         dtype=dtype,
@@ -281,7 +282,7 @@ def blockwise(
         "blockwise",
         pipeline.target_array,
         pipeline,
-        pipeline.required_mem + extra_required_mem,
+        pipeline.projected_mem + extra_projected_mem,
         spec.reserved_mem,
         pipeline.num_tasks,
         *source_arrays,
@@ -358,7 +359,7 @@ def index(x, key):
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks, zarr will
     # read the chunks in series, reusing the buffer
-    extra_required_mem = x.chunkmem
+    extra_projected_mem = x.chunkmem
 
     out = map_direct(
         _read_index_chunk,
@@ -366,7 +367,7 @@ def index(x, key):
         shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
         target_chunks=chunks,
         selection=selection,
     )
@@ -531,7 +532,7 @@ def _map_blocks(
 
 
 def map_direct(
-    func, *args: "Array", shape, dtype, chunks, extra_required_mem, spec=None, **kwargs
+    func, *args: "Array", shape, dtype, chunks, extra_projected_mem, spec=None, **kwargs
 ) -> "Array":
     """
     Map a function across blocks of a new array, using side-input arrays to read directly from.
@@ -549,9 +550,9 @@ def map_direct(
         The ``dtype`` of the output array.
     chunks : tuple
         Chunk shape of blocks in the output array.
-    extra_required_mem : int
-        Extra memory required (in bytes) for each map task. This should take into account the
-        memory requirements for any reads from the side-input arrays (``args``).
+    extra_projected_mem : int
+        Extra memory projected to be needed (in bytes) for each map task. This should take into account the
+        memory allocations for any reads from the side-input arrays (``args``).
     spec : Spec
         Specification for the new array. If not specified, the one from the first side input
         (`args`) will be used (if any).
@@ -580,7 +581,7 @@ def map_direct(
         dtype=dtype,
         chunks=chunks,
         extra_source_arrays=args,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
         **kwargs,
     )
 
@@ -596,7 +597,8 @@ def rechunk(x, chunks, target_store=None):
     pipeline = primitive_rechunk(
         x.zarray,
         target_chunks=chunks,
-        max_mem=spec.max_mem,
+        allowed_mem=spec.allowed_mem,
+        reserved_mem=spec.reserved_mem,
         target_store=target_store,
         temp_store=temp_store,
     )
@@ -605,7 +607,7 @@ def rechunk(x, chunks, target_store=None):
         "rechunk",
         pipeline.target_array,
         pipeline,
-        pipeline.required_mem,
+        pipeline.projected_mem,
         spec.reserved_mem,
         pipeline.num_tasks,
         x,
@@ -639,7 +641,8 @@ def reduction(
     inds = tuple(range(x.ndim))
 
     result = x
-    max_mem = x.spec.max_mem
+    allowed_mem = x.spec.allowed_mem
+    max_mem = allowed_mem - x.spec.reserved_mem
 
     # reduce initial chunks (if any axis chunksize is > 1)
     if (
@@ -678,7 +681,7 @@ def reduction(
                     target_chunk_size = (max_mem - chunk_mem) // (chunk_mem * 4)
                     if target_chunk_size <= 1:
                         raise ValueError(
-                            f"Not enough memory for reduction. Increase max_mem ({max_mem}) or decrease chunk size"
+                            f"Not enough memory for reduction. Increase allowed_mem ({allowed_mem}) or decrease chunk size"
                         )
                     target_chunks[i] = min(s, target_chunk_size)
         _target_chunks = tuple(target_chunks)

@@ -8,7 +8,7 @@ import cubed.array_api as xp
 
 @pytest.fixture()
 def spec(tmp_path):
-    return cubed.Spec(tmp_path, max_mem=100000)
+    return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
 # Int array indexing is not a part of the array API, so test it separately.

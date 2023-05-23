@@ -7,7 +7,7 @@ from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
-    spec = cubed.Spec(tmp_path, max_mem=100000)
+    spec = cubed.Spec(tmp_path, allowed_mem=100000)
     executor = AsyncModalDagExecutor()
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],

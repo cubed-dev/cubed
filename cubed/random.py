@@ -17,16 +17,16 @@ def random(size, *, chunks=None, spec=None):
     numblocks = tuple(map(len, chunks))
     root_seed = pyrandom.getrandbits(128)
 
-    # no extra memory required since input is an empty array whose
+    # no extra memory is projected to be needed since input is an empty array whose
     # memory is never allocated, see https://pythonspeed.com/articles/measuring-memory-python/#phantom-memory
-    extra_required_mem = 0
+    extra_projected_mem = 0
 
     return map_direct(
         _random,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
         spec=spec,
         numblocks=numblocks,
         root_seed=root_seed,

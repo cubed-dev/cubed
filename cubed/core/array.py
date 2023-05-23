@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from operator import mul
 from typing import Optional, TypeVar
+from warnings import warn
 
 import numpy as np
 from toolz import map, reduce
@@ -41,9 +42,11 @@ class CoreArray:
         self._chunks = normalize_chunks(
             zarray.chunks, shape=self.shape, dtype=self.dtype
         )
-        # if no spec is supplied, use a default with local temp dir, a modest amount of memory (100MB),
-        # and a conservative amount of reserved memory (200MB)
-        self.spec = spec or Spec(None, max_mem=100_000_000, reserved_mem=200_000_000)
+        # if no spec is supplied, use a default with local temp dir,
+        # and a modest amount of memory (200MB, of which 100MB is reserved)
+        self.spec = spec or Spec(
+            None, allowed_mem=200_000_000, reserved_mem=100_000_000
+        )
         self.plan = plan
 
     @property
@@ -191,12 +194,15 @@ class Spec:
     """The directory path (specified as an fsspec URL) used for storing intermediate data."""
 
     max_mem: Optional[int] = None
-    """The maximum memory available to a worker for data use for the computation, in bytes."""
+    """**Deprecated**. The maximum memory available to a worker for data use for the computation, in bytes."""
 
-    reserved_mem: Optional[int] = None
-    """The memory reserved on a worker for non-data use, in bytes.
+    allowed_mem: Optional[int] = None
+    """The total memory available to a worker for running a task, in bytes.
 
-    The sum of ``max_mem`` and ``reserved_mem`` should not exceed the total memory of the worker.
+    This includes any ``reserved_mem`` that has been set."""
+
+    reserved_mem: int = 0
+    """The memory reserved on a worker for non-data use when running a task, in bytes.
 
     See ``cubed.measure_reserved_memory``.
     """
@@ -206,6 +212,16 @@ class Spec:
 
     storage_options: dict = None  # type: ignore[assignment]
     """Storage options to be passed to fsspec"""
+
+    def __post_init__(self):
+        if self.max_mem is not None:
+            warn(
+                "`max_mem` is deprecated, please use `allowed_mem` instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if self.allowed_mem is None:
+            self.allowed_mem = (self.max_mem or 0) + self.reserved_mem
 
 
 class Callback:

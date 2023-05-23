@@ -11,7 +11,7 @@ from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
 
 @pytest.fixture()
 def spec(tmp_path):
-    return cubed.Spec(tmp_path, max_mem=100000)
+    return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
 @pytest.fixture(scope="module", params=MAIN_EXECUTORS)
@@ -293,7 +293,7 @@ def test_matmul(spec, executor):
 @pytest.mark.cloud
 def test_matmul_cloud(executor):
     tmp_path = "gs://barry-zarr-test/matmul"
-    spec = cubed.Spec(tmp_path, max_mem=100000)
+    spec = cubed.Spec(tmp_path, allowed_mem=100000)
     try:
         a = xp.asarray(
             [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
@@ -318,7 +318,7 @@ def test_matmul_cloud(executor):
 @pytest.mark.cloud
 def test_matmul_modal(modal_executor):
     tmp_path = "s3://cubed-unittest/matmul"
-    spec = cubed.Spec(tmp_path, max_mem=100000)
+    spec = cubed.Spec(tmp_path, allowed_mem=100000)
     try:
         a = xp.asarray(
             [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],

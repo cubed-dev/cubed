@@ -1,3 +1,5 @@
+import math
+
 import pytest
 
 pytest.importorskip("lithops")
@@ -12,13 +14,19 @@ from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
 
 @pytest.fixture()
 def spec(tmp_path, reserved_mem):
-    return cubed.Spec(tmp_path, max_mem=2_000_000_000, reserved_mem=reserved_mem)
+    return cubed.Spec(tmp_path, allowed_mem=2_000_000_000, reserved_mem=reserved_mem)
 
 
 @pytest.fixture(scope="module")
 def reserved_mem():
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
-    return cubed.measure_reserved_memory(executor) * 1.05  # add some wiggle room
+    res = cubed.measure_reserved_memory(executor) * 1.05  # add some wiggle room
+    return round_up_to_multiple(res, 10_000_000)  # round up to nearest multiple of 10MB
+
+
+def round_up_to_multiple(x, multiple=10):
+    """Round up to the nearest multiple"""
+    return math.ceil(x / multiple) * multiple
 
 
 # Array Object
@@ -201,5 +209,5 @@ def run_operation(name, result_array):
     df = hist.stats_df
     print(df)
 
-    # check utilization does not exceed 1
-    assert (df["utilization"] <= 1.0).all()
+    # check projected_mem_utilization does not exceed 1
+    assert (df["projected_mem_utilization"] <= 1.0).all()

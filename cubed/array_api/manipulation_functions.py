@@ -98,7 +98,7 @@ def concat(arrays, /, *, axis=0):
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks,
     # the chunks are read in series, reusing memory
-    extra_required_mem = a.chunkmem
+    extra_projected_mem = a.chunkmem
 
     return map_direct(
         _read_concat_chunk,
@@ -106,7 +106,7 @@ def concat(arrays, /, *, axis=0):
         shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
         axis=axis,
         offsets=offsets,
     )
@@ -169,7 +169,7 @@ def permute_dims(x, /, axes):
     axes = tuple(d + x.ndim if d < 0 else d for d in axes)
 
     # extra memory copy due to Zarr enforcing C order on transposed array
-    extra_required_mem = x.chunkmem
+    extra_projected_mem = x.chunkmem
     return blockwise(
         np.transpose,
         axes,
@@ -177,7 +177,7 @@ def permute_dims(x, /, axes):
         tuple(range(x.ndim)),
         dtype=x.dtype,
         axes=axes,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
     )
 
 
@@ -223,7 +223,7 @@ def reshape_chunks(x, shape, chunks):
     # TODO: check number of chunks is unchanged
 
     # memory allocated by reading one chunk from input array
-    extra_required_mem = x.chunkmem
+    extra_projected_mem = x.chunkmem
 
     return map_direct(
         _reshape_chunk,
@@ -231,7 +231,7 @@ def reshape_chunks(x, shape, chunks):
         shape=shape,
         dtype=x.dtype,
         chunks=outchunks,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
         inchunks=inchunks,
         outchunks=outchunks,
     )
@@ -262,7 +262,7 @@ def stack(arrays, /, *, axis=0):
 
     # memory allocated by reading one chunk from an input array
     # (output is already catered for in blockwise)
-    extra_required_mem = a.chunkmem
+    extra_projected_mem = a.chunkmem
 
     return map_direct(
         _read_stack_chunk,
@@ -270,7 +270,7 @@ def stack(arrays, /, *, axis=0):
         shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_required_mem=extra_required_mem,
+        extra_projected_mem=extra_projected_mem,
         axis=axis,
     )
 

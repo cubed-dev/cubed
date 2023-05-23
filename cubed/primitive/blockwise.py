@@ -81,7 +81,8 @@ def blockwise(
     func,
     out_ind,
     *args,
-    max_mem,
+    allowed_mem,
+    reserved_mem,
     target_store,
     shape,
     dtype,
@@ -101,8 +102,10 @@ def blockwise(
         Block pattern of the output, something like 'ijk' or (1, 2, 3)
     *args : sequence of Array, index pairs
         Sequence like (x, 'ij', y, 'jk', z, 'i')
-    max_mem : int
-        Maximum memory allowed for a single task of this operation, measured in bytes
+    allowed_mem : int
+        The memory available to a worker for running a task, in bytes. Includes ``reserved_mem``.
+    reserved_mem : int
+        The memory reserved on a worker for non-data use when running a task, in bytes
     target_store : string or zarr.Array
         Path to output Zarr store, or Zarr array
     shape : tuple
@@ -118,9 +121,7 @@ def blockwise(
 
     Returns
     -------
-    pipeline:  Pipeline to run the operation
-    target:  ArrayProxy for the Zarr array output
-    required_mem: minimum memory required per-task, in bytes
+    CubedPipeline to run the operation
     """
 
     # Use dask's make_blockwise_graph
@@ -189,29 +190,29 @@ def blockwise(
         )
     ]
 
-    # calculate memory requirement
-    required_mem = 0
+    # calculate projected memory
+    projected_mem = reserved_mem
     # inputs
     for array in arrays:  # inputs
         # memory for a compressed and an uncompressed input array chunk
         # - we assume compression has no effect (so it's an overestimate)
         # - ideally we'd be able to look at nbytes_stored,
         #   but this is not possible in general since the array has not been written yet
-        required_mem += chunk_memory(array.dtype, array.chunks) * 2
+        projected_mem += chunk_memory(array.dtype, array.chunks) * 2
     # output
     # memory for a compressed and an uncompressed output array chunk
     # - this assumes the blockwise function creates a new array)
     # - numcodecs uses a working output buffer that's the size of the array being compressed
-    required_mem += chunk_memory(dtype, chunksize) * 2
+    projected_mem += chunk_memory(dtype, chunksize) * 2
 
-    if required_mem > max_mem:
+    if projected_mem > allowed_mem:
         raise ValueError(
-            f"Blockwise memory ({required_mem}) exceeds max_mem ({max_mem})"
+            f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
         )
 
     num_tasks = len(output_blocks)
 
-    return CubedPipeline(stages, spec, target_array, required_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
 
 
 # Code for fusing pipelines
@@ -261,10 +262,10 @@ def fuse(pipeline1, pipeline2):
     spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
 
     target_array = pipeline2.target_array
-    required_mem = max(pipeline1.required_mem, pipeline2.required_mem)
+    projected_mem = max(pipeline1.projected_mem, pipeline2.projected_mem)
     num_tasks = pipeline2.num_tasks
 
-    return CubedPipeline(stages, spec, target_array, required_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
 
 
 # blockwise functions

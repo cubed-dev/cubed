@@ -9,7 +9,7 @@ from cubed import apply_gufunc
 
 @pytest.fixture()
 def spec(tmp_path):
-    return cubed.Spec(tmp_path, max_mem=1000000)
+    return cubed.Spec(tmp_path, allowed_mem=1000000)
 
 
 @pytest.mark.parametrize("vectorize", [False, True])
