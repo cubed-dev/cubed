@@ -201,7 +201,7 @@ class Spec:
 
     This includes any ``reserved_mem`` that has been set."""
 
-    reserved_mem: Optional[int] = None
+    reserved_mem: int = 0
     """The memory reserved on a worker for non-data use when running a task, in bytes.
 
     See ``cubed.measure_reserved_memory``.
@@ -221,7 +221,7 @@ class Spec:
                 stacklevel=2,
             )
         if self.allowed_mem is None:
-            self.allowed_mem = (self.max_mem or 0) + (self.reserved_mem or 0)
+            self.allowed_mem = (self.max_mem or 0) + self.reserved_mem
 
 
 class Callback:

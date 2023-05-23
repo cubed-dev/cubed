@@ -191,7 +191,7 @@ def blockwise(
     ]
 
     # calculate projected memory
-    projected_mem = reserved_mem or 0
+    projected_mem = reserved_mem
     # inputs
     for array in arrays:  # inputs
         # memory for a compressed and an uncompressed input array chunk

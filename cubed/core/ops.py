@@ -642,7 +642,7 @@ def reduction(
 
     result = x
     allowed_mem = x.spec.allowed_mem
-    max_mem = allowed_mem - (x.spec.reserved_mem or 0)
+    max_mem = allowed_mem - x.spec.reserved_mem
 
     # reduce initial chunks (if any axis chunksize is > 1)
     if (

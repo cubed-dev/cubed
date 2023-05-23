@@ -30,7 +30,6 @@ def rechunk(
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
     # input and output array chunk/selection, so adjust appropriately
-    reserved_mem = reserved_mem or 0
     rechunker_max_mem = (allowed_mem - reserved_mem) / 4
 
     copy_specs, intermediate, target = _setup_rechunk(
