@@ -328,7 +328,7 @@ in Dask. Refer there for usage information.</p>
 <p>Current limitations: <code class="docutils literal notranslate"><span class="pre">keepdims</span></code>, and <code class="docutils literal notranslate"><span class="pre">allow_rechunk</span></code> are not supported;
 and multiple outputs are not supported.</p>
 <p>Cubed assumes that <code class="docutils literal notranslate"><span class="pre">func</span></code> will allocate a new output array. However, if it allocates more memory
-than than, then you need to tell Cubed about it by setting the <code class="docutils literal notranslate"><span class="pre">extra_required_mem</span></code> parameter
+than than, then you need to tell Cubed about it by setting the <code class="docutils literal notranslate"><span class="pre">extra_projected_mem</span></code> parameter
 to the amount needed in bytes (per task).</p>
 </dd></dl>
 

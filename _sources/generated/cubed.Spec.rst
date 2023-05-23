@@ -23,6 +23,7 @@
 
    .. autosummary::
    
+      ~Spec.allowed_mem
       ~Spec.executor
       ~Spec.max_mem
       ~Spec.reserved_mem
