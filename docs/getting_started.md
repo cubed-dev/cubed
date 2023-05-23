@@ -24,7 +24,6 @@ Cubed has many optional dependencies, which can be installed in sets for differe
     $ python -m pip install "cubed[beam]"         # Install optional dependencies for the beam executor
     $ python -m pip install "cubed[lithops]"      # Install optional dependencies for the lithops executor
     $ python -m pip install "cubed[modal]"        # Install optional dependencies for the modal executor
-    $ python -m pip install "cubed[complete]"     # Install all of the above
 
 To see the full list of which packages are installed with which options see `[project.optional_dependencies]` in `pyproject.toml`:
 ```{eval-rst}

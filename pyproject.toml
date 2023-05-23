@@ -45,7 +45,6 @@ modal = [
     "modal-client",
     "s3fs",
 ]
-complete = ["cubed[beam,lithops,modal]"]
 test = [
     "apache-beam",  # beam but not gcsfs as tests use local beam runner
     "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
