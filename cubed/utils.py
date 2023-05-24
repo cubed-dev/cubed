@@ -70,14 +70,14 @@ def memory_repr(num):
         num /= 1000.0
 
 
-def peak_memory():
-    """Return the peak memory usage in bytes.
+def peak_measured_mem():
+    """Measures the peak memory usage in bytes.
 
     Note: this function currently doesn't work on Windows.
     """
 
     if platform.system() == "Windows":
-        raise NotImplementedError("`peak_memory` is not implemented on Windows")
+        raise NotImplementedError("`peak_measured_mem` is not implemented on Windows")
 
     from resource import RUSAGE_SELF, getrusage
 

@@ -57,18 +57,22 @@ def analyze(plan_df, events_df):
             "num_tasks",
         ]
     ]
-    events_df["peak_mem_start_mb"] = events_df["peak_memory_start"] / 1_000_000
-    events_df["peak_mem_end_mb"] = events_df["peak_memory_end"] / 1_000_000
-    events_df["peak_mem_delta_mb"] = (
-        events_df["peak_mem_end_mb"] - events_df["peak_mem_start_mb"]
+    events_df["peak_measured_mem_start_mb"] = (
+        events_df["peak_measured_mem_start"] / 1_000_000
+    )
+    events_df["peak_measured_mem_end_mb"] = (
+        events_df["peak_measured_mem_end"] / 1_000_000
+    )
+    events_df["peak_measured_mem_delta_mb"] = (
+        events_df["peak_measured_mem_end_mb"] - events_df["peak_measured_mem_start_mb"]
     )
 
     # find per-array stats
     df = events_df.groupby("array_name", as_index=False).agg(
         {
-            "peak_mem_start_mb": ["min", "mean", "max"],
-            "peak_mem_end_mb": ["max"],
-            "peak_mem_delta_mb": ["min", "mean", "max"],
+            "peak_measured_mem_start_mb": ["min", "mean", "max"],
+            "peak_measured_mem_end_mb": ["max"],
+            "peak_measured_mem_delta_mb": ["min", "mean", "max"],
         }
     )
 
@@ -77,7 +81,7 @@ def analyze(plan_df, events_df):
     df = df.merge(plan_df, on="array_name")
 
     def projected_mem_utilization(row):
-        return row["peak_mem_end_mb_max"] / row["projected_mem_mb"]
+        return row["peak_measured_mem_end_mb_max"] / row["projected_mem_mb"]
 
     df["projected_mem_utilization"] = df.apply(
         lambda row: projected_mem_utilization(row), axis=1
@@ -87,9 +91,9 @@ def analyze(plan_df, events_df):
             "array_name",
             "op_name",
             "num_tasks",
-            "peak_mem_start_mb_max",
-            "peak_mem_end_mb_max",
-            "peak_mem_delta_mb_max",
+            "peak_measured_mem_start_mb_max",
+            "peak_measured_mem_end_mb_max",
+            "peak_measured_mem_delta_mb_max",
             "projected_mem_mb",
             "reserved_mem_mb",
             "projected_mem_utilization",

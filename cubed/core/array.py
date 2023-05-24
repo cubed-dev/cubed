@@ -280,11 +280,11 @@ class TaskEndEvent:
     task_result_tstamp: Optional[float] = None
     """Timestamp of when the result of the task was received by the client."""
 
-    peak_memory_start: Optional[int] = None
-    """Peak memory usage on the remote worker before the function starts executing."""
+    peak_measured_mem_start: Optional[int] = None
+    """Peak memory usage measured on the remote worker before the function starts executing."""
 
-    peak_memory_end: Optional[int] = None
-    """Peak memory usage on the remote worker after the function finishes executing."""
+    peak_measured_mem_end: Optional[int] = None
+    """Peak memory usage measured on the remote worker after the function finishes executing."""
 
 
 def check_array_specs(arrays):
@@ -353,9 +353,9 @@ def visualize(*arrays, filename="cubed", format=None, optimize_graph=True):
     )
 
 
-class PeakMemoryCallback(Callback):
+class PeakMeasuredMemoryCallback(Callback):
     def on_task_end(self, event):
-        self.peak_memory = event.peak_memory_end
+        self.peak_measured_mem = event.peak_measured_mem_end
 
 
 def measure_reserved_memory(executor):
@@ -386,6 +386,6 @@ def measure_reserved_memory(executor):
 
     a = xp.ones((1,))
     b = xp.negative(a)
-    peak_memory_callback = PeakMemoryCallback()
-    b.compute(executor=executor, callbacks=[peak_memory_callback])
-    return peak_memory_callback.peak_memory
+    peak_measured_mem_callback = PeakMeasuredMemoryCallback()
+    b.compute(executor=executor, callbacks=[peak_measured_mem_callback])
+    return peak_measured_mem_callback.peak_measured_mem

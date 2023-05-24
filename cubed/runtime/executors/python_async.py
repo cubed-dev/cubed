@@ -9,23 +9,23 @@ from tenacity import retry, stop_after_attempt
 from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_node_generations
 from cubed.runtime.types import DagExecutor
-from cubed.utils import peak_memory
+from cubed.utils import peak_measured_mem
 
 
 def execution_stats(func):
     """Measure timing information and peak memory usage of a function call."""
 
     def wrapper(*args, **kwargs):
-        peak_memory_start = peak_memory()
+        peak_measured_mem_start = peak_measured_mem()
         function_start_tstamp = time.time()
         result = func(*args, **kwargs)
         function_end_tstamp = time.time()
-        peak_memory_end = peak_memory()
+        peak_measured_mem_end = peak_measured_mem()
         return result, dict(
             function_start_tstamp=function_start_tstamp,
             function_end_tstamp=function_end_tstamp,
-            peak_memory_start=peak_memory_start,
-            peak_memory_end=peak_memory_end,
+            peak_measured_mem_start=peak_measured_mem_start,
+            peak_measured_mem_end=peak_measured_mem_end,
         )
 
     return wrapper

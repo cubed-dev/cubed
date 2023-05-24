@@ -9,7 +9,7 @@ from cubed.utils import (
     extract_stack_summaries,
     join_path,
     memory_repr,
-    peak_memory,
+    peak_measured_mem,
     to_chunksize,
 )
 
@@ -57,8 +57,8 @@ def test_memory_repr():
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
-def test_peak_memory():
-    assert peak_memory() > 0
+def test_peak_measured_mem():
+    assert peak_measured_mem() > 0
 
 
 def test_extract_stack_summaries():

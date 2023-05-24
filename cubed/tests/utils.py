@@ -21,7 +21,7 @@ MAIN_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
 
 
 if platform.system() != "Windows":
-    # AsyncPythonDagExecutor calls `peak_memory` which is not supported on Windows
+    # AsyncPythonDagExecutor calls `peak_measured_mem` which is not supported on Windows
     ALL_EXECUTORS.append(AsyncPythonDagExecutor())
 
 
