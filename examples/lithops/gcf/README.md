@@ -9,9 +9,10 @@
 1. Install a Python environment with the basic package requirements:
 
 ```shell
+# from this directory
 conda create --name cubed-lithops-gcf-examples -y python=3.8
 conda activate cubed-lithops-gcf-examples
-pip install -r requirements.txt
+pip install -r requirements.txt  # use requirements file from same directory as this readme
 ```
 
 2. Configure Lithops with a [Google Cloud Functions compute backend](https://lithops-cloud.github.io/docs/source/compute_config/gcp_functions.html#configuration), and a [Google Cloud Storage backend](https://lithops-cloud.github.io/docs/source/storage_config/gcp_storage.html#configuration).

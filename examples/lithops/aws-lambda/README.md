@@ -10,9 +10,9 @@
 1. Install a Python environment with the basic package requirements:
 
 ```shell
-conda create --name cubed-lithops-examples -y python=3.8
-conda activate cubed-lithops-examples
-pip install -r requirements.txt
+conda create --name cubed-lithops-aws-examples -y python=3.8
+conda activate cubed-lithops-aws-examples
+pip install -r requirements.txt  # use requirements file from same directory as this readme
 ```
 
 2. Configure Lithops with an [AWS Lambda compute backend](https://lithops-cloud.github.io/docs/source/compute_config/aws_lambda.html), and an [AWS S3 storage backend](https://lithops-cloud.github.io/docs/source/storage_config/aws_s3.html).
