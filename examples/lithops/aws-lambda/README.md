@@ -36,8 +36,38 @@ python lithops-add-asarray.py "s3://cubed-$USER-temp" cubed-runtime
 
 If successful it should print a 4x4 matrix.
 
-Run the other example in a similar way
+Run the other examples in a similar way
 
 ```shell
 python lithops-add-random.py "s3://cubed-$USER-temp" cubed-runtime
+```
+
+and
+
+```shell
+python lithops-matmul-random.py "s3://cubed-$USER-temp" cubed-runtime
+```
+
+These will take longer to run as they operate on more data.
+
+
+The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
+The plots are `png` files and are written in the `plots` directory with a timestamp. Open the latest one with
+
+```shell
+open plots/$(ls plots | tail -1)
+```
+
+## Cleaning up
+
+If you want to rebuild the Lithops runtime image you can delete the existing one by running
+
+```shell
+lithops runtime delete -b aws_lambda -d cubed-runtime
+```
+
+Or you can remove everything (except config files) with
+
+```shell
+lithops clean -b aws_lambda
 ```
