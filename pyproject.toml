@@ -39,8 +39,7 @@ diagnostics = [
     "pandas"
 ]
 beam = ["apache-beam", "gcsfs"]
-lithops-aws = ["lithops[aws] >= 2.7.0"]
-lithops-gcf = ["lithops[gcf,gcp] >= 2.7.0"]
+lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
     "cubed[diagnostics]",
     "modal-client",
@@ -48,7 +47,7 @@ modal = [
 ]
 test = [
     "apache-beam",  # beam but not gcsfs as tests use local beam runner
-    "cubed[diagnostics,lithops-aws]",  # modal tests separate due to conflicting package reqs
+    "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
     "dill",
     "pytest",
     "pytest-cov",
