@@ -30,7 +30,7 @@ lithops runtime build -f requirements.txt cubed-runtime -b gcp_functions
 Start with the simplest example:
 
 ```shell
-python lithops-add-asarray.py "s3://cubed-$USER-temp" cubed-runtime
+python lithops-add-asarray.py "gs://cubed-$USER-temp" cubed-runtime
 ```
 
 If successful it should print a 4x4 matrix.
@@ -38,5 +38,5 @@ If successful it should print a 4x4 matrix.
 Run the other examples in a similar way
 
 ```shell
-python lithops-add-random.py "s3://cubed-$USER-temp" cubed-runtime
+python lithops-add-random.py "gs://cubed-$USER-temp" cubed-runtime
 ```
