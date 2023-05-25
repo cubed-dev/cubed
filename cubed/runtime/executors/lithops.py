@@ -200,8 +200,8 @@ def lithops_stats_to_task_end_event(name, stats):
         function_start_tstamp=stats["worker_func_start_tstamp"],
         function_end_tstamp=stats["worker_func_end_tstamp"],
         task_result_tstamp=stats["host_status_done_tstamp"],
-        peak_memory_start=stats["worker_peak_memory_start"],
-        peak_memory_end=stats["worker_peak_memory_end"],
+        peak_measured_mem_start=stats["worker_peak_memory_start"],
+        peak_measured_mem_end=stats["worker_peak_memory_end"],
     )
 
 
