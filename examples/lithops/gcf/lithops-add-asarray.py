@@ -20,5 +20,9 @@ if __name__ == "__main__":
         spec=spec,
     )
     c = xp.add(a, b)
-    res = c.compute(executor=executor, runtime=runtime, runtime_memory=2048)
+    res = c.compute(
+        executor=executor,
+        runtime=runtime,
+        runtime_memory=2048,  # Note that Lithops/Google Cloud Functions only accepts powers of 2 for this argument.
+    )
     print(res)
