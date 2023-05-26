@@ -174,7 +174,7 @@ def convert_to_bytes(size: Union[int, str]) -> int:
     -------
     int: The size in bytes
     """
-    units = {"B": 0, "kB": 1, "MB": 2, "GB": 3, "TB": 4, "EB": 4}
+    units = {"B": 0, "kB": 1, "MB": 2, "GB": 3, "TB": 4}
 
     if isinstance(size, int) and size >= 0:
         return size
