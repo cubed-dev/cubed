@@ -275,6 +275,10 @@ class Spec:
         """Storage options to be passed to fsspec."""
         return self._storage_options
 
+    def __repr__(self) -> str:
+        return f"cubed.Spec(work_dir={self._work_dir}, allowed_mem={self._allowed_mem}, " \
+               f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options})"
+
 
 class Callback:
     """Object to receive callback events during array computation."""
