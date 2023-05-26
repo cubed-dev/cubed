@@ -189,29 +189,6 @@ class CoreArray:
 class Spec:
     """Specification of resources available to run a computation."""
 
-    # work_dir: Optional[str]
-    # """The directory path (specified as an fsspec URL) used for storing intermediate data."""
-    #
-    # max_mem: Optional[int] = None
-    # """**Deprecated**. The maximum memory available to a worker for data use for the computation, in bytes."""
-    #
-    # allowed_mem: Optional[int] = None
-    # """The total memory available to a worker for running a task, in bytes.
-    #
-    # This includes any ``reserved_mem`` that has been set."""
-    #
-    # reserved_mem: int
-    # """The memory reserved on a worker for non-data use when running a task, in bytes.
-    #
-    # See ``cubed.measure_reserved_memory``.
-    # """
-    #
-    # executor: Executor = None
-    # """The default executor for running computations."""
-    #
-    # storage_options: dict = None  # type: ignore[assignment]
-    # """Storage options to be passed to fsspec"""
-
     def __init__(
         self,
         work_dir: Union[str, None] = None,
@@ -221,6 +198,29 @@ class Spec:
         executor: Union[Executor, None] = None,
         storage_options: Union[dict, None] = None,
     ):
+        """
+        Specify resources available to run a computation.
+
+        Parameters
+        ----------
+        work_dir : str or None
+            The directory path (specified as an fsspec URL) used for storing intermediate data.
+        max_mem : int, optional
+            **Deprecated**. The maximum memory available to a worker for data use for the computation, in bytes.
+        allowed_mem : int or str, optional
+            The total memory available to a worker for running a task, in bytes.
+
+            If int it should be >=0. If str it should be of form <value><unit> where unit can be kB, MB, GB, TB etc.
+            This includes any ``reserved_mem`` that has been set.
+        reserved_mem : int or str, optional
+            The memory reserved on a worker for non-data use when running a task, in bytes.
+
+            If int it should be >=0. If str it should be of form <value><unit> where unit can be kB, MB, GB, TB etc.
+        executor : Executor, optional
+            The default executor for running computations.
+        storage_options : dict, optional
+            Storage options to be passed to fsspec.
+        """
 
         if max_mem is not None:
             warn(
@@ -229,16 +229,51 @@ class Spec:
                 stacklevel=2,
             )
 
-        self.work_dir = work_dir
+        self._work_dir = work_dir
 
-        self.reserved_mem = convert_to_bytes(reserved_mem)
+        self._reserved_mem = convert_to_bytes(reserved_mem)
         if allowed_mem is None:
-            self.allowed_mem = (max_mem or 0) + self.reserved_mem
+            self._allowed_mem = (max_mem or 0) + self.reserved_mem
         else:
-            self.allowed_mem = convert_to_bytes(allowed_mem)
+            self._allowed_mem = convert_to_bytes(allowed_mem)
 
-        self.executor = executor
-        self.storage_options = storage_options
+        self._executor = executor
+        self._storage_options = storage_options
+
+    @property
+    def work_dir(self) -> str:
+        """The directory path (specified as an fsspec URL) used for storing intermediate data."""
+        return self._work_dir
+
+    @property
+    def allowed_mem(self) -> int:
+        """
+        The total memory available to a worker for running a task, in bytes.
+
+        This includes any ``reserved_mem`` that has been set.
+        """
+        return self._allowed_mem
+
+    @property
+    def reserved_mem(self) -> int:
+        """
+        The memory reserved on a worker for non-data use when running a task, in bytes.
+
+        See Also
+        --------
+        cubed.measure_reserved_memory
+        """
+        return self._reserved_mem
+
+    @property
+    def executor(self) -> Executor:
+        """The default executor for running computations."""
+        return self._executor
+
+    @property
+    def storage_options(self) -> dict:
+        """Storage options to be passed to fsspec."""
+        return self._storage_options
 
 
 class Callback:
