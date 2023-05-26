@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from operator import mul
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Union
 from warnings import warn
 
 import numpy as np
@@ -8,7 +8,7 @@ from toolz import map, reduce
 
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
-from cubed.utils import chunk_memory
+from cubed.utils import chunk_memory, convert_to_bytes
 from cubed.vendor.dask.array.core import normalize_chunks
 
 from .plan import arrays_to_plan
@@ -186,42 +186,59 @@ class CoreArray:
         return f"cubed.core.CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
-@dataclass
 class Spec:
     """Specification of resources available to run a computation."""
 
-    work_dir: Optional[str] = None
-    """The directory path (specified as an fsspec URL) used for storing intermediate data."""
+    # work_dir: Optional[str]
+    # """The directory path (specified as an fsspec URL) used for storing intermediate data."""
+    #
+    # max_mem: Optional[int] = None
+    # """**Deprecated**. The maximum memory available to a worker for data use for the computation, in bytes."""
+    #
+    # allowed_mem: Optional[int] = None
+    # """The total memory available to a worker for running a task, in bytes.
+    #
+    # This includes any ``reserved_mem`` that has been set."""
+    #
+    # reserved_mem: int
+    # """The memory reserved on a worker for non-data use when running a task, in bytes.
+    #
+    # See ``cubed.measure_reserved_memory``.
+    # """
+    #
+    # executor: Executor = None
+    # """The default executor for running computations."""
+    #
+    # storage_options: dict = None  # type: ignore[assignment]
+    # """Storage options to be passed to fsspec"""
 
-    max_mem: Optional[int] = None
-    """**Deprecated**. The maximum memory available to a worker for data use for the computation, in bytes."""
+    def __init__(
+        self,
+        work_dir: Union[str, None] = None,
+        max_mem: Union[int, None] = None,
+        allowed_mem: Union[int, str, None] = None,
+        reserved_mem: Union[int, str, None] = 0,
+        executor: Union[Executor, None] = None,
+        storage_options: Union[dict, None] = None,
+    ):
 
-    allowed_mem: Optional[int] = None
-    """The total memory available to a worker for running a task, in bytes.
-
-    This includes any ``reserved_mem`` that has been set."""
-
-    reserved_mem: int = 0
-    """The memory reserved on a worker for non-data use when running a task, in bytes.
-
-    See ``cubed.measure_reserved_memory``.
-    """
-
-    executor: Executor = None
-    """The default executor for running computations."""
-
-    storage_options: dict = None  # type: ignore[assignment]
-    """Storage options to be passed to fsspec"""
-
-    def __post_init__(self):
-        if self.max_mem is not None:
+        if max_mem is not None:
             warn(
                 "`max_mem` is deprecated, please use `allowed_mem` instead",
                 DeprecationWarning,
                 stacklevel=2,
             )
-        if self.allowed_mem is None:
-            self.allowed_mem = (self.max_mem or 0) + self.reserved_mem
+
+        self.work_dir = work_dir
+
+        self.reserved_mem = convert_to_bytes(reserved_mem)
+        if allowed_mem is None:
+            self.allowed_mem = (max_mem or 0) + self.reserved_mem
+        else:
+            self.allowed_mem = convert_to_bytes(allowed_mem)
+
+        self.executor = executor
+        self.storage_options = storage_options
 
 
 class Callback:

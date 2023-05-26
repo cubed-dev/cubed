@@ -248,6 +248,43 @@ def test_different_specs(tmp_path):
         xp.add(a, b)
 
 
+class TestSpecMemArgTypes:
+    def test_max_mem_deprecation_warning(self):
+        # Remove once max_mem fully deprecated in favour of allowed_mem
+        with pytest.warns(DeprecationWarning, match="`max_mem` is deprecated, please use `allowed_mem` instead"):
+            cubed.Spec(max_mem=100_000)
+
+    @pytest.mark.parametrize(
+        "input_value, expected_value",
+        [
+            (500, 500),
+            (100_000, 100_000),
+            ("500B", 500),
+            ("1kB", 1024),
+            ("1MB", 1024 ** 2),
+            ("1GB", 1024 ** 3),
+            ("1TB", 1024 ** 4)
+        ]
+    )
+    def test_convert_to_bytes(self, input_value, expected_value):
+        spec = cubed.Spec(allowed_mem=input_value)
+        assert spec.allowed_mem == expected_value
+
+    @pytest.mark.parametrize(
+        "input_value",
+        [
+            "1PB",  # PB is not a valid unit in this function
+            "1kb",  # lower-case k is not valid
+            "invalid",  # completely invalid input
+            -512,  # negative integer
+            1024.0,  # invalid type
+        ]
+    )
+    def test_convert_to_bytes_error(self, input_value):
+        with pytest.raises(ValueError):
+            cubed.Spec(allowed_mem=input_value)
+
+
 def test_reduction_multiple_rounds(tmp_path, executor):
     spec = cubed.Spec(tmp_path, allowed_mem=1000)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
