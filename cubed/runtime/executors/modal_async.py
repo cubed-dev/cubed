@@ -15,7 +15,7 @@ from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.types import DagExecutor
 from cubed.utils import peak_measured_mem
 
-async_stub = modal.aio.AioStub()
+async_stub = modal.aio.AioStub("async-stub")
 
 requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 

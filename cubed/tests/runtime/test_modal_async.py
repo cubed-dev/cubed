@@ -24,7 +24,7 @@ def write_int_to_file(path, i):
 tmp_path = "s3://cubed-unittest/map_unordered"
 
 
-stub = modal.aio.AioStub()
+stub = modal.aio.AioStub("async-test-stub")
 
 image = modal.Image.debian_slim().pip_install(
     [

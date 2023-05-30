@@ -11,7 +11,7 @@ from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 from cubed.utils import peak_measured_mem
 
-stub = modal.Stub()
+stub = modal.Stub("sync-stub")
 
 requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 
