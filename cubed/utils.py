@@ -157,3 +157,41 @@ def extract_stack_summaries(frame, limit=None):
     stack_summaries.reverse()
 
     return stack_summaries
+
+
+def convert_to_bytes(size: Union[int, str]) -> int:
+    """
+    Converts the input data size to bytes.
+
+    The data size can be expressed as an integer or as a string with different SI prefixes such as '500kB', '2MB', or '1GB'.
+
+    Parameters
+    ----------
+    size: in or str:
+        Size of data. If int it should be >=0. If str it should be of form <value><unit> where unit can be kB, MB, GB, TB etc.
+
+    Returns
+    -------
+    int: The size in bytes
+    """
+    units = {"B": 0, "kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
+
+    if isinstance(size, int) and size >= 0:
+        return size
+    elif isinstance(size, str):
+        # check if the format is valid
+        if size[-1] == "B" and size[:-1].isdigit():
+            unit = "B"
+            value = size[:-1]
+        elif size[-2:] in units and size[:-2].isdigit():
+            unit = size[-2:]
+            value = size[:-2]
+        else:
+            raise ValueError(f"Invalid value: {size}. Expected a string ending with an SI prefix.")
+
+        if unit in units and value.isdigit():
+            value = int(value)
+            # convert to bytes
+            return value * (1000 ** units[unit])
+    else:
+        raise ValueError(f"Invalid value: {size}. Expected a positive integer or a string ending with an SI prefix.")
