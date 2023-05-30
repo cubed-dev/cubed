@@ -260,11 +260,11 @@ class TestSpecMemArgTypes:
             (500, 500),
             (100_000, 100_000),
             ("500B", 500),
-            ("1kB", 1024),
-            ("1MB", 1024 ** 2),
-            ("1GB", 1024 ** 3),
-            ("1TB", 1024 ** 4),
-            ("1PB", 1024 ** 5)
+            ("1kB", 1000),
+            ("1MB", 1000 ** 2),
+            ("1GB", 1000 ** 3),
+            ("1TB", 1000 ** 4),
+            ("1PB", 1000 ** 5)
         ]
     )
     def test_convert_to_bytes(self, input_value, expected_value):
@@ -278,7 +278,7 @@ class TestSpecMemArgTypes:
             "1kb",  # lower-case k is not valid
             "invalid",  # completely invalid input
             -512,  # negative integer
-            1024.0,  # invalid type
+            1000.0,  # invalid type
         ]
     )
     def test_convert_to_bytes_error(self, input_value):
