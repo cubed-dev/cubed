@@ -41,3 +41,10 @@ python modal-matmul-random.py "s3://cubed-modal-$USER-temp"
 ```
 
 These will take longer to run as they operate on more data.
+
+The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
+The plots are `png` files and are written in the `plots` directory with a timestamp. Open the latest one with
+
+```shell
+open plots/$(ls plots | tail -1)
+```
