@@ -263,7 +263,8 @@ class TestSpecMemArgTypes:
             ("1kB", 1024),
             ("1MB", 1024 ** 2),
             ("1GB", 1024 ** 3),
-            ("1TB", 1024 ** 4)
+            ("1TB", 1024 ** 4),
+            ("1PB", 1024 ** 5)
         ]
     )
     def test_convert_to_bytes(self, input_value, expected_value):
@@ -273,7 +274,7 @@ class TestSpecMemArgTypes:
     @pytest.mark.parametrize(
         "input_value",
         [
-            "1PB",  # PB is not a valid unit in this function
+            "1EB",  # EB is not a valid unit in this function
             "1kb",  # lower-case k is not valid
             "invalid",  # completely invalid input
             -512,  # negative integer
