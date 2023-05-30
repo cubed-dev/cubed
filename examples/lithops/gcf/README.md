@@ -23,6 +23,7 @@ pip install -r requirements.txt  # use requirements file from same directory as 
 
 ```shell
 lithops runtime build -f requirements.txt cubed-runtime -b gcp_functions
+lithops runtime deploy -b gcp_functions --memory 2048 cubed-runtime # optional, will be done automatically on first use
 ```
 
 ## Running
@@ -39,4 +40,34 @@ Run the other examples in a similar way
 
 ```shell
 python lithops-add-random.py "gs://cubed-$USER-temp" cubed-runtime
+```
+
+and
+
+```shell
+python lithops-matmul-random.py "gs://cubed-$USER-temp" cubed-runtime
+```
+
+These will take longer to run as they operate on more data.
+
+
+The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
+The plots are `png` files and are written in the `plots` directory with a timestamp. Open the latest one with
+
+```shell
+open plots/$(ls plots | tail -1)
+```
+
+## Cleaning up
+
+If you want to rebuild the Lithops runtime image you can delete the existing one by running
+
+```shell
+lithops runtime delete -b gcp_functions -d cubed-runtime
+```
+
+Or you can remove everything (except config files) with
+
+```shell
+lithops clean -b gcp_functions
 ```

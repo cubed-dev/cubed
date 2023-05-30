@@ -1,4 +1,4 @@
 cubed
-lithops[gcf,gcp]
+lithops[gcp]
 gcsfs
 tqdm
