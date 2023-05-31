@@ -60,16 +60,13 @@ async def async_run_remotely(input, func=None, config=None):
 
 
 # We need map_unordered for the use_backups implementation
-async def map_unordered(
-    app_function, input, max_failures=3, use_backups=False, **kwargs
-):
+async def map_unordered(app_function, input, use_backups=False, **kwargs):
     """
     Apply a function to items of an input list, yielding results as they are completed
     (which may be different to the input order).
 
     :param app_function: The Modal function to map over the data.
     :param input: An iterable of input data.
-    :param max_failures: The number of task failures to allow before raising an exception.
     :param use_backups: Whether to launch backup tasks to mitigate against slow-running tasks.
     :param kwargs: Keyword arguments to pass to the function.
 
@@ -95,6 +92,7 @@ async def map_unordered(
         # print("pending", pending)
 
         for task in finished:
+            # TODO: use exception groups in Python 3.11 to handle case of multiple task exceptions
             if task.exception():
                 raise task.exception()
             end_times[task] = time.monotonic()

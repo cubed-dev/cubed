@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
 from aiostream import stream
-from tenacity import retry, stop_after_attempt
+from tenacity import Retrying, stop_after_attempt
 
 from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_node_generations
@@ -31,7 +31,6 @@ def execution_stats(func):
     return wrapper
 
 
-@retry(stop=stop_after_attempt(3))
 @execution_stats
 def run_func(input, func=None, config=None, name=None):
     print(f"{name}: running on {input}")
@@ -43,13 +42,21 @@ async def map_unordered(
     concurrent_executor,
     function,
     input,
-    max_failures=3,
+    retries=2,
     use_backups=False,
     **kwargs,
 ):
-    print(f"{kwargs['name']}: running map_unordered")
+    if "name" in kwargs:
+        print(f"{kwargs['name']}: running map_unordered")
+    if retries == 0:
+        retrying_function = function
+    else:
+        retryer = Retrying(stop=stop_after_attempt(retries + 1))
+        retrying_function = partial(retryer, function)
     tasks = {
-        asyncio.wrap_future(concurrent_executor.submit(function, i, **kwargs)): i
+        asyncio.wrap_future(
+            concurrent_executor.submit(retrying_function, i, **kwargs)
+        ): i
         for i in input
     }
     pending = set(tasks.keys())
@@ -59,6 +66,7 @@ async def map_unordered(
             pending, return_when=asyncio.FIRST_COMPLETED, timeout=2
         )
         for task in finished:
+            # TODO: use exception groups in Python 3.11 to handle case of multiple task exceptions
             if task.exception():
                 raise task.exception()
             yield task.result()
