@@ -114,6 +114,7 @@ class StackSummary:
     lineno: int
     name: str
     module: str
+    array_names_to_variable_names: dict
 
     def is_cubed(self):
         """Return True if this stack frame is a Cubed call."""
@@ -144,14 +145,20 @@ def extract_stack_summaries(frame, limit=None):
             frame_gen = collections.deque(frame_gen, maxlen=-limit)
     # end from StackSummary.extract
 
+    from cubed import Array
+
     stack_summaries = []
     for f, _ in frame_gen:
+        array_names_to_variable_names = {
+            arr.name: var for var, arr in f.f_locals.items() if isinstance(arr, Array)
+        }
         module = f.f_globals.get("__name__", "")
         summary = StackSummary(
             filename=f.f_code.co_filename,
             lineno=f.f_lineno,
             name=f.f_code.co_name,
             module=module,
+            array_names_to_variable_names=array_names_to_variable_names,
         )
         stack_summaries.append(summary)
     stack_summaries.reverse()
