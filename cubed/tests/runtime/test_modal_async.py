@@ -8,18 +8,8 @@ import fsspec
 import modal.aio
 
 from cubed.runtime.executors.modal_async import map_unordered
+from cubed.tests.runtime.utils import read_int_from_file, write_int_to_file
 from cubed.utils import join_path
-
-
-def read_int_from_file(path):
-    with fsspec.open(path) as f:
-        return int(f.read())
-
-
-def write_int_to_file(path, i):
-    with fsspec.open(path, "w") as f:
-        f.write(str(i))
-
 
 tmp_path = "s3://cubed-unittest/map_unordered"
 
@@ -56,7 +46,7 @@ async def fail_on_first_invocation(i):
         write_int_to_file(invocation_count_file, count + 1)
     else:
         write_int_to_file(invocation_count_file, 1)
-        raise RuntimeError(f"Fail on {i}")
+        raise RuntimeError(f"Deliberately fail on first invocation for input {i}")
     return i
 
 
@@ -69,7 +59,7 @@ async def fail_on_first_invocation_no_retry(i):
         write_int_to_file(invocation_count_file, count + 1)
     else:
         write_int_to_file(invocation_count_file, 1)
-        raise RuntimeError(f"Fail on {i}")
+        raise RuntimeError(f"Deliberately fail on first invocation for input {i}")
     return i
 
 
@@ -91,11 +81,29 @@ async def sleep_on_first_invocation(i):
     return i
 
 
-async def run_test(app_function, input, max_failures=3, use_backups=False):
+@stub.function(
+    image=image, secret=modal.Secret.from_name("my-aws-secret"), retries=2, timeout=20
+)
+async def sleep_on_first_invocation_short_timeout(i):
+    print(f"sleep_on_first_invocation {i}")
+    invocation_count_file = join_path(tmp_path, f"{i}")
+    fs = fsspec.open(invocation_count_file).fs
+    if fs.exists(invocation_count_file):
+        count = read_int_from_file(invocation_count_file)
+        write_int_to_file(invocation_count_file, count + 1)
+    else:
+        write_int_to_file(invocation_count_file, 1)
+        # only sleep on first invocation of input = 0
+        if i == 0:
+            print("sleeping...")
+            await asyncio.sleep(60)
+            print("... finished sleeping")
+    return i
+
+
+async def run_test(app_function, input, use_backups=False):
     async with stub.run():
-        async for _ in map_unordered(
-            app_function, input, max_failures=max_failures, use_backups=use_backups
-        ):
+        async for _ in map_unordered(app_function, input, use_backups=use_backups):
             pass
 
 
@@ -137,6 +145,27 @@ def test_map_unordered_too_many_failures():
                     input=range(3),
                 )
             )
+
+    finally:
+        fs = fsspec.open(tmp_path).fs
+        fs.rm(tmp_path, recursive=True)
+
+
+@pytest.mark.cloud
+def test_map_unordered_execution_timeout():
+    # sleep_on_first_invocation_short_timeout has a short timeout,
+    # so check that task is retried after timeout exception
+
+    try:
+        asyncio.run(
+            run_test(
+                app_function=sleep_on_first_invocation_short_timeout, input=range(3)
+            )
+        )
+
+        assert read_int_from_file(join_path(tmp_path, "0")) == 2
+        assert read_int_from_file(join_path(tmp_path, "1")) == 1
+        assert read_int_from_file(join_path(tmp_path, "2")) == 1
 
     finally:
         fs = fsspec.open(tmp_path).fs
