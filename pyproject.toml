@@ -36,7 +36,9 @@ diagnostics = [
     "tqdm",
     "graphviz",
     "pydot",
-    "pandas"
+    "pandas",
+    "matplotlib",
+    "seaborn",
 ]
 beam = ["apache-beam", "gcsfs"]
 lithops = ["lithops[aws] >= 2.7.0"]
