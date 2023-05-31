@@ -251,7 +251,10 @@ def test_different_specs(tmp_path):
 class TestSpecMemArgTypes:
     def test_max_mem_deprecation_warning(self):
         # Remove once max_mem fully deprecated in favour of allowed_mem
-        with pytest.warns(DeprecationWarning, match="`max_mem` is deprecated, please use `allowed_mem` instead"):
+        with pytest.warns(
+            DeprecationWarning,
+            match="`max_mem` is deprecated, please use `allowed_mem` instead",
+        ):
             cubed.Spec(max_mem=100_000)
 
     @pytest.mark.parametrize(
@@ -261,11 +264,11 @@ class TestSpecMemArgTypes:
             (100_000, 100_000),
             ("500B", 500),
             ("1kB", 1000),
-            ("1MB", 1000 ** 2),
-            ("1GB", 1000 ** 3),
-            ("1TB", 1000 ** 4),
-            ("1PB", 1000 ** 5)
-        ]
+            ("1MB", 1000**2),
+            ("1GB", 1000**3),
+            ("1TB", 1000**4),
+            ("1PB", 1000**5),
+        ],
     )
     def test_convert_to_bytes(self, input_value, expected_value):
         spec = cubed.Spec(allowed_mem=input_value)
@@ -279,7 +282,7 @@ class TestSpecMemArgTypes:
             "invalid",  # completely invalid input
             -512,  # negative integer
             1000.0,  # invalid type
-        ]
+        ],
     )
     def test_convert_to_bytes_error(self, input_value):
         with pytest.raises(ValueError):

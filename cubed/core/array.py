@@ -276,15 +276,20 @@ class Spec:
         return self._storage_options
 
     def __repr__(self) -> str:
-        return f"cubed.Spec(work_dir={self._work_dir}, allowed_mem={self._allowed_mem}, " \
-               f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options})"
+        return (
+            f"cubed.Spec(work_dir={self._work_dir}, allowed_mem={self._allowed_mem}, "
+            f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options})"
+        )
 
     def __eq__(self, other):
         if isinstance(other, Spec):
-            return self.work_dir == other.work_dir \
-                and self.allowed_mem == other.allowed_mem \
-                and self.reserved_mem == other.reserved_mem and self.executor == other.executor \
+            return (
+                self.work_dir == other.work_dir
+                and self.allowed_mem == other.allowed_mem
+                and self.reserved_mem == other.reserved_mem
+                and self.executor == other.executor
                 and self.storage_options == other.storage_options
+            )
         else:
             return False
 
