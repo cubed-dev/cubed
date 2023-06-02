@@ -428,7 +428,9 @@ class PeakMeasuredMemoryCallback(Callback):
         self.peak_measured_mem = event.peak_measured_mem_end
 
 
-def measure_reserved_memory(executor):
+def measure_reserved_memory(
+    executor: Executor, work_dir: Optional[str] = None, **kwargs
+) -> int:
     """Measures the reserved memory use for a given executor runtime.
 
     This is the memory used by the Python process for running a task,
@@ -447,6 +449,13 @@ def measure_reserved_memory(executor):
         The executor to use to run the computation. It must be an executor that
         reports peak memory, such as Lithops or Modal.
 
+    work_dir : str or None, optional
+        The directory path (specified as an fsspec URL) used for storing intermediate data.
+        This is required when using a cloud runtime.
+
+    kwargs
+        Keyword arguments to pass to the ``compute`` function.
+
     Returns
     -------
     int
@@ -454,8 +463,9 @@ def measure_reserved_memory(executor):
     """
     import cubed.array_api as xp
 
-    a = xp.ones((1,))
+    # give a generous memory allowance
+    a = xp.ones((1,), spec=Spec(work_dir, allowed_mem="500MB"))
     b = xp.negative(a)
     peak_measured_mem_callback = PeakMeasuredMemoryCallback()
-    b.compute(executor=executor, callbacks=[peak_measured_mem_callback])
+    b.compute(executor=executor, callbacks=[peak_measured_mem_callback], **kwargs)
     return peak_measured_mem_callback.peak_measured_mem
