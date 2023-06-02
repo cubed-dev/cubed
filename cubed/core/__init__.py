@@ -6,6 +6,7 @@ from .array import (
     TaskEndEvent,
     compute,
     gensym,
+    measure_reserved_mem,
     measure_reserved_memory,
     visualize,
 )

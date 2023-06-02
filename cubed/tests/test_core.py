@@ -484,13 +484,13 @@ def test_already_computed(spec):
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
-def test_measure_reserved_memory(executor):
+def test_measure_reserved_mem(executor):
     pytest.importorskip("lithops")
 
     from cubed.runtime.executors.lithops import LithopsDagExecutor
 
     if not isinstance(executor, LithopsDagExecutor):
-        pytest.skip(f"{type(executor)} does not support measure_reserved_memory")
+        pytest.skip(f"{type(executor)} does not support measure_reserved_mem")
 
-    reserved_memory = cubed.measure_reserved_memory(executor=executor)
+    reserved_memory = cubed.measure_reserved_mem(executor=executor)
     assert reserved_memory > 1_000_000  # over 1MB
