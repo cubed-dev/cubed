@@ -20,7 +20,7 @@ def spec(tmp_path, reserved_mem):
 @pytest.fixture(scope="module")
 def reserved_mem():
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
-    res = cubed.measure_reserved_memory(executor) * 1.05  # add some wiggle room
+    res = cubed.measure_reserved_mem(executor) * 1.05  # add some wiggle room
     return round_up_to_multiple(res, 10_000_000)  # round up to nearest multiple of 10MB
 
 

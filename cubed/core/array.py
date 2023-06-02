@@ -261,7 +261,7 @@ class Spec:
 
         See Also
         --------
-        cubed.measure_reserved_memory
+        cubed.measure_reserved_mem
         """
         return self._reserved_mem
 
@@ -429,6 +429,17 @@ class PeakMeasuredMemoryCallback(Callback):
 
 
 def measure_reserved_memory(
+    executor: Executor, work_dir: Optional[str] = None, **kwargs
+) -> int:
+    warn(
+        "`measure_reserved_memory` is deprecated, please use `measure_reserved_mem` instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return measure_reserved_mem(executor, work_dir=work_dir, **kwargs)
+
+
+def measure_reserved_mem(
     executor: Executor, work_dir: Optional[str] = None, **kwargs
 ) -> int:
     """Measures the reserved memory use for a given executor runtime.

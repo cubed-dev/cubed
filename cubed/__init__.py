@@ -18,6 +18,7 @@ from .core.array import (
     Spec,
     TaskEndEvent,
     compute,
+    measure_reserved_mem,
     measure_reserved_memory,
     visualize,
 )
@@ -35,6 +36,7 @@ __all__ = [
     "from_array",
     "from_zarr",
     "map_blocks",
+    "measure_reserved_mem",
     "measure_reserved_memory",
     "store",
     "to_zarr",

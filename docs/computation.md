@@ -19,7 +19,7 @@ The maximum amount of memory that tasks are allowed to use must be specified by 
 
 If the `projected_mem` calculated by Cubed is greater than the value of `allowed_mem` set by the user, an exception is raised during the planning phase. This check means that the user can have high confidence that the operation will run within its memory budget.
 
-It is also a good idea to set `reserved_mem`, the amount of memory reserved on a worker for non-data use - it's whatever is needed by the Python process for running a task, and can be estimated using the `measure_reserved_memory` function. Cubed will use `reserved_mem` as a baseline when calculating `projected_mem`, in order to more accurately estimate the upper bound on memory usage.
+It is also a good idea to set `reserved_mem`, the amount of memory reserved on a worker for non-data use - it's whatever is needed by the Python process for running a task, and can be estimated using the `measure_reserved_mem` function. Cubed will use `reserved_mem` as a baseline when calculating `projected_mem`, in order to more accurately estimate the upper bound on memory usage.
 
 The actual (peak) memory usage of each task in a computation can be measured at runtime and analysed to see how well the projected memory matched `peak_measured_mem`. See `HistoryCallback` for details.
 
