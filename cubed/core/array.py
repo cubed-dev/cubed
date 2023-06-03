@@ -132,7 +132,25 @@ class CoreArray:
         resume=None,
         **kwargs,
     ):
-        """Compute this array, and any arrays that it depends on."""
+        """Compute this array, and any arrays that it depends on.
+
+        Parameters
+        ----------
+        executor : Executor, optional
+            The executor to use to run the computation. If not set then the executor
+            from the array's ``Spec`` is used.
+        callbacks : list of Callback, optional
+            Callbacks to send events to while running the computation.
+        optimize_graph : bool, optional
+            If True, the graph is optimized before running the computation.
+            Otherwise, the graph is computed as is. Default is True.
+        optimize_function : callable, optional
+            Function to optimize the computation graph. Default is to use a
+            function that performs map fusion only.
+        resume : bool, optional
+            If True, intermediate arrays that have already been computed won't be
+            recomputed. Default is False.
+        """
         result = compute(
             self,
             executor=executor,
@@ -231,7 +249,27 @@ def compute(
     resume=None,
     **kwargs,
 ):
-    """Compute multiple arrays at once."""
+    """Compute multiple arrays at once.
+
+    Parameters
+    ----------
+    arrays : cubed.CoreArray
+        The arrays to compute.
+    executor : Executor, optional
+        The executor to use to run the computation. If not set then the executor
+        from the ``Spec`` from the arrays is used.
+    callbacks : list of Callback, optional
+        Callbacks to send events to while running the computation.
+    optimize_graph : bool, optional
+        If True, the graph is optimized before running the computation.
+        Otherwise, the graph is computed as is. Default is True.
+    optimize_function : callable, optional
+        Function to optimize the computation graph. Default is to use a
+        function that performs map fusion only.
+    resume : bool, optional
+        If True, intermediate arrays that have already been computed won't be
+        recomputed. Default is False.
+    """
     spec = check_array_specs(arrays)  # guarantees all arrays have same spec
     plan = arrays_to_plan(*arrays)
     if executor is None:

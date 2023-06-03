@@ -31,6 +31,8 @@ ARRAY_SVG_SIZE = (
 
 
 class Array(CoreArray):
+    """Chunked array backed by Zarr storage that conforms to the Python Array API standard."""
+
     def __init__(self, name, zarray, spec, plan):
         super().__init__(name, zarray, spec, plan)
 
