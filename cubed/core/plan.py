@@ -13,7 +13,7 @@ from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory
 from cubed.vendor.rechunker.types import PipelineExecutor
 
 # A unique ID with sensible ordering, used for making directory names
-CONTEXT_ID = f"context-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
+CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
 
 
 class Plan:
