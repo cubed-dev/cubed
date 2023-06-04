@@ -320,28 +320,8 @@ document.write(`
 <h1>cubed.measure_reserved_memory<a class="headerlink" href="#cubed-measure-reserved-memory" title="Permalink to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cubed.measure_reserved_memory">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">measure_reserved_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.measure_reserved_memory" title="Permalink to this definition">#</a></dt>
-<dd><p>Measures the reserved memory use for a given executor runtime.</p>
-<p>This is the memory used by the Python process for running a task,
-excluding any memory used for data for the computation. It can vary by
-operating system, Python version, executor runtime, and installed package
-versions.</p>
-<p>It can be used as a guide to set <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> when creating a <code class="docutils literal notranslate"><span class="pre">Spec</span></code> object.</p>
-<p>This implementation works by running a trivial computation on a tiny amount of
-data and measuring the peak memory use.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em>) – The executor to use to run the computation. It must be an executor that
-reports peak memory, such as Lithops or Modal.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The memory used by the runtime in bytes.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">measure_reserved_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.measure_reserved_memory" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 
