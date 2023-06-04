@@ -78,20 +78,7 @@ Different cloud providers' serverless offerings may perform differently. For exa
 
 ## Diagnosing Performance
 
-To understand how your computation could perform better you first need to diagnose the source of any problems.
-
-### Optimized Plan
-
-Use {py:meth}`Plan.visualize() <cubed.Plan.visualize()>` to view the optimized plan. This allows you to see the number of steps involved in your calculation, the number of tasks in each step, and overall.
-
-### History Callback
-
-The history callback function can help determine how much time was spent in worker startup, as well as how much stragglers affected the overall speed.
-
-### Timeline Visualization Callback
-
-A timeline visualization callback can provide a visual representation of the above points. Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.
-
+See <project:diagnostics.md>.
 
 ## Tips
 
