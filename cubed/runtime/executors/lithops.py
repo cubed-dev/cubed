@@ -8,10 +8,10 @@ from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from six import reraise
 
-from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.types import DagExecutor
+from cubed.runtime.utils import handle_callbacks
 from cubed.vendor.rechunker.types import ParallelPipelines, PipelineExecutor
 
 logger = logging.getLogger(__name__)
@@ -120,7 +120,7 @@ def map_unordered(
             else:
                 end_times[future] = time.monotonic()
                 if return_stats:
-                    yield future.result(), future.stats
+                    yield future.result(), standardise_lithops_stats(future.stats)
                 else:
                     yield future.result()
 
@@ -186,16 +186,14 @@ def execute_dag(dag, callbacks=None, array_names=None, **kwargs):
                         use_backups=use_backups,
                         return_stats=True,
                     ):
-                        if callbacks is not None:
-                            event = lithops_stats_to_task_end_event(name, stats)
-                            [callback.on_task_end(event) for callback in callbacks]
+                        stats["array_name"] = name
+                        handle_callbacks(callbacks, stats)
                 else:
                     raise NotImplementedError()
 
 
-def lithops_stats_to_task_end_event(name, stats):
-    return TaskEndEvent(
-        array_name=name,
+def standardise_lithops_stats(stats):
+    return dict(
         task_create_tstamp=stats["host_job_create_tstamp"],
         function_start_tstamp=stats["worker_func_start_tstamp"],
         function_end_tstamp=stats["worker_func_end_tstamp"],
@@ -219,9 +217,8 @@ def build_stage_mappable_func(
             use_backups=use_backups,
             return_stats=True,
         ):
-            if callbacks is not None:
-                event = lithops_stats_to_task_end_event(name, stats)
-                [callback.on_task_end(event) for callback in callbacks]
+            stats["array_name"] = name
+            handle_callbacks(callbacks, stats)
 
     return stage_func
 

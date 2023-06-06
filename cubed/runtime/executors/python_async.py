@@ -6,29 +6,9 @@ from functools import partial
 from aiostream import stream
 from tenacity import Retrying, stop_after_attempt
 
-from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_node_generations
 from cubed.runtime.types import DagExecutor
-from cubed.utils import peak_measured_mem
-
-
-def execution_stats(func):
-    """Measure timing information and peak memory usage of a function call."""
-
-    def wrapper(*args, **kwargs):
-        peak_measured_mem_start = peak_measured_mem()
-        function_start_tstamp = time.time()
-        result = func(*args, **kwargs)
-        function_end_tstamp = time.time()
-        peak_measured_mem_end = peak_measured_mem()
-        return result, dict(
-            function_start_tstamp=function_start_tstamp,
-            function_end_tstamp=function_end_tstamp,
-            peak_measured_mem_start=peak_measured_mem_start,
-            peak_measured_mem_end=peak_measured_mem_end,
-        )
-
-    return wrapper
+from cubed.runtime.utils import execution_stats, handle_callbacks
 
 
 @execution_stats
@@ -44,15 +24,19 @@ async def map_unordered(
     input,
     retries=2,
     use_backups=False,
+    return_stats=False,
+    name=None,
     **kwargs,
 ):
-    if "name" in kwargs:
-        print(f"{kwargs['name']}: running map_unordered")
+    if name is not None:
+        print(f"{name}: running map_unordered")
     if retries == 0:
         retrying_function = function
     else:
         retryer = Retrying(stop=stop_after_attempt(retries + 1))
         retrying_function = partial(retryer, function)
+
+    task_create_tstamp = time.time()
     tasks = {
         asyncio.wrap_future(
             concurrent_executor.submit(retrying_function, i, **kwargs)
@@ -69,16 +53,14 @@ async def map_unordered(
             # TODO: use exception groups in Python 3.11 to handle case of multiple task exceptions
             if task.exception():
                 raise task.exception()
-            yield task.result()
-
-
-async def produce(*args, **kwargs):
-    task_create_tstamp = time.time()
-    name = kwargs.get("name", None)
-    async for result, stats in map_unordered(*args, **kwargs):
-        stats["array_name"] = name
-        stats["task_create_tstamp"] = task_create_tstamp
-        yield result, stats
+            if return_stats:
+                result, stats = task.result()
+                if name is not None:
+                    stats["array_name"] = name
+                stats["task_create_tstamp"] = task_create_tstamp
+                yield result, stats
+            else:
+                yield task.result()
 
 
 def pipeline_to_stream(concurrent_executor, name, pipeline, **kwargs):
@@ -87,13 +69,14 @@ def pipeline_to_stream(concurrent_executor, name, pipeline, **kwargs):
     it = stream.iterate(
         [
             partial(
-                produce,
+                map_unordered,
                 concurrent_executor,
                 run_func,
                 list(stage.mappable),
+                return_stats=True,
+                name=name,
                 func=stage.function,
                 config=pipeline.config,
-                name=name,
                 **kwargs,
             )
             for stage in pipeline.stages
@@ -118,16 +101,6 @@ async def async_execute_dag(dag, callbacks=None, array_names=None, **kwargs):
             async with merged_stream.stream() as streamer:
                 async for _, stats in streamer:
                     handle_callbacks(callbacks, stats)
-
-
-def handle_callbacks(callbacks, stats):
-    if callbacks is not None:
-        task_result_tstamp = time.time()
-        event = TaskEndEvent(
-            task_result_tstamp=task_result_tstamp,
-            **stats,
-        )
-        [callback.on_task_end(event) for callback in callbacks]
 
 
 class AsyncPythonDagExecutor(DagExecutor):

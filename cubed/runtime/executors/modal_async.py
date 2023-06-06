@@ -9,11 +9,10 @@ import modal.aio
 from modal.exception import ConnectionError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.types import DagExecutor
-from cubed.utils import peak_measured_mem
+from cubed.runtime.utils import execute_with_stats, handle_callbacks
 
 async_stub = modal.aio.AioStub("async-stub")
 
@@ -45,22 +44,15 @@ else:
 )
 async def async_run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
-    peak_measured_mem_start = peak_measured_mem()
-    function_start_tstamp = time.time()
-    result = func(input, config=config)
-    function_end_tstamp = time.time()
-    peak_measured_mem_end = peak_measured_mem()
-    yield (
-        result,
-        function_start_tstamp,
-        function_end_tstamp,
-        peak_measured_mem_start,
-        peak_measured_mem_end,
-    )
+    # note we can't use the execution_stat decorator since it doesn't work with modal decorators
+    result, stats = execute_with_stats(func, input, config=config)
+    yield result, stats
 
 
 # We need map_unordered for the use_backups implementation
-async def map_unordered(app_function, input, use_backups=False, **kwargs):
+async def map_unordered(
+    app_function, input, use_backups=False, return_stats=False, name=None, **kwargs
+):
     """
     Apply a function to items of an input list, yielding results as they are completed
     (which may be different to the input order).
@@ -72,9 +64,18 @@ async def map_unordered(app_function, input, use_backups=False, **kwargs):
 
     :return: Function values (and optionally stats) as they are completed, not necessarily in the input order.
     """
+    task_create_tstamp = time.time()
+
     if not use_backups:
         async for result in app_function.map(input, kwargs=kwargs):
-            yield result
+            if return_stats:
+                result, stats = result
+                if name is not None:
+                    stats["array_name"] = name
+                stats["task_create_tstamp"] = task_create_tstamp
+                yield result, stats
+            else:
+                yield result
         return
 
     tasks = {asyncio.ensure_future(app_function.call(i, **kwargs)): i for i in input}
@@ -96,7 +97,14 @@ async def map_unordered(app_function, input, use_backups=False, **kwargs):
             if task.exception():
                 raise task.exception()
             end_times[task] = time.monotonic()
-            yield task.result()
+            if return_stats:
+                result, stats = task.result()
+                if name is not None:
+                    stats["array_name"] = name
+                stats["task_create_tstamp"] = task_create_tstamp
+                yield result, stats
+            else:
+                yield task.result()
 
             # remove any backup task
             if use_backups:
@@ -134,39 +142,18 @@ async def async_execute_dag(dag, callbacks=None, array_names=None, **kwargs):
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
-                    task_create_tstamp = time.time()
-                    async for result in map_unordered(
+                    async for _, stats in map_unordered(
                         async_run_remotely,
                         list(stage.mappable),
+                        return_stats=True,
+                        name=name,
                         func=stage.function,
                         config=pipeline.config,
                         **kwargs,
                     ):
-                        handle_callbacks(callbacks, name, result, task_create_tstamp)
+                        handle_callbacks(callbacks, stats)
                 else:
                     raise NotImplementedError()
-
-
-def handle_callbacks(callbacks, array_name, result, task_create_tstamp):
-    if callbacks is not None:
-        task_result_tstamp = time.time()
-        (
-            res,
-            function_start_tstamp,
-            function_end_tstamp,
-            peak_measured_mem_start,
-            peak_measured_mem_end,
-        ) = result
-        task_stats = dict(
-            task_create_tstamp=task_create_tstamp,
-            function_start_tstamp=function_start_tstamp,
-            function_end_tstamp=function_end_tstamp,
-            task_result_tstamp=task_result_tstamp,
-            peak_measured_mem_start=peak_measured_mem_start,
-            peak_measured_mem_end=peak_measured_mem_end,
-        )
-        event = TaskEndEvent(array_name=array_name, **task_stats)
-        [callback.on_task_end(event) for callback in callbacks]
 
 
 class AsyncModalDagExecutor(DagExecutor):
