@@ -46,3 +46,5 @@ This because when operating on a chunk a task has to
 4. compress the new array to write to the output Zarr array.
 
 So a basic operation like this requires up to four times as much memory as the chunk itself. More complex operations can require more memory, and in particular reduction operations like `sum` or `mean` can work more efficiently if there is more memory available.
+
+A common container size is around 2GB, so this is a reasonable size for setting `allowed_mem`. In this case a good chunk size would be 100MB, which is a factor of 20 smaller than `allowed_mem`, allowing plenty of room for reduction operations.
