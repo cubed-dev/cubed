@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>cubed.compute &#8212; Cubed</title>
+    <title>Memory &#8212; Cubed</title>
   
   
   
@@ -40,11 +40,11 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.compute';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/memory';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.visualize" href="cubed.visualize.html" />
-    <link rel="prev" title="cubed.Array.visualize" href="cubed.Array.visualize.html" />
+    <link rel="next" title="Reliability" href="reliability.html" />
+    <link rel="prev" title="Storage" href="storage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -129,36 +129,36 @@
 <li class="toctree-l2"><a class="reference internal" href="../getting-started/demo.html">Demo</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../user-guide/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/executors.html">Executors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/storage.html">Storage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/memory.html">Memory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/reliability.html">Reliability</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">User Guide</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reliability.html">Reliability</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../api.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.html">cubed.Array</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.compute.html">cubed.Array.compute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.visualize.html">cubed.Array.visualize</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.compute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.visualize.html">cubed.visualize</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.from_array.html">cubed.from_array</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.from_zarr.html">cubed.from_zarr</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.store.html">cubed.store</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.to_zarr.html">cubed.to_zarr</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.map_blocks.html">cubed.map_blocks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.random.random.html">cubed.random.random</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.html">cubed.Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.visualize.html">cubed.Array.visualize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.compute.html">cubed.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.visualize.html">cubed.visualize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.from_array.html">cubed.from_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.from_zarr.html">cubed.from_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.store.html">cubed.store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.to_zarr.html">cubed.to_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.map_blocks.html">cubed.map_blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.random.random.html">cubed.random.random</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Callback.html">cubed.Callback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Spec.html">cubed.Spec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../array-api.html">Python Array API</a></li>
@@ -241,7 +241,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/edit/main/generated/cubed.compute.rst" target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/edit/main/user-guide/memory.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -258,7 +258,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.compute.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fuser-guide/memory.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -306,7 +306,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.compute</h1>
+    <h1>Memory</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -316,7 +316,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.compute"><code class="docutils literal notranslate"><span class="pre">compute()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#allowed-memory">Allowed memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projected-memory">Projected memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reserved-memory">Reserved memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chunk-sizes">Chunk sizes</a></li>
 </ul>
             </nav>
         </div>
@@ -328,14 +331,46 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="cubed-compute">
-<h1>cubed.compute<a class="headerlink" href="#cubed-compute" title="Permalink to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="cubed.compute">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">arrays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.compute" title="Permalink to this definition">#</a></dt>
-<dd><p>Compute multiple arrays at once.</p>
-</dd></dl>
+  <section id="memory">
+<h1>Memory<a class="headerlink" href="#memory" title="Permalink to this heading">#</a></h1>
+<p>Cubed aims to tightly manage the amount of memory that each task uses, ensuring that it never exceeds a configured maximum.</p>
+<p>The various memory settings and values are illustrated in the following diagaram, and are discussed further below.</p>
+<p><img alt="Memory" src="../_images/memory.svg" /></p>
+<section id="allowed-memory">
+<h2>Allowed memory<a class="headerlink" href="#allowed-memory" title="Permalink to this heading">#</a></h2>
+<p>You should set <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> to the maximum amount of memory that is available to the Cubed runtime. When running locally this should be no more than the amount of memory you have available on your machine. For cloud services it should be the amount of memory that the container runtime is configured to use.</p>
+<p>In this example we set the allowed memory to 2GB:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed</span>
 
+<span class="n">spec</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">Spec</span><span class="p">(</span><span class="n">allowed_mem</span><span class="o">=</span><span class="s2">&quot;2GB&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="projected-memory">
+<h2>Projected memory<a class="headerlink" href="#projected-memory" title="Permalink to this heading">#</a></h2>
+<p>The output of a Cubed computation is a chunked Zarr array (or set of arrays). Tasks are run by workers to operate on Zarr chunks, and the memory needed for each task is a function of chunk size, dtype, and the nature of the operation, which can be computed while building the plan.</p>
+<p>While it is not possible in general to compute the precise amount of memory that will be used (since it is not known ahead of time how well a Zarr chunk will compress, for example), it is possible to put a conservative upper bound on the memory usage. This upper bound is the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> for a task, and it is calculated automatically by Cubed.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> calculated by Cubed is greater than the value of <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> that you have set, then an exception is raised during the planning phase. This check means that you can have high confidence that the operation will run within its memory budget.</p>
+</section>
+<section id="reserved-memory">
+<h2>Reserved memory<a class="headerlink" href="#reserved-memory" title="Permalink to this heading">#</a></h2>
+<p>There is another memory setting that can help Cubed manage memory properly: <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code>. This is the amount of memory reserved on a worker for non-data use - it’s whatever is needed by the Python process for running a task.</p>
+<p>Cubed provides a utility function, <a class="reference internal" href="../generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem" title="cubed.measure_reserved_mem"><code class="xref py py-func docutils literal notranslate"><span class="pre">measure_reserved_mem</span></code></a>, for measuring it for the runtime you are using. You can run this function first, then use the value it reports as the basis for setting <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> for your computation. Cubed will use <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> as a baseline when calculating <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code>, in order to more accurately estimate the upper bound on memory usage, making it more likely that your computation doesn’t exceed memory bounds.</p>
+<p>Some executors have the ability to measure memory as a task is running. They can report the <code class="docutils literal notranslate"><span class="pre">peak_measured_mem</span></code>, which is the highest actual memory usage for a given task during its execution. This information is useful for analysing how well the computation ran, and if there is room for improvement (in Cubed’s algorithms for calculating <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code>).</p>
+</section>
+<section id="chunk-sizes">
+<h2>Chunk sizes<a class="headerlink" href="#chunk-sizes" title="Permalink to this heading">#</a></h2>
+<p>As a rule of thumb <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> should be at least ten times as large as your Zarr chunk sizes.</p>
+<p>This because when operating on a chunk a task has to</p>
+<ol class="arabic simple">
+<li><p>read the compressed chunk from the input Zarr array,</p></li>
+<li><p>decompress the chunk,</p></li>
+<li><p>perform an operation on the decompressed chunk to produce a new array, and</p></li>
+<li><p>compress the new array to write to the output Zarr array.</p></li>
+</ol>
+<p>So a basic operation like this requires up to four times as much memory as the chunk itself. More complex operations can require more memory, and in particular reduction operations like <code class="docutils literal notranslate"><span class="pre">sum</span></code> or <code class="docutils literal notranslate"><span class="pre">mean</span></code> can work more efficiently if there is more memory available.</p>
+<p>A common container size is around 2GB, so this is a reasonable size for setting <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code>. In this case a good chunk size would be 100MB, which is a factor of 20 smaller than <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code>, allowing plenty of room for reduction operations.</p>
+</section>
 </section>
 
 
@@ -351,20 +386,20 @@ document.write(`
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.Array.visualize.html"
+       href="storage.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.Array.visualize</p>
+        <p class="prev-next-title">Storage</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.visualize.html"
+       href="reliability.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.visualize</p>
+        <p class="prev-next-title">Reliability</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -386,7 +421,10 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.compute"><code class="docutils literal notranslate"><span class="pre">compute()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#allowed-memory">Allowed memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projected-memory">Projected memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reserved-memory">Reserved memory</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chunk-sizes">Chunk sizes</a></li>
 </ul>
   </nav></div>
 

@@ -5,7 +5,9 @@ API Reference
 Array
 =====
 
-A Cubed array can be created by ``from_array``, ``from_zarr``, or by one of the Python Array API
+.. currentmodule:: cubed
+
+A Cubed array can be created by :func:`from_array`, :func:`from_zarr`, or by one of the Python Array API
 Creation Functions.
 
 .. currentmodule:: cubed
@@ -65,7 +67,7 @@ Runtime
     Callback
     Spec
     TaskEndEvent
-    measure_reserved_memory
+    measure_reserved_mem
 
 Executors
 =========

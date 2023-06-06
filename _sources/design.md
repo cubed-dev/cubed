@@ -14,7 +14,7 @@ Every _array_ in Cubed is backed by a Zarr array. This means that the array type
 
 ## Runtime
 
-Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Lithops, Modal, Beam, and other Rechunker executors like Dask and Prefect.
+Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its API) to delegate tasks to stateless executors, which include Python (in-process), Lithops, Modal, and Apache Beam.
 
 
 ## Primitive operations

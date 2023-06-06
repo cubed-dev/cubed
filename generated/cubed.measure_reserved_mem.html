@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>cubed.compute &#8212; Cubed</title>
+    <title>cubed.measure_reserved_mem &#8212; Cubed</title>
   
   
   
@@ -40,11 +40,11 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.compute';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.measure_reserved_mem';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.visualize" href="cubed.visualize.html" />
-    <link rel="prev" title="cubed.Array.visualize" href="cubed.Array.visualize.html" />
+    <link rel="next" title="cubed.runtime.executors.beam.BeamDagExecutor" href="cubed.runtime.executors.beam.BeamDagExecutor.html" />
+    <link rel="prev" title="cubed.TaskEndEvent" href="cubed.TaskEndEvent.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -142,7 +142,7 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.Array.compute.html">cubed.Array.compute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Array.visualize.html">cubed.Array.visualize</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.compute.html">cubed.compute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.visualize.html">cubed.visualize</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.from_array.html">cubed.from_array</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.from_zarr.html">cubed.from_zarr</a></li>
@@ -154,7 +154,7 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.measure_reserved_mem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
@@ -241,7 +241,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/edit/main/generated/cubed.compute.rst" target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/edit/main/generated/cubed.measure_reserved_mem.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -258,7 +258,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.compute.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.measure_reserved_mem.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -306,7 +306,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.compute</h1>
+    <h1>cubed.measure_reserved_mem</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -316,7 +316,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.compute"><code class="docutils literal notranslate"><span class="pre">compute()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.measure_reserved_mem"><code class="docutils literal notranslate"><span class="pre">measure_reserved_mem()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -328,12 +328,36 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="cubed-compute">
-<h1>cubed.compute<a class="headerlink" href="#cubed-compute" title="Permalink to this heading">#</a></h1>
+  <section id="cubed-measure-reserved-mem">
+<h1>cubed.measure_reserved_mem<a class="headerlink" href="#cubed-measure-reserved-mem" title="Permalink to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="cubed.compute">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">arrays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.compute" title="Permalink to this definition">#</a></dt>
-<dd><p>Compute multiple arrays at once.</p>
+<dt class="sig sig-object py" id="cubed.measure_reserved_mem">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">measure_reserved_mem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.measure_reserved_mem" title="Permalink to this definition">#</a></dt>
+<dd><p>Measures the reserved memory use for a given executor runtime.</p>
+<p>This is the memory used by the Python process for running a task,
+excluding any memory used for data for the computation. It can vary by
+operating system, Python version, executor runtime, and installed package
+versions.</p>
+<p>It can be used as a guide to set <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> when creating a <code class="docutils literal notranslate"><span class="pre">Spec</span></code> object.</p>
+<p>This implementation works by running a trivial computation on a tiny amount of
+data and measuring the peak memory use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em>) – The executor to use to run the computation. It must be an executor that
+reports peak memory, such as Lithops or Modal.</p></li>
+<li><p><strong>work_dir</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The directory path (specified as an fsspec URL) used for storing intermediate data.
+This is required when using a cloud runtime.</p></li>
+<li><p><strong>kwargs</strong> – Keyword arguments to pass to the <code class="docutils literal notranslate"><span class="pre">compute</span></code> function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The memory used by the runtime in bytes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -351,20 +375,20 @@ document.write(`
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.Array.visualize.html"
+       href="cubed.TaskEndEvent.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.Array.visualize</p>
+        <p class="prev-next-title">cubed.TaskEndEvent</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.visualize.html"
+       href="cubed.runtime.executors.beam.BeamDagExecutor.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.visualize</p>
+        <p class="prev-next-title">cubed.runtime.executors.beam.BeamDagExecutor</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -386,7 +410,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.compute"><code class="docutils literal notranslate"><span class="pre">compute()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.measure_reserved_mem"><code class="docutils literal notranslate"><span class="pre">measure_reserved_mem()</span></code></a></li>
 </ul>
   </nav></div>
 

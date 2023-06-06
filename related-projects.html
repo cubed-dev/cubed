@@ -40,11 +40,11 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'related_projects';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'related-projects';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Design" href="design.html" />
-    <link rel="prev" title="Python Array API" href="array_api.html" />
+    <link rel="prev" title="Python Array API" href="array-api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -123,8 +123,21 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="getting-started/index.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/why-cubed.html">Why Cubed?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/demo.html">Demo</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="user-guide/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/storage.html">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/memory.html">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/reliability.html">Reliability</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.html">cubed.Array</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
@@ -141,16 +154,15 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_memory.html">cubed.measure_reserved_memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="array_api.html">Python Array API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Related Projects</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
 <ul class="nav bd-sidenav">
@@ -229,7 +241,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/edit/main/related_projects.md" target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/edit/main/related-projects.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -246,7 +258,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Frelated_projects.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Frelated-projects.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -324,7 +336,7 @@ document.write(`
 <p>Dask is a <a class="reference external" href="https://docs.dask.org/en/latest/">“flexible library for parallel computing in Python”</a>. It has several components: Dask Array, Dask DataFrame, Dask Bag, and Dask Delayed. Cubed supports only distributed arrays, corresponding to Dask Array.</p>
 <p>Dask converts high-level operations into a task graph, where tasks correspond to chunk-level operations. In Cubed, the computational graph (or plan) is defined at the level of array operations and is decomposed into fine-grained tasks by the primitive operators for the runtime. Higher-level graphs are more useful for users, since they are easier to visualize and reason about. (Dask’s newer High Level Graph abstraction is similar.)</p>
 <p>Dask only has a single distributed runtime, Dask Distributed, whereas Cubed has the advantage of running on a variety of distributed runtimes, including more mature ones like Google Cloud Dataflow (a Beam runner).</p>
-<p>The core operations and array API layers in Cubed are heavily influenced by Dask Array - in both naming, as well as implementation (Cubed has a dependency on Dask Array for some chunking utilities).</p>
+<p>The core operations and array API layers in Cubed are heavily influenced by Dask Array - in both naming, as well as implementation (Cubed uses Dask Array for some chunking utilities).</p>
 </section>
 <section id="previous-work">
 <h2>Previous work<a class="headerlink" href="#previous-work" title="Permalink to this heading">#</a></h2>
@@ -345,7 +357,7 @@ document.write(`
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="array_api.html"
+       href="array-api.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
@@ -405,7 +417,7 @@ By Tom White
     
   <p class="copyright">
     
-      © Copyright 2022, Tom White.
+      © Copyright 2022-2023, Tom White.
       <br/>
     
   </p>

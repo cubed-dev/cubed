@@ -123,8 +123,21 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="getting-started/index.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/why-cubed.html">Why Cubed?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/demo.html">Demo</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="user-guide/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/storage.html">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/memory.html">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/reliability.html">Reliability</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.html">cubed.Array</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
@@ -141,16 +154,15 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_memory.html">cubed.measure_reserved_memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="array_api.html">Python Array API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="related_projects.html">Related Projects</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
 <ul class="current nav bd-sidenav">
@@ -307,7 +319,6 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan">Plan</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory">Memory</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#execution">Execution</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-features">Runtime Features</a></li>
 </ul>
             </nav>
         </div>
@@ -330,29 +341,13 @@ a call to <code class="docutils literal notranslate"><span class="pre">compute</
 <section id="memory">
 <h2>Memory<a class="headerlink" href="#memory" title="Permalink to this heading">#</a></h2>
 <p>The primitive operations, <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> and <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> both have memory requirements that are known ahead of time. Each operation runs a <em>task</em> to compute each chunk of the output. The memory needed for each task is a function of chunk size, dtype, and the nature of the operation, which can be computed while building the plan.</p>
-<p>While it is not possible in general to compute the precise amount of memory that will be used (since it is not known ahead of time how well a Zarr chunk will compress), it is possible to put a conservative upper bound on the memory usage. This upper bound is the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> for a task, and it is calculated automatically by Cubed.</p>
-<p><img alt="Memory" src="_images/memory.svg" /></p>
-<p>The maximum amount of memory that tasks are allowed to use must be specified by the user. This is done by setting the <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> parameter on the <code class="docutils literal notranslate"><span class="pre">Spec</span></code> object.</p>
-<p>If the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> calculated by Cubed is greater than the value of <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> set by the user, an exception is raised during the planning phase. This check means that the user can have high confidence that the operation will run within its memory budget.</p>
-<p>It is also a good idea to set <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code>, the amount of memory reserved on a worker for non-data use - it’s whatever is needed by the Python process for running a task, and can be estimated using the <code class="docutils literal notranslate"><span class="pre">measure_reserved_mem</span></code> function. Cubed will use <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> as a baseline when calculating <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code>, in order to more accurately estimate the upper bound on memory usage.</p>
-<p>The actual (peak) memory usage of each task in a computation can be measured at runtime and analysed to see how well the projected memory matched <code class="docutils literal notranslate"><span class="pre">peak_measured_mem</span></code>. See <code class="docutils literal notranslate"><span class="pre">HistoryCallback</span></code> for details.</p>
+<p>See <a class="reference internal" href="user-guide/memory.html"><span class="std std-doc">Memory</span></a> for discussion of memory settings.</p>
 </section>
 <section id="execution">
 <h2>Execution<a class="headerlink" href="#execution" title="Permalink to this heading">#</a></h2>
 <p>A plan is executed by traversing the DAG and materializing arrays by writing them to Zarr storage. Details of how a plan is executed depends on the runtime. Distributed runtimes, for example, may choose to materialize arrays that don’t depend on one another in parallel for efficiency.</p>
 <p>This processing model has advantages and disadvantages. One advantage is that since there is no shuffle involved, it is a straightforward model that can scale up with very high-levels of parallelism - for example in a serverless environment. This also makes it straightforward to make it run on multiple execution engines.</p>
 <p>The main disadvantage of this model is that every intermediate array is written to storage, which can be slow. However, there are opportunities to optimize the DAG before running it (such as map fusion).</p>
-</section>
-<section id="runtime-features">
-<h2>Runtime Features<a class="headerlink" href="#runtime-features" title="Permalink to this heading">#</a></h2>
-<dl>
-  <dt>Task failure handling</dt>
-  <dd>If a task fails - with an IO exception when reading or writing to Zarr, for example - it will be retried (up to a total of three attempts).</dd>
-  <dt>Resume a computation from a checkpoint</dt>
-  <dd>Since intermediate arrays are persisted to Zarr, it is possible to resume a computation without starting from scratch. To do this, the Cubed <code>Array</code> object should be stored persistently (using <code>dill</code>), so it can be reloaded in a new process and then <code>compute()</code> called on it to finish the computation.</dd>
-  <dt>Straggler mitigation</dt>
-  <dd>A few slow running tasks (called stragglers) can disproportionately slow down the whole computation. To mitigate this, speculative duplicate tasks are launched in certain circumstances, acting as backups that complete more quickly than the straggler, hence bringing down the overall time taken.</dd>
-</dl>
 </section>
 </section>
 
@@ -407,7 +402,6 @@ a call to <code class="docutils literal notranslate"><span class="pre">compute</
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan">Plan</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory">Memory</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#execution">Execution</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-features">Runtime Features</a></li>
 </ul>
   </nav></div>
 
@@ -431,7 +425,7 @@ By Tom White
     
   <p class="copyright">
     
-      © Copyright 2022, Tom White.
+      © Copyright 2022-2023, Tom White.
       <br/>
     
   </p>

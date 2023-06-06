@@ -120,8 +120,21 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="getting-started/index.html">Getting Started</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/why-cubed.html">Why Cubed?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting-started/demo.html">Demo</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="user-guide/index.html">User Guide</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/storage.html">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/memory.html">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-guide/reliability.html">Reliability</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.html">cubed.Array</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
@@ -138,16 +151,15 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_memory.html">cubed.measure_reserved_memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="array_api.html">Python Array API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="related_projects.html">Related Projects</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
 <ul class="nav bd-sidenav">
@@ -336,13 +348,13 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/cubed.apply_gufunc.html#cubed.apply_gufunc">apply_gufunc() (in module cubed)</a>
 </li>
-      <li><a href="array_api.html#cubed.array_api.arange">arange() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.arange">arange() (in module cubed.array_api)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/cubed.Array.html#cubed.Array">Array (class in cubed)</a>
 </li>
-      <li><a href="array_api.html#cubed.array_api.asarray">asarray() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.asarray">asarray() (in module cubed.array_api)</a>
 </li>
       <li><a href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html#cubed.runtime.executors.modal_async.AsyncModalDagExecutor">AsyncModalDagExecutor (class in cubed.runtime.executors.modal_async)</a>
 </li>
@@ -356,7 +368,7 @@ document.write(`
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.broadcast_to">broadcast_to() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.broadcast_to">broadcast_to() (in module cubed.array_api)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -380,13 +392,13 @@ document.write(`
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.empty">empty() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.empty">empty() (in module cubed.array_api)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.empty_like">empty_like() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.empty_like">empty_like() (in module cubed.array_api)</a>
 </li>
-      <li><a href="array_api.html#cubed.array_api.eye">eye() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.eye">eye() (in module cubed.array_api)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -400,9 +412,9 @@ document.write(`
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.full">full() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.full">full() (in module cubed.array_api)</a>
 </li>
-      <li><a href="array_api.html#cubed.array_api.full_like">full_like() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.full_like">full_like() (in module cubed.array_api)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -410,7 +422,7 @@ document.write(`
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.linspace">linspace() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.linspace">linspace() (in module cubed.array_api)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -426,7 +438,7 @@ document.write(`
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.measure_reserved_memory.html#cubed.measure_reserved_memory">measure_reserved_memory() (in module cubed)</a>
+      <li><a href="generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem">measure_reserved_mem() (in module cubed)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -434,11 +446,11 @@ document.write(`
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.ones">ones() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.ones">ones() (in module cubed.array_api)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.ones_like">ones_like() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.ones_like">ones_like() (in module cubed.array_api)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -502,11 +514,11 @@ document.write(`
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.zeros">zeros() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.zeros">zeros() (in module cubed.array_api)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="array_api.html#cubed.array_api.zeros_like">zeros_like() (in module cubed.array_api)</a>
+      <li><a href="array-api.html#cubed.array_api.zeros_like">zeros_like() (in module cubed.array_api)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -552,7 +564,7 @@ By Tom White
     
   <p class="copyright">
     
-      © Copyright 2022, Tom White.
+      © Copyright 2022-2023, Tom White.
       <br/>
     
   </p>
