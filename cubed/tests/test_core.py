@@ -15,7 +15,13 @@ from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.types import DagExecutor
-from cubed.tests.utils import MAIN_EXECUTORS, MODAL_EXECUTORS, TaskCounter, create_zarr
+from cubed.tests.utils import (
+    ALL_EXECUTORS,
+    MAIN_EXECUTORS,
+    MODAL_EXECUTORS,
+    TaskCounter,
+    create_zarr,
+)
 
 
 @pytest.fixture()
@@ -25,6 +31,11 @@ def spec(tmp_path):
 
 @pytest.fixture(scope="module", params=MAIN_EXECUTORS)
 def executor(request):
+    return request.param
+
+
+@pytest.fixture(scope="module", params=ALL_EXECUTORS)
+def any_executor(request):
     return request.param
 
 
@@ -540,3 +551,45 @@ def test_plan_scaling(tmp_path, factor):
 
     assert c.plan.num_tasks() > 0
     c.visualize(filename=tmp_path / "c")
+
+
+@pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
+def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parallel):
+    from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+
+    if not isinstance(any_executor, AsyncPythonDagExecutor):
+        pytest.skip(f"{type(any_executor)} does not support compute_arrays_in_parallel")
+
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    c = xp.add(a, b)
+
+    c.compute(
+        executor=any_executor, compute_arrays_in_parallel=compute_arrays_in_parallel
+    )
+
+
+@pytest.mark.cloud
+@pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
+def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_parallel):
+    from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
+
+    if not isinstance(modal_executor, AsyncModalDagExecutor):
+        pytest.skip(
+            f"{type(modal_executor)} does not support compute_arrays_in_parallel"
+        )
+
+    tmp_path = "s3://cubed-unittest/parallel_pipelines"
+    spec = cubed.Spec(tmp_path, allowed_mem=100000)
+    try:
+        a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+        b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+        c = xp.add(a, b)
+
+        c.compute(
+            executor=modal_executor,
+            compute_arrays_in_parallel=compute_arrays_in_parallel,
+        )
+    finally:
+        fs = fsspec.open(tmp_path).fs
+        fs.rm(tmp_path, recursive=True)
