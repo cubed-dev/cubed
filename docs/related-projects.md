@@ -8,7 +8,7 @@ Dask converts high-level operations into a task graph, where tasks correspond to
 
 Dask only has a single distributed runtime, Dask Distributed, whereas Cubed has the advantage of running on a variety of distributed runtimes, including more mature ones like Google Cloud Dataflow (a Beam runner).
 
-The core operations and array API layers in Cubed are heavily influenced by Dask Array - in both naming, as well as implementation (Cubed has a dependency on Dask Array for some chunking utilities).
+The core operations and array API layers in Cubed are heavily influenced by Dask Array - in both naming, as well as implementation (Cubed uses Dask Array for some chunking utilities).
 
 ## Previous work
 
