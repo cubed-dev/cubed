@@ -195,6 +195,25 @@ class Plan:
             "fontsize": "10",
         }
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box", "fontsize": "10"}
+
+        # do an initial pass to extract array variable names from stack summaries
+        array_display_names = {}
+        for (n, d) in dag.nodes(data=True):
+            if "stack_summaries" in d:
+                stack_summaries = d["stack_summaries"]
+                first_cubed_i = min(
+                    i for i, s in enumerate(stack_summaries) if s.is_cubed()
+                )
+                caller_summary = stack_summaries[first_cubed_i - 1]
+                array_display_names.update(caller_summary.array_names_to_variable_names)
+        # add current stack info
+        frame = inspect.currentframe().f_back  # go back one in the stack
+        stack_summaries = extract_stack_summaries(frame, limit=10)
+        first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
+        caller_summary = stack_summaries[first_cubed_i - 1]
+        array_display_names.update(caller_summary.array_names_to_variable_names)
+
+        # now set node attributes with visualization info
         for (n, d) in dag.nodes(data=True):
             if d["op_name"] == "blockwise":
                 d["style"] = "filled"
@@ -209,6 +228,7 @@ class Plan:
             target = d["target"]
             chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
             tooltip = (
+                f"name: {n}\n"
                 f"shape: {target.shape}\n"
                 f"chunks: {target.chunks}\n"
                 f"dtype: {target.dtype}\n"
@@ -228,7 +248,13 @@ class Plan:
                 first_cubed_summary = stack_summaries[first_cubed_i]
                 caller_summary = stack_summaries[first_cubed_i - 1]
 
-                d["label"] = f"{n}\n{first_cubed_summary.name} {op_name_summary}"
+                if n in array_display_names:
+                    var_name = f" ({array_display_names[n]})"
+                else:
+                    var_name = ""
+                d[
+                    "label"
+                ] = f"{n}{var_name}\n{first_cubed_summary.name} {op_name_summary}"
 
                 calls = " -> ".join(
                     [s.name for s in stack_summaries if not s.is_on_python_lib_path()]

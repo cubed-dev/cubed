@@ -114,6 +114,7 @@ class StackSummary:
     lineno: int
     name: str
     module: str
+    array_names_to_variable_names: dict
 
     def is_cubed(self):
         """Return True if this stack frame is a Cubed call."""
@@ -152,11 +153,31 @@ def extract_stack_summaries(frame, limit=None):
             lineno=f.f_lineno,
             name=f.f_code.co_name,
             module=module,
+            array_names_to_variable_names=extract_array_names(f),
         )
         stack_summaries.append(summary)
     stack_summaries.reverse()
 
     return stack_summaries
+
+
+def extract_array_names(frame):
+    """Look for Cubed arrays in local variables to create a mapping from (internally generated) array names to variable names."""
+
+    from cubed import Array
+
+    array_names_to_variable_names = {}
+    for var, arr in frame.f_locals.items():
+        if isinstance(arr, Array):
+            array_names_to_variable_names[arr.name] = var
+        elif (
+            type(arr).__module__.split(".")[0] == "xarray"
+            and hasattr(arr, "data")
+            and hasattr(arr, "name")
+        ):
+            if isinstance(arr.data, Array):
+                array_names_to_variable_names[arr.data.name] = arr.name
+    return array_names_to_variable_names
 
 
 def convert_to_bytes(size: Union[int, str]) -> int:
