@@ -6,10 +6,9 @@ import modal
 from modal.exception import ConnectionError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
-from cubed.utils import peak_measured_mem
+from cubed.runtime.utils import execute_with_stats, handle_callbacks
 
 stub = modal.Stub("sync-stub")
 
@@ -24,7 +23,6 @@ else:
             "mypy_extensions",  # for rechunker
             "networkx",
             "pytest-mock",  # TODO: only needed for tests
-            "rechunker",
             "s3fs",
             "tenacity",
             "toolz",
@@ -43,18 +41,9 @@ else:
 )
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
-    peak_measured_mem_start = peak_measured_mem()
-    function_start_tstamp = time.time()
-    result = func(input, config=config)
-    function_end_tstamp = time.time()
-    peak_measured_mem_end = peak_measured_mem()
-    yield (
-        result,
-        function_start_tstamp,
-        function_end_tstamp,
-        peak_measured_mem_start,
-        peak_measured_mem_end,
-    )
+    # note we can't use the execution_stat decorator since it doesn't work with modal decorators
+    result, stats = execute_with_stats(func, input, config=config)
+    yield result, stats
 
 
 # This just retries the initial connection attempt, not the function calls
@@ -70,35 +59,15 @@ def execute_dag(dag, callbacks=None, array_names=None, **kwargs):
             for stage in pipeline.stages:
                 if stage.mappable is not None:
                     task_create_tstamp = time.time()
-                    for result in run_remotely.map(
+                    for _, stats in run_remotely.map(
                         list(stage.mappable),
                         kwargs=dict(func=stage.function, config=pipeline.config),
                     ):
-                        handle_callbacks(callbacks, name, result, task_create_tstamp)
+                        stats["array_name"] = name
+                        stats["task_create_tstamp"] = task_create_tstamp
+                        handle_callbacks(callbacks, stats)
                 else:
                     raise NotImplementedError()
-
-
-def handle_callbacks(callbacks, array_name, result, task_create_tstamp):
-    if callbacks is not None:
-        task_result_tstamp = time.time()
-        (
-            res,
-            function_start_tstamp,
-            function_end_tstamp,
-            peak_measured_mem_start,
-            peak_measured_mem_end,
-        ) = result
-        task_stats = dict(
-            task_create_tstamp=task_create_tstamp,
-            function_start_tstamp=function_start_tstamp,
-            function_end_tstamp=function_end_tstamp,
-            task_result_tstamp=task_result_tstamp,
-            peak_measured_mem_start=peak_measured_mem_start,
-            peak_measured_mem_end=peak_measured_mem_end,
-        )
-        event = TaskEndEvent(array_name=array_name, **task_stats)
-        [callback.on_task_end(event) for callback in callbacks]
 
 
 class ModalDagExecutor(DagExecutor):
