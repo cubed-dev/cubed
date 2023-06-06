@@ -248,10 +248,13 @@ class Plan:
                 first_cubed_summary = stack_summaries[first_cubed_i]
                 caller_summary = stack_summaries[first_cubed_i - 1]
 
-                display_name = array_display_names.get(n, "-")
+                if n in array_display_names:
+                    var_name = f" ({array_display_names[n]})"
+                else:
+                    var_name = ""
                 d[
                     "label"
-                ] = f"{display_name}\n{first_cubed_summary.name} {op_name_summary}"
+                ] = f"{n}{var_name}\n{first_cubed_summary.name} {op_name_summary}"
 
                 calls = " -> ".join(
                     [s.name for s in stack_summaries if not s.is_on_python_lib_path()]
