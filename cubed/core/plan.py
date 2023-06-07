@@ -3,12 +3,11 @@ import tempfile
 import uuid
 from datetime import datetime
 
-import fsspec
 import networkx as nx
-import zarr
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import already_computed
+from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
 from cubed.vendor.rechunker.types import PipelineExecutor
 
@@ -41,6 +40,7 @@ class Plan:
         name,
         op_name,
         target,
+        intermediate_target=None,
         pipeline=None,
         projected_mem=None,
         reserved_mem=None,
@@ -76,6 +76,16 @@ class Plan:
                 projected_mem=projected_mem,
                 reserved_mem=reserved_mem,
                 num_tasks=num_tasks,
+            )
+        if intermediate_target is not None:
+            intermediate_name = f"{name}-intermediate"
+            dag.add_node(
+                intermediate_name,
+                name=intermediate_name,
+                op_name=op_name,
+                target=intermediate_target,
+                stack_summaries=stack_summaries,
+                hidden=True,
             )
         for x in source_arrays:
             if hasattr(x, "name"):
@@ -122,6 +132,14 @@ class Plan:
 
         return Plan(dag)
 
+    def create_lazy_zarr_arrays(self, dag, executor=None, **kwargs):
+        # TODO: make this op a node in the dag and run using the executor
+
+        # find all arrays in dag and create them
+        for _, d in dag.nodes(data=True):
+            if isinstance(d["target"], LazyZarrArray):
+                d["target"].create(mode="a")
+
     def execute(
         self,
         executor=None,
@@ -132,6 +150,8 @@ class Plan:
         **kwargs,
     ):
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
+
+        self.create_lazy_zarr_arrays(dag, executor=executor, **kwargs)
 
         if isinstance(executor, PipelineExecutor):
             while len(dag) > 0:
@@ -193,6 +213,12 @@ class Plan:
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
     ):
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
+
+        # remove hidden nodes
+        dag.remove_nodes_from(
+            list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
+        )
+
         dag.graph["graph"] = {
             "rankdir": rankdir,
             "label": (
@@ -316,24 +342,12 @@ def arrays_to_plan(*arrays):
     return plans[0].arrays_to_plan(*arrays)
 
 
-def new_temp_path(name, suffix, spec=None):
+def new_temp_path(name, suffix=".zarr", spec=None):
     work_dir = spec.work_dir if spec is not None else None
     if work_dir is None:
         work_dir = tempfile.gettempdir()
     context_dir = join_path(work_dir, CONTEXT_ID)
     return join_path(context_dir, f"{name}{suffix}")
-
-
-def new_temp_store(name, spec=None):
-    zarr_path = new_temp_path(name, ".zarr", spec)
-    return fsspec.get_mapper(zarr_path)
-
-
-def new_temp_zarr(shape, dtype, chunksize, name=None, spec=None):
-    # open a new temporary zarr array for writing
-    store = new_temp_store(name=name, spec=spec)
-    target = zarr.open(store, mode="w-", shape=shape, dtype=dtype, chunks=chunksize)
-    return target
 
 
 def visit_nodes(dag, resume=None):

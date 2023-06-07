@@ -3,15 +3,16 @@ from math import ceil, prod
 import zarr
 
 import cubed
+from cubed.primitive.types import CubedArrayProxy
 from cubed.runtime.pipeline import spec_to_pipeline
+from cubed.storage.zarr import lazy_empty
 from cubed.vendor.rechunker.algorithm import rechunking_plan
 from cubed.vendor.rechunker.api import (
     _get_dims_from_zarr_array,
     _shape_dict_to_tuple,
     _validate_options,
-    _zarr_empty,
 )
-from cubed.vendor.rechunker.types import ArrayProxy, CopySpec
+from cubed.vendor.rechunker.types import CopySpec
 
 
 def rechunk(
@@ -149,14 +150,14 @@ def _setup_array_rechunk(
     int_chunks = tuple(int(x) for x in int_chunks)
     write_chunks = tuple(int(x) for x in write_chunks)
 
-    target_array = _zarr_empty(
+    target_array = lazy_empty(
         shape,
-        target_store_or_group,
-        target_chunks,
-        dtype,
-        name=name,
+        dtype=dtype,
+        chunks=target_chunks,
+        store=target_store_or_group,
         **(target_options or {}),
     )
+
     try:
         target_array.attrs.update(source_array.attrs)
     except AttributeError:
@@ -172,18 +173,17 @@ def _setup_array_rechunk(
                     f" (array={name})" if name else ""
                 )
             )
-        int_array = _zarr_empty(
+        int_array = lazy_empty(
             shape,
-            temp_store_or_group,
-            int_chunks,
-            dtype,
-            name=name,
-            **(temp_options or {}),
+            dtype=dtype,
+            chunks=int_chunks,
+            store=temp_store_or_group,
+            **(target_options or {}),
         )
 
-    read_proxy = ArrayProxy(source_array, read_chunks)
-    int_proxy = ArrayProxy(int_array, int_chunks)
-    write_proxy = ArrayProxy(target_array, write_chunks)
+    read_proxy = CubedArrayProxy(source_array, read_chunks)
+    int_proxy = CubedArrayProxy(int_array, int_chunks)
+    write_proxy = CubedArrayProxy(target_array, write_chunks)
     return CopySpec(read_proxy, int_proxy, write_proxy)
 
 

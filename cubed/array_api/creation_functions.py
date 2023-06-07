@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING, Iterable, List
 
 import numpy as np
-import zarr
 from zarr.util import normalize_shape
 
-from cubed.core import Plan, gensym, map_blocks, new_temp_store, new_temp_zarr
+from cubed.core import Plan, gensym, map_blocks
 from cubed.core.ops import map_direct
+from cubed.core.plan import new_temp_path
+from cubed.storage.zarr import lazy_from_array, lazy_full
 from cubed.utils import to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 
@@ -69,9 +70,8 @@ def asarray(
     # write to zarr
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
-    target = new_temp_zarr(a.shape, dtype, chunksize, name=name, spec=spec)
-    if a.size > 0:
-        target[...] = a
+    zarr_path = new_temp_path(name=name, spec=spec)
+    target = lazy_from_array(a, dtype=dtype, chunks=chunksize, store=zarr_path)
 
     plan = Plan._new(name, "asarray", target)
     return Array(name, target, spec, plan)
@@ -137,13 +137,13 @@ def full(
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
-    store = new_temp_store(name=name, spec=spec)
-    target = zarr.full(
+    zarr_path = new_temp_path(name=name, spec=spec)
+    target = lazy_full(
         shape,
         fill_value,
-        store=store,
         dtype=dtype,
         chunks=chunksize,
+        store=zarr_path,
         write_empty_chunks=False,
     )
 

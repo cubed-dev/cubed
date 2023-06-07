@@ -7,13 +7,14 @@ import toolz
 import zarr
 from toolz import map
 
+from cubed.storage.zarr import lazy_empty
 from cubed.utils import chunk_memory, get_item, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
-from cubed.vendor.rechunker.types import ArrayProxy, Stage
+from cubed.vendor.rechunker.types import Stage
 
-from .types import CubedPipeline
+from .types import CubedArrayProxy, CubedPipeline
 
 sym_counter = 0
 
@@ -36,16 +37,16 @@ class BlockwiseSpec:
         A function that maps input chunk indexes to an output chunk index.
     function : Callable
         A function that maps input chunks to an output chunk.
-    reads_map : Dict[str, ArrayProxy]
+    reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
-    write : ArrayProxy
+    write : CubedArrayProxy
         Write proxy with an ``array`` attribute that supports ``__setitem__``.
     """
 
     block_function: Callable
     function: Callable
-    reads_map: Dict[str, ArrayProxy]
-    write: ArrayProxy
+    reads_map: Dict[str, CubedArrayProxy]
+    write: CubedArrayProxy
 
 
 def apply_blockwise(out_key, *, config=BlockwiseSpec):
@@ -58,7 +59,7 @@ def apply_blockwise(out_key, *, config=BlockwiseSpec):
     for name_chunk_ind in name_chunk_inds:
         name = name_chunk_ind[0]
         chunk_ind = name_chunk_ind[1:]
-        arr = config.reads_map[name].array
+        arr = config.reads_map[name].open()
         chunk_key = key_to_slices(chunk_ind, arr)
         arg = arr[chunk_key]
         args.append(arg)
@@ -66,9 +67,9 @@ def apply_blockwise(out_key, *, config=BlockwiseSpec):
     result = config.function(*args)
     if isinstance(result, dict):  # structured array with named fields
         for k, v in result.items():
-            config.write.array.set_basic_selection(out_chunk_key, v, fields=k)
+            config.write.open().set_basic_selection(out_chunk_key, v, fields=k)
     else:
-        config.write.array[out_chunk_key] = result
+        config.write.open()[out_chunk_key] = result
 
 
 def key_to_slices(key, arr, chunks=None):
@@ -171,15 +172,15 @@ def blockwise(
     if isinstance(target_store, zarr.Array):
         target_array = target_store
     else:
-        target_array = zarr.empty(
-            shape, store=target_store, chunks=chunksize, dtype=dtype
+        target_array = lazy_empty(
+            shape, dtype=dtype, chunks=chunksize, store=target_store
         )
 
     func_with_kwargs = partial(func, **kwargs)
     read_proxies = {
-        name: ArrayProxy(array, array.chunks) for name, array in array_map.items()
+        name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
-    write_proxy = ArrayProxy(target_array, chunksize)
+    write_proxy = CubedArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(block_function, func_with_kwargs, read_proxies, write_proxy)
 
     stages = [
@@ -212,7 +213,7 @@ def blockwise(
 
     num_tasks = len(output_blocks)
 
-    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, None, projected_mem, num_tasks)
 
 
 # Code for fusing pipelines
@@ -265,7 +266,7 @@ def fuse(pipeline1, pipeline2):
     projected_mem = max(pipeline1.projected_mem, pipeline2.projected_mem)
     num_tasks = pipeline2.num_tasks
 
-    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, None, projected_mem, num_tasks)
 
 
 # blockwise functions

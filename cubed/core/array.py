@@ -8,6 +8,7 @@ from toolz import map, reduce
 
 from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
+from cubed.storage.zarr import open_if_lazy_zarr_array
 from cubed.utils import chunk_memory, convert_to_bytes
 from cubed.vendor.dask.array.core import normalize_chunks
 
@@ -36,7 +37,7 @@ class CoreArray:
 
     def __init__(self, name, zarray, spec, plan):
         self.name = name
-        self.zarray = zarray
+        self._zarray = zarray
         self._shape = zarray.shape
         self._dtype = zarray.dtype
         self._chunks = normalize_chunks(
@@ -48,6 +49,16 @@ class CoreArray:
             None, allowed_mem=200_000_000, reserved_mem=100_000_000
         )
         self.plan = plan
+
+    @property
+    def zarray_maybe_lazy(self):
+        """The underlying Zarr array or LazyZarrArray. Use this during planning, before the computation has started."""
+        return self._zarray
+
+    @property
+    def zarray(self):
+        """The underlying Zarr array. May only be used during the computation once the array has been created."""
+        return open_if_lazy_zarr_array(self._zarray)
 
     @property
     def chunkmem(self):

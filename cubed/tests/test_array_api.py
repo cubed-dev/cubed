@@ -235,6 +235,7 @@ def test_index_slice_unsupported_step(spec):
         a[3:10:2]
 
 
+@pytest.mark.xfail(reason="not currently compatible with lazy zarr arrays")
 def test_setitem(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.ones(())

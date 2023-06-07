@@ -5,6 +5,7 @@ from typing import Any, Iterable, Iterator, List, Tuple
 import numpy as np
 
 from cubed.primitive.types import CubedPipeline
+from cubed.storage.zarr import open_if_lazy_zarr_array
 from cubed.vendor.rechunker.types import CopySpec, Stage
 
 from .utils import gensym
@@ -42,24 +43,24 @@ def copy_read_to_write(chunk_key, *, config=CopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
-    data = np.asarray(config.read.array[chunk_key])
-    config.write.array[chunk_key] = data
+    data = np.asarray(config.read.open()[chunk_key])
+    config.write.open()[chunk_key] = data
 
 
 def copy_read_to_intermediate(chunk_key, *, config=CopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
-    data = np.asarray(config.read.array[chunk_key])
-    config.intermediate.array[chunk_key] = data
+    data = np.asarray(config.read.open()[chunk_key])
+    config.intermediate.open()[chunk_key] = data
 
 
 def copy_intermediate_to_write(chunk_key, *, config=CopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
-    data = np.asarray(config.intermediate.array[chunk_key])
-    config.write.array[chunk_key] = data
+    data = np.asarray(config.intermediate.open()[chunk_key])
+    config.write.open()[chunk_key] = data
 
 
 def spec_to_pipeline(
@@ -88,7 +89,9 @@ def spec_to_pipeline(
                 mappable=ChunkKeys(shape, spec.write.chunks),
             ),
         ]
-    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
+    return CubedPipeline(
+        stages, spec, target_array, spec.intermediate.array, projected_mem, num_tasks
+    )
 
 
 def already_computed(node_dict, resume=None):
@@ -100,9 +103,11 @@ def already_computed(node_dict, resume=None):
     if pipeline is None:
         return True
 
-    if resume:
-        target = node_dict.get("target", None)
+    target = node_dict.get("target", None)
+    if resume and target is not None:
+        target = open_if_lazy_zarr_array(target)
         # this check can be expensive since it has to list the directory to find nchunks
         if target.ndim > 0 and target.nchunks_initialized == target.nchunks:
             return True
+
     return False
