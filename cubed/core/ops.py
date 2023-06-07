@@ -17,7 +17,7 @@ from zarr.indexing import (
 )
 
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
-from cubed.core.plan import Plan, new_temp_store
+from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import chunk_memory, get_item, to_chunksize
@@ -250,7 +250,7 @@ def blockwise(
 
     # replace arrays with zarr arrays
     zargs = list(args)
-    zargs[::2] = [a.zarray for a in arrays]
+    zargs[::2] = [a.zarray_maybe_lazy for a in arrays]
     in_names = [a.name for a in arrays]
 
     extra_source_arrays = kwargs.pop("extra_source_arrays", [])
@@ -261,7 +261,7 @@ def blockwise(
     name = gensym()
     spec = check_array_specs(arrays)
     if target_store is None:
-        target_store = new_temp_store(name=name, spec=spec)
+        target_store = new_temp_path(name=name, spec=spec)
     pipeline = primitive_blockwise(
         func,
         out_ind,
@@ -281,6 +281,7 @@ def blockwise(
         name,
         "blockwise",
         pipeline.target_array,
+        None,
         pipeline,
         pipeline.projected_mem + extra_projected_mem,
         spec.reserved_mem,
@@ -338,7 +339,9 @@ def index(x, key):
     selection = replace_ellipsis(selection, x.shape)
 
     # Use a Zarr indexer just to find the resulting array shape and chunks
-    indexer = OrthogonalIndexer(selection, x.zarray)
+    # Need to use an in-memory representation since the Zarr file has not been written yet
+    inmem = zarr.empty_like(x.zarray_maybe_lazy, store=zarr.storage.MemoryStore())
+    indexer = OrthogonalIndexer(selection, inmem)
 
     shape = indexer.shape
     dtype = x.dtype
@@ -592,10 +595,10 @@ def rechunk(x, chunks, target_store=None):
     name = gensym()
     spec = x.spec
     if target_store is None:
-        target_store = new_temp_store(name=name, spec=spec)
-    temp_store = new_temp_store(name=f"{name}-intermediate", spec=spec)
+        target_store = new_temp_path(name=name, spec=spec)
+    temp_store = new_temp_path(name=f"{name}-intermediate", spec=spec)
     pipeline = primitive_rechunk(
-        x.zarray,
+        x.zarray_maybe_lazy,
         target_chunks=chunks,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
@@ -606,6 +609,7 @@ def rechunk(x, chunks, target_store=None):
         name,
         "rechunk",
         pipeline.target_array,
+        pipeline.intermediate_array,
         pipeline,
         pipeline.projected_mem,
         spec.reserved_mem,

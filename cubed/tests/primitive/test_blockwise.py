@@ -57,6 +57,8 @@ def test_blockwise(tmp_path, executor, reserved_mem):
 
     assert pipeline.num_tasks == 4
 
+    pipeline.target_array.create()  # create lazy zarr array
+
     execute_pipeline(pipeline, executor=executor)
 
     res = zarr.open(target_store)
@@ -117,6 +119,8 @@ def test_blockwise_with_args(tmp_path, executor):
     )
 
     assert pipeline.num_tasks == 4
+
+    pipeline.target_array.create()  # create lazy zarr array
 
     execute_pipeline(pipeline, executor=executor)
 

@@ -24,4 +24,4 @@ from .ops import (
     to_zarr,
     unify_chunks,
 )
-from .plan import Plan, new_temp_store, new_temp_zarr
+from .plan import Plan

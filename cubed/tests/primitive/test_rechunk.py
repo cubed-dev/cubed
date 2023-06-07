@@ -80,6 +80,11 @@ def test_rechunk(
 
     assert pipeline.num_tasks == expected_num_tasks
 
+    # create lazy zarr arrays
+    pipeline.target_array.create()
+    if pipeline.intermediate_array is not None:
+        pipeline.intermediate_array.create()
+
     execute_pipeline(pipeline, executor=executor)
 
     res = zarr.open(target_store)

@@ -17,7 +17,7 @@ class LazyZarrArray:
         store,
         initial_values=None,
         fill_value=None,
-        **kwargs
+        **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
         # use an empty in-memory Zarr array as a template since it normalizes its properties
@@ -71,6 +71,9 @@ class LazyZarrArray:
             dtype=self.dtype,
             chunks=self.chunks,
         )
+
+    def __repr__(self):
+        return f"cubed.storage.zarr.LazyZarrArray<shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
 def lazy_empty(shape, *, dtype, chunks, store, **kwargs):
