@@ -6,10 +6,11 @@ from datetime import datetime
 import networkx as nx
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
+from cubed.primitive.types import CubedPipeline
 from cubed.runtime.pipeline import already_computed
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
-from cubed.vendor.rechunker.types import PipelineExecutor
+from cubed.vendor.rechunker.types import PipelineExecutor, Stage
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -132,13 +133,35 @@ class Plan:
 
         return Plan(dag)
 
-    def create_lazy_zarr_arrays(self, dag, executor=None, **kwargs):
-        # TODO: make this op a node in the dag and run using the executor
-
-        # find all arrays in dag and create them
-        for _, d in dag.nodes(data=True):
+    def create_lazy_zarr_arrays(self, dag):
+        # find all lazy zarr arrays in dag
+        all_array_nodes = []
+        lazy_zarr_arrays = []
+        for n, d in dag.nodes(data=True):
             if isinstance(d["target"], LazyZarrArray):
-                d["target"].create(mode="a")
+                all_array_nodes.append(n)
+                lazy_zarr_arrays.append(d["target"])
+
+        if len(lazy_zarr_arrays) > 0:
+            # add new node and edges
+            name = "create-arrays"
+            op_name = name
+            pipeline = create_zarr_arrays(lazy_zarr_arrays)
+            dag.add_node(
+                name,
+                name=name,
+                op_name=op_name,
+                target=None,
+                pipeline=pipeline,
+                projected_mem=pipeline.projected_mem,
+                reserved_mem=0,  # TODO: get from Spec
+                num_tasks=pipeline.num_tasks,
+            )
+            # make create arrays node a dependency of all lazy array nodes
+            for n in all_array_nodes:
+                dag.add_edge(name, n)
+
+        return dag
 
     def execute(
         self,
@@ -150,8 +173,7 @@ class Plan:
         **kwargs,
     ):
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
-
-        self.create_lazy_zarr_arrays(dag, executor=executor, **kwargs)
+        dag = self.create_lazy_zarr_arrays(dag)
 
         if isinstance(executor, PipelineExecutor):
             while len(dag) > 0:
@@ -190,6 +212,7 @@ class Plan:
     def num_tasks(self, optimize_graph=True, resume=None):
         """Return the number of tasks needed to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        dag = self.create_lazy_zarr_arrays(dag)
         tasks = 0
         for _, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
@@ -203,6 +226,7 @@ class Plan:
     def max_projected_mem(self, optimize_graph=True, resume=None):
         """Return the maximum projected memory across all tasks to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        dag = self.create_lazy_zarr_arrays(dag)
         projected_mem_values = [
             node["pipeline"].projected_mem
             for _, node in visit_nodes(dag, resume=resume)
@@ -213,6 +237,10 @@ class Plan:
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
     ):
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        dag = self.create_lazy_zarr_arrays(dag)
+
+        # remove edges from create-arrays node to avoid cluttering the diagram
+        dag.remove_edges_from(list(dag.out_edges("create-arrays")))
 
         # remove hidden nodes
         dag.remove_nodes_from(
@@ -261,19 +289,22 @@ class Plan:
             else:  # creation function
                 op_name_summary = ""
             target = d["target"]
-            chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
-            tooltip = (
-                f"name: {n}\n"
-                f"shape: {target.shape}\n"
-                f"chunks: {target.chunks}\n"
-                f"dtype: {target.dtype}\n"
-                f"chunk memory: {chunkmem}\n"
-            )
+            if target is not None:
+                chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
+                tooltip = (
+                    f"name: {n}\n"
+                    f"shape: {target.shape}\n"
+                    f"chunks: {target.chunks}\n"
+                    f"dtype: {target.dtype}\n"
+                    f"chunk memory: {chunkmem}\n"
+                )
+            else:
+                tooltip = ""
             if "pipeline" in d:
                 pipeline = d["pipeline"]
                 tooltip += f"\nprojected memory: {memory_repr(pipeline.projected_mem)}"
                 tooltip += f"\ntasks: {pipeline.num_tasks}"
-            if "stack_summaries" in d:
+            if "stack_summaries" in d and d["stack_summaries"] is not None:
                 # add call stack information
                 stack_summaries = d["stack_summaries"]
 
@@ -301,7 +332,7 @@ class Plan:
                 tooltip += f"\nline: {line}"
                 del d["stack_summaries"]
 
-            d["tooltip"] = tooltip
+            d["tooltip"] = tooltip.strip()
 
             # remove pipeline attribute since it is a long string that causes graphviz to fail
             if "pipeline" in d:
@@ -370,3 +401,30 @@ def visit_node_generations(dag, resume=None):
         ]
         if len(gen) > 0:
             yield gen
+
+
+def create_zarr_array(lazy_zarr_array, *, config=None):
+    """Stage function for create."""
+    lazy_zarr_array.create(mode="a")
+
+
+def create_zarr_arrays(lazy_zarr_arrays):
+    stages = [
+        Stage(
+            create_zarr_array,
+            "create_zarr_array",
+            mappable=lazy_zarr_arrays,
+        )
+    ]
+
+    # projected memory is size of largest initial values, or 0 if there aren't any
+    projected_mem = max(
+        [
+            lza.initial_values.nbytes if lza.initial_values is not None else 0
+            for lza in lazy_zarr_arrays
+        ],
+        default=0,
+    )
+    num_tasks = len(lazy_zarr_arrays)
+
+    return CubedPipeline(stages, None, None, None, projected_mem, num_tasks)
