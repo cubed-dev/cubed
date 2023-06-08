@@ -9,6 +9,8 @@ from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
+from cubed.extensions.history import HistoryCallback
+from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.types import DagExecutor
@@ -209,8 +211,9 @@ def test_rechunk_same_chunks(spec):
     b = a.rechunk((2, 1))
     task_counter = TaskCounter()
     res = b.compute(callbacks=[task_counter])
-    # no tasks should have run since chunks are same
-    assert task_counter.value == 0
+    # no tasks except array creation task should have run since chunks are same
+    num_created_arrays = 1
+    assert task_counter.value == num_created_arrays
 
     assert_array_equal(res, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
@@ -427,22 +430,31 @@ def test_retries(mocker, spec):
     assert_array_equal(c.compute(), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]))
 
 
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="measuring memory does not run on windows"
+)
 def test_callbacks(spec, executor):
     if not isinstance(executor, DagExecutor):
         pytest.skip(f"{type(executor)} does not support callbacks")
 
     task_counter = TaskCounter()
-    progress = TqdmProgressBar()  # test indirectly (doesn't fail)
+    # test following indirectly by checking they don't cause a failure
+    progress = TqdmProgressBar()
+    hist = HistoryCallback()
+    timeline_viz = TimelineVisualizationCallback()
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
-        c.compute(executor=executor, callbacks=[task_counter, progress]),
+        c.compute(
+            executor=executor, callbacks=[task_counter, progress, hist, timeline_viz]
+        ),
         np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
     )
 
-    assert task_counter.value == 4
+    num_created_arrays = 3
+    assert task_counter.value == num_created_arrays + 4
 
 
 @pytest.mark.cloud
@@ -459,7 +471,8 @@ def test_callbacks_modal(spec, modal_executor):
             np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
         )
 
-        assert task_counter.value == 4
+        num_created_arrays = 3
+        assert task_counter.value == num_created_arrays + 4
     finally:
         fs = fsspec.open(tmp_path).fs
         fs.rm(tmp_path, recursive=True)
@@ -471,16 +484,20 @@ def test_already_computed(spec):
     c = xp.add(a, b)
     d = xp.negative(c)
 
-    assert d.plan.num_tasks(optimize_graph=False) == 8
+    num_created_arrays = 4  # a, b, c, d
+    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 8
 
     task_counter = TaskCounter()
     c.compute(callbacks=[task_counter], optimize_graph=False)
-    assert task_counter.value == 4
+    num_created_arrays = 3  # a, b, c
+    assert task_counter.value == num_created_arrays + 4
 
     # since c has already been computed, when computing d only 4 tasks are run, instead of 8
     task_counter = TaskCounter()
     d.compute(callbacks=[task_counter], optimize_graph=False, resume=True)
-    assert task_counter.value == 4
+    # the create arrays tasks are run again, even though they exist
+    num_created_arrays = 4  # a, b, c, d
+    assert task_counter.value == num_created_arrays + 4
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")

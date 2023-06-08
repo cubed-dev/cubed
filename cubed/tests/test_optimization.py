@@ -18,12 +18,14 @@ def test_fusion(spec):
     c = xp.astype(b, np.float32)
     d = xp.negative(c)
 
-    assert d.plan.num_tasks(optimize_graph=False) == 12
-    assert d.plan.num_tasks(optimize_graph=True) == 4
+    num_created_arrays = 4  # a, b, c, d
+    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 12
+    num_created_arrays = 2  # a, d
+    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
 
     task_counter = TaskCounter()
     result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 4
+    assert task_counter.value == num_created_arrays + 4
 
     assert_array_equal(
         result,
@@ -37,12 +39,14 @@ def test_fusion_transpose(spec):
     c = xp.astype(b, np.float32)
     d = c.T
 
-    assert d.plan.num_tasks(optimize_graph=False) == 12
-    assert d.plan.num_tasks(optimize_graph=True) == 4
+    num_created_arrays = 4  # a, b, c, d
+    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 12
+    num_created_arrays = 2  # a, d
+    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
 
     task_counter = TaskCounter()
     result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 4
+    assert task_counter.value == num_created_arrays + 4
 
     assert_array_equal(
         result,
@@ -57,12 +61,13 @@ def test_no_fusion(spec):
     c = xp.positive(b)
     d = xp.equal(b, c)
 
-    assert d.plan.num_tasks(optimize_graph=False) == 3
-    assert d.plan.num_tasks(optimize_graph=True) == 3
+    num_created_arrays = 4  # a, b, c, d
+    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 3
+    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 3
 
     task_counter = TaskCounter()
     result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 3
+    assert task_counter.value == num_created_arrays + 3
 
     assert_array_equal(result, np.ones((2, 2)))
 
@@ -76,11 +81,12 @@ def test_no_fusion_multiple_edges(spec):
     # this should not be fused under the current logic
     d = xp.equal(b, c)
 
-    assert d.plan.num_tasks(optimize_graph=False) == 2
-    assert d.plan.num_tasks(optimize_graph=True) == 2
+    num_created_arrays = 3  # a, c, d
+    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 2
+    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 2
 
     task_counter = TaskCounter()
     result = d.compute(callbacks=[task_counter])
-    assert task_counter.value == 2
+    assert task_counter.value == num_created_arrays + 2
 
     assert_array_equal(result, np.full((2, 2), True))
