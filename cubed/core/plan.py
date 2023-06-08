@@ -127,6 +127,7 @@ class Plan:
         executor=None,
         callbacks=None,
         optimize_graph=True,
+        resume=None,
         array_names=None,
         **kwargs,
     ):
@@ -152,18 +153,25 @@ class Plan:
 
         else:
             if callbacks is not None:
-                [callback.on_compute_start(dag) for callback in callbacks]
+                [
+                    callback.on_compute_start(dag, resume=resume)
+                    for callback in callbacks
+                ]
             executor.execute_dag(
-                dag, callbacks=callbacks, array_names=array_names, **kwargs
+                dag,
+                callbacks=callbacks,
+                array_names=array_names,
+                resume=resume,
+                **kwargs,
             )
             if callbacks is not None:
                 [callback.on_compute_end(dag) for callback in callbacks]
 
-    def num_tasks(self, optimize_graph=True):
+    def num_tasks(self, optimize_graph=True, resume=None):
         """Return the number of tasks needed to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
         tasks = 0
-        for _, node in visit_nodes(dag):
+        for _, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
             for stage in pipeline.stages:
                 if stage.mappable is not None:
@@ -172,11 +180,12 @@ class Plan:
                     tasks += 1
         return tasks
 
-    def max_projected_mem(self, optimize_graph=True):
+    def max_projected_mem(self, optimize_graph=True, resume=None):
         """Return the maximum projected memory across all tasks to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
         projected_mem_values = [
-            node["pipeline"].projected_mem for _, node in visit_nodes(dag)
+            node["pipeline"].projected_mem
+            for _, node in visit_nodes(dag, resume=resume)
         ]
         return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
@@ -327,21 +336,23 @@ def new_temp_zarr(shape, dtype, chunksize, name=None, spec=None):
     return target
 
 
-def visit_nodes(dag):
+def visit_nodes(dag, resume=None):
     """Return a generator that visits the nodes in the DAG in topological order."""
     nodes = {n: d for (n, d) in dag.nodes(data=True)}
     for name in list(nx.topological_sort(dag)):
-        if already_computed(nodes[name]):
+        if already_computed(nodes[name], resume=resume):
             continue
         yield name, nodes[name]
 
 
-def visit_node_generations(dag):
+def visit_node_generations(dag, resume=None):
     """Return a generator that visits the nodes in the DAG in groups of topological generations."""
     nodes = {n: d for (n, d) in dag.nodes(data=True)}
     for names in nx.topological_generations(dag):
         gen = [
-            (name, nodes[name]) for name in names if not already_computed(nodes[name])
+            (name, nodes[name])
+            for name in names
+            if not already_computed(nodes[name], resume=resume)
         ]
         if len(gen) > 0:
             yield gen

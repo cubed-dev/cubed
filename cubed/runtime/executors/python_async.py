@@ -87,9 +87,11 @@ def pipeline_to_stream(concurrent_executor, name, pipeline, **kwargs):
     return stream.concatmap(it, lambda f: f(), task_limit=1)
 
 
-async def async_execute_dag(dag, callbacks=None, array_names=None, **kwargs):
+async def async_execute_dag(
+    dag, callbacks=None, array_names=None, resume=None, **kwargs
+):
     with ThreadPoolExecutor() as concurrent_executor:
-        for gen in visit_node_generations(dag):
+        for gen in visit_node_generations(dag, resume=resume):
             # run pipelines in the same topological generation in parallel by merging their streams
             streams = [
                 pipeline_to_stream(
@@ -106,9 +108,13 @@ async def async_execute_dag(dag, callbacks=None, array_names=None, **kwargs):
 class AsyncPythonDagExecutor(DagExecutor):
     """An execution engine that uses Python asyncio."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
         asyncio.run(
             async_execute_dag(
-                dag, callbacks=callbacks, array_names=array_names, **kwargs
+                dag,
+                callbacks=callbacks,
+                array_names=array_names,
+                resume=resume,
+                **kwargs,
             )
         )

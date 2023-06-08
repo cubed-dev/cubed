@@ -13,8 +13,8 @@ def exec_stage_func(func, *args, **kwargs):
 class PythonDagExecutor(DagExecutor):
     """The default execution engine that runs tasks sequentially uses Python loops."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
-        for name, node in visit_nodes(dag):
+    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
+        for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
             for stage in pipeline.stages:
                 if stage.mappable is not None:

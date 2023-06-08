@@ -51,9 +51,9 @@ def run_remotely(input, func=None, config=None):
     retry=retry_if_exception_type((TimeoutError, ConnectionError)),
     stop=stop_after_attempt(3),
 )
-def execute_dag(dag, callbacks=None, array_names=None, **kwargs):
+def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
     with stub.run():
-        for name, node in visit_nodes(dag):
+        for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
 
             for stage in pipeline.stages:

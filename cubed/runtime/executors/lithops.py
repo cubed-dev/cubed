@@ -169,10 +169,10 @@ def map_unordered(
             time.sleep(1)
 
 
-def execute_dag(dag, callbacks=None, array_names=None, **kwargs):
+def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
     use_backups = kwargs.pop("use_backups", False)
     with FunctionExecutor(**kwargs) as executor:
-        for name, node in visit_nodes(dag):
+        for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
             for stage in pipeline.stages:
                 if stage.mappable is not None:

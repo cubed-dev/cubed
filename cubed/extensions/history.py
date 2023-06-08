@@ -9,9 +9,9 @@ from cubed.core.plan import visit_nodes
 
 
 class HistoryCallback(Callback):
-    def on_compute_start(self, dag):
+    def on_compute_start(self, dag, resume):
         plan = []
-        for name, node in visit_nodes(dag):
+        for name, node in visit_nodes(dag, resume):
             pipeline = node["pipeline"]
             plan.append(
                 dict(

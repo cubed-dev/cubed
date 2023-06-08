@@ -15,7 +15,7 @@ pylab.switch_backend("Agg")
 
 
 class TimelineVisualizationCallback(Callback):
-    def on_compute_start(self, dag):
+    def on_compute_start(self, dag, resume):
         self.start_tstamp = time.time()
         self.stats = []
 

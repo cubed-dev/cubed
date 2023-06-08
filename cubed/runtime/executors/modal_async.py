@@ -135,9 +135,11 @@ async def map_unordered(
     retry=retry_if_exception_type((TimeoutError, ConnectionError)),
     stop=stop_after_attempt(3),
 )
-async def async_execute_dag(dag, callbacks=None, array_names=None, **kwargs):
+async def async_execute_dag(
+    dag, callbacks=None, array_names=None, resume=None, **kwargs
+):
     async with async_stub.run():
-        for name, node in visit_nodes(dag):
+        for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
@@ -159,9 +161,13 @@ async def async_execute_dag(dag, callbacks=None, array_names=None, **kwargs):
 class AsyncModalDagExecutor(DagExecutor):
     """An execution engine that uses Modal's async API."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
         asyncio.run(
             async_execute_dag(
-                dag, callbacks=callbacks, array_names=array_names, **kwargs
+                dag,
+                callbacks=callbacks,
+                array_names=array_names,
+                resume=resume,
+                **kwargs,
             )
         )

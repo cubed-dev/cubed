@@ -135,11 +135,11 @@ class BeamPipelineExecutor(PipelineExecutor[List[beam.PTransform]]):
 class BeamDagExecutor(DagExecutor):
     """An execution engine that uses Apache Beam."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
+    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
         dag = dag.copy()
         pipeline = beam.Pipeline(**kwargs)
 
-        for name, node in visit_nodes(dag):
+        for name, node in visit_nodes(dag, resume=resume):
             rechunker_pipeline = node["pipeline"]
 
             dep_nodes = list(dag.predecessors(name))

@@ -14,12 +14,12 @@ class TqdmProgressBar(Callback):
         self.args = args
         self.kwargs = kwargs
 
-    def on_compute_start(self, dag):
+    def on_compute_start(self, dag, resume):
         from tqdm.auto import tqdm
 
         self.pbars = {}
         i = 0
-        for name, node in visit_nodes(dag):
+        for name, node in visit_nodes(dag, resume):
             num_tasks = node["pipeline"].num_tasks
             self.pbars[name] = tqdm(
                 *self.args, desc=name, total=num_tasks, position=i, **self.kwargs
