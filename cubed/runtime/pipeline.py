@@ -91,7 +91,7 @@ def spec_to_pipeline(
     return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks)
 
 
-def already_computed(node_dict):
+def already_computed(node_dict, resume=None):
     """
     Return True if the array for a node doesn't have a pipeline to compute it,
     or it has already been computed (all chunks are present).
@@ -99,7 +99,10 @@ def already_computed(node_dict):
     pipeline = node_dict.get("pipeline", None)
     if pipeline is None:
         return True
-    target = node_dict.get("target", None)
-    if target.ndim > 0 and target.nchunks_initialized == target.nchunks:
-        return True
+
+    if resume:
+        target = node_dict.get("target", None)
+        # this check can be expensive since it has to list the directory to find nchunks
+        if target.ndim > 0 and target.nchunks_initialized == target.nchunks:
+            return True
     return False

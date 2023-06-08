@@ -479,7 +479,7 @@ def test_already_computed(spec):
 
     # since c has already been computed, when computing d only 4 tasks are run, instead of 8
     task_counter = TaskCounter()
-    d.compute(callbacks=[task_counter], optimize_graph=False)
+    d.compute(callbacks=[task_counter], optimize_graph=False, resume=True)
     assert task_counter.value == 4
 
 

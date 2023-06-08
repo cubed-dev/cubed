@@ -109,6 +109,7 @@ class CoreArray:
         executor=None,
         callbacks=None,
         optimize_graph=True,
+        resume=None,
         **kwargs,
     ):
         """Compute this array, and any arrays that it depends on."""
@@ -117,6 +118,7 @@ class CoreArray:
             executor=executor,
             callbacks=callbacks,
             optimize_graph=optimize_graph,
+            resume=resume,
             **kwargs,
         )
         if result:
@@ -297,7 +299,7 @@ class Spec:
 class Callback:
     """Object to receive callback events during array computation."""
 
-    def on_compute_start(self, dag):
+    def on_compute_start(self, dag, resume):
         """Called when the computation is about to start.
 
         Parameters
@@ -371,6 +373,7 @@ def compute(
     executor=None,
     callbacks=None,
     optimize_graph=True,
+    resume=None,
     **kwargs,
 ):
     """Compute multiple arrays at once."""
@@ -387,6 +390,7 @@ def compute(
         executor=executor,
         callbacks=callbacks,
         optimize_graph=optimize_graph,
+        resume=resume,
         array_names=[a.name for a in arrays],
         **kwargs,
     )
