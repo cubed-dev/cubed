@@ -38,5 +38,7 @@
       ~Array.numblocks
       ~Array.shape
       ~Array.size
+      ~Array.zarray
+      ~Array.zarray_maybe_lazy
    
    

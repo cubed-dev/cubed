@@ -347,7 +347,7 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#cubed.Array.__init__" title="cubed.Array.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(name, zarray, spec, plan)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code></a>(*[, executor, callbacks, optimize_graph])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute</span></code></a>(*[, executor, callbacks, ...])</p></td>
 <td><p>Compute this array, and any arrays that it depends on.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="cubed.Array.rechunk.html#cubed.Array.rechunk" title="cubed.Array.rechunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rechunk</span></code></a>(chunks)</p></td>
@@ -396,6 +396,12 @@ document.write(`
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></p></td>
 <td><p>Number of elements in the array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zarray</span></code></p></td>
+<td><p>The underlying Zarr array.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zarray_maybe_lazy</span></code></p></td>
+<td><p>The underlying Zarr array or LazyZarrArray.</p></td>
 </tr>
 </tbody>
 </table>
