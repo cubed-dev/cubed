@@ -5,46 +5,62 @@ from functools import partial
 import pytest
 
 from cubed.runtime.executors.python_async import map_unordered
-from cubed.tests.runtime.utils import (
-    fail_on_first_invocation,
-    never_fail,
-    read_int_from_file,
-)
-from cubed.utils import join_path
+from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 
 async def run_test(function, input, retries=2):
+    outputs = set()
     with ThreadPoolExecutor() as concurrent_executor:
-        async for _ in map_unordered(
+        async for output in map_unordered(
             concurrent_executor, function, input, retries=retries
         ):
-            pass
+            outputs.add(output)
+    return outputs
 
 
-def test_map_unordered_no_failures(tmp_path):
-    asyncio.run(run_test(function=partial(never_fail, tmp_path), input=range(3)))
-
-    assert read_int_from_file(join_path(tmp_path, "0")) == 1
-    assert read_int_from_file(join_path(tmp_path, "1")) == 1
-    assert read_int_from_file(join_path(tmp_path, "2")) == 1
-
-
-def test_map_unordered_recovers_from_failures(tmp_path):
-    asyncio.run(
-        run_test(function=partial(fail_on_first_invocation, tmp_path), input=range(3))
+# fmt: off
+@pytest.mark.parametrize(
+    "timing_map, n_tasks, retries",
+    [
+        # no failures
+        ({}, 3, 2),
+        # first invocation fails
+        ({0: [-1], 1: [-1], 2: [-1]}, 3, 2),
+        # first two invocations fail
+        ({0: [-1, -1], 1: [-1, -1], 2: [-1, -1]}, 3, 2),
+    ],
+)
+# fmt: on
+def test_success(tmp_path, timing_map, n_tasks, retries):
+    outputs = asyncio.run(
+        run_test(
+            function=partial(deterministic_failure, tmp_path, timing_map),
+            input=range(n_tasks),
+            retries=retries,
+        )
     )
 
-    assert read_int_from_file(join_path(tmp_path, "0")) == 2
-    assert read_int_from_file(join_path(tmp_path, "1")) == 2
-    assert read_int_from_file(join_path(tmp_path, "2")) == 2
+    assert outputs == set(range(n_tasks))
+    check_invocation_counts(tmp_path, timing_map, n_tasks)
 
 
-def test_map_unordered_too_many_failures(tmp_path):
+# fmt: off
+@pytest.mark.parametrize(
+    "timing_map, n_tasks, retries",
+    [
+        # too many failures
+        ({0: [-1], 1: [-1], 2: [-1, -1, -1]}, 3, 2),
+    ],
+)
+# fmt: on
+def test_failure(tmp_path, timing_map, n_tasks, retries):
     with pytest.raises(RuntimeError):
         asyncio.run(
             run_test(
-                function=partial(fail_on_first_invocation, tmp_path),
-                input=range(3),
-                retries=0,
+                function=partial(deterministic_failure, tmp_path, timing_map),
+                input=range(n_tasks),
+                retries=retries,
             )
         )
+
+    check_invocation_counts(tmp_path, timing_map, n_tasks, retries)

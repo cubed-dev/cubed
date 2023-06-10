@@ -60,7 +60,8 @@ def map_unordered(
     map_function,
     map_iterdata,
     include_modules=[],
-    max_failures=3,
+    timeout=None,
+    retries=2,
     use_backups=False,
     return_stats=False,
     **kwargs,
@@ -75,16 +76,15 @@ def map_unordered(
     :param map_function: The function to map over the data.
     :param map_iterdata: An iterable of input data.
     :param include_modules: Modules to include.
-    :param max_failures: The number of task failures to allow before raising an exception.
+    :param retries: The number of times to retry a failed task before raising an exception.
     :param use_backups: Whether to launch backup tasks to mitigate against slow-running tasks.
     :param return_stats: Whether to return lithops stats.
 
     :return: Function values (and optionally stats) as they are completed, not necessarily in the input order.
     """
-    failures = 0
     return_when = ALWAYS if use_backups else ANY_COMPLETED
 
-    inputs = map_iterdata
+    inputs = list(map_iterdata)
     tasks = {}
     start_times = {}
     end_times = {}
@@ -96,22 +96,27 @@ def map_unordered(
     partial_map_function = lambda x: map_function(x, **kwargs)
 
     futures = lithops_function_executor.map(
-        partial_map_function, inputs, include_modules=include_modules
+        partial_map_function, inputs, timeout=timeout, include_modules=include_modules
     )
     tasks.update({k: v for (k, v) in zip(futures, inputs)})
     start_times.update({k: time.monotonic() for k in futures})
     pending.extend(futures)
 
+    future_to_index = {f: i for i, f in enumerate(futures)}
+    failure_counts = [0] * len(inputs)
+
     while pending:
         finished, pending = lithops_function_executor.wait(
             pending, throw_except=False, return_when=return_when, show_progressbar=False
         )
-
         failed = []
         for future in finished:
             if future.error:
-                failures += 1
-                if failures > max_failures:
+                index = future_to_index[future]
+                failure_counts[index] = failure_counts[index] + 1
+                failure_count = failure_counts[index]
+
+                if failure_count > retries:
                     # re-raise exception
                     # TODO: why does calling status not raise the exception?
                     future.status(throw_except=True)
@@ -124,8 +129,8 @@ def map_unordered(
                 else:
                     yield future.result()
 
+            # remove any backup task
             if use_backups:
-                # remove backups
                 backup = backups.get(future, None)
                 if backup:
                     if backup in pending:
@@ -135,16 +140,27 @@ def map_unordered(
 
         if failed:
             # rerun and add to pending
-            inputs = [v for (fut, v) in tasks.items() if fut in failed]
+            inputs_to_rerun = []
+            input_indexes_to_rerun = []
+            for fut in failed:
+                index = future_to_index[fut]
+                inputs_to_rerun.append(inputs[index])
+                input_indexes_to_rerun.append(index)
+                del future_to_index[fut]
             # TODO: de-duplicate code from above
             futures = lithops_function_executor.map(
                 partial_map_function,
-                inputs,
+                inputs_to_rerun,
+                timeout=timeout,
                 include_modules=include_modules,
             )
-            tasks.update({k: v for (k, v) in zip(futures, inputs)})
+            tasks.update({k: v for (k, v) in zip(futures, inputs_to_rerun)})
             start_times.update({k: time.monotonic() for k in futures})
             pending.extend(futures)
+
+            future_to_index.update(
+                {f: i for i, f in zip(input_indexes_to_rerun, futures)}
+            )
 
         if use_backups:
             now = time.monotonic()
@@ -152,17 +168,17 @@ def map_unordered(
                 if future not in backups and should_launch_backup(
                     future, now, start_times, end_times
                 ):
-                    inputs = [v for (fut, v) in tasks.items() if fut == future]
-                    logger.info("Running backup task for %s", inputs)
+                    input = tasks[future]
+                    logger.info("Running backup task for %s", input)
                     futures = lithops_function_executor.map(
                         partial_map_function,
-                        inputs,
+                        [input],
+                        timeout=timeout,
                         include_modules=include_modules,
                     )
-                    tasks.update({k: v for (k, v) in zip(futures, inputs)})
+                    tasks.update({k: v for (k, v) in zip(futures, [input])})
                     start_times.update({k: time.monotonic() for k in futures})
                     pending.extend(futures)
-                    pending.remove(future)  # throw away slow one
                     backup = futures[0]  # TODO: launch multiple backups at once
                     backups[future] = backup
                     backups[backup] = future
