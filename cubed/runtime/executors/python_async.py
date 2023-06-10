@@ -33,7 +33,7 @@ async def map_unordered(
     if retries == 0:
         retrying_function = function
     else:
-        retryer = Retrying(stop=stop_after_attempt(retries + 1))
+        retryer = Retrying(reraise=True, stop=stop_after_attempt(retries + 1))
         retrying_function = partial(retryer, function)
 
     task_create_tstamp = time.time()
