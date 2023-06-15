@@ -16,8 +16,10 @@ requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 
 if requirements_file:
     image = modal.Image.debian_slim().pip_install_from_requirements(requirements_file)
+    aws_image = image
+    gcp_image = image
 else:
-    image = modal.Image.debian_slim().pip_install(
+    aws_image = modal.Image.debian_slim().pip_install(
         [
             "fsspec",
             "mypy_extensions",  # for rechunker
@@ -29,14 +31,26 @@ else:
             "zarr",
         ]
     )
+    gcp_image = modal.Image.debian_slim().pip_install(
+        [
+            "fsspec",
+            "mypy_extensions",  # for rechunker
+            "networkx",
+            "pytest-mock",  # TODO: only needed for tests
+            "gcsfs",
+            "tenacity",
+            "toolz",
+            "zarr",
+        ]
+    )
 
 
-# Use a generator, since we want results to be returned as they finish and we don't care about order
 @stub.function(
-    image=image,
+    image=aws_image,
     secret=modal.Secret.from_name("my-aws-secret"),
     memory=2000,
     retries=2,
+    cloud="aws",
 )
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
@@ -45,20 +59,53 @@ def run_remotely(input, func=None, config=None):
     return result, stats
 
 
+# For GCP we need to use a class so we can set up credentials by hooking into the container lifecycle
+@stub.cls(
+    image=gcp_image,
+    secret=modal.Secret.from_name("my-googlecloud-secret"),
+    memory=2000,
+    retries=2,
+    cloud="gcp",
+)
+class Container:
+    def __enter__(self):
+        json = os.environ["SERVICE_ACCOUNT_JSON"]
+        path = os.path.abspath("application_credentials.json")
+        with open(path, "w") as f:
+            f.write(json)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
+
+    @modal.method()
+    def run_remotely(self, input, func=None, config=None):
+        print(f"running remotely on {input}")
+        # note we can't use the execution_stat decorator since it doesn't work with modal decorators
+        result, stats = execute_with_stats(func, input, config=config)
+        return result, stats
+
+
 # This just retries the initial connection attempt, not the function calls
 @retry(
     retry=retry_if_exception_type((TimeoutError, ConnectionError)),
     stop=stop_after_attempt(3),
 )
-def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
+def execute_dag(
+    dag, callbacks=None, array_names=None, resume=None, cloud=None, **kwargs
+):
     with stub.run():
+        cloud = cloud or "aws"
+        if cloud == "aws":
+            app_function = run_remotely
+        elif cloud == "gcp":
+            app_function = Container().run_remotely
+        else:
+            raise ValueError(f"Unrecognized cloud: {cloud}")
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
                     task_create_tstamp = time.time()
-                    for _, stats in run_remotely.map(
+                    for _, stats in app_function.map(
                         list(stage.mappable),
                         order_outputs=False,
                         kwargs=dict(func=stage.function, config=pipeline.config),
