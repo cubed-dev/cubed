@@ -8,7 +8,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
-from cubed.runtime.executors.modal import run_remotely, stub
+from cubed.runtime.executors.modal import Container, run_remotely, stub
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import handle_callbacks
 
@@ -102,16 +102,23 @@ async def map_unordered(
     stop=stop_after_attempt(3),
 )
 async def async_execute_dag(
-    dag, callbacks=None, array_names=None, resume=None, **kwargs
+    dag, callbacks=None, array_names=None, resume=None, cloud=None, **kwargs
 ):
     async with stub.run():
+        cloud = cloud or "aws"
+        if cloud == "aws":
+            app_function = run_remotely
+        elif cloud == "gcp":
+            app_function = Container().run_remotely
+        else:
+            raise ValueError(f"Unrecognized cloud: {cloud}")
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
                     async for _, stats in map_unordered(
-                        run_remotely,
+                        app_function,
                         list(stage.mappable),
                         return_stats=True,
                         name=name,
