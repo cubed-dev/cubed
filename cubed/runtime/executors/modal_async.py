@@ -127,13 +127,17 @@ async def async_execute_dag(
 class AsyncModalDagExecutor(DagExecutor):
     """An execution engine that uses Modal's async API."""
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
+        merged_kwargs = {**self.kwargs, **kwargs}
         asyncio.run(
             async_execute_dag(
                 dag,
                 callbacks=callbacks,
                 array_names=array_names,
                 resume=resume,
-                **kwargs,
+                **merged_kwargs,
             )
         )

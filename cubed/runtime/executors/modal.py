@@ -73,5 +73,9 @@ def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
 class ModalDagExecutor(DagExecutor):
     """An execution engine that uses Modal."""
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
-        execute_dag(dag, callbacks=callbacks, array_names=array_names)
+        merged_kwargs = {**self.kwargs, **kwargs}
+        execute_dag(dag, callbacks=callbacks, array_names=array_names, **merged_kwargs)
