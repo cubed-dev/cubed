@@ -1,0 +1,57 @@
+name: Release
+on:
+  release:
+    types:
+      - published
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-artifacts:
+    if: github.repository == 'tomwhite/cubed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.8"
+      - name: Install pypa/build
+        run: >-
+          python3 -m
+          pip install
+          build
+          --user
+      - name: Build a binary wheel and a source tarball
+        run: >-
+          python3 -m
+          build
+          --sdist
+          --wheel
+          --outdir dist/
+          .
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: releases
+          path: dist
+      - name: Publish distribution 📦 to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+
+  upload-to-pypi:
+    needs: build-artifacts
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish distribution 📦 to PyPI
+        if: startsWith(github.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
