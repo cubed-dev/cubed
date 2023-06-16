@@ -22,9 +22,9 @@ See [Lithops/aws-lambda](lithops/aws-lambda/README.md)
 
 See [Lithops/gcf](lithops/gcf/README.md)
 
-## Modal
+## Modal (AWS, S3)
 
-See [Modal](modal/README.md)
+See [Modal/aws](modal/aws/README.md)
 
 ## Apache Beam (Google Cloud Dataflow)
 
