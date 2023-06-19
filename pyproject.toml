@@ -35,6 +35,7 @@ dependencies = [
 diagnostics = [
     "tqdm",
     "graphviz",
+    "jinja2",
     "pydot",
     "pandas",
     "matplotlib",
