@@ -15,7 +15,7 @@ from cubed.array_api.dtypes import (
 from cubed.array_api.linear_algebra_functions import matmul
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
-from cubed.vendor.dask.utils import format_bytes, maybe_pluralize
+from cubed.vendor.dask.utils import format_bytes
 from cubed.vendor.dask.widgets import get_template
 
 

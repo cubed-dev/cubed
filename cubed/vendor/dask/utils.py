@@ -332,11 +332,3 @@ def key_split(s):
             return result
     except Exception:
         return "Other"
-
-
-def maybe_pluralize(count, noun, plural_form=None):
-    """Pluralize a count-noun string pattern when necessary"""
-    if count == 1:
-        return f"{count} {noun}"
-    else:
-        return f"{count} {plural_form or noun + 's'}"
