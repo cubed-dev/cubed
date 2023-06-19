@@ -80,6 +80,12 @@ class Array(CoreArray):
 
         return svg(self.chunks, size=size)
 
+    def _repr_inline_(self, max_width):
+        """
+        Format to a single line with at most max_width characters. Used by xarray.
+        """
+        return f"cubed.Array<chunksize={self.chunksize}>"
+
     # Attributes
 
     @property
