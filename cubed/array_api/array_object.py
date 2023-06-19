@@ -1,4 +1,5 @@
 import operator
+import math
 
 import numpy as np
 
@@ -14,6 +15,11 @@ from cubed.array_api.dtypes import (
 from cubed.array_api.linear_algebra_functions import matmul
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
+from cubed.vendor.dask.utils import format_bytes, maybe_pluralize
+from cubed.vendor.dask.widgets import get_template
+
+
+ARRAY_SVG_SIZE = 120  # cubed doesn't have a config module like dask does so hard-code this for now
 
 
 class Array(CoreArray):
@@ -30,6 +36,49 @@ class Array(CoreArray):
 
     def __repr__(self):
         return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
+
+    def _repr_html_(self):
+        try:
+            grid = self.to_svg(size=ARRAY_SVG_SIZE)
+        except NotImplementedError:
+            grid = ""
+
+        if not math.isnan(self.nbytes):
+            nbytes = format_bytes(self.nbytes)
+            cbytes = format_bytes(math.prod(self.chunksize) * self.dtype.itemsize)
+        else:
+            nbytes = "unknown"
+            cbytes = "unknown"
+
+        return get_template("array.html.j2").render(
+            array=self,
+            grid=grid,
+            nbytes=nbytes,
+            cbytes=cbytes,
+            arrs_in_plan=f"{self.plan.dag.number_of_nodes()} arrays in Plan",
+            arrtype="np.ndarray",
+        )
+
+    def to_svg(self, size=500):
+        """Convert chunks from Cubed Array into an SVG Image
+
+        Parameters
+        ----------
+        chunks: tuple
+        size: int
+            Rough size of the image
+
+        Examples
+        --------
+        >>> x.to_svg(size=500)  # doctest: +SKIP
+
+        Returns
+        -------
+        text: An svg string depicting the array as a grid of chunks
+        """
+        from cubed.vendor.dask.array.svg import svg
+
+        return svg(self.chunks, size=size)
 
     # Attributes
 
