@@ -5,7 +5,7 @@ modal = pytest.importorskip("modal")
 import asyncio
 
 import fsspec
-import modal.aio
+import modal
 
 from cubed.runtime.executors.modal_async import map_unordered
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
@@ -13,7 +13,7 @@ from cubed.tests.runtime.utils import check_invocation_counts, deterministic_fai
 tmp_path = "s3://cubed-unittest/map_unordered"
 
 
-stub = modal.aio.AioStub("async-test-stub")
+stub = modal.Stub("cubed-test-stub")
 
 image = modal.Image.debian_slim().pip_install(
     [

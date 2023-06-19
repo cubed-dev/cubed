@@ -10,7 +10,7 @@ from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import execute_with_stats, handle_callbacks
 
-stub = modal.Stub("sync-stub")
+stub = modal.Stub("cubed-stub")
 
 requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 
@@ -37,13 +37,12 @@ else:
     secret=modal.Secret.from_name("my-aws-secret"),
     memory=2000,
     retries=2,
-    is_generator=True,
 )
 def run_remotely(input, func=None, config=None):
     print(f"running remotely on {input}")
     # note we can't use the execution_stat decorator since it doesn't work with modal decorators
     result, stats = execute_with_stats(func, input, config=config)
-    yield result, stats
+    return result, stats
 
 
 # This just retries the initial connection attempt, not the function calls
@@ -61,6 +60,7 @@ def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
                     task_create_tstamp = time.time()
                     for _, stats in run_remotely.map(
                         list(stage.mappable),
+                        order_outputs=False,
                         kwargs=dict(func=stage.function, config=pipeline.config),
                     ):
                         stats["array_name"] = name

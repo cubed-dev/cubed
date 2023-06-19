@@ -1,52 +1,16 @@
 import asyncio
 import copy
-import os
 import time
 from asyncio.exceptions import TimeoutError
 
-import modal
-import modal.aio
 from modal.exception import ConnectionError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
+from cubed.runtime.executors.modal import run_remotely, stub
 from cubed.runtime.types import DagExecutor
-from cubed.runtime.utils import execute_with_stats, handle_callbacks
-
-async_stub = modal.aio.AioStub("async-stub")
-
-requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
-
-if requirements_file:
-    image = modal.Image.debian_slim().pip_install_from_requirements(requirements_file)
-else:
-    image = modal.Image.debian_slim().pip_install(
-        [
-            "fsspec",
-            "mypy_extensions",  # for rechunker
-            "networkx",
-            "pytest-mock",  # TODO: only needed for tests
-            "s3fs",
-            "tenacity",
-            "toolz",
-            "zarr",
-        ]
-    )
-
-
-@async_stub.function(
-    image=image,
-    secret=modal.Secret.from_name("my-aws-secret"),
-    memory=2000,
-    retries=2,
-    is_generator=True,
-)
-async def async_run_remotely(input, func=None, config=None):
-    print(f"running remotely on {input}")
-    # note we can't use the execution_stat decorator since it doesn't work with modal decorators
-    result, stats = execute_with_stats(func, input, config=config)
-    yield result, stats
+from cubed.runtime.utils import handle_callbacks
 
 
 # We need map_unordered for the use_backups implementation
@@ -67,7 +31,7 @@ async def map_unordered(
     task_create_tstamp = time.time()
 
     if not use_backups:
-        async for result in app_function.map(input, kwargs=kwargs):
+        async for result in app_function.map(input, order_outputs=False, kwargs=kwargs):
             if return_stats:
                 result, stats = result
                 if name is not None:
@@ -78,7 +42,9 @@ async def map_unordered(
                 yield result
         return
 
-    tasks = {asyncio.ensure_future(app_function.call(i, **kwargs)): i for i in input}
+    tasks = {
+        asyncio.ensure_future(app_function.call.aio(i, **kwargs)): i for i in input
+    }
     pending = set(tasks.keys())
     t = time.monotonic()
     start_times = {f: t for f in pending}
@@ -122,7 +88,7 @@ async def map_unordered(
                 ):
                     # launch backup task
                     i = tasks[task]
-                    new_task = asyncio.ensure_future(app_function.call(i, **kwargs))
+                    new_task = asyncio.ensure_future(app_function.call.aio(i, **kwargs))
                     tasks[new_task] = i
                     start_times[new_task] = time.monotonic()
                     pending.add(new_task)
@@ -138,14 +104,14 @@ async def map_unordered(
 async def async_execute_dag(
     dag, callbacks=None, array_names=None, resume=None, **kwargs
 ):
-    async with async_stub.run():
+    async with stub.run():
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
 
             for stage in pipeline.stages:
                 if stage.mappable is not None:
                     async for _, stats in map_unordered(
-                        async_run_remotely,
+                        run_remotely,
                         list(stage.mappable),
                         return_stats=True,
                         name=name,
