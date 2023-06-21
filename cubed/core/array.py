@@ -105,6 +105,16 @@ class CoreArray:
         """Number of elements in the array."""
         return reduce(mul, self.shape, 1)
 
+    @property
+    def nbytes(self) -> int:
+        """Number of bytes in array"""
+        return self.size * self.dtype.itemsize
+
+    @property
+    def itemsize(self) -> int:
+        """Length of one array element in bytes"""
+        return self.dtype.itemsize
+
     def _read_stored(self):
         # Only works if the array has been computed
         if self.size > 0:
