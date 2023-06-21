@@ -6,10 +6,10 @@ from typing import Callable, Iterable
 
 from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
-from six import reraise
 
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
+from cubed.runtime.executors.lithops_retries import map_with_retries, wait_with_retries
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import handle_callbacks
 from cubed.vendor.rechunker.types import ParallelPipelines, PipelineExecutor
@@ -95,33 +95,29 @@ def map_unordered(
     # also, lithops extra_args doesn't work for this case
     partial_map_function = lambda x: map_function(x, **kwargs)
 
-    futures = lithops_function_executor.map(
-        partial_map_function, inputs, timeout=timeout, include_modules=include_modules
+    futures = map_with_retries(
+        lithops_function_executor,
+        partial_map_function,
+        inputs,
+        timeout=timeout,
+        include_modules=include_modules,
+        retries=retries,
     )
     tasks.update({k: v for (k, v) in zip(futures, inputs)})
     start_times.update({k: time.monotonic() for k in futures})
     pending.extend(futures)
 
-    future_to_index = {f: i for i, f in enumerate(futures)}
-    failure_counts = [0] * len(inputs)
-
     while pending:
-        finished, pending = lithops_function_executor.wait(
-            pending, throw_except=False, return_when=return_when, show_progressbar=False
+        finished, pending = wait_with_retries(
+            lithops_function_executor,
+            pending,
+            throw_except=False,
+            return_when=return_when,
+            show_progressbar=False,
         )
-        failed = []
         for future in finished:
             if future.error:
-                index = future_to_index[future]
-                failure_counts[index] = failure_counts[index] + 1
-                failure_count = failure_counts[index]
-
-                if failure_count > retries:
-                    # re-raise exception
-                    # TODO: why does calling status not raise the exception?
-                    future.status(throw_except=True)
-                    reraise(*future._exception)
-                failed.append(future)
+                future.status(throw_except=True)
             else:
                 end_times[future] = time.monotonic()
                 if return_stats:
@@ -137,30 +133,7 @@ def map_unordered(
                         pending.remove(backup)
                     del backups[future]
                     del backups[backup]
-
-        if failed:
-            # rerun and add to pending
-            inputs_to_rerun = []
-            input_indexes_to_rerun = []
-            for fut in failed:
-                index = future_to_index[fut]
-                inputs_to_rerun.append(inputs[index])
-                input_indexes_to_rerun.append(index)
-                del future_to_index[fut]
-            # TODO: de-duplicate code from above
-            futures = lithops_function_executor.map(
-                partial_map_function,
-                inputs_to_rerun,
-                timeout=timeout,
-                include_modules=include_modules,
-            )
-            tasks.update({k: v for (k, v) in zip(futures, inputs_to_rerun)})
-            start_times.update({k: time.monotonic() for k in futures})
-            pending.extend(futures)
-
-            future_to_index.update(
-                {f: i for i, f in zip(input_indexes_to_rerun, futures)}
-            )
+                    backup.cancel()
 
         if use_backups:
             now = time.monotonic()
@@ -170,11 +143,13 @@ def map_unordered(
                 ):
                     input = tasks[future]
                     logger.info("Running backup task for %s", input)
-                    futures = lithops_function_executor.map(
+                    futures = map_with_retries(
+                        lithops_function_executor,
                         partial_map_function,
                         [input],
                         timeout=timeout,
                         include_modules=include_modules,
+                        retries=0,  # don't retry backup tasks
                     )
                     tasks.update({k: v for (k, v) in zip(futures, [input])})
                     start_times.update({k: time.monotonic() for k in futures})
