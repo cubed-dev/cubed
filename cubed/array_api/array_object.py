@@ -55,7 +55,7 @@ class Array(CoreArray):
             grid=grid,
             nbytes=nbytes,
             cbytes=cbytes,
-            arrs_in_plan=f"{self.plan.dag.number_of_nodes()} arrays in Plan",
+            arrs_in_plan=f"{self.plan.num_arrays()} arrays in Plan",
             arrtype="np.ndarray",
         )
 

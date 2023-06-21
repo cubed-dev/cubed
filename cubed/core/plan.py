@@ -223,6 +223,11 @@ class Plan:
                     tasks += 1
         return tasks
 
+    def num_arrays(self, optimize_graph: bool = True) -> int:
+        """Return the number of arrays in this plan."""
+        dag = self.optimize().dag if optimize_graph else self.dag
+        return dag.number_of_nodes()
+
     def max_projected_mem(self, optimize_graph=True, resume=None):
         """Return the maximum projected memory across all tasks to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
