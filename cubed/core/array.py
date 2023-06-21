@@ -14,8 +14,6 @@ from cubed.vendor.dask.array.core import normalize_chunks
 
 from .plan import arrays_to_plan
 
-T_IntOrNaN = Union[int, float]  # Should be Union[int, Literal[np.nan]]
-
 sym_counter = 0
 
 
@@ -108,7 +106,7 @@ class CoreArray:
         return reduce(mul, self.shape, 1)
 
     @property
-    def nbytes(self) -> T_IntOrNaN:
+    def nbytes(self) -> int:
         """Number of bytes in array"""
         return self.size * self.dtype.itemsize
 
