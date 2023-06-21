@@ -353,7 +353,10 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="cubed.Array.rechunk.html#cubed.Array.rechunk" title="cubed.Array.rechunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rechunk</span></code></a>(chunks)</p></td>
 <td><p>Change the chunking of this array without changing its shape or data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="cubed.Array.visualize.html#cubed.Array.visualize" title="cubed.Array.visualize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize</span></code></a>([filename, format, optimize_graph])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_svg</span></code>([size])</p></td>
+<td><p>Convert chunks from Cubed Array into an SVG Image</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="cubed.Array.visualize.html#cubed.Array.visualize" title="cubed.Array.visualize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">visualize</span></code></a>([filename, format, optimize_graph])</p></td>
 <td><p>Produce a visualization of the computation graph for this array.</p></td>
 </tr>
 </tbody>
@@ -379,8 +382,14 @@ document.write(`
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></p></td>
 <td><p>Data type of the array elements.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mT</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">itemsize</span></code></p></td>
+<td><p>Length of one array element in bytes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mT</span></code></p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbytes</span></code></p></td>
+<td><p>Number of bytes in array</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndim</span></code></p></td>
 <td><p>Number of array dimensions (axes).</p></td>

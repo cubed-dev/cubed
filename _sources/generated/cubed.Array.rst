@@ -16,6 +16,7 @@
       ~Array.__init__
       ~Array.compute
       ~Array.rechunk
+      ~Array.to_svg
       ~Array.visualize
    
    
@@ -32,7 +33,9 @@
       ~Array.chunksize
       ~Array.device
       ~Array.dtype
+      ~Array.itemsize
       ~Array.mT
+      ~Array.nbytes
       ~Array.ndim
       ~Array.npartitions
       ~Array.numblocks
