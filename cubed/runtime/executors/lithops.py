@@ -117,13 +117,17 @@ def map_unordered(
         )
         for future in finished:
             if future.error:
+                # if the task has a backup that is not done, or is done with no exception, then don't raise this exception
+                backup = backups.get(future, None)
+                if backup:
+                    if not backup.done or not backup.error:
+                        continue
                 future.status(throw_except=True)
+            end_times[future] = time.monotonic()
+            if return_stats:
+                yield future.result(), standardise_lithops_stats(future.stats)
             else:
-                end_times[future] = time.monotonic()
-                if return_stats:
-                    yield future.result(), standardise_lithops_stats(future.stats)
-                else:
-                    yield future.result()
+                yield future.result()
 
             # remove any backup task
             if use_backups:
@@ -154,7 +158,7 @@ def map_unordered(
                     tasks.update({k: v for (k, v) in zip(futures, [input])})
                     start_times.update({k: time.monotonic() for k in futures})
                     pending.extend(futures)
-                    backup = futures[0]  # TODO: launch multiple backups at once
+                    backup = futures[0]
                     backups[future] = backup
                     backups[backup] = future
             time.sleep(1)
