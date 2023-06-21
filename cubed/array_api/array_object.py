@@ -15,8 +15,8 @@ from cubed.array_api.dtypes import (
 from cubed.array_api.linear_algebra_functions import matmul
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
-from cubed.vendor.dask.utils import format_bytes
 from cubed.vendor.dask.widgets import get_template
+from cubed.utils import memory_repr
 
 
 ARRAY_SVG_SIZE = 120  # cubed doesn't have a config module like dask does so hard-code this for now
@@ -44,8 +44,8 @@ class Array(CoreArray):
             grid = ""
 
         if not math.isnan(self.nbytes):
-            nbytes = format_bytes(self.nbytes)
-            cbytes = format_bytes(math.prod(self.chunksize) * self.dtype.itemsize)
+            nbytes = memory_repr(self.nbytes)
+            cbytes = memory_repr(math.prod(self.chunksize) * self.dtype.itemsize)
         else:
             nbytes = "unknown"
             cbytes = "unknown"
