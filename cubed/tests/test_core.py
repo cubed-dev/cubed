@@ -197,9 +197,10 @@ def test_multiple_ops(spec, executor):
     )
 
 
-def test_rechunk(spec, executor):
+@pytest.mark.parametrize("new_chunks", [(1, 2), {0: 1, 1: 2}])
+def test_rechunk(spec, executor, new_chunks):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
-    b = a.rechunk((1, 2))
+    b = a.rechunk(new_chunks)
     assert_array_equal(
         b.compute(executor=executor),
         np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
