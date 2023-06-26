@@ -254,7 +254,7 @@ class Spec:
 
         self._work_dir = work_dir
 
-        self._reserved_mem = convert_to_bytes(reserved_mem)
+        self._reserved_mem = convert_to_bytes(reserved_mem or 0)
         if allowed_mem is None:
             self._allowed_mem = (max_mem or 0) + self.reserved_mem
         else:
@@ -264,7 +264,7 @@ class Spec:
         self._storage_options = storage_options
 
     @property
-    def work_dir(self) -> str:
+    def work_dir(self) -> Optional[str]:
         """The directory path (specified as an fsspec URL) used for storing intermediate data."""
         return self._work_dir
 
@@ -289,12 +289,12 @@ class Spec:
         return self._reserved_mem
 
     @property
-    def executor(self) -> Executor:
+    def executor(self) -> Optional[Executor]:
         """The default executor for running computations."""
         return self._executor
 
     @property
-    def storage_options(self) -> dict:
+    def storage_options(self) -> Optional[dict]:
         """Storage options to be passed to fsspec."""
         return self._storage_options
 
