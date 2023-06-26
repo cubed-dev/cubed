@@ -85,6 +85,7 @@ class Container:
 
 # This just retries the initial connection attempt, not the function calls
 @retry(
+    reraise=True,
     retry=retry_if_exception_type((TimeoutError, ConnectionError)),
     stop=stop_after_attempt(3),
 )

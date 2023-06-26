@@ -5,7 +5,7 @@ from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 
 
-@retry(stop=stop_after_attempt(3))
+@retry(reraise=True, stop=stop_after_attempt(3))
 def exec_stage_func(func, *args, **kwargs):
     return func(*args, **kwargs)
 
