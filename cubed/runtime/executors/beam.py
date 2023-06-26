@@ -88,7 +88,6 @@ class _SingleArgumentStage(beam.PTransform):
 
 class BeamPipelineExecutor(PipelineExecutor[List[beam.PTransform]]):
     def pipelines_to_plan(self, pipelines: ParallelPipelines) -> List[beam.PTransform]:
-
         start = "Start" >> beam.Create([-1])
 
         pcolls = []
