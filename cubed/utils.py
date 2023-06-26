@@ -213,10 +213,8 @@ def convert_to_bytes(size: Union[int, str]) -> int:
             )
 
         if unit in units and value.isdigit():
-            value = int(value)
             # convert to bytes
-            return value * (1000 ** units[unit])
-    else:
-        raise ValueError(
-            f"Invalid value: {size}. Expected a positive integer or a string ending with an SI prefix."
-        )
+            return int(value) * (1000 ** units[unit])
+    raise ValueError(
+        f"Invalid value: {size}. Expected a positive integer or a string ending with an SI prefix."
+    )
