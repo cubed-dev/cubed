@@ -9,23 +9,24 @@ from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
-from typing import Union
+from typing import Tuple, Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
 import tlz as toolz
 
+from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks
 from cubed.vendor.dask.array.core import _check_regular_chunks
 
 PathType = Union[str, Path]
 
 
-def chunk_memory(dtype, chunksize):
+def chunk_memory(dtype: T_DType, chunksize: T_RegularChunks) -> int:
     """Calculate the amount of memory in bytes that a single chunk uses."""
     return np.dtype(dtype).itemsize * prod(chunksize)
 
 
-def get_item(chunks, idx):
+def get_item(chunks: T_RectangularChunks, idx: Tuple[int, ...]) -> Tuple[slice, ...]:
     """Convert a chunk index to a tuple of slices."""
     # could use Dask's cached_cumsum here if it improves performance
     starts = tuple(_cumsum(c, initial_zero=True) for c in chunks)
@@ -48,7 +49,7 @@ def join_path(dir_url: PathType, child_path: str) -> str:
     return urlunsplit(split_parts)
 
 
-def memory_repr(num):
+def memory_repr(num: int) -> str:
     """Convert bytes to a human-readable string in decimal form.
     1 KB is 1,000 bytes, 1 MB is 1,000,000 bytes, and so on.
 
@@ -61,16 +62,20 @@ def memory_repr(num):
     -------
     str
     """
+    if num < 0:
+        raise ValueError(f"Invalid value: {num}. Expected a positive integer.")
     if num < 1000.0:
         return f"{num} bytes"
-    num /= 1000.0
+    val = num / 1000.0
     for x in ["KB", "MB", "GB", "TB", "PB"]:
-        if num < 1000.0:
-            return f"{num:3.1f} {x}"
-        num /= 1000.0
+        if val < 1000.0:
+            return f"{val:3.1f} {x}"
+        val /= 1000.0
+    # fall back to scientific notation
+    return f"{num:.1e} bytes"
 
 
-def peak_measured_mem():
+def peak_measured_mem() -> int:
     """Measures the peak memory usage in bytes.
 
     Note: this function currently doesn't work on Windows.
@@ -87,7 +92,7 @@ def peak_measured_mem():
     return ru_maxrss * 1024 if platform.system() == "Linux" else ru_maxrss
 
 
-def to_chunksize(chunkset):
+def to_chunksize(chunkset: T_RectangularChunks) -> T_RegularChunks:
     """Convert a chunkset to a chunk size for Zarr.
 
     Parameters
