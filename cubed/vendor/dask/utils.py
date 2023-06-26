@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import datetime
 import functools
 import inspect
 import re
+from datetime import datetime
 from numbers import Integral
 from typing import Any
 

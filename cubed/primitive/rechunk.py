@@ -3,7 +3,7 @@ from math import ceil, prod
 import zarr
 
 import cubed
-from cubed.primitive.types import CubedArrayProxy
+from cubed.primitive.types import CubedArrayProxy, CubedCopySpec
 from cubed.runtime.pipeline import spec_to_pipeline
 from cubed.storage.zarr import lazy_empty
 from cubed.vendor.rechunker.algorithm import rechunking_plan
@@ -12,7 +12,6 @@ from cubed.vendor.rechunker.api import (
     _shape_dict_to_tuple,
     _validate_options,
 )
-from cubed.vendor.rechunker.types import CopySpec
 
 
 def rechunk(
@@ -103,7 +102,7 @@ def _setup_array_rechunk(
     temp_store_or_group=None,
     temp_options=None,
     name=None,
-) -> CopySpec:
+) -> CubedCopySpec:
     _validate_options(target_options)
     _validate_options(temp_options)
     shape = source_array.shape
@@ -184,7 +183,7 @@ def _setup_array_rechunk(
     read_proxy = CubedArrayProxy(source_array, read_chunks)
     int_proxy = CubedArrayProxy(int_array, int_chunks)
     write_proxy = CubedArrayProxy(target_array, write_chunks)
-    return CopySpec(read_proxy, int_proxy, write_proxy)
+    return CubedCopySpec(read_proxy, int_proxy, write_proxy)
 
 
 def total_chunks(shape, chunks):

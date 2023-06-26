@@ -2,6 +2,8 @@ name: Array API Tests
 
 on:
   push:
+    branches:
+      - "main"
   pull_request:
   schedule:
     # Every weekday at 03:19 UTC, see https://crontab.guru/
