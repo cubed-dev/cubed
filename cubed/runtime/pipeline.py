@@ -4,9 +4,9 @@ from typing import Any, Iterable, Iterator, List, Tuple
 
 import numpy as np
 
-from cubed.primitive.types import CubedPipeline
+from cubed.primitive.types import CubedCopySpec, CubedPipeline
 from cubed.storage.zarr import open_if_lazy_zarr_array
-from cubed.vendor.rechunker.types import CopySpec, Stage
+from cubed.vendor.rechunker.types import Stage
 
 from .utils import gensym
 
@@ -39,7 +39,7 @@ class ChunkKeys(Iterable[Tuple[slice, ...]]):
         return chunk_keys(self.shape, self.chunks)
 
 
-def copy_read_to_write(chunk_key, *, config=CopySpec):
+def copy_read_to_write(chunk_key, *, config: CubedCopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
@@ -47,7 +47,7 @@ def copy_read_to_write(chunk_key, *, config=CopySpec):
     config.write.open()[chunk_key] = data
 
 
-def copy_read_to_intermediate(chunk_key, *, config=CopySpec):
+def copy_read_to_intermediate(chunk_key, *, config: CubedCopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
@@ -55,7 +55,7 @@ def copy_read_to_intermediate(chunk_key, *, config=CopySpec):
     config.intermediate.open()[chunk_key] = data
 
 
-def copy_intermediate_to_write(chunk_key, *, config=CopySpec):
+def copy_intermediate_to_write(chunk_key, *, config: CubedCopySpec):
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
@@ -64,7 +64,7 @@ def copy_intermediate_to_write(chunk_key, *, config=CopySpec):
 
 
 def spec_to_pipeline(
-    spec: CopySpec, target_array: Any, projected_mem: int, num_tasks: int
+    spec: CubedCopySpec, target_array: Any, projected_mem: int, num_tasks: int
 ) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
