@@ -1,13 +1,15 @@
 import itertools
+import math
 from dataclasses import dataclass
 from functools import partial
-from typing import Callable, Dict
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import toolz
 import zarr
 from toolz import map
 
-from cubed.storage.zarr import lazy_empty
+from cubed.storage.zarr import T_ZarrArray, lazy_empty
+from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
 from cubed.utils import chunk_memory, get_item, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
@@ -19,7 +21,7 @@ from .types import CubedArrayProxy, CubedPipeline
 sym_counter = 0
 
 
-def gensym(name):
+def gensym(name: str) -> str:
     global sym_counter
     sym_counter += 1
     return f"{name}-{sym_counter:03}"
@@ -43,19 +45,21 @@ class BlockwiseSpec:
         Write proxy with an ``array`` attribute that supports ``__setitem__``.
     """
 
-    block_function: Callable
-    function: Callable
+    block_function: Callable[..., Any]
+    function: Callable[..., Any]
     reads_map: Dict[str, CubedArrayProxy]
     write: CubedArrayProxy
 
 
-def apply_blockwise(out_key, *, config=BlockwiseSpec):
+def apply_blockwise(out_key: List[int], *, config: BlockwiseSpec) -> None:
     """Stage function for blockwise."""
     # lithops needs params to be lists not tuples, so convert back
-    out_key = tuple(out_key)
-    out_chunk_key = key_to_slices(out_key, config.write.array, config.write.chunks)
+    out_key_tuple = tuple(out_key)
+    out_chunk_key = key_to_slices(
+        out_key_tuple, config.write.array, config.write.chunks
+    )
     args = []
-    name_chunk_inds = config.block_function(("out",) + out_key)
+    name_chunk_inds = config.block_function(("out",) + out_key_tuple)
     for name_chunk_ind in name_chunk_inds:
         name = name_chunk_ind[0]
         chunk_ind = name_chunk_ind[1:]
@@ -72,25 +76,27 @@ def apply_blockwise(out_key, *, config=BlockwiseSpec):
         config.write.open()[out_chunk_key] = result
 
 
-def key_to_slices(key, arr, chunks=None):
+def key_to_slices(
+    key: Tuple[int, ...], arr: T_ZarrArray, chunks: Optional[T_Chunks] = None
+) -> Tuple[slice, ...]:
     """Convert a chunk index key to a tuple of slices"""
     chunks = normalize_chunks(chunks or arr.chunks, shape=arr.shape, dtype=arr.dtype)
     return get_item(chunks, key)
 
 
 def blockwise(
-    func,
-    out_ind,
-    *args,
-    allowed_mem,
-    reserved_mem,
-    target_store,
-    shape,
-    dtype,
-    chunks,
-    new_axes=None,
-    in_names=None,
-    out_name=None,
+    func: Callable[..., Any],
+    out_ind: Sequence[Union[str, int]],
+    *args: Any,
+    allowed_mem: int,
+    reserved_mem: int,
+    target_store: T_Store,
+    shape: T_Shape,
+    dtype: T_DType,
+    chunks: T_Chunks,
+    new_axes: Optional[Dict[int, int]] = None,
+    in_names: Optional[List[str]] = None,
+    out_name: Optional[str] = None,
     **kwargs,
 ):
     """Apply a function across blocks from multiple source Zarr arrays.
@@ -126,20 +132,20 @@ def blockwise(
     """
 
     # Use dask's make_blockwise_graph
-    arrays = args[::2]
+    arrays: Sequence[T_ZarrArray] = args[::2]
     array_names = in_names or [f"in_{i}" for i in range(len(arrays))]
     array_map = {name: array for name, array in zip(array_names, arrays)}
 
-    inds = args[1::2]
+    inds: Sequence[Union[str, int]] = args[1::2]
 
-    numblocks = {}
+    numblocks: Dict[str, Tuple[int, ...]] = {}
     for name, array in zip(array_names, arrays):
         input_chunks = normalize_chunks(
             array.chunks, shape=array.shape, dtype=array.dtype
         )
         numblocks[name] = tuple(map(len, input_chunks))
 
-    argindsstr = []
+    argindsstr: List[Any] = []
     for name, ind in zip(array_names, inds):
         argindsstr.extend((name, ind))
 
@@ -228,7 +234,7 @@ def blockwise(
 # Code for fusing pipelines
 
 
-def is_fuse_candidate(pipeline):
+def is_fuse_candidate(pipeline: CubedPipeline) -> bool:
     """
     Return True if a pipeline is a candidate for blockwise fusion.
     """
@@ -236,13 +242,13 @@ def is_fuse_candidate(pipeline):
     return len(stages) == 1 and stages[0].function == apply_blockwise
 
 
-def can_fuse_pipelines(pipeline1, pipeline2):
+def can_fuse_pipelines(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> bool:
     if is_fuse_candidate(pipeline1) and is_fuse_candidate(pipeline2):
         return pipeline1.num_tasks == pipeline2.num_tasks
     return False
 
 
-def fuse(pipeline1, pipeline2):
+def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     """
     Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
     """
@@ -282,8 +288,13 @@ def fuse(pipeline1, pipeline2):
 
 
 def make_blockwise_function(
-    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
-):
+    func: Callable[..., Any],
+    output: str,
+    out_indices: Sequence[Union[str, int]],
+    *arrind_pairs: Any,
+    numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
+    new_axes: Optional[Dict[int, int]] = None,
+) -> Callable[[List[int]], Any]:
     """Make a function that is the equivalent of make_blockwise_graph."""
 
     if numblocks is None:
@@ -335,8 +346,13 @@ def make_blockwise_function(
 
 
 def make_blockwise_function_flattened(
-    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
-):
+    func: Callable[..., Any],
+    output: str,
+    out_indices: Sequence[Union[str, int]],
+    *arrind_pairs: Any,
+    numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
+    new_axes: Optional[Dict[int, int]] = None,
+) -> Callable[[List[int]], Any]:
     # TODO: make this a part of make_blockwise_function?
     blockwise_fn = make_blockwise_function(
         func, output, out_indices, *arrind_pairs, numblocks=numblocks, new_axes=new_axes
@@ -353,8 +369,13 @@ def make_blockwise_function_flattened(
 
 
 def get_output_blocks(
-    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
-):
+    func: Callable[..., Any],
+    output: str,
+    out_indices: Sequence[Union[str, int]],
+    *arrind_pairs: Any,
+    numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
+    new_axes: Optional[Dict[int, int]] = None,
+) -> Iterator[List[int]]:
     if numblocks is None:
         raise ValueError("Missing required numblocks argument.")
     new_axes = new_axes or {}
@@ -369,7 +390,7 @@ def get_output_blocks(
 
 
 class IterableFromGenerator:
-    def __init__(self, generator_fn):
+    def __init__(self, generator_fn: Callable[[], Iterator[List[int]]]):
         self.generator_fn = generator_fn
 
     def __iter__(self):
@@ -377,8 +398,13 @@ class IterableFromGenerator:
 
 
 def num_output_blocks(
-    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
-):
+    func: Callable[..., Any],
+    output: str,
+    out_indices: Sequence[Union[str, int]],
+    *arrind_pairs: Any,
+    numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
+    new_axes: Optional[Dict[int, int]] = None,
+) -> int:
     if numblocks is None:
         raise ValueError("Missing required numblocks argument.")
     new_axes = new_axes or {}
@@ -386,7 +412,4 @@ def num_output_blocks(
 
     # Dictionary mapping {i: 3, j: 4, ...} for i, j, ... the dimensions
     dims = _make_dims(argpairs, numblocks, new_axes)
-
-    import math
-
     return math.prod(dims[i] for i in out_indices)
