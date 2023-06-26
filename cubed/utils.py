@@ -101,7 +101,7 @@ def to_chunksize(chunkset):
     """
 
     if not _check_regular_chunks(chunkset):
-        raise ValueError("Array must have regular chunks")
+        raise ValueError(f"Array must have regular chunks, but found chunks={chunkset}")
 
     return tuple(c[0] for c in chunkset)
 
