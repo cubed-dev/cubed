@@ -7,11 +7,7 @@ from cubed.primitive.types import CubedArrayProxy, CubedCopySpec
 from cubed.runtime.pipeline import spec_to_pipeline
 from cubed.storage.zarr import lazy_empty
 from cubed.vendor.rechunker.algorithm import rechunking_plan
-from cubed.vendor.rechunker.api import (
-    _get_dims_from_zarr_array,
-    _shape_dict_to_tuple,
-    _validate_options,
-)
+from cubed.vendor.rechunker.api import _validate_options
 
 
 def rechunk(
@@ -118,16 +114,6 @@ def _setup_array_rechunk(
     if target_chunks is None:
         # this is just a pass-through copy
         target_chunks = source_chunks
-
-    if isinstance(target_chunks, dict):
-        array_dims = _get_dims_from_zarr_array(source_array)
-        try:
-            target_chunks = _shape_dict_to_tuple(array_dims, target_chunks)
-        except KeyError:
-            raise KeyError(
-                "You must explicitly specify each dimension size in target_chunks. "
-                f"Got array_dims {array_dims}, target_chunks {target_chunks}."
-            )
 
     # TODO: rewrite to avoid the hard dependency on dask
     max_mem = cubed.vendor.dask.utils.parse_bytes(max_mem)

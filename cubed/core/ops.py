@@ -590,8 +590,11 @@ def map_direct(
 
 
 def rechunk(x, chunks, target_store=None):
-    if x.chunks == normalize_chunks(chunks, x.shape, dtype=x.dtype):
+    normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+    if x.chunks == normalized_chunks:
         return x
+    # normalizing takes care of dict args for chunks
+    target_chunks = to_chunksize(normalized_chunks)
     name = gensym()
     spec = x.spec
     if target_store is None:
@@ -599,7 +602,7 @@ def rechunk(x, chunks, target_store=None):
     temp_store = new_temp_path(name=f"{name}-intermediate", spec=spec)
     pipeline = primitive_rechunk(
         x.zarray_maybe_lazy,
-        target_chunks=chunks,
+        target_chunks=target_chunks,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
