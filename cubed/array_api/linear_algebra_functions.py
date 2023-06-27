@@ -90,7 +90,6 @@ def outer(x1, x2, /):
 
 
 def tensordot(x1, x2, /, *, axes=2):
-
     from cubed.array_api.statistical_functions import sum
 
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:

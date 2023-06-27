@@ -266,7 +266,7 @@ class Plan:
 
         # do an initial pass to extract array variable names from stack summaries
         array_display_names = {}
-        for (n, d) in dag.nodes(data=True):
+        for n, d in dag.nodes(data=True):
             if "stack_summaries" in d:
                 stack_summaries = d["stack_summaries"]
                 first_cubed_i = min(
@@ -282,7 +282,7 @@ class Plan:
         array_display_names.update(caller_summary.array_names_to_variable_names)
 
         # now set node attributes with visualization info
-        for (n, d) in dag.nodes(data=True):
+        for n, d in dag.nodes(data=True):
             if d["op_name"] == "blockwise":
                 d["style"] = "filled"
                 d["fillcolor"] = "#dcbeff"

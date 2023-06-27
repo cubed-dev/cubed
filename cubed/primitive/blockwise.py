@@ -346,7 +346,6 @@ def make_blockwise_function_flattened(
 def get_output_blocks(
     func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
 ):
-
     if numblocks is None:
         raise ValueError("Missing required numblocks argument.")
     new_axes = new_axes or {}
