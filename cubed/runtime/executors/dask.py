@@ -45,4 +45,4 @@ class DaskDelayedExecutor(DagExecutor):
                         event = TaskEndEvent(array_name=name)
                         [callback.on_task_end(event) for callback in callbacks]
 
-                client.persist(stage_delayed_funcs, **compute_kwargs)
+                client.persist(*stage_delayed_funcs, **compute_kwargs)
