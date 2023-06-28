@@ -13,7 +13,9 @@ def exec_stage_func(func, *args, **kwargs):
 class DaskDelayedExecutor(DagExecutor):
     """Executes each stage using dask.Delayed functions."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **compute_kwargs):
+    def execute_dag(
+        self, dag, callbacks=None, array_names=None, resume=None, **compute_kwargs
+    ):
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
 
         for name, node in visit_nodes(dag, resume=resume):
@@ -22,13 +24,17 @@ class DaskDelayedExecutor(DagExecutor):
                 if stage.mappable is not None:
                     stage_delayed_funcs = []
                     for m in stage.mappable:
-                        delayed_func = exec_stage_func(stage.function, m, config=pipeline.config)
+                        delayed_func = exec_stage_func(
+                            stage.function, m, config=pipeline.config
+                        )
                         stage_delayed_funcs.append(delayed_func)
                         if callbacks is not None:
                             event = TaskEndEvent(array_name=name)
                             [callback.on_task_end(event) for callback in callbacks]
                 else:
-                    delayed_func = exec_stage_func(stage.function, config=pipeline.config)
+                    delayed_func = exec_stage_func(
+                        stage.function, config=pipeline.config
+                    )
                     stage_delayed_funcs = [delayed_func]
                     if callbacks is not None:
                         event = TaskEndEvent(array_name=name)
