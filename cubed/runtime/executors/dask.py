@@ -14,10 +14,10 @@ class DaskDelayedExecutor(DagExecutor):
     """Executes each stage using dask.Delayed functions."""
 
     def execute_dag(
-        self, dag, callbacks=None, array_names=None, resume=None, **compute_kwargs
+        self, dag, callbacks=None, array_names=None, resume=None, client=None, **compute_kwargs
     ):
-        # Note this currently only builds the task graph for each stage once it gets to that stage in computation
 
+        # Note this currently only builds the task graph for each stage once it gets to that stage in computation
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
             for stage in pipeline.stages:
@@ -40,4 +40,4 @@ class DaskDelayedExecutor(DagExecutor):
                         event = TaskEndEvent(array_name=name)
                         [callback.on_task_end(event) for callback in callbacks]
 
-                dask.persist(stage_delayed_funcs, **compute_kwargs)
+                client.persist(stage_delayed_funcs, **compute_kwargs)
