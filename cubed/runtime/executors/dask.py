@@ -7,7 +7,7 @@ from cubed.runtime.types import DagExecutor
 
 def exec_stage_func(func, *args, **kwargs):
     # TODO would be good to give the dask tasks useful names
-    return dask.delayed(func(*args, **kwargs))  # should we add pure=True?
+    return dask.delayed(func)(*args, **kwargs)  # should we add pure=True?
 
 
 class DaskDelayedExecutor(DagExecutor):
