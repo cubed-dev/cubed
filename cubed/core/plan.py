@@ -216,11 +216,7 @@ class Plan:
         tasks = 0
         for _, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
-            for stage in pipeline.stages:
-                if stage.mappable is not None:
-                    tasks += len(list(stage.mappable))
-                else:
-                    tasks += 1
+            tasks += pipeline.num_tasks
         return tasks
 
     def num_arrays(self, optimize_graph: bool = True) -> int:

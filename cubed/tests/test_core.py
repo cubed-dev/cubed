@@ -9,6 +9,7 @@ from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
+import cubed.random
 from cubed.extensions.history import HistoryCallback
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
@@ -512,3 +513,20 @@ def test_measure_reserved_mem(executor):
 
     reserved_memory = cubed.measure_reserved_mem(executor=executor)
     assert reserved_memory > 1_000_000  # over 1MB
+
+
+# Test we can create a plan for arrays of up to 5PB, and 100s of billions of tasks
+@pytest.mark.parametrize("factor", [10, 20, 50, 100, 200, 500, 1000, 2000, 5000])
+def test_plan_scaling(tmp_path, factor):
+    spec = cubed.Spec(tmp_path, allowed_mem="2GB")
+    chunksize = 5000
+    a = cubed.random.random(
+        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec
+    )
+    b = cubed.random.random(
+        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec
+    )
+    c = xp.matmul(a, b)
+
+    assert c.plan.num_tasks() > 0
+    c.visualize(filename=tmp_path / "c")

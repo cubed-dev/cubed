@@ -157,7 +157,18 @@ def blockwise(
         new_axes=new_axes,
     )
 
-    output_blocks = get_output_blocks(
+    output_blocks_generator_fn = partial(
+        get_output_blocks,
+        func,
+        out_name or "out",
+        out_ind,
+        *argindsstr,
+        numblocks=numblocks,
+        new_axes=new_axes,
+    )
+    output_blocks = IterableFromGenerator(output_blocks_generator_fn)
+
+    num_tasks = num_output_blocks(
         func,
         out_name or "out",
         out_ind,
@@ -210,8 +221,6 @@ def blockwise(
         raise ValueError(
             f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
         )
-
-    num_tasks = len(output_blocks)
 
     return CubedPipeline(stages, spec, target_array, None, projected_mem, num_tasks)
 
@@ -355,7 +364,29 @@ def get_output_blocks(
     dims = _make_dims(argpairs, numblocks, new_axes)
 
     # return a list of lists, not of tuples, otherwise lithops breaks
-    output_blocks_lists = [
-        list(tup) for tup in itertools.product(*[range(dims[i]) for i in out_indices])
-    ]
-    return output_blocks_lists
+    for tup in itertools.product(*[range(dims[i]) for i in out_indices]):
+        yield list(tup)
+
+
+class IterableFromGenerator:
+    def __init__(self, generator_fn):
+        self.generator_fn = generator_fn
+
+    def __iter__(self):
+        return self.generator_fn()
+
+
+def num_output_blocks(
+    func, output, out_indices, *arrind_pairs, numblocks=None, new_axes=None
+):
+    if numblocks is None:
+        raise ValueError("Missing required numblocks argument.")
+    new_axes = new_axes or {}
+    argpairs = list(toolz.partition(2, arrind_pairs))
+
+    # Dictionary mapping {i: 3, j: 4, ...} for i, j, ... the dimensions
+    dims = _make_dims(argpairs, numblocks, new_axes)
+
+    import math
+
+    return math.prod(dims[i] for i in out_indices)
