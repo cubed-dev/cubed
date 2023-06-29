@@ -72,7 +72,7 @@ def pipeline_to_stream(concurrent_executor, name, pipeline, **kwargs):
                 map_unordered,
                 concurrent_executor,
                 run_func,
-                list(stage.mappable),
+                stage.mappable,
                 return_stats=True,
                 name=name,
                 func=stage.function,
