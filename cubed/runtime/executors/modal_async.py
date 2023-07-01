@@ -135,7 +135,7 @@ async def async_execute_dag(
                 if stage.mappable is not None:
                     async for _, stats in map_unordered(
                         app_function,
-                        list(stage.mappable),
+                        stage.mappable,
                         return_stats=True,
                         name=name,
                         func=stage.function,

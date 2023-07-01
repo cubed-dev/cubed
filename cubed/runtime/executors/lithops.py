@@ -195,7 +195,7 @@ def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
                     for _, stats in map_unordered(
                         executor,
                         run_func,
-                        list(stage.mappable),
+                        stage.mappable,
                         func=stage.function,
                         config=pipeline.config,
                         name=name,
@@ -229,7 +229,7 @@ def build_stage_mappable_func(
         for _, stats in map_unordered(
             lithops_function_executor,
             sf,
-            list(stage.mappable),
+            stage.mappable,
             use_backups=use_backups,
             return_stats=True,
         ):

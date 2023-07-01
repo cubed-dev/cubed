@@ -107,7 +107,7 @@ def execute_dag(
                 if stage.mappable is not None:
                     task_create_tstamp = time.time()
                     for _, stats in app_function.map(
-                        list(stage.mappable),
+                        stage.mappable,
                         order_outputs=False,
                         kwargs=dict(func=stage.function, config=pipeline.config),
                     ):
