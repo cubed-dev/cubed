@@ -1,11 +1,14 @@
 import os
 import time
 from asyncio.exceptions import TimeoutError
+from typing import Optional, Sequence
 
 import modal
 from modal.exception import ConnectionError
+from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
+from cubed.core.array import Callback
 from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import execute_with_stats, handle_callbacks
@@ -90,8 +93,13 @@ class Container:
     stop=stop_after_attempt(3),
 )
 def execute_dag(
-    dag, callbacks=None, array_names=None, resume=None, cloud=None, **kwargs
-):
+    dag: MultiDiGraph,
+    callbacks: Optional[Sequence[Callback]] = None,
+    array_names: Optional[Sequence[str]] = None,
+    resume: Optional[bool] = None,
+    cloud: Optional[str] = None,
+    **kwargs,
+) -> None:
     with stub.run():
         cloud = cloud or "aws"
         if cloud == "aws":
@@ -124,6 +132,19 @@ class ModalDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        array_names: Optional[Sequence[str]] = None,
+        resume: Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
-        execute_dag(dag, callbacks=callbacks, array_names=array_names, **merged_kwargs)
+        execute_dag(
+            dag,
+            callbacks=callbacks,
+            array_names=array_names,
+            resume=resume,
+            **merged_kwargs,
+        )
