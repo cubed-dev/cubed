@@ -317,6 +317,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dask">Dask</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#xarray">Xarray</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#previous-work">Previous work</a></li>
 </ul>
             </nav>
@@ -337,6 +338,11 @@ document.write(`
 <p>Dask converts high-level operations into a task graph, where tasks correspond to chunk-level operations. In Cubed, the computational graph (or plan) is defined at the level of array operations and is decomposed into fine-grained tasks by the primitive operators for the runtime. Higher-level graphs are more useful for users, since they are easier to visualize and reason about. (Dask’s newer High Level Graph abstraction is similar.)</p>
 <p>Dask only has a single distributed runtime, Dask Distributed, whereas Cubed has the advantage of running on a variety of distributed runtimes, including more mature ones like Google Cloud Dataflow (a Beam runner).</p>
 <p>The core operations and array API layers in Cubed are heavily influenced by Dask Array - in both naming, as well as implementation (Cubed uses Dask Array for some chunking utilities).</p>
+</section>
+<section id="xarray">
+<h2>Xarray<a class="headerlink" href="#xarray" title="Permalink to this heading">#</a></h2>
+<p>You can use Cubed with Xarray using the <a class="reference external" href="https://github.com/xarray-contrib/cubed-xarray">cubed-xarray</a> package.</p>
+<p>Read more about the integration in <a class="reference external" href="https://xarray.dev/blog/cubed-xarray">Cubed: Bounded-memory serverless array processing in xarray</a>.</p>
 </section>
 <section id="previous-work">
 <h2>Previous work<a class="headerlink" href="#previous-work" title="Permalink to this heading">#</a></h2>
@@ -393,6 +399,7 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dask">Dask</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#xarray">Xarray</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#previous-work">Previous work</a></li>
 </ul>
   </nav></div>
