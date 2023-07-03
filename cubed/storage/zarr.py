@@ -1,4 +1,9 @@
+from typing import Any, Optional, Union
+
 import zarr
+from numpy import ndarray
+
+from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
 class LazyZarrArray:
@@ -11,12 +16,12 @@ class LazyZarrArray:
 
     def __init__(
         self,
-        shape,
-        dtype,
-        chunks,
-        store,
-        initial_values=None,
-        fill_value=None,
+        shape: T_Shape,
+        dtype: T_DType,
+        chunks: T_RegularChunks,
+        store: T_Store,
+        initial_values: Optional[ndarray] = None,
+        fill_value: Any = None,
         **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
@@ -33,7 +38,7 @@ class LazyZarrArray:
         self.fill_value = fill_value
         self.kwargs = kwargs
 
-    def create(self, mode="w-"):
+    def create(self, mode: str = "w-") -> zarr.Array:
         """Create the Zarr array in storage.
 
         The Zarr array's metadata is initialized in the backing store, and any
@@ -45,7 +50,7 @@ class LazyZarrArray:
             The mode to open the Zarr array with using ``zarr.open``.
             Default is 'w-', which means create, fail it already exists.
         """
-        target = zarr.open(
+        target = zarr.open_array(
             self.store,
             mode=mode,
             shape=self.shape,
@@ -58,13 +63,13 @@ class LazyZarrArray:
             target[...] = self.initial_values
         return target
 
-    def open(self):
+    def open(self) -> zarr.Array:
         """Open the Zarr array for reading or writing and return it.
 
         Note that the Zarr array must have been created or this method will raise an exception.
         """
         # r+ means read/write, fail if it doesn't exist
-        return zarr.open(
+        return zarr.open_array(
             self.store,
             mode="r+",
             shape=self.shape,
@@ -72,24 +77,39 @@ class LazyZarrArray:
             chunks=self.chunks,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"cubed.storage.zarr.LazyZarrArray<shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
 
-def lazy_empty(shape, *, dtype, chunks, store, **kwargs):
+T_ZarrArray = Union[zarr.Array, LazyZarrArray]
+
+
+def lazy_empty(
+    shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, store: T_Store, **kwargs
+) -> LazyZarrArray:
     return LazyZarrArray(shape, dtype, chunks, store, **kwargs)
 
 
-def lazy_from_array(array, *, dtype, chunks, store, **kwargs):
+def lazy_from_array(
+    array: ndarray, *, dtype: T_DType, chunks: T_RegularChunks, store: T_Store, **kwargs
+) -> LazyZarrArray:
     return LazyZarrArray(
         array.shape, dtype, chunks, store, initial_values=array, **kwargs
     )
 
 
-def lazy_full(shape, fill_value, *, dtype, chunks, store, **kwargs):
+def lazy_full(
+    shape: T_Shape,
+    fill_value: Any,
+    *,
+    dtype: T_DType,
+    chunks: T_RegularChunks,
+    store: T_Store,
+    **kwargs,
+) -> LazyZarrArray:
     return LazyZarrArray(shape, dtype, chunks, store, fill_value=fill_value, **kwargs)
 
 
-def open_if_lazy_zarr_array(array):
+def open_if_lazy_zarr_array(array: T_ZarrArray) -> zarr.Array:
     """If array is a LazyZarrArray then open it, leaving other arrays unchanged."""
     return array.open() if isinstance(array, LazyZarrArray) else array

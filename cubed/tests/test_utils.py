@@ -54,6 +54,9 @@ def test_memory_repr():
     assert memory_repr(9_999) == "10.0 KB"
     assert memory_repr(1_000_000) == "1.0 MB"
     assert memory_repr(1_000_000_000_000_000) == "1.0 PB"
+    assert memory_repr(int(1e18)) == "1.0e+18 bytes"
+    with pytest.raises(ValueError):
+        memory_repr(-1)
 
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")

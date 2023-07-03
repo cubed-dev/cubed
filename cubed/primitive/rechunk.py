@@ -1,18 +1,24 @@
 from math import ceil, prod
+from typing import Any, Dict, List, Optional, Tuple
 
 import zarr
 
-import cubed
-from cubed.primitive.types import CubedArrayProxy, CubedCopySpec
+from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, CubedPipeline
 from cubed.runtime.pipeline import spec_to_pipeline
-from cubed.storage.zarr import lazy_empty
+from cubed.storage.zarr import T_ZarrArray, lazy_empty
+from cubed.types import T_RegularChunks, T_Shape, T_Store
 from cubed.vendor.rechunker.algorithm import rechunking_plan
 from cubed.vendor.rechunker.api import _validate_options
 
 
 def rechunk(
-    source, target_chunks, allowed_mem, reserved_mem, target_store, temp_store=None
-):
+    source: T_ZarrArray,
+    target_chunks: T_RegularChunks,
+    allowed_mem: int,
+    reserved_mem: int,
+    target_store: T_Store,
+    temp_store: Optional[T_Store] = None,
+) -> CubedPipeline:
     """Rechunk a Zarr array to have target_chunks.
 
     Parameters
@@ -36,7 +42,7 @@ def rechunk(
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
     # input and output array chunk/selection, so adjust appropriately
-    rechunker_max_mem = (allowed_mem - reserved_mem) / 4
+    rechunker_max_mem = (allowed_mem - reserved_mem) // 4
 
     copy_specs, intermediate, target = _setup_rechunk(
         source=source,
@@ -62,14 +68,14 @@ def rechunk(
 
 # from rechunker, but simpler since it only has to handle Zarr arrays
 def _setup_rechunk(
-    source,
-    target_chunks,
-    max_mem,
-    target_store,
-    target_options=None,
-    temp_store=None,
-    temp_options=None,
-):
+    source: T_ZarrArray,
+    target_chunks: T_RegularChunks,
+    max_mem: int,
+    target_store: T_Store,
+    target_options: Optional[Dict[Any, Any]] = None,
+    temp_store: Optional[T_Store] = None,
+    temp_options: Optional[Dict[Any, Any]] = None,
+) -> Tuple[List[CubedCopySpec], T_ZarrArray, T_ZarrArray]:
     if temp_options is None:
         temp_options = target_options
     target_options = target_options or {}
@@ -90,14 +96,14 @@ def _setup_rechunk(
 
 
 def _setup_array_rechunk(
-    source_array,
-    target_chunks,
-    max_mem,
-    target_store_or_group,
-    target_options=None,
-    temp_store_or_group=None,
-    temp_options=None,
-    name=None,
+    source_array: T_ZarrArray,
+    target_chunks: T_RegularChunks,
+    max_mem: int,
+    target_store_or_group: T_Store,
+    target_options: Optional[Dict[Any, Any]] = None,
+    temp_store_or_group: Optional[T_Store] = None,
+    temp_options: Optional[Dict[Any, Any]] = None,
+    name: Optional[str] = None,
 ) -> CubedCopySpec:
     _validate_options(target_options)
     _validate_options(temp_options)
@@ -114,9 +120,6 @@ def _setup_array_rechunk(
     if target_chunks is None:
         # this is just a pass-through copy
         target_chunks = source_chunks
-
-    # TODO: rewrite to avoid the hard dependency on dask
-    max_mem = cubed.vendor.dask.utils.parse_bytes(max_mem)
 
     # don't consolidate reads for Dask arrays
     consolidate_reads = isinstance(source_array, zarr.core.Array)
@@ -143,11 +146,6 @@ def _setup_array_rechunk(
         **(target_options or {}),
     )
 
-    try:
-        target_array.attrs.update(source_array.attrs)
-    except AttributeError:
-        pass
-
     if read_chunks == write_chunks:
         int_array = None
     else:
@@ -172,6 +170,6 @@ def _setup_array_rechunk(
     return CubedCopySpec(read_proxy, int_proxy, write_proxy)
 
 
-def total_chunks(shape, chunks):
+def total_chunks(shape: T_Shape, chunks: T_RegularChunks) -> int:
     # cf rechunker's chunk_keys
     return prod(ceil(s / c) for s, c in zip(shape, chunks))
