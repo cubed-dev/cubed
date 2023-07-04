@@ -1,5 +1,7 @@
 # Examples running Cubed on Modal
 
+**Warning: Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are possible.**
+
 ## Pre-requisites
 
 1. A [Modal account](https://modal.com/)
