@@ -137,16 +137,21 @@ class Plan:
         # find all lazy zarr arrays in dag
         all_array_nodes = []
         lazy_zarr_arrays = []
+        reserved_mem_values = []
         for n, d in dag.nodes(data=True):
+            if "reserved_mem" in d and d["reserved_mem"] is not None:
+                reserved_mem_values.append(d["reserved_mem"])
             if isinstance(d["target"], LazyZarrArray):
                 all_array_nodes.append(n)
                 lazy_zarr_arrays.append(d["target"])
+
+        reserved_mem = max(reserved_mem_values, default=0)
 
         if len(lazy_zarr_arrays) > 0:
             # add new node and edges
             name = "create-arrays"
             op_name = name
-            pipeline = create_zarr_arrays(lazy_zarr_arrays)
+            pipeline = create_zarr_arrays(lazy_zarr_arrays, reserved_mem)
             dag.add_node(
                 name,
                 name=name,
@@ -154,7 +159,7 @@ class Plan:
                 target=None,
                 pipeline=pipeline,
                 projected_mem=pipeline.projected_mem,
-                reserved_mem=0,  # TODO: get from Spec
+                reserved_mem=reserved_mem,
                 num_tasks=pipeline.num_tasks,
             )
             # make create arrays node a dependency of all lazy array nodes
@@ -409,7 +414,7 @@ def create_zarr_array(lazy_zarr_array, *, config=None):
     lazy_zarr_array.create(mode="a")
 
 
-def create_zarr_arrays(lazy_zarr_arrays):
+def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     stages = [
         Stage(
             create_zarr_array,
@@ -419,12 +424,15 @@ def create_zarr_arrays(lazy_zarr_arrays):
     ]
 
     # projected memory is size of largest initial values, or 0 if there aren't any
-    projected_mem = max(
-        [
-            lza.initial_values.nbytes if lza.initial_values is not None else 0
-            for lza in lazy_zarr_arrays
-        ],
-        default=0,
+    projected_mem = (
+        max(
+            [
+                lza.initial_values.nbytes if lza.initial_values is not None else 0
+                for lza in lazy_zarr_arrays
+            ],
+            default=0,
+        )
+        + reserved_mem
     )
     num_tasks = len(lazy_zarr_arrays)
 
