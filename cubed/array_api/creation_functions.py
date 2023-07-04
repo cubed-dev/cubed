@@ -6,6 +6,7 @@ from zarr.util import normalize_shape
 from cubed.core import Plan, gensym, map_blocks
 from cubed.core.ops import map_direct
 from cubed.core.plan import new_temp_path
+from cubed.storage.virtual import virtual_offsets
 from cubed.storage.zarr import lazy_from_array, lazy_full
 from cubed.utils import to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
@@ -150,6 +151,16 @@ def full(
     from .array_object import Array
 
     plan = Plan._new(name, "full", target)
+    return Array(name, target, spec, plan)
+
+
+def offsets_array(shape, spec=None) -> "Array":
+    name = gensym()
+    target = virtual_offsets(shape)
+
+    from .array_object import Array
+
+    plan = Plan._new(name, "block_ids", target)
     return Array(name, target, spec, plan)
 
 
