@@ -1,4 +1,7 @@
 import pytest
+
+pytest.importorskip("lithops")
+
 from lithops.executors import LocalhostExecutor
 
 from cubed.runtime.executors.lithops_retries import map_with_retries, wait_with_retries

@@ -436,7 +436,7 @@ def map_blocks(
         new_args = args + (offsets,)
 
         def offset_to_block_id(offset):
-            return list(np.ndindex(*(a.numblocks)))[offset]
+            return np.unravel_index(offset, a.numblocks)
 
         def func_with_block_id(func):
             def wrap(*a, **kw):
