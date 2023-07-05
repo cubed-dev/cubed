@@ -1,8 +1,6 @@
 from math import ceil, prod
 from typing import Any, Dict, List, Optional, Tuple
 
-import zarr
-
 from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, CubedPipeline
 from cubed.runtime.pipeline import spec_to_pipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
@@ -121,15 +119,12 @@ def _setup_array_rechunk(
         # this is just a pass-through copy
         target_chunks = source_chunks
 
-    # don't consolidate reads for Dask arrays
-    consolidate_reads = isinstance(source_array, zarr.core.Array)
     read_chunks, int_chunks, write_chunks = rechunking_plan(
         shape,
         source_chunks,
         target_chunks,
         itemsize,
         max_mem,
-        consolidate_reads=consolidate_reads,
     )
 
     # create target
