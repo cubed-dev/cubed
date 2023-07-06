@@ -18,6 +18,7 @@ class DaskDelayedExecutor(DagExecutor):
         callbacks=None,
         array_names=None,
         resume=None,
+        spec=None,
         **compute_kwargs,
     ):
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation

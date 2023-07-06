@@ -20,7 +20,7 @@ from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from networkx import MultiDiGraph
 
-from cubed.core.array import Callback
+from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.lithops_retries import (
@@ -166,11 +166,22 @@ def execute_dag(
     callbacks: Optional[Sequence[Callback]] = None,
     array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
+    spec: Optional[Spec] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
     use_backups = kwargs.pop("use_backups", False)
+    allowed_mem = spec.allowed_mem if spec is not None else None
     with FunctionExecutor(**kwargs) as executor:
+        runtime_memory_mb = executor.config[executor.backend].get(
+            "runtime_memory", None
+        )
+        if runtime_memory_mb is not None and allowed_mem is not None:
+            runtime_memory = runtime_memory_mb * 1_000_000
+            if runtime_memory < allowed_mem:
+                raise ValueError(
+                    f"Runtime memory ({runtime_memory}) is less than allowed_mem ({allowed_mem})"
+                )
         if not compute_arrays_in_parallel:
             for name, node in visit_nodes(dag, resume=resume):
                 pipeline = node["pipeline"]
@@ -238,6 +249,7 @@ class LithopsDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -246,5 +258,6 @@ class LithopsDagExecutor(DagExecutor):
             callbacks=callbacks,
             array_names=array_names,
             resume=resume,
+            spec=spec,
             **merged_kwargs,
         )

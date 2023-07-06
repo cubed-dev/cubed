@@ -156,6 +156,7 @@ class Plan:
         callbacks=None,
         optimize_graph=True,
         resume=None,
+        spec=None,
         array_names=None,
         **kwargs,
     ):
@@ -169,6 +170,7 @@ class Plan:
             callbacks=callbacks,
             array_names=array_names,
             resume=resume,
+            spec=spec,
             **kwargs,
         )
         if callbacks is not None:
