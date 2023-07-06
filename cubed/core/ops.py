@@ -423,16 +423,12 @@ def map_blocks(
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
     if has_keyword(func, "block_id"):
-        from cubed.array_api import asarray
+        from cubed.array_api.creation_functions import offsets_array
 
         # Create an array of index offsets with the same chunk structure as the args,
         # which we convert to block ids (chunk coordinates) later.
         a = args[0]
-        _offsets = np.arange(a.npartitions, dtype=np.int32).reshape(a.numblocks)
-        offsets = asarray(_offsets, spec=a.spec)
-        # rechunk in a separate operation to avoid potentially writing lots of zarr chunks from the client
-        offsets_chunks = (1,) * len(a.numblocks)
-        offsets = rechunk(offsets, offsets_chunks)
+        offsets = offsets_array(a.numblocks, a.spec)
         new_args = args + (offsets,)
 
         def offset_to_block_id(offset):
