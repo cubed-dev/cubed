@@ -1,92 +1,101 @@
-# Scaling and performance
+# Scaling
 
-Cubed is designed to scale to processing large arrays (~TB's) without losing performance.
+Cubed is specifically designed to maintain optimal performance while processing large arrays (of order Terabytes so far). 
+This page aims to provide a deeper understanding of how Cubed's design scales in both theoretical and practical scenarios.
 
-This page aims to help you understand how Cubed's design scales both in theory and in practice.
+## Preface: Types of Scaling
 
+There are different types of scaling to consider in distributed computing:
 
-## Preface: Types of scaling
+Horizontal versus Vertical Scaling: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means enhancing the speed & resources of an existing machine.
 
-- Horizontal versus vertical scaling 
-- Weak scaling versus strong scaling
-    - Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size.
-    - Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor. 
+Weak versus Strong Scaling: Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size. 
+Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor. 
+In other words, strong scaling measures how much faster you can get a given problem done, whereas weak scaling measures how big a problem you can get done in a reasonable time.
 
-Cubed is designed to scale horizontally across a large number of machines in the cloud with the aim of providing good weak scaling properties when processing even very large array datasets.
+Cubed has been designed to scale horizontally, in such a way as to display good weak scaling even when processing large array datasets.
+
 
 ## Theoretical vs Practical Scaling of Cubed
 
+To understand factors affecting the scaling and performance of Cubed, we will start by considering the simplest possible calculation and add complexity.
+
 ### Single-step Calculation
 
-#### **Theoretical Scaling**
+The  simplest non-trivial operation in cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores. 
+Changing the sign of every element in an array would be an example of this type of operation, known as an [elementwise](Operations/elemwise) operation.
 
-- Use rechunk as an example 
-- Limited by concurrent writes to Zarr 
-- Assuming serverless service provides infinite workers 
-- Weak scaling should be totally linear 
-- i.e. larger problem completes in same time given larger resources 
-- (Compute-bound step would have speedup limited by Ahmdahl's law??)
+In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr. 
+In such a case weak scaling should be linear, i.e. an array with more blocks could be processed in the same amount of time given proportionally more workers to process those blocks.
 
-#### **Practical Performance**
-- Actually requires parallelism, so won't happen with single-threaded executor 
-- Weak scaling requires more workers than output chunks, might need to set config for big problems 
-- Without enough workers strong scaling should be totally linear until more workers than output chunks 
-- Stragglers - so turn on backups 
-- Failures, once restarted, are basically stragglers 
-- Worker start-up Multiple steps 
-- Number of steps in plan sets min total execution time 
-- So reduce number of steps in plan 
-- Reductions can be done in fewer iterative steps if allowed_mem is larger, rule of thumb for this?? 
-- Also can fuse steps 
-- Happens automatically 
-- Can't fuse through rechunking steps without requiring shuffle, which can violate memory constraint in general 
-- But multiple blockwise operations can be fused 
-- Can multiple rechunk operations be fused? 
+In practice, this ideal scenario may not be achieved, for a number of reasons.
+Firstly, you need to make sure you're using a parallel executor not the default single-threaded executor. 
+You also need enough parallelism to match the scale of your problem. 
+Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor's configuration to not restrict the ``max_workers``. 
+With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for. 
+Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
+To handle stragglers, you should consider turning on backups, as any failures that are restarted essentially become stragglers. 
+Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally. 
 
 ### Multi-step Calculation
 
-#### **Theoretical Scaling**
+A multi-step calculation requires writing one or more intermediate arrays to persistent storage.
+One important example in Cubed is the [rechunk](Operations/rechunk) operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.
 
-#### **Practical Performance**
+In multi-step calculations, the number of steps in the plan sets the minimum total execution time.
+Hence, reducing the number of steps in the plan can lead to significant performance improvements. 
+Reductions can be carried out in fewer iterative steps if ``allowed_mem`` is larger. 
+Cubed automatically fuses some steps to enhance performance, but others (especially rechunk) cannot be fused without requiring a shuffle, which can potentially violate memory constraints. 
+
+```{note} In theory multiple blockwise operations can be fused together, enhancing the performance further. However this has not yet been implemented in Cubed.
+```
+
+In practical scenarios, stragglers can hold up the completion of each step separately, thereby cumulatively affecting the overall performance of the calculation.
 
 ### Multi-pipeline Calculation
 
-#### **Theoretical Scaling**
-- Two separate arrays you ask to compute simultaneously 
-- Just requires enough workers for both 
-- Same logic for two arrays which input into single array (or vice versa) 
+A "pipeline" refers to an independent branch of the calculation. 
+For example, if you have two separate arrays to compute simultaneously, full parallelism requires sufficient workers for both tasks. 
+The same logic applies if you have two arrays feeding into a single array or vice versa.
 
-#### **Practical Performance**
-- Currently Cubed will not execute independent pipelines in parallel on all executors 
+
+```{note} Currently Cubed will not necessarily execute independent pipelines in parallel on all executors.
+```
+
 
 ## Other Performance Considerations
 
 ### Different Executors
-- Some worker startup time much faster than others 
-- Different limits to max workers 
-- If you used dask as an executor its scheduler might do unintuitive things - Does Beam have different properties?
+
+Different executors come with their own set of advantages and disadvantages. 
+For instance, some executors have much faster worker startup times, like Modal, while others may have different limits to the maximum workers. 
+When using Dask as an executor, the scheduler might yield unintuitive results. 
+It is worth exploring how other executors like Beam behave.
 
 ### Different Cloud Providers
-- GCF worse for stragglers than AWS
+
+Different cloud providers may perform differently. For example, Google Cloud Function (GCF) has been observed to have more stragglers than AWS.
+
 
 ## Diagnosing Performance
 
 ### Optimized Plan
-- The `Plan.visualize()` shows the optimized plan
-- Can see how many steps there are
+
+Use {py:meth}`Plan.visualize() <cubed.Plan.visualize()>` to view the optimized plan. This allows you to see the number of steps involved in your calculation.
 
 ### History Callback
-- Can work out how much time was spent in worker startup
-- Can also work out how much stragglers affected the overall speed
+
+The history callback function can help determine how much time was spent in worker startup, as well as how much stragglers affected the overall speed.
 
 ### Timeline Visualization Callback
-- Can visually see the above
-- We want vertical lines on this plot
+
+A timeline visualization callback can provide a visual representation of the above points. Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.
 
 ## Tips
 
-- There are very few "magic numbers" in Cubed - means calculations normally take as long as they take, as there are few other parameters to tune
-- Use `measure_reserved_mem`
-- ~100MB chunks
-- ~2GB `allowed_mem` (or larger?)
-- Use Cubed only for the part of the calculation you need to
+In Cubed, there are very few "magic numbers", meaning calculations generally take as long as they need to, with few other parameters to tune. Here are a few suggestions:
+
+* Use {py:func}`measure_reserved_mem <cubed.measure_reserved_mem>`.
+* Stick to ~100MB chunks.
+* Set allowed_mem to around ~2GB (or larger if necessary).
+* Use Cubed only for the part of the calculation where it's needed.
