@@ -32,16 +32,10 @@ class DaskDelayedExecutor(DagExecutor):
                             stage.function, m, config=pipeline.config
                         )
                         stage_delayed_funcs.append(delayed_func)
-                        if callbacks is not None:
-                            event = TaskEndEvent(array_name=name)
-                            [callback.on_task_end(event) for callback in callbacks]
                 else:
                     delayed_func = exec_stage_func(
                         stage.function, config=pipeline.config
                     )
                     stage_delayed_funcs = [delayed_func]
-                    if callbacks is not None:
-                        event = TaskEndEvent(array_name=name)
-                        [callback.on_task_end(event) for callback in callbacks]
 
                 dask.compute(*stage_delayed_funcs, **compute_kwargs)
