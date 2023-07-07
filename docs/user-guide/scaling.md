@@ -1,6 +1,6 @@
 # Scaling
 
-Cubed is specifically designed to maintain optimal performance while processing large arrays (of order Terabytes so far). 
+Cubed is specifically designed to maintain optimal performance while processing large arrays (of order Terabytes so far).
 This page aims to provide a deeper understanding of how Cubed's design scales in both theoretical and practical scenarios.
 
 ## Preface: Types of Scaling
@@ -9,8 +9,8 @@ There are different types of scaling to consider in distributed computing:
 
 Horizontal versus Vertical Scaling: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means enhancing the speed & resources of an existing machine.
 
-Weak versus Strong Scaling: Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size. 
-Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor. 
+Weak versus Strong Scaling: Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size.
+Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor.
 In other words, strong scaling measures how much faster you can get a given problem done, whereas weak scaling measures how big a problem you can get done in a reasonable time.
 
 Cubed has been designed to scale horizontally, in such a way as to display good weak scaling even when processing large array datasets.
@@ -22,20 +22,20 @@ To understand factors affecting the scaling and performance of Cubed, we will st
 
 ### Single-step Calculation
 
-The  simplest non-trivial operation in cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores. 
+The  simplest non-trivial operation in cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores.
 Changing the sign of every element in an array would be an example of this type of operation, known as an [elementwise](Operations/elemwise) operation.
 
-In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr. 
+In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr.
 In such a case weak scaling should be linear, i.e. an array with more blocks could be processed in the same amount of time given proportionally more workers to process those blocks.
 
 In practice, this ideal scenario may not be achieved, for a number of reasons.
-Firstly, you need to make sure you're using a parallel executor not the default single-threaded executor. 
-You also need enough parallelism to match the scale of your problem. 
-Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor's configuration to not restrict the ``max_workers``. 
-With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for. 
+Firstly, you need to make sure you're using a parallel executor not the default single-threaded executor.
+You also need enough parallelism to match the scale of your problem.
+Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor's configuration to not restrict the ``max_workers``.
+With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.
 Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
-To handle stragglers, you should consider turning on backups, as any failures that are restarted essentially become stragglers. 
-Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally. 
+To handle stragglers, you should consider turning on backups, as any failures that are restarted essentially become stragglers.
+Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally.
 
 ### Multi-step Calculation
 
@@ -43,9 +43,9 @@ A multi-step calculation requires writing one or more intermediate arrays to per
 One important example in Cubed is the [rechunk](Operations/rechunk) operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.
 
 In multi-step calculations, the number of steps in the plan sets the minimum total execution time.
-Hence, reducing the number of steps in the plan can lead to significant performance improvements. 
-Reductions can be carried out in fewer iterative steps if ``allowed_mem`` is larger. 
-Cubed automatically fuses some steps to enhance performance, but others (especially rechunk) cannot be fused without requiring a shuffle, which can potentially violate memory constraints. 
+Hence, reducing the number of steps in the plan can lead to significant performance improvements.
+Reductions can be carried out in fewer iterative steps if ``allowed_mem`` is larger.
+Cubed automatically fuses some steps to enhance performance, but others (especially rechunk) cannot be fused without requiring a shuffle, which can potentially violate memory constraints.
 
 ```{note} In theory multiple blockwise operations can be fused together, enhancing the performance further. However this has not yet been implemented in Cubed.
 ```
@@ -54,8 +54,8 @@ In practical scenarios, stragglers can hold up the completion of each step separ
 
 ### Multi-pipeline Calculation
 
-A "pipeline" refers to an independent branch of the calculation. 
-For example, if you have two separate arrays to compute simultaneously, full parallelism requires sufficient workers for both tasks. 
+A "pipeline" refers to an independent branch of the calculation.
+For example, if you have two separate arrays to compute simultaneously, full parallelism requires sufficient workers for both tasks.
 The same logic applies if you have two arrays feeding into a single array or vice versa.
 
 
@@ -67,9 +67,9 @@ The same logic applies if you have two arrays feeding into a single array or vic
 
 ### Different Executors
 
-Different executors come with their own set of advantages and disadvantages. 
-For instance, some executors have much faster worker startup times, like Modal, while others may have different limits to the maximum workers. 
-When using Dask as an executor, the scheduler might yield unintuitive results. 
+Different executors come with their own set of advantages and disadvantages.
+For instance, some executors have much faster worker startup times, like Modal, while others may have different limits to the maximum workers.
+When using Dask as an executor, the scheduler might yield unintuitive results.
 It is worth exploring how other executors like Beam behave.
 
 ### Different Cloud Providers
