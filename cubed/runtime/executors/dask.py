@@ -1,6 +1,5 @@
 import dask
 
-from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 
