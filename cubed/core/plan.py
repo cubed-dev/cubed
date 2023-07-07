@@ -423,11 +423,13 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
         )
     ]
 
-    # projected memory is size of largest initial values, or 0 if there aren't any
+    # projected memory is size of largest initial values, or dtype size if there aren't any
     projected_mem = (
         max(
             [
-                lza.initial_values.nbytes if lza.initial_values is not None else 0
+                lza.initial_values.nbytes
+                if lza.initial_values is not None
+                else lza.dtype.itemsize
                 for lza in lazy_zarr_arrays
             ],
             default=0,
