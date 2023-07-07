@@ -19,7 +19,6 @@ class DaskDelayedExecutor(DagExecutor):
         callbacks=None,
         array_names=None,
         resume=None,
-        client=None,
         **compute_kwargs,
     ):
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
@@ -45,4 +44,4 @@ class DaskDelayedExecutor(DagExecutor):
                         event = TaskEndEvent(array_name=name)
                         [callback.on_task_end(event) for callback in callbacks]
 
-                client.persist(*stage_delayed_funcs, **compute_kwargs)
+                dask.compute(*stage_delayed_funcs, **compute_kwargs)
