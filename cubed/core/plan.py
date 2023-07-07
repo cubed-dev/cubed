@@ -41,7 +41,6 @@ class Plan:
         name,
         op_name,
         target,
-        intermediate_target=None,
         pipeline=None,
         projected_mem=None,
         reserved_mem=None,
@@ -77,16 +76,6 @@ class Plan:
                 projected_mem=projected_mem,
                 reserved_mem=reserved_mem,
                 num_tasks=num_tasks,
-            )
-        if intermediate_target is not None:
-            intermediate_name = f"{name}-intermediate"
-            dag.add_node(
-                intermediate_name,
-                name=intermediate_name,
-                op_name=op_name,
-                target=intermediate_target,
-                stack_summaries=stack_summaries,
-                hidden=True,
             )
         for x in source_arrays:
             if hasattr(x, "name"):
@@ -288,6 +277,8 @@ class Plan:
                 pipeline = d["pipeline"]
                 tooltip += f"\nprojected memory: {memory_repr(pipeline.projected_mem)}"
                 tooltip += f"\ntasks: {pipeline.num_tasks}"
+                if pipeline.write_chunks is not None:
+                    tooltip += f"\nwrite chunks: {pipeline.write_chunks}"
             if "stack_summaries" in d and d["stack_summaries"] is not None:
                 # add call stack information
                 stack_summaries = d["stack_summaries"]
@@ -416,4 +407,4 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     )
     num_tasks = len(lazy_zarr_arrays)
 
-    return CubedPipeline(stages, None, None, None, projected_mem, num_tasks)
+    return CubedPipeline(stages, None, None, projected_mem, num_tasks, None)

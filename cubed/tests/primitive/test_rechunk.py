@@ -24,7 +24,7 @@ def executor(request):
             0,
             (1, 4),
             1000,
-            1,
+            (1,),
         ),
         # everything still works with 100 bytes of reserved_mem
         (
@@ -34,7 +34,7 @@ def executor(request):
             100,
             (1, 4),
             1000,
-            1,
+            (1,),
         ),
         # only enough memory for one source/target chunk
         (
@@ -44,7 +44,7 @@ def executor(request):
             0,
             (4, 1),
             4 * 8 * 4,  # elts x itemsize x copies
-            8,
+            (16, 4),
         ),
     ],
 )
@@ -63,7 +63,7 @@ def test_rechunk(
     target_store = tmp_path / "target.zarr"
     temp_store = tmp_path / "temp.zarr"
 
-    pipeline = rechunk(
+    pipelines = rechunk(
         source,
         target_chunks=target_chunks,
         allowed_mem=allowed_mem,
@@ -72,20 +72,25 @@ def test_rechunk(
         temp_store=temp_store,
     )
 
-    assert pipeline.target_array.shape == shape
-    assert pipeline.target_array.dtype == source.dtype
-    assert pipeline.target_array.chunks == target_chunks
+    assert len(pipelines) == len(expected_num_tasks)
 
-    assert pipeline.projected_mem == expected_projected_mem
+    for i, pipeline in enumerate(pipelines):
+        assert pipeline.target_array.shape == shape
+        assert pipeline.target_array.dtype == source.dtype
 
-    assert pipeline.num_tasks == expected_num_tasks
+        assert pipeline.projected_mem == expected_projected_mem
+
+        assert pipeline.num_tasks == expected_num_tasks[i]
+
+    last_pipeline = pipelines[-1]
+    assert last_pipeline.target_array.chunks == target_chunks
 
     # create lazy zarr arrays
-    pipeline.target_array.create()
-    if pipeline.intermediate_array is not None:
-        pipeline.intermediate_array.create()
+    for pipeline in pipelines:
+        pipeline.target_array.create()
 
-    execute_pipeline(pipeline, executor=executor)
+    for pipeline in pipelines:
+        execute_pipeline(pipeline, executor=executor)
 
     res = zarr.open(target_store)
     assert_array_equal(res[:], np.ones(shape))

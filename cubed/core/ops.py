@@ -281,7 +281,6 @@ def blockwise(
         name,
         "blockwise",
         pipeline.target_array,
-        None,
         pipeline,
         pipeline.projected_mem + extra_projected_mem,
         spec.reserved_mem,
@@ -595,8 +594,9 @@ def rechunk(x, chunks, target_store=None):
     spec = x.spec
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
-    temp_store = new_temp_path(name=f"{name}-intermediate", spec=spec)
-    pipeline = primitive_rechunk(
+    name_int = f"{name}-int"
+    temp_store = new_temp_path(name=name_int, spec=spec)
+    pipelines = primitive_rechunk(
         x.zarray_maybe_lazy,
         target_chunks=target_chunks,
         allowed_mem=spec.allowed_mem,
@@ -604,21 +604,49 @@ def rechunk(x, chunks, target_store=None):
         target_store=target_store,
         temp_store=temp_store,
     )
-    plan = Plan._new(
-        name,
-        "rechunk",
-        pipeline.target_array,
-        pipeline.intermediate_array,
-        pipeline,
-        pipeline.projected_mem,
-        spec.reserved_mem,
-        pipeline.num_tasks,
-        x,
-    )
 
     from cubed.array_api import Array
 
-    return Array(name, pipeline.target_array, spec, plan)
+    if len(pipelines) == 1:
+        pipeline = pipelines[0]
+        plan = Plan._new(
+            name,
+            "rechunk",
+            pipeline.target_array,
+            pipeline,
+            pipeline.projected_mem,
+            spec.reserved_mem,
+            pipeline.num_tasks,
+            x,
+        )
+        return Array(name, pipeline.target_array, spec, plan)
+
+    else:
+        pipeline1 = pipelines[0]
+        plan1 = Plan._new(
+            name_int,
+            "rechunk",
+            pipeline1.target_array,
+            pipeline1,
+            pipeline1.projected_mem,
+            spec.reserved_mem,
+            pipeline1.num_tasks,
+            x,
+        )
+        x_int = Array(name_int, pipeline1.target_array, spec, plan1)
+
+        pipeline2 = pipelines[1]
+        plan2 = Plan._new(
+            name,
+            "rechunk",
+            pipeline2.target_array,
+            pipeline2,
+            pipeline2.projected_mem,
+            spec.reserved_mem,
+            pipeline2.num_tasks,
+            x_int,
+        )
+        return Array(name, pipeline2.target_array, spec, plan2)
 
 
 def reduction(

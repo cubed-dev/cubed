@@ -1,12 +1,11 @@
 from math import ceil, prod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, CubedPipeline
 from cubed.runtime.pipeline import spec_to_pipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_RegularChunks, T_Shape, T_Store
 from cubed.vendor.rechunker.algorithm import rechunking_plan
-from cubed.vendor.rechunker.api import _validate_options
 
 
 def rechunk(
@@ -16,7 +15,7 @@ def rechunk(
     reserved_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
-) -> CubedPipeline:
+) -> List[CubedPipeline]:
     """Rechunk a Zarr array to have target_chunks.
 
     Parameters
@@ -42,82 +41,50 @@ def rechunk(
     # input and output array chunk/selection, so adjust appropriately
     rechunker_max_mem = (allowed_mem - reserved_mem) // 4
 
-    copy_specs, intermediate, target = _setup_rechunk(
-        source=source,
+    # we assume that rechunker is going to use all the memory it is allowed to
+    projected_mem = allowed_mem
+
+    read_proxy, int_proxy, write_proxy = _setup_array_rechunk(
+        source_array=source,
         target_chunks=target_chunks,
         max_mem=rechunker_max_mem,
         target_store=target_store,
         temp_store=temp_store,
     )
 
-    # source is a Zarr array, so only a single copy spec
-    if len(copy_specs) != 1:  # pragma: no cover
-        raise ValueError(f"Source must be a Zarr array, but was {source}")
-    copy_spec = copy_specs[0]
+    intermediate = int_proxy.array
+    target = write_proxy.array
 
-    num_tasks = total_chunks(copy_spec.write.array.shape, copy_spec.write.chunks)
-    if intermediate is not None:
-        num_tasks += total_chunks(copy_spec.read.array.shape, copy_spec.read.chunks)
+    if intermediate is None:
+        copy_spec = CubedCopySpec(read_proxy, write_proxy)
+        num_tasks = total_chunks(write_proxy.array.shape, write_proxy.chunks)
+        return [spec_to_pipeline(copy_spec, target, projected_mem, num_tasks)]
 
-    # we assume that rechunker is going to use all the memory it is allowed to
-    projected_mem = allowed_mem
-    return spec_to_pipeline(copy_spec, target, projected_mem, num_tasks)
+    else:
+        # break spec into two if there's an intermediate
+        copy_spec1 = CubedCopySpec(read_proxy, int_proxy)
+        num_tasks = total_chunks(copy_spec1.write.array.shape, copy_spec1.write.chunks)
+        pipeline1 = spec_to_pipeline(copy_spec1, intermediate, projected_mem, num_tasks)
+
+        copy_spec2 = CubedCopySpec(int_proxy, write_proxy)
+        num_tasks = total_chunks(copy_spec2.write.array.shape, copy_spec2.write.chunks)
+        pipeline2 = spec_to_pipeline(copy_spec2, target, projected_mem, num_tasks)
+
+        return [pipeline1, pipeline2]
 
 
 # from rechunker, but simpler since it only has to handle Zarr arrays
-def _setup_rechunk(
-    source: T_ZarrArray,
-    target_chunks: T_RegularChunks,
-    max_mem: int,
-    target_store: T_Store,
-    target_options: Optional[Dict[Any, Any]] = None,
-    temp_store: Optional[T_Store] = None,
-    temp_options: Optional[Dict[Any, Any]] = None,
-) -> Tuple[List[CubedCopySpec], T_ZarrArray, T_ZarrArray]:
-    if temp_options is None:
-        temp_options = target_options
-    target_options = target_options or {}
-    temp_options = temp_options or {}
-
-    copy_spec = _setup_array_rechunk(
-        source,
-        target_chunks,
-        max_mem,
-        target_store,
-        target_options=target_options,
-        temp_store_or_group=temp_store,
-        temp_options=temp_options,
-    )
-    intermediate = copy_spec.intermediate.array
-    target = copy_spec.write.array
-    return [copy_spec], intermediate, target
-
-
 def _setup_array_rechunk(
     source_array: T_ZarrArray,
     target_chunks: T_RegularChunks,
     max_mem: int,
-    target_store_or_group: T_Store,
-    target_options: Optional[Dict[Any, Any]] = None,
-    temp_store_or_group: Optional[T_Store] = None,
-    temp_options: Optional[Dict[Any, Any]] = None,
-    name: Optional[str] = None,
-) -> CubedCopySpec:
-    _validate_options(target_options)
-    _validate_options(temp_options)
+    target_store: T_Store,
+    temp_store: Optional[T_Store] = None,
+) -> Tuple[CubedArrayProxy, CubedArrayProxy, CubedArrayProxy]:
     shape = source_array.shape
-    # source_chunks = (
-    #     source_array.chunksize
-    #     if isinstance(source_array, dask.array.Array)
-    #     else source_array.chunks
-    # )
     source_chunks = source_array.chunks
     dtype = source_array.dtype
     itemsize = dtype.itemsize
-
-    if target_chunks is None:
-        # this is just a pass-through copy
-        target_chunks = source_chunks
 
     read_chunks, int_chunks, write_chunks = rechunking_plan(
         shape,
@@ -137,32 +104,26 @@ def _setup_array_rechunk(
         shape,
         dtype=dtype,
         chunks=target_chunks,
-        store=target_store_or_group,
-        **(target_options or {}),
+        store=target_store,
     )
 
     if read_chunks == write_chunks:
         int_array = None
     else:
         # do intermediate store
-        if temp_store_or_group is None:
-            raise ValueError(
-                "A temporary store location must be provided{}.".format(
-                    f" (array={name})" if name else ""
-                )
-            )
+        if temp_store is None:
+            raise ValueError("A temporary store location must be provided.")
         int_array = lazy_empty(
             shape,
             dtype=dtype,
             chunks=int_chunks,
-            store=temp_store_or_group,
-            **(target_options or {}),
+            store=temp_store,
         )
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
     int_proxy = CubedArrayProxy(int_array, int_chunks)
     write_proxy = CubedArrayProxy(target_array, write_chunks)
-    return CubedCopySpec(read_proxy, int_proxy, write_proxy)
+    return read_proxy, int_proxy, write_proxy
 
 
 def total_chunks(shape: T_Shape, chunks: T_RegularChunks) -> int:

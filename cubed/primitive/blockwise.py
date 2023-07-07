@@ -228,7 +228,7 @@ def blockwise(
             f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
         )
 
-    return CubedPipeline(stages, spec, target_array, None, projected_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks, None)
 
 
 # Code for fusing pipelines
@@ -281,7 +281,7 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     projected_mem = max(pipeline1.projected_mem, pipeline2.projected_mem)
     num_tasks = pipeline2.num_tasks
 
-    return CubedPipeline(stages, spec, target_array, None, projected_mem, num_tasks)
+    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks, None)
 
 
 # blockwise functions
