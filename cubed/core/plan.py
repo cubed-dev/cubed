@@ -379,13 +379,11 @@ def create_zarr_array(lazy_zarr_array, *, config=None):
 
 
 def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
-    stages = [
-        Stage(
-            create_zarr_array,
-            "create_zarr_array",
-            mappable=lazy_zarr_arrays,
-        )
-    ]
+    stage = Stage(
+        create_zarr_array,
+        "create_zarr_array",
+        mappable=lazy_zarr_arrays,
+    )
 
     # projected memory is size of largest initial values, or dtype size if there aren't any
     projected_mem = (
@@ -403,5 +401,5 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     num_tasks = len(lazy_zarr_arrays)
 
     return CubedPipeline(
-        stages, None, None, projected_mem, reserved_mem, num_tasks, None
+        stage, None, None, projected_mem, reserved_mem, num_tasks, None
     )

@@ -123,8 +123,9 @@ async def map_unordered(
 
 
 def pipeline_to_stream(app_function, name, pipeline, **kwargs):
-    if any([stage for stage in pipeline.stages if stage.mappable is None]):
-        raise NotImplementedError("All stages must be mappable in pipelines")
+    stage = pipeline.stage
+    if stage.mappable is None:
+        raise NotImplementedError("Stage must be mappable in pipeline")
     it = stream.iterate(
         [
             partial(

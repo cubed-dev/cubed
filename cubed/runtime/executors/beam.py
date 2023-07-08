@@ -123,23 +123,24 @@ class BeamDagExecutor(DagExecutor):
 
 
 def add_to_pcoll(name, rechunker_pipeline, pcoll):
-    for step, stage in enumerate(rechunker_pipeline.stages):
-        if stage.mappable is not None:
-            pcoll |= stage.name >> _SingleArgumentStage(
-                step, stage, rechunker_pipeline.config, name
-            )
-        else:
-            pcoll |= stage.name >> beam.Map(
-                _no_arg_stage,
-                current=step,
-                fun=stage.function,
-                config=rechunker_pipeline.config,
-            )
+    step = 0
+    stage = rechunker_pipeline.stage
+    if stage.mappable is not None:
+        pcoll |= stage.name >> _SingleArgumentStage(
+            step, stage, rechunker_pipeline.config, name
+        )
+    else:
+        pcoll |= stage.name >> beam.Map(
+            _no_arg_stage,
+            current=step,
+            fun=stage.function,
+            config=rechunker_pipeline.config,
+        )
 
-        # This prevents fusion:
-        #   https://cloud.google.com/dataflow/docs/guides/deploying-a-pipeline#preventing-fusion
-        # Avoiding fusion on Dataflow is necessary to ensure that stages execute serially.
-        pcoll |= gensym("Reshuffle") >> beam.Reshuffle()
+    # This prevents fusion:
+    #   https://cloud.google.com/dataflow/docs/guides/deploying-a-pipeline#preventing-fusion
+    # Avoiding fusion on Dataflow is necessary to ensure that stages execute serially.
+    pcoll |= gensym("Reshuffle") >> beam.Reshuffle()
 
     pcoll |= gensym("End") >> beam.Map(lambda x: -1)
     return pcoll

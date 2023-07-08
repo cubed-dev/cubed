@@ -204,13 +204,11 @@ def blockwise(
     write_proxy = CubedArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(block_function, func_with_kwargs, read_proxies, write_proxy)
 
-    stages = [
-        Stage(
-            apply_blockwise,
-            gensym("apply_blockwise"),
-            mappable=output_blocks,
-        )
-    ]
+    stage = Stage(
+        apply_blockwise,
+        gensym("apply_blockwise"),
+        mappable=output_blocks,
+    )
 
     # calculate projected memory
     projected_mem = reserved_mem + extra_projected_mem
@@ -233,7 +231,7 @@ def blockwise(
         )
 
     return CubedPipeline(
-        stages, spec, target_array, projected_mem, reserved_mem, num_tasks, None
+        stage, spec, target_array, projected_mem, reserved_mem, num_tasks, None
     )
 
 
@@ -244,8 +242,7 @@ def is_fuse_candidate(pipeline: CubedPipeline) -> bool:
     """
     Return True if a pipeline is a candidate for blockwise fusion.
     """
-    stages = pipeline.stages
-    return len(stages) == 1 and stages[0].function == apply_blockwise
+    return pipeline.stage.function == apply_blockwise
 
 
 def can_fuse_pipelines(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> bool:
@@ -261,15 +258,13 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
 
     assert pipeline1.num_tasks == pipeline2.num_tasks
 
-    mappable = pipeline2.stages[0].mappable
+    mappable = pipeline2.stage.mappable
 
-    stages = [
-        Stage(
-            apply_blockwise,
-            gensym("fused_apply_blockwise"),
-            mappable=mappable,
-        )
-    ]
+    stage = Stage(
+        apply_blockwise,
+        gensym("fused_apply_blockwise"),
+        mappable=mappable,
+    )
 
     def fused_blockwise_func(out_key):
         return pipeline1.config.block_function(
@@ -289,7 +284,7 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     num_tasks = pipeline2.num_tasks
 
     return CubedPipeline(
-        stages, spec, target_array, projected_mem, reserved_mem, num_tasks, None
+        stage, spec, target_array, projected_mem, reserved_mem, num_tasks, None
     )
 
 

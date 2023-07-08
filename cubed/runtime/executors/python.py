@@ -26,15 +26,15 @@ class PythonDagExecutor(DagExecutor):
     ) -> None:
         for name, node in visit_nodes(dag, resume=resume):
             pipeline: CubedPipeline = node["pipeline"]
-            for stage in pipeline.stages:
-                if stage.mappable is not None:
-                    for m in stage.mappable:
-                        exec_stage_func(stage.function, m, config=pipeline.config)
-                        if callbacks is not None:
-                            event = TaskEndEvent(array_name=name)
-                            [callback.on_task_end(event) for callback in callbacks]
-                else:
-                    exec_stage_func(stage.function, config=pipeline.config)
+            stage = pipeline.stage
+            if stage.mappable is not None:
+                for m in stage.mappable:
+                    exec_stage_func(stage.function, m, config=pipeline.config)
                     if callbacks is not None:
                         event = TaskEndEvent(array_name=name)
                         [callback.on_task_end(event) for callback in callbacks]
+            else:
+                exec_stage_func(stage.function, config=pipeline.config)
+                if callbacks is not None:
+                    event = TaskEndEvent(array_name=name)
+                    [callback.on_task_end(event) for callback in callbacks]

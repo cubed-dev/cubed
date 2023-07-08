@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional, Sequence
+from typing import Any, Optional
 
 import zarr
 
@@ -12,7 +12,7 @@ from cubed.vendor.rechunker.types import Config, Stage
 class CubedPipeline:
     """Generalisation of rechunker ``Pipeline`` with extra attributes."""
 
-    stages: Sequence[Stage]
+    stage: Stage
     config: Config
     target_array: Any
     projected_mem: int

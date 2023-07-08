@@ -56,15 +56,13 @@ def spec_to_pipeline(
 ) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
-    stages = [
-        Stage(
-            copy_read_to_write,
-            gensym("copy_read_to_write"),
-            mappable=ChunkKeys(shape, spec.write.chunks),
-        )
-    ]
+    stage = Stage(
+        copy_read_to_write,
+        gensym("copy_read_to_write"),
+        mappable=ChunkKeys(shape, spec.write.chunks),
+    )
     return CubedPipeline(
-        stages,
+        stage,
         spec,
         target_array,
         projected_mem,
