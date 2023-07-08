@@ -1,8 +1,6 @@
 import copy
 import logging
 import time
-from functools import partial
-from typing import Callable, Iterable
 
 from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
@@ -12,42 +10,8 @@ from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.lithops_retries import map_with_retries, wait_with_retries
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import handle_callbacks
-from cubed.vendor.rechunker.types import ParallelPipelines, PipelineExecutor
 
 logger = logging.getLogger(__name__)
-
-# Lithops represents delayed execution tasks as functions that require
-# a FunctionExecutor.
-Task = Callable[[FunctionExecutor], None]
-
-
-class LithopsPipelineExecutor(PipelineExecutor[Task]):
-    """An execution engine based on Lithops."""
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-
-    def pipelines_to_plan(self, pipelines: ParallelPipelines) -> Task:
-        tasks = []
-        for pipeline in pipelines:
-            stage_tasks = []
-            for stage in pipeline.stages:
-                if stage.mappable is not None:
-                    stage_func = build_stage_mappable_func(stage, pipeline.config)
-                    stage_tasks.append(stage_func)
-                else:
-                    stage_func = build_stage_func(stage, pipeline.config)
-                    stage_tasks.append(stage_func)
-
-            # Stages for a single pipeline must be executed in series
-            tasks.append(partial(_execute_in_series, stage_tasks))
-
-        return partial(_execute_in_series, tasks)
-
-    def execute_plan(self, plan: Task, **kwargs):
-        merged_kwargs = {**self.kwargs, **kwargs}
-        with FunctionExecutor(**merged_kwargs) as executor:
-            plan(executor)
 
 
 def run_func(input, func=None, config=None, name=None):
@@ -196,44 +160,6 @@ def standardise_lithops_stats(stats):
         peak_measured_mem_start=stats["worker_peak_memory_start"],
         peak_measured_mem_end=stats["worker_peak_memory_end"],
     )
-
-
-def build_stage_mappable_func(
-    stage, config, name=None, callbacks=None, use_backups=False
-):
-    def sf(mappable):
-        return stage.function(mappable, config=config)
-
-    def stage_func(lithops_function_executor):
-        for _, stats in map_unordered(
-            lithops_function_executor,
-            sf,
-            stage.mappable,
-            use_backups=use_backups,
-            return_stats=True,
-        ):
-            stats["array_name"] = name
-            handle_callbacks(callbacks, stats)
-
-    return stage_func
-
-
-def build_stage_func(stage, config):
-    def sf():
-        return stage.function(config=config)
-
-    def stage_func(lithops_function_executor):
-        futures = lithops_function_executor.call_async(sf, ())
-        lithops_function_executor.get_result(futures)
-
-    return stage_func
-
-
-def _execute_in_series(
-    tasks: Iterable[Task], lithops_function_executor: FunctionExecutor
-) -> None:
-    for task in tasks:
-        task(lithops_function_executor)
 
 
 class LithopsDagExecutor(DagExecutor):

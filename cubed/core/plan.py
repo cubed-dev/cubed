@@ -10,7 +10,7 @@ from cubed.primitive.types import CubedPipeline
 from cubed.runtime.pipeline import already_computed
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
-from cubed.vendor.rechunker.types import PipelineExecutor, Stage
+from cubed.vendor.rechunker.types import Stage
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -180,39 +180,17 @@ class Plan:
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
         dag = self.create_lazy_zarr_arrays(dag)
 
-        if isinstance(executor, PipelineExecutor):
-            while len(dag) > 0:
-                # Find nodes (and their pipelines) that have no dependencies
-                no_dep_nodes = [x for x in dag.nodes() if dag.in_degree(x) == 0]
-                pipelines = [
-                    p
-                    for (n, p) in nx.get_node_attributes(dag, "pipeline").items()
-                    if n in no_dep_nodes
-                ]
-
-                # and execute them in parallel
-                if len(pipelines) > 0:
-                    plan = executor.pipelines_to_plan(pipelines)
-                    executor.execute_plan(plan, **kwargs)
-
-                # Remove them from the DAG, and repeat
-                dag.remove_nodes_from(no_dep_nodes)
-
-        else:
-            if callbacks is not None:
-                [
-                    callback.on_compute_start(dag, resume=resume)
-                    for callback in callbacks
-                ]
-            executor.execute_dag(
-                dag,
-                callbacks=callbacks,
-                array_names=array_names,
-                resume=resume,
-                **kwargs,
-            )
-            if callbacks is not None:
-                [callback.on_compute_end(dag) for callback in callbacks]
+        if callbacks is not None:
+            [callback.on_compute_start(dag, resume=resume) for callback in callbacks]
+        executor.execute_dag(
+            dag,
+            callbacks=callbacks,
+            array_names=array_names,
+            resume=resume,
+            **kwargs,
+        )
+        if callbacks is not None:
+            [callback.on_compute_end(dag) for callback in callbacks]
 
     def num_tasks(self, optimize_graph=True, resume=None):
         """Return the number of tasks needed to execute this plan."""
