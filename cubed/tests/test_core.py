@@ -10,6 +10,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.core.ops import merge_chunks
 from cubed.extensions.history import HistoryCallback
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
@@ -298,12 +299,12 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     spec = cubed.Spec(tmp_path, allowed_mem=1000)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
-    # check that there is > 1 rechunk step
-    rechunks = [
-        n for (n, d) in b.plan.dag.nodes(data=True) if d["op_name"] == "rechunk"
+    # check that there is > 1 blockwise step (after optimization)
+    blockwises = [
+        n for (n, d) in b.plan.dag.nodes(data=True) if d["op_name"] == "blockwise"
     ]
-    assert len(rechunks) > 1
-    assert b.plan.max_projected_mem() == 1000
+    assert len(blockwises) > 1
+    assert b.plan.max_projected_mem() <= 1000
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
 
 
@@ -312,6 +313,23 @@ def test_reduction_not_enough_memory(tmp_path):
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     with pytest.raises(ValueError, match=r"Not enough memory for reduction"):
         xp.sum(a, axis=0, dtype=np.uint8)
+
+
+@pytest.mark.parametrize("target_chunks", [(2, 3), (4, 3), (2, 6), (4, 6)])
+def test_merge_chunks(spec, target_chunks):
+    a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)
+    b = merge_chunks(a, target_chunks)
+    assert b.chunksize == target_chunks
+    assert_array_equal(b.compute(), np.ones((10, 10)))
+
+
+@pytest.mark.parametrize(
+    "target_chunks", [(2,), (2, 3, 1), (3, 2), (1, 3), (5, 5), (12, 12)]
+)
+def test_merge_chunks_fails(spec, target_chunks):
+    a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)
+    with pytest.raises(ValueError):
+        merge_chunks(a, target_chunks)
 
 
 def test_compute_multiple():

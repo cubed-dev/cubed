@@ -621,6 +621,34 @@ def rechunk(x, chunks, target_store=None):
     return Array(name, pipeline.target_array, spec, plan)
 
 
+def merge_chunks(x, chunks):
+    target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+
+    target_chunksize = to_chunksize(target_chunks)
+    if len(target_chunksize) != x.ndim:
+        raise ValueError(
+            f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
+        )
+    if not all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunksize)):
+        raise ValueError(
+            f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
+        )
+
+    return map_direct(
+        _copy_chunk,
+        x,
+        shape=x.shape,
+        dtype=x.dtype,
+        chunks=target_chunks,
+        extra_projected_mem=0,
+        target_chunks=target_chunks,
+    )
+
+
+def _copy_chunk(e, x, target_chunks=None, block_id=None):
+    return x.zarray[get_item(target_chunks, block_id)]
+
+
 def reduction(
     x: "Array",
     func,
@@ -666,9 +694,9 @@ def reduction(
             adjust_chunks=adjust_chunks,
         )
 
-    # rechunk/reduce along axis in multiple rounds until there's a single block in each reduction axis
+    # merge/reduce along axis in multiple rounds until there's a single block in each reduction axis
     while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
-        # rechunk along axis
+        # merge along axis
         target_chunks = list(result.chunksize)
         chunk_mem = chunk_memory(intermediate_dtype, result.chunksize)
         for i, s in enumerate(result.shape):
@@ -680,7 +708,7 @@ def reduction(
                     target_chunks[i] = min(s, x.chunksize[i])
                 else:
                     # single axis: see how many result chunks fit in max_mem
-                    # factor of 4 is memory for {compressed, uncompressed} x {input, output} (see rechunk.py)
+                    # factor of 4 is memory for {compressed, uncompressed} x {input, output}
                     target_chunk_size = (max_mem - chunk_mem) // (chunk_mem * 4)
                     if target_chunk_size <= 1:
                         raise ValueError(
@@ -688,7 +716,7 @@ def reduction(
                         )
                     target_chunks[i] = min(s, target_chunk_size)
         _target_chunks = tuple(target_chunks)
-        result = rechunk(result, _target_chunks)
+        result = merge_chunks(result, _target_chunks)
 
         # reduce chunks (if any axis chunksize is > 1)
         if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
