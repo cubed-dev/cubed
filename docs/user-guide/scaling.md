@@ -75,7 +75,7 @@ Some other executors such as Beam will first convert the Cubed Plan to a differe
 
 ### Different Cloud Providers
 
-Different cloud providers may perform differently. For example, Google Cloud Function (GCF) has been observed to have more stragglers than AWS.
+Different cloud providers' serverless offerings may perform differently. For example, Google Cloud Functions (GCF) has been observed to have more stragglers than AWS Lambda.
 
 
 ## Diagnosing Performance
