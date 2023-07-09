@@ -7,7 +7,7 @@ This page aims to provide a deeper understanding of how Cubed's design scales in
 
 There are different types of scaling to consider in distributed computing:
 
-Horizontal versus Vertical Scaling: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means enhancing the speed & resources of an existing machine (or replacing it with a larger one with more resources).
+Horizontal versus Vertical Scaling: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means upgrading an existing machine to a larger one with more speed and resources.
 
 Weak versus Strong Scaling: Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size.
 Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor.
@@ -81,7 +81,7 @@ Different cloud providers may perform differently. For example, Google Cloud Fun
 
 ### Optimized Plan
 
-Use {py:meth}`Plan.visualize() <cubed.Plan.visualize()>` to view the optimized plan. This allows you to see the number of steps involved in your calculation.
+Use {py:meth}`Plan.visualize() <cubed.Plan.visualize()>` to view the optimized plan. This allows you to see the number of steps involved in your calculation, the number of tasks in each step, and overall.
 
 ### History Callback
 
