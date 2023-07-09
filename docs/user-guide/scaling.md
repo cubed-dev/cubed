@@ -22,14 +22,14 @@ To understand factors affecting the scaling and performance of Cubed, we will st
 
 ### Single-step Calculation
 
-The  simplest non-trivial operation in cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores.
+The  simplest non-trivial operation in Cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores.
 Changing the sign of every element in an array would be an example of this type of operation, known as an [elementwise](Operations/elemwise) operation.
 
 In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr.
 In such a case weak scaling should be linear, i.e. an array with more blocks could be processed in the same amount of time given proportionally more workers to process those blocks.
 
 In practice, this ideal scenario may not be achieved, for a number of reasons.
-Firstly, you need to make sure you're using a parallel executor not the default single-threaded executor.
+Firstly, you need to make sure you're using a parallel executor, not the default single-threaded executor.
 You also need enough parallelism to match the scale of your problem.
 Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor's configuration to not restrict the ``max_workers``.
 With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.
