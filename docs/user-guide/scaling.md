@@ -7,7 +7,7 @@ This page aims to provide a deeper understanding of how Cubed's design scales in
 
 There are different types of scaling to consider in distributed computing:
 
-Horizontal versus Vertical Scaling: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means enhancing the speed & resources of an existing machine.
+Horizontal versus Vertical Scaling: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means enhancing the speed & resources of an existing machine (or replacing it with a larger one with more resources).
 
 Weak versus Strong Scaling: Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size.
 Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor.
