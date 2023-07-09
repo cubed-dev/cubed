@@ -68,9 +68,9 @@ The same logic applies if you have two arrays feeding into a single array or vic
 ### Different Executors
 
 Different executors come with their own set of advantages and disadvantages.
-For instance, some executors have much faster worker startup times, like Modal, while others may have different limits to the maximum workers.
-When using Dask as an executor, the scheduler might yield unintuitive results.
-It is worth exploring how other executors like Beam behave.
+For instance, some serverless executors have much faster worker startup times (such as Modal), while others may have different limits to the maximum workers.
+Cluster-based executors (e.g. the Dask executor) will have different performance characteristics depending on how resources are provisioned for the cluster.
+Some other executors such as Beam will first convert the Cubed Plan to a different representation before executing, which will affect performance.
 
 ### Different Cloud Providers
 
