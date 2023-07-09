@@ -80,6 +80,8 @@ Different cloud providers' serverless offerings may perform differently. For exa
 
 ## Diagnosing Performance
 
+To understand how your computation could perform better you first need to diagnose the source of any problems.
+
 ### Optimized Plan
 
 Use {py:meth}`Plan.visualize() <cubed.Plan.visualize()>` to view the optimized plan. This allows you to see the number of steps involved in your calculation, the number of tasks in each step, and overall.
@@ -92,11 +94,12 @@ The history callback function can help determine how much time was spent in work
 
 A timeline visualization callback can provide a visual representation of the above points. Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.
 
+
 ## Tips
 
 In Cubed, there are very few "magic numbers", meaning calculations generally take as long as they need to, with few other parameters to tune. Here are a few suggestions:
 
 * Use {py:func}`measure_reserved_mem <cubed.measure_reserved_mem>`.
 * Stick to ~100MB chunks.
-* Set allowed_mem to around ~2GB (or larger if necessary).
+* Set ``allowed_mem`` to around ~2GB (or larger if necessary).
 * Use Cubed only for the part of the calculation where it's needed.
