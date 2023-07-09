@@ -33,8 +33,9 @@ Firstly, you need to make sure you're using a parallel executor, not the default
 You also need enough parallelism to match the scale of your problem.
 Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor's configuration to not restrict the ``max_workers``.
 With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.
+
 Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
-To handle stragglers, you should consider turning on backups, as any failures that are restarted essentially become stragglers.
+To handle stragglers, you should consider turning on backups (with ``use_backups=True``), as any failures that are restarted essentially become stragglers.
 Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally.
 
 ### Multi-step Calculation
