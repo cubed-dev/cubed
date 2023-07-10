@@ -345,7 +345,7 @@ document.write(`
 <p>Note how fundamental <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> is - all array API functions depend on it.</p>
 </section>
 <section id="elemwise">
-<h2><code class="docutils literal notranslate"><span class="pre">elemwise</span></code><a class="headerlink" href="#elemwise" title="Permalink to this heading">#</a></h2>
+<span id="elemwise-operation"></span><h2><code class="docutils literal notranslate"><span class="pre">elemwise</span></code><a class="headerlink" href="#elemwise" title="Permalink to this heading">#</a></h2>
 <p>The simplest core operation is <code class="docutils literal notranslate"><span class="pre">elemwise</span></code>, which maps input array elements to output array elements, a block at a time.</p>
 <ul class="simple">
 <li><p>Preserves: <code class="docutils literal notranslate"><span class="pre">shape</span></code>, <code class="docutils literal notranslate"><span class="pre">chunks</span></code>, <code class="docutils literal notranslate"><span class="pre">numblocks</span></code></p></li>
@@ -389,7 +389,7 @@ document.write(`
 <p><img alt="The blockwise primitive operation" src="_images/blockwise.svg" /></p>
 </section>
 <section id="rechunk">
-<h2><code class="docutils literal notranslate"><span class="pre">rechunk</span></code><a class="headerlink" href="#rechunk" title="Permalink to this heading">#</a></h2>
+<span id="rechunk-operation"></span><h2><code class="docutils literal notranslate"><span class="pre">rechunk</span></code><a class="headerlink" href="#rechunk" title="Permalink to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> operation is a primitive operation for changing the chunking of an array, without changing its shape or dtype.</p>
 <ul class="simple">
 <li><p>Preserves: <code class="docutils literal notranslate"><span class="pre">shape</span></code>, <code class="docutils literal notranslate"><span class="pre">dtype</span></code></p></li>

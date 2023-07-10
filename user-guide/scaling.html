@@ -366,7 +366,7 @@ In other words, strong scaling measures how much faster you can get a given prob
 <section id="single-step-calculation">
 <h3>Single-step Calculation<a class="headerlink" href="#single-step-calculation" title="Permalink to this heading">#</a></h3>
 <p>The  simplest non-trivial operation in Cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores.
-Changing the sign of every element in an array would be an example of this type of operation, known as an <a class="reference internal" href="#Operations/elemwise"><span class="xref myst">elementwise</span></a> operation.</p>
+Changing the sign of every element in an array would be an example of this type of operation, known as an <a class="reference internal" href="../operations.html#elemwise-operation"><span class="std std-ref">elementwise</span></a> operation.</p>
 <p>In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr.
 In such a case weak scaling should be linear, i.e. an array with more blocks could be processed in the same amount of time given proportionally more workers to process those blocks.</p>
 <p>In practice, this ideal scenario may not be achieved, for a number of reasons.
@@ -381,7 +381,7 @@ Worker start-up time is another practical speed consideration, though it would d
 <section id="multi-step-calculation">
 <h3>Multi-step Calculation<a class="headerlink" href="#multi-step-calculation" title="Permalink to this heading">#</a></h3>
 <p>A multi-step calculation requires writing one or more intermediate arrays to persistent storage.
-One important example in Cubed is the <a class="reference internal" href="#Operations/rechunk"><span class="xref myst">rechunk</span></a> operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.</p>
+One important example in Cubed is the <a class="reference internal" href="../operations.html#rechunk-operation"><span class="std std-ref">rechunk</span></a> operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.</p>
 <p>In multi-step calculations, the number of steps in the plan sets the minimum total execution time.
 Hence, reducing the number of steps in the plan can lead to significant performance improvements.
 Reductions can be carried out in fewer iterative steps if <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> is larger.
