@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Reliability &#8212; Cubed</title>
+    <title>Scaling &#8212; Cubed</title>
   
   
   
@@ -40,11 +40,11 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/reliability';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/scaling';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Scaling" href="scaling.html" />
-    <link rel="prev" title="Memory" href="memory.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Reliability" href="reliability.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -133,8 +133,8 @@
 <li class="toctree-l2"><a class="reference internal" href="executors.html">Executors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="storage.html">Storage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="memory.html">Memory</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Reliability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html">Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reliability.html">Reliability</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Scaling</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
@@ -242,7 +242,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/edit/main/user-guide/reliability.md" target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/edit/main/user-guide/scaling.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -259,7 +259,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fuser-guide/reliability.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fuser-guide/scaling.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -307,7 +307,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Reliability</h1>
+    <h1>Scaling</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -317,10 +317,25 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#strong-consistency">Strong consistency</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retries">Retries</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timeouts">Timeouts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stragglers">Stragglers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preface-types-of-scaling">Preface: Types of Scaling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#theoretical-vs-practical-scaling-of-cubed">Theoretical vs Practical Scaling of Cubed</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#single-step-calculation">Single-step Calculation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-step-calculation">Multi-step Calculation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-pipeline-calculation">Multi-pipeline Calculation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-performance-considerations">Other Performance Considerations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#different-executors">Different Executors</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#different-cloud-providers">Different Cloud Providers</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnosing-performance">Diagnosing Performance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-plan">Optimized Plan</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history-callback">History Callback</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline-visualization-callback">Timeline Visualization Callback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips">Tips</a></li>
 </ul>
             </nav>
         </div>
@@ -332,28 +347,101 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="reliability">
-<h1>Reliability<a class="headerlink" href="#reliability" title="Permalink to this heading">#</a></h1>
-<p>Large scale distributed systems must be fault tolerant, and Cubed is no exception. This section covers some of the features that allow you to run computations in a reliable fashion.</p>
-<section id="strong-consistency">
-<h2>Strong consistency<a class="headerlink" href="#strong-consistency" title="Permalink to this heading">#</a></h2>
-<p>Cubed relies on file storage providing strong global consistency. This means that after writing a file to storage, it is
-immediately available for reading, even by another client. For Cubed, this means that once a Zarr chunk has been written to storage it can be read by another process.</p>
-<p>Importantly, both <a class="reference external" href="https://aws.amazon.com/s3/consistency/">Amazon S3</a> and <a class="reference external" href="https://cloud.google.com/storage/docs/consistency">Google Cloud Storage</a> provide strong consistency.</p>
+  <section id="scaling">
+<h1>Scaling<a class="headerlink" href="#scaling" title="Permalink to this heading">#</a></h1>
+<p>Cubed is specifically designed to maintain optimal performance while processing large arrays (of order Terabytes so far).
+This page aims to provide a deeper understanding of how Cubed’s design scales in both theoretical and practical scenarios.</p>
+<section id="preface-types-of-scaling">
+<h2>Preface: Types of Scaling<a class="headerlink" href="#preface-types-of-scaling" title="Permalink to this heading">#</a></h2>
+<p>There are different types of scaling to consider in distributed computing:</p>
+<p><strong>Horizontal versus Vertical Scaling</strong>: Horizontal scaling refers to adding more machines to the system to improve its throughput, while vertical scaling means upgrading an existing machine to a larger one with more speed and resources.</p>
+<p><strong>Weak versus Strong Scaling</strong>: Strong scaling is defined as how the solution time varies with the number of processors for a fixed total problem size.
+Weak scaling is defined as how the solution time varies with the number of processors for a fixed problem size per processor.
+In other words, strong scaling measures how much faster you can get a given problem done, whereas weak scaling measures how big a problem you can get done in a reasonable time.</p>
+<p>Cubed has been designed to scale horizontally, in such a way as to display good weak scaling even when processing large array datasets.</p>
 </section>
-<section id="retries">
-<h2>Retries<a class="headerlink" href="#retries" title="Permalink to this heading">#</a></h2>
-<p>If a task fails - with an IO exception when reading or writing to Zarr, for example - it will be retried, up to a total of three attempts. If it fails again then the whole computation will fail with an error message. Note that currently the number of retries is not configurable.</p>
+<section id="theoretical-vs-practical-scaling-of-cubed">
+<h2>Theoretical vs Practical Scaling of Cubed<a class="headerlink" href="#theoretical-vs-practical-scaling-of-cubed" title="Permalink to this heading">#</a></h2>
+<p>To understand factors affecting the scaling and performance of Cubed, we will start by considering the simplest possible calculation and add complexity.</p>
+<section id="single-step-calculation">
+<h3>Single-step Calculation<a class="headerlink" href="#single-step-calculation" title="Permalink to this heading">#</a></h3>
+<p>The  simplest non-trivial operation in Cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores.
+Changing the sign of every element in an array would be an example of this type of operation, known as an <a class="reference internal" href="#Operations/elemwise"><span class="xref myst">elementwise</span></a> operation.</p>
+<p>In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr.
+In such a case weak scaling should be linear, i.e. an array with more blocks could be processed in the same amount of time given proportionally more workers to process those blocks.</p>
+<p>In practice, this ideal scenario may not be achieved, for a number of reasons.
+Firstly, you need to make sure you’re using a parallel executor, not the default single-threaded executor.
+You also need enough parallelism to match the scale of your problem.
+Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor’s configuration to not restrict the <code class="docutils literal notranslate"><span class="pre">max_workers</span></code>.
+With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.</p>
+<p>Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
+To handle stragglers, you should consider turning on backups (with <code class="docutils literal notranslate"><span class="pre">use_backups=True</span></code>), as any failures that are restarted essentially become stragglers.
+Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally.</p>
 </section>
-<section id="timeouts">
-<h2>Timeouts<a class="headerlink" href="#timeouts" title="Permalink to this heading">#</a></h2>
-<p>If a task takes longer than a pre-determined amount of time then it will be considered to have failed, and will be retried as described in the previous paragraph. Currently the timeout settings are different from one executor to another, and the way to configure them is also dependent on the executor.</p>
+<section id="multi-step-calculation">
+<h3>Multi-step Calculation<a class="headerlink" href="#multi-step-calculation" title="Permalink to this heading">#</a></h3>
+<p>A multi-step calculation requires writing one or more intermediate arrays to persistent storage.
+One important example in Cubed is the <a class="reference internal" href="#Operations/rechunk"><span class="xref myst">rechunk</span></a> operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.</p>
+<p>In multi-step calculations, the number of steps in the plan sets the minimum total execution time.
+Hence, reducing the number of steps in the plan can lead to significant performance improvements.
+Reductions can be carried out in fewer iterative steps if <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> is larger.
+Cubed automatically fuses some steps to enhance performance, but others (especially rechunk) cannot be fused without requiring a shuffle, which can potentially violate memory constraints.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In theory multiple blockwise operations can be fused together, enhancing the performance further. However this has not yet been implemented in Cubed.</p>
+</div>
+<p>In practical scenarios, stragglers can hold up the completion of each step separately, thereby cumulatively affecting the overall performance of the calculation.</p>
 </section>
-<section id="stragglers">
-<h2>Stragglers<a class="headerlink" href="#stragglers" title="Permalink to this heading">#</a></h2>
-<p>A few slow running tasks (called stragglers) can disproportionately slow down the whole computation. To mitigate this, speculative duplicate tasks are launched in certain circumstances, acting as backups that complete more quickly than the straggler, hence bringing down the overall time taken.</p>
-<p>When a backup task is launched the original task is not cancelled, so it is to be expected that both tasks will complete and write their (identical) output. This only works since tasks are idempotent and each write a single, whole Zarr chunk in an atomic operation. (Updates to a single key are atomic in both <a class="reference external" href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html#ConsistencyModel">Amazon S3</a> and Google Cloud Storage.)</p>
-<p>Note that this feature is experimental and disabled by default since it has not been tested at scale yet.</p>
+<section id="multi-pipeline-calculation">
+<h3>Multi-pipeline Calculation<a class="headerlink" href="#multi-pipeline-calculation" title="Permalink to this heading">#</a></h3>
+<p>A “pipeline” refers to an independent branch of the calculation.
+For example, if you have two separate arrays to compute simultaneously, full parallelism requires sufficient workers for both tasks.
+The same logic applies if you have two arrays feeding into a single array or vice versa.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently Cubed will not necessarily execute independent pipelines in parallel on all executors.</p>
+</div>
+</section>
+</section>
+<section id="other-performance-considerations">
+<h2>Other Performance Considerations<a class="headerlink" href="#other-performance-considerations" title="Permalink to this heading">#</a></h2>
+<section id="different-executors">
+<h3>Different Executors<a class="headerlink" href="#different-executors" title="Permalink to this heading">#</a></h3>
+<p>Different executors come with their own set of advantages and disadvantages.
+For instance, some serverless executors have much faster worker startup times (such as Modal), while others may have different limits to the maximum workers.
+Cluster-based executors (e.g. the Dask executor) will have different performance characteristics depending on how resources are provisioned for the cluster.
+Some other executors such as Beam will first convert the Cubed Plan to a different representation before executing, which will affect performance.</p>
+</section>
+<section id="different-cloud-providers">
+<h3>Different Cloud Providers<a class="headerlink" href="#different-cloud-providers" title="Permalink to this heading">#</a></h3>
+<p>Different cloud providers’ serverless offerings may perform differently. For example, Google Cloud Functions (GCF) has been observed to have more stragglers than AWS Lambda.</p>
+</section>
+</section>
+<section id="diagnosing-performance">
+<h2>Diagnosing Performance<a class="headerlink" href="#diagnosing-performance" title="Permalink to this heading">#</a></h2>
+<p>To understand how your computation could perform better you first need to diagnose the source of any problems.</p>
+<section id="optimized-plan">
+<h3>Optimized Plan<a class="headerlink" href="#optimized-plan" title="Permalink to this heading">#</a></h3>
+<p>Use <code class="xref py py-meth docutils literal notranslate"><span class="pre">Plan.visualize()</span></code> to view the optimized plan. This allows you to see the number of steps involved in your calculation, the number of tasks in each step, and overall.</p>
+</section>
+<section id="history-callback">
+<h3>History Callback<a class="headerlink" href="#history-callback" title="Permalink to this heading">#</a></h3>
+<p>The history callback function can help determine how much time was spent in worker startup, as well as how much stragglers affected the overall speed.</p>
+</section>
+<section id="timeline-visualization-callback">
+<h3>Timeline Visualization Callback<a class="headerlink" href="#timeline-visualization-callback" title="Permalink to this heading">#</a></h3>
+<p>A timeline visualization callback can provide a visual representation of the above points. Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.</p>
+</section>
+</section>
+<section id="tips">
+<h2>Tips<a class="headerlink" href="#tips" title="Permalink to this heading">#</a></h2>
+<p>In Cubed, there are very few “magic numbers”, meaning calculations generally take as long as they need to, with few other parameters to tune. Here are a few suggestions:</p>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="../generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem" title="cubed.measure_reserved_mem"><code class="xref py py-func docutils literal notranslate"><span class="pre">measure_reserved_mem</span></code></a>.</p></li>
+<li><p>Stick to ~100MB chunks.</p></li>
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> to around ~2GB (or larger if necessary).</p></li>
+<li><p>Use Cubed only for the part of the calculation where it’s needed.</p></li>
+</ul>
 </section>
 </section>
 
@@ -370,20 +458,20 @@ immediately available for reading, even by another client. For Cubed, this means
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="memory.html"
+       href="reliability.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Memory</p>
+        <p class="prev-next-title">Reliability</p>
       </div>
     </a>
     <a class="right-next"
-       href="scaling.html"
+       href="../api.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Scaling</p>
+        <p class="prev-next-title">API Reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -405,10 +493,25 @@ immediately available for reading, even by another client. For Cubed, this means
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#strong-consistency">Strong consistency</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retries">Retries</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timeouts">Timeouts</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stragglers">Stragglers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preface-types-of-scaling">Preface: Types of Scaling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#theoretical-vs-practical-scaling-of-cubed">Theoretical vs Practical Scaling of Cubed</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#single-step-calculation">Single-step Calculation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-step-calculation">Multi-step Calculation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-pipeline-calculation">Multi-pipeline Calculation</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-performance-considerations">Other Performance Considerations</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#different-executors">Different Executors</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#different-cloud-providers">Different Cloud Providers</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnosing-performance">Diagnosing Performance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-plan">Optimized Plan</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history-callback">History Callback</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline-visualization-callback">Timeline Visualization Callback</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips">Tips</a></li>
 </ul>
   </nav></div>
 
