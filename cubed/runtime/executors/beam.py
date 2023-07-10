@@ -11,13 +11,7 @@ from apache_beam.runners.runner import PipelineState
 from cubed.core.array import TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
-from cubed.vendor.rechunker.types import (
-    Config,
-    NoArgumentStageFunction,
-    ParallelPipelines,
-    PipelineExecutor,
-    Stage,
-)
+from cubed.vendor.rechunker.types import Config, NoArgumentStageFunction, Stage
 
 from ..utils import gensym
 
@@ -84,51 +78,6 @@ class _SingleArgumentStage(beam.PTransform):
             | beam.combiners.ToList()
             | "Validate" >> beam.Map(self.post_validate)
         )
-
-
-class BeamPipelineExecutor(PipelineExecutor[List[beam.PTransform]]):
-    def pipelines_to_plan(self, pipelines: ParallelPipelines) -> List[beam.PTransform]:
-        start = "Start" >> beam.Create([-1])
-
-        pcolls = []
-
-        for pipeline in pipelines:
-            pcoll = start
-            for step, stage in enumerate(pipeline.stages):
-                if stage.mappable is not None:
-                    pcoll |= stage.name >> _SingleArgumentStage(
-                        step, stage, pipeline.config
-                    )
-                else:
-                    pcoll |= stage.name >> beam.Map(
-                        _no_arg_stage,
-                        current=step,
-                        fun=stage.function,
-                        config=pipeline.config,
-                    )
-
-                # This prevents fusion:
-                #   https://cloud.google.com/dataflow/docs/guides/deploying-a-pipeline#preventing-fusion
-                # Avoiding fusion on Dataflow is necessary to ensure that stages execute serially.
-                pcoll |= f"Reshuffle_{step:03d}" >> beam.Reshuffle()
-
-            pcolls.append(pcoll)
-
-        return pcolls
-
-    def execute_plan(self, plan: List[beam.PTransform], **kwargs):
-        with beam.Pipeline(**kwargs) as pipeline:
-            pcolls = []
-            for ptran in plan:
-                pcoll = pipeline | ptran
-                pcolls.append(pcoll)
-            pcolls | beam.Flatten()
-
-            # Print metrics at end
-            # result = pipeline.run()
-            # counters = result.metrics().query(beam.metrics.MetricsFilter())['counters']
-            # for metric in counters:
-            #     print(metric)
 
 
 class BeamDagExecutor(DagExecutor):

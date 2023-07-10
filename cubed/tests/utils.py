@@ -1,23 +1,20 @@
 import platform
 from typing import Iterable
 
+import networkx as nx
 import numpy as np
 import zarr
 
 from cubed.core.array import Callback
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
-from cubed.vendor.rechunker.executors.python import PythonPipelineExecutor
 
 LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
 
-ALL_EXECUTORS = [
-    PythonPipelineExecutor(),
-    PythonDagExecutor(),
-]
+ALL_EXECUTORS = [PythonDagExecutor()]
 
 # don't run all tests on every executor as it's too slow, so just have a subset
-MAIN_EXECUTORS = [PythonPipelineExecutor(), PythonDagExecutor()]
+MAIN_EXECUTORS = [PythonDagExecutor()]
 
 
 if platform.system() != "Windows":
@@ -26,23 +23,18 @@ if platform.system() != "Windows":
 
 
 try:
-    from cubed.runtime.executors.beam import BeamDagExecutor, BeamPipelineExecutor
+    from cubed.runtime.executors.beam import BeamDagExecutor
 
     ALL_EXECUTORS.append(BeamDagExecutor())
-    ALL_EXECUTORS.append(BeamPipelineExecutor())
 
     MAIN_EXECUTORS.append(BeamDagExecutor())
 except ImportError:
     pass
 
 try:
-    from cubed.runtime.executors.lithops import (
-        LithopsDagExecutor,
-        LithopsPipelineExecutor,
-    )
+    from cubed.runtime.executors.lithops import LithopsDagExecutor
 
     ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
-    ALL_EXECUTORS.append(LithopsPipelineExecutor(config=LITHOPS_LOCAL_CONFIG))
 
     MAIN_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
 except ImportError:
@@ -95,5 +87,6 @@ def create_zarr(a, /, store, *, dtype=None, chunks=None):
 
 def execute_pipeline(pipeline, executor):
     """Executes a pipeline"""
-    plan = executor.pipelines_to_plan([pipeline])
-    executor.execute_plan(plan)
+    dag = nx.MultiDiGraph()
+    dag.add_node("node", pipeline=pipeline)
+    executor.execute_dag(dag)
