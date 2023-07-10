@@ -23,7 +23,7 @@ To understand factors affecting the scaling and performance of Cubed, we will st
 ### Single-step Calculation
 
 The  simplest non-trivial operation in Cubed would map one block from the input array to one block in the output array, with no intermediate persistent stores.
-Changing the sign of every element in an array would be an example of this type of operation, known as an [elementwise](Operations/elemwise) operation.
+Changing the sign of every element in an array would be an example of this type of operation, known as an [elementwise](#elemwise-operation) operation.
 
 In an ideal environment where the serverless service provides infinite workers, the limiting factor for scaling would be concurrent writes to Zarr.
 In such a case weak scaling should be linear, i.e. an array with more blocks could be processed in the same amount of time given proportionally more workers to process those blocks.
@@ -41,7 +41,7 @@ Worker start-up time is another practical speed consideration, though it would d
 ### Multi-step Calculation
 
 A multi-step calculation requires writing one or more intermediate arrays to persistent storage.
-One important example in Cubed is the [rechunk](Operations/rechunk) operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.
+One important example in Cubed is the [rechunk](#rechunk-operation) operation, which guarantees bounded memory usage by writing and reading from one intermediate persistent Zarr store.
 
 In multi-step calculations, the number of steps in the plan sets the minimum total execution time.
 Hence, reducing the number of steps in the plan can lead to significant performance improvements.

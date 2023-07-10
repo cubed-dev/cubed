@@ -10,6 +10,7 @@ The following diagram shows the dependencies between operations. Array API funct
 
 Note how fundamental `blockwise` is - all array API functions depend on it.
 
+(elemwise-operation)=
 ## `elemwise`
 
 The simplest core operation is `elemwise`, which maps input array elements to output array elements, a block at a time.
@@ -62,6 +63,7 @@ This example shows how `outer` is implemented using `blockwise`. Each block from
 
 ![The blockwise primitive operation](images/blockwise.svg)
 
+(rechunk-operation)=
 ## `rechunk`
 
 The `rechunk` operation is a primitive operation for changing the chunking of an array, without changing its shape or dtype.
