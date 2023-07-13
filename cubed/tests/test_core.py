@@ -220,6 +220,16 @@ def test_rechunk_same_chunks(spec):
     assert_array_equal(res, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+# see also test_rechunk.py
+def test_rechunk_intermediate(tmp_path):
+    spec = cubed.Spec(tmp_path, allowed_mem=4 * 8 * 4)
+    a = xp.ones((4, 4), chunks=(1, 4), spec=spec)
+    b = a.rechunk((4, 1))
+    assert_array_equal(b.compute(), np.ones((4, 4)))
+    intermediates = [n for (n, d) in b.plan.dag.nodes(data=True) if "-int" in d["name"]]
+    assert len(intermediates) == 1
+
+
 def test_compute_is_idempotent(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     b = xp.negative(a)

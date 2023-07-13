@@ -15,9 +15,9 @@ class CubedPipeline:
     stages: Sequence[Stage]
     config: Config
     target_array: Any
-    intermediate_array: Optional[Any]
     projected_mem: int
     num_tasks: int
+    write_chunks: Optional[T_RegularChunks]
 
 
 class CubedArrayProxy:
@@ -36,5 +36,4 @@ class CubedCopySpec:
     """Generalisation of rechunker ``CopySpec`` with support for ``LazyZarrArray``."""
 
     read: CubedArrayProxy
-    intermediate: CubedArrayProxy
     write: CubedArrayProxy

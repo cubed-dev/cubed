@@ -47,50 +47,20 @@ def copy_read_to_write(chunk_key, *, config: CubedCopySpec):
     config.write.open()[chunk_key] = data
 
 
-def copy_read_to_intermediate(chunk_key, *, config: CubedCopySpec):
-    # workaround limitation of lithops.utils.verify_args
-    if isinstance(chunk_key, list):
-        chunk_key = tuple(chunk_key)
-    data = np.asarray(config.read.open()[chunk_key])
-    config.intermediate.open()[chunk_key] = data
-
-
-def copy_intermediate_to_write(chunk_key, *, config: CubedCopySpec):
-    # workaround limitation of lithops.utils.verify_args
-    if isinstance(chunk_key, list):
-        chunk_key = tuple(chunk_key)
-    data = np.asarray(config.intermediate.open()[chunk_key])
-    config.write.open()[chunk_key] = data
-
-
 def spec_to_pipeline(
     spec: CubedCopySpec, target_array: Any, projected_mem: int, num_tasks: int
 ) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
-    if spec.intermediate.array is None:
-        stages = [
-            Stage(
-                copy_read_to_write,
-                gensym("copy_read_to_write"),
-                mappable=ChunkKeys(shape, spec.write.chunks),
-            )
-        ]
-    else:
-        stages = [
-            Stage(
-                copy_read_to_intermediate,
-                gensym("copy_read_to_intermediate"),
-                mappable=ChunkKeys(shape, spec.intermediate.chunks),
-            ),
-            Stage(
-                copy_intermediate_to_write,
-                gensym("copy_intermediate_to_write"),
-                mappable=ChunkKeys(shape, spec.write.chunks),
-            ),
-        ]
+    stages = [
+        Stage(
+            copy_read_to_write,
+            gensym("copy_read_to_write"),
+            mappable=ChunkKeys(shape, spec.write.chunks),
+        )
+    ]
     return CubedPipeline(
-        stages, spec, target_array, spec.intermediate.array, projected_mem, num_tasks
+        stages, spec, target_array, projected_mem, num_tasks, spec.write.chunks
     )
 
 
