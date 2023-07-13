@@ -66,7 +66,6 @@ def map_unordered(
     """
     return_when = ALWAYS if use_backups else ANY_COMPLETED
 
-    inputs = list(map_iterdata)
     start_times = {}
     end_times = {}
     backups: Dict[RetryingFuture, RetryingFuture] = {}
@@ -79,7 +78,7 @@ def map_unordered(
     futures = map_with_retries(
         lithops_function_executor,
         partial_map_function,
-        inputs,
+        map_iterdata,
         timeout=timeout,
         include_modules=include_modules,
         retries=retries,

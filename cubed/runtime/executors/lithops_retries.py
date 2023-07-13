@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from lithops import FunctionExecutor
 from lithops.future import ResponseFuture
@@ -87,7 +87,7 @@ class RetryingFuture:
 def map_with_retries(
     function_executor: FunctionExecutor,
     map_function: Callable[..., Any],
-    map_iterdata: List[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
+    map_iterdata: Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
     timeout: Optional[int] = None,
     include_modules: Optional[List[str]] = [],
     retries: Optional[int] = None,
