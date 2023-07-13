@@ -67,7 +67,6 @@ def map_unordered(
     return_when = ALWAYS if use_backups else ANY_COMPLETED
 
     inputs = list(map_iterdata)
-    tasks = {}
     start_times = {}
     end_times = {}
     backups: Dict[RetryingFuture, RetryingFuture] = {}
@@ -85,7 +84,6 @@ def map_unordered(
         include_modules=include_modules,
         retries=retries,
     )
-    tasks.update({k: v for (k, v) in zip(futures, inputs)})
     start_times.update({k: time.monotonic() for k in futures})
     pending.extend(futures)
 
@@ -127,7 +125,7 @@ def map_unordered(
                 if future not in backups and should_launch_backup(
                     future, now, start_times, end_times
                 ):
-                    input = tasks[future]
+                    input = future.input
                     logger.info("Running backup task for %s", input)
                     futures = map_with_retries(
                         lithops_function_executor,
@@ -137,7 +135,6 @@ def map_unordered(
                         include_modules=include_modules,
                         retries=0,  # don't retry backup tasks
                     )
-                    tasks.update({k: v for (k, v) in zip(futures, [input])})
                     start_times.update({k: time.monotonic() for k in futures})
                     pending.extend(futures)
                     backup = futures[0]
