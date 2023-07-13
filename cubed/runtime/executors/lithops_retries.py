@@ -14,7 +14,7 @@ class RetryingFuture:
     def __init__(
         self,
         response_future: ResponseFuture,
-        map_function: Callable,
+        map_function: Callable[..., Any],
         input: Any,
         map_kwargs: Any = None,
         retries: Optional[int] = None,
@@ -86,7 +86,7 @@ class RetryingFuture:
 
 def map_with_retries(
     function_executor: FunctionExecutor,
-    map_function: Callable,
+    map_function: Callable[..., Any],
     map_iterdata: List[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
     timeout: Optional[int] = None,
     include_modules: Optional[List[str]] = [],

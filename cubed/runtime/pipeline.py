@@ -1,6 +1,6 @@
 import itertools
 import math
-from typing import Any, Iterable, Iterator, List, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -39,7 +39,7 @@ class ChunkKeys(Iterable[Tuple[slice, ...]]):
         return chunk_keys(self.shape, self.chunks)
 
 
-def copy_read_to_write(chunk_key, *, config: CubedCopySpec):
+def copy_read_to_write(chunk_key: Sequence[slice], *, config: CubedCopySpec) -> None:
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
@@ -64,7 +64,7 @@ def spec_to_pipeline(
     )
 
 
-def already_computed(node_dict, resume=None):
+def already_computed(node_dict: Dict[str, Any], resume: Optional[bool] = None) -> bool:
     """
     Return True if the array for a node doesn't have a pipeline to compute it,
     or it has already been computed (all chunks are present).
@@ -76,7 +76,7 @@ def already_computed(node_dict, resume=None):
     target = node_dict.get("target", None)
     if resume and target is not None:
         target = open_if_lazy_zarr_array(target)
-        # this check can be expensive since it has to list the directory to find nchunks
+        # this check can be expensive since it has to list the directory to find nchunks_initialized
         if target.ndim > 0 and target.nchunks_initialized == target.nchunks:
             return True
 

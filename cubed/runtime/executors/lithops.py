@@ -1,13 +1,31 @@
 import copy
 import logging
 import time
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
+from networkx import MultiDiGraph
 
+from cubed.core.array import Callback
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
-from cubed.runtime.executors.lithops_retries import map_with_retries, wait_with_retries
+from cubed.runtime.executors.lithops_retries import (
+    RetryingFuture,
+    map_with_retries,
+    wait_with_retries,
+)
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import handle_callbacks
 
@@ -20,16 +38,16 @@ def run_func(input, func=None, config=None, name=None):
 
 
 def map_unordered(
-    lithops_function_executor,
-    map_function,
-    map_iterdata,
-    include_modules=[],
-    timeout=None,
-    retries=2,
-    use_backups=False,
-    return_stats=False,
+    lithops_function_executor: FunctionExecutor,
+    map_function: Callable[..., Any],
+    map_iterdata: Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
+    include_modules: List[str] = [],
+    timeout: Optional[int] = None,
+    retries: int = 2,
+    use_backups: bool = False,
+    return_stats: bool = False,
     **kwargs,
-):
+) -> Iterator[Any]:
     """
     Apply a function to items of an input list, yielding results as they are completed
     (which may be different to the input order).
@@ -52,7 +70,7 @@ def map_unordered(
     tasks = {}
     start_times = {}
     end_times = {}
-    backups = {}
+    backups: Dict[RetryingFuture, RetryingFuture] = {}
     pending = []
 
     # can't use functools.partial here as we get an error in lithops
@@ -128,7 +146,13 @@ def map_unordered(
             time.sleep(1)
 
 
-def execute_dag(dag, callbacks=None, array_names=None, resume=None, **kwargs):
+def execute_dag(
+    dag: MultiDiGraph,
+    callbacks: Optional[Sequence[Callback]] = None,
+    array_names: Optional[Sequence[str]] = None,
+    resume: Optional[bool] = None,
+    **kwargs,
+) -> None:
     use_backups = kwargs.pop("use_backups", False)
     with FunctionExecutor(**kwargs) as executor:
         for name, node in visit_nodes(dag, resume=resume):
@@ -168,6 +192,19 @@ class LithopsDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, **kwargs):
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        array_names: Optional[Sequence[str]] = None,
+        resume: Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
-        execute_dag(dag, callbacks=callbacks, array_names=array_names, **merged_kwargs)
+        execute_dag(
+            dag,
+            callbacks=callbacks,
+            array_names=array_names,
+            resume=resume,
+            **merged_kwargs,
+        )

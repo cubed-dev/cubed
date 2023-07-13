@@ -2,10 +2,14 @@ import asyncio
 import copy
 import time
 from asyncio.exceptions import TimeoutError
+from typing import Any, AsyncIterator, Dict, Iterable, Optional, Sequence
 
 from modal.exception import ConnectionError
+from modal.function import Function
+from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
+from cubed.core.array import Callback
 from cubed.core.plan import visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.modal import Container, run_remotely, stub
@@ -15,14 +19,14 @@ from cubed.runtime.utils import handle_callbacks
 
 # We need map_unordered for the use_backups implementation
 async def map_unordered(
-    app_function,
-    input,
-    use_backups=False,
-    backup_function=None,
-    return_stats=False,
-    name=None,
+    app_function: Function,
+    input: Iterable[Any],
+    use_backups: bool = False,
+    backup_function: Optional[Function] = None,
+    return_stats: bool = False,
+    name: Optional[str] = None,
     **kwargs,
-):
+) -> AsyncIterator[Any]:
     """
     Apply a function to items of an input list, yielding results as they are completed
     (which may be different to the input order).
@@ -57,7 +61,7 @@ async def map_unordered(
     t = time.monotonic()
     start_times = {f: t for f in pending}
     end_times = {}
-    backups = {}
+    backups: Dict[asyncio.Future, asyncio.Future] = {}
 
     while pending:
         finished, pending = await asyncio.wait(
@@ -118,8 +122,13 @@ async def map_unordered(
     stop=stop_after_attempt(3),
 )
 async def async_execute_dag(
-    dag, callbacks=None, array_names=None, resume=None, cloud=None, **kwargs
-):
+    dag: MultiDiGraph,
+    callbacks: Optional[Sequence[Callback]] = None,
+    array_names: Optional[Sequence[str]] = None,
+    resume: Optional[bool] = None,
+    cloud: Optional[str] = None,
+    **kwargs,
+) -> None:
     async with stub.run():
         cloud = cloud or "aws"
         if cloud == "aws":
@@ -153,7 +162,14 @@ class AsyncModalDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        array_names: Optional[Sequence[str]] = None,
+        resume: Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
         asyncio.run(
             async_execute_dag(

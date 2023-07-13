@@ -1,12 +1,17 @@
 import asyncio
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Executor, ThreadPoolExecutor
 from functools import partial
+from typing import Any, AsyncIterator, Callable, Iterable, Optional, Sequence
 
 from aiostream import stream
+from aiostream.core import Stream
+from networkx import MultiDiGraph
 from tenacity import Retrying, stop_after_attempt
 
+from cubed.core.array import Callback
 from cubed.core.plan import visit_node_generations
+from cubed.primitive.types import CubedPipeline
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import execution_stats, handle_callbacks
 
@@ -19,15 +24,15 @@ def run_func(input, func=None, config=None, name=None):
 
 
 async def map_unordered(
-    concurrent_executor,
-    function,
-    input,
-    retries=2,
-    use_backups=False,
-    return_stats=False,
-    name=None,
+    concurrent_executor: Executor,
+    function: Callable[..., Any],
+    input: Iterable[Any],
+    retries: int = 2,
+    use_backups: bool = False,
+    return_stats: bool = False,
+    name: Optional[str] = None,
     **kwargs,
-):
+) -> AsyncIterator[Any]:
     if name is not None:
         print(f"{name}: running map_unordered")
     if retries == 0:
@@ -63,7 +68,9 @@ async def map_unordered(
                 yield task.result()
 
 
-def pipeline_to_stream(concurrent_executor, name, pipeline, **kwargs):
+def pipeline_to_stream(
+    concurrent_executor: Executor, name: str, pipeline: CubedPipeline, **kwargs
+) -> Stream:
     if any([stage for stage in pipeline.stages if stage.mappable is None]):
         raise NotImplementedError("All stages must be mappable in pipelines")
     it = stream.iterate(
@@ -88,8 +95,12 @@ def pipeline_to_stream(concurrent_executor, name, pipeline, **kwargs):
 
 
 async def async_execute_dag(
-    dag, callbacks=None, array_names=None, resume=None, **kwargs
-):
+    dag: MultiDiGraph,
+    callbacks: Optional[Sequence[Callback]] = None,
+    array_names: Optional[Sequence[str]] = None,
+    resume: Optional[bool] = None,
+    **kwargs,
+) -> None:
     with ThreadPoolExecutor() as concurrent_executor:
         for gen in visit_node_generations(dag, resume=resume):
             # run pipelines in the same topological generation in parallel by merging their streams
@@ -108,7 +119,14 @@ async def async_execute_dag(
 class AsyncPythonDagExecutor(DagExecutor):
     """An execution engine that uses Python asyncio."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        array_names: Optional[Sequence[str]] = None,
+        resume: Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         asyncio.run(
             async_execute_dag(
                 dag,

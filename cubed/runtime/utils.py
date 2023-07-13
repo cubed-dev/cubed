@@ -6,7 +6,7 @@ from cubed.utils import peak_measured_mem
 sym_counter = 0
 
 
-def gensym(name):
+def gensym(name: str) -> str:
     global sym_counter
     sym_counter += 1
     return f"{name}-{sym_counter:03}"

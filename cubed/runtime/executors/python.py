@@ -1,21 +1,32 @@
+from typing import Any, Callable, Optional, Sequence
+
+from networkx import MultiDiGraph
 from tenacity import retry, stop_after_attempt
 
-from cubed.core.array import TaskEndEvent
+from cubed.core.array import Callback, TaskEndEvent
 from cubed.core.plan import visit_nodes
+from cubed.primitive.types import CubedPipeline
 from cubed.runtime.types import DagExecutor
 
 
 @retry(reraise=True, stop=stop_after_attempt(3))
-def exec_stage_func(func, *args, **kwargs):
+def exec_stage_func(func: Callable[..., Any], *args, **kwargs):
     return func(*args, **kwargs)
 
 
 class PythonDagExecutor(DagExecutor):
     """The default execution engine that runs tasks sequentially uses Python loops."""
 
-    def execute_dag(self, dag, callbacks=None, array_names=None, resume=None, **kwargs):
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        array_names: Optional[Sequence[str]] = None,
+        resume: Optional[bool] = None,
+        **kwargs,
+    ) -> None:
         for name, node in visit_nodes(dag, resume=resume):
-            pipeline = node["pipeline"]
+            pipeline: CubedPipeline = node["pipeline"]
             for stage in pipeline.stages:
                 if stage.mappable is not None:
                     for m in stage.mappable:

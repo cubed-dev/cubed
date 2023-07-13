@@ -1,15 +1,18 @@
 import math
+from typing import Dict, TypeVar
+
+T = TypeVar("T")
 
 
 def should_launch_backup(
-    task,
-    now,
-    start_times,
-    end_times,
-    min_tasks=10,
-    min_completed_fraction=0.5,
-    slow_factor=3.0,
-):
+    task: T,
+    now: float,
+    start_times: Dict[T, float],
+    end_times: Dict[T, float],
+    min_tasks: int = 10,
+    min_completed_fraction: float = 0.5,
+    slow_factor: float = 3.0,
+) -> bool:
     """
     Determine whether to launch a backup task.
 
