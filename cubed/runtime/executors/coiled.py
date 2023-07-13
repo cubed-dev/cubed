@@ -1,10 +1,8 @@
 from typing import Any, Mapping, Optional, Sequence
 
-from networkx import MultiDiGraph
-
 import coiled
-
 from dask.distributed import wait
+from networkx import MultiDiGraph
 
 from cubed.core.array import Callback
 from cubed.core.plan import visit_nodes
@@ -30,7 +28,6 @@ class CoiledFunctionsDagExecutor(DagExecutor):
         resume: Optional[bool] = None,
         **coiled_kwargs: Mapping[str, Any],
     ) -> None:
-
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
