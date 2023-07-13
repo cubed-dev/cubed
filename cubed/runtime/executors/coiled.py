@@ -44,10 +44,6 @@ class CoiledFunctionsDagExecutor(DagExecutor):
                         futures.append(future_func)
                 else:
                     raise NotImplementedError()
-                    future_func = exec_stage_func(
-                        stage.function, coiled_kwargs, config=pipeline.config
-                    )
-                    futures = [future_func]
 
                 # gather the results of the coiled functions
                 wait(futures)
