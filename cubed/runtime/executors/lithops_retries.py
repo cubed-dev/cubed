@@ -18,12 +18,14 @@ class RetryingFuture:
         input: Any,
         map_kwargs: Any = None,
         retries: Optional[int] = None,
+        group_name: Optional[str] = None,
     ):
         self.response_future = response_future
         self.map_function = map_function
         self.input = input
         self.map_kwargs = map_kwargs or {}
         self.retries = retries or 0
+        self.group_name = group_name
         self.failure_count = 0
         self.cancelled = False
 
@@ -91,6 +93,7 @@ def map_with_retries(
     timeout: Optional[int] = None,
     include_modules: Optional[List[str]] = [],
     retries: Optional[int] = None,
+    group_name: Optional[str] = None,
 ) -> List[RetryingFuture]:
     """
     A generalisation of Lithops `map`, with retries.
@@ -107,6 +110,7 @@ def map_with_retries(
             input=i,
             map_kwargs=dict(timeout=timeout, include_modules=include_modules),
             retries=retries,
+            group_name=group_name,
         )
         for i, f in zip(inputs, futures_list)
     ]
