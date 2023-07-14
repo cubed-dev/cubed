@@ -5,7 +5,7 @@ from asyncio.exceptions import TimeoutError
 from typing import Any, AsyncIterator, Dict, Iterable, Optional, Sequence
 
 from modal.exception import ConnectionError
-from modal.function import Function
+from modal.functions import Function
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
