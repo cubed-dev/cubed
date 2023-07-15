@@ -24,16 +24,11 @@ class DaskDelayedExecutor(DagExecutor):
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
-            stage = pipeline.stage
-            if stage.mappable is not None:
-                stage_delayed_funcs = []
-                for m in stage.mappable:
-                    delayed_func = exec_stage_func(
-                        stage.function, m, config=pipeline.config
-                    )
-                    stage_delayed_funcs.append(delayed_func)
-            else:
-                delayed_func = exec_stage_func(stage.function, config=pipeline.config)
-                stage_delayed_funcs = [delayed_func]
+            stage_delayed_funcs = []
+            for m in pipeline.mappable:
+                delayed_func = exec_stage_func(
+                    pipeline.function, m, config=pipeline.config
+                )
+                stage_delayed_funcs.append(delayed_func)
 
             dask.compute(*stage_delayed_funcs, **compute_kwargs)

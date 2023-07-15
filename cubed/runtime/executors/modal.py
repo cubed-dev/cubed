@@ -125,19 +125,15 @@ def execute_dag(
             raise ValueError(f"Unrecognized cloud: {cloud}")
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
-            stage = pipeline.stage
-            if stage.mappable is not None:
-                task_create_tstamp = time.time()
-                for _, stats in app_function.map(
-                    stage.mappable,
-                    order_outputs=False,
-                    kwargs=dict(func=stage.function, config=pipeline.config),
-                ):
-                    stats["array_name"] = name
-                    stats["task_create_tstamp"] = task_create_tstamp
-                    handle_callbacks(callbacks, stats)
-            else:
-                raise NotImplementedError()
+            task_create_tstamp = time.time()
+            for _, stats in app_function.map(
+                pipeline.mappable,
+                order_outputs=False,
+                kwargs=dict(func=pipeline.function, config=pipeline.config),
+            ):
+                stats["array_name"] = name
+                stats["task_create_tstamp"] = task_create_tstamp
+                handle_callbacks(callbacks, stats)
 
 
 class ModalDagExecutor(DagExecutor):

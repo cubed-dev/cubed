@@ -6,7 +6,6 @@ import numpy as np
 
 from cubed.primitive.types import CubedCopySpec, CubedPipeline
 from cubed.storage.zarr import open_if_lazy_zarr_array
-from cubed.vendor.rechunker.types import Stage
 
 from .utils import gensym
 
@@ -56,13 +55,10 @@ def spec_to_pipeline(
 ) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
-    stage = Stage(
+    return CubedPipeline(
         copy_read_to_write,
         gensym("copy_read_to_write"),
-        mappable=ChunkKeys(shape, spec.write.chunks),
-    )
-    return CubedPipeline(
-        stage,
+        ChunkKeys(shape, spec.write.chunks),
         spec,
         target_array,
         projected_mem,

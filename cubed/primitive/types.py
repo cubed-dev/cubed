@@ -1,18 +1,20 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 import zarr
 
 from cubed.storage.zarr import T_ZarrArray, open_if_lazy_zarr_array
 from cubed.types import T_RegularChunks
-from cubed.vendor.rechunker.types import Config, Stage
+from cubed.vendor.rechunker.types import Config, StageFunction
 
 
 @dataclass(frozen=True)
 class CubedPipeline:
     """Generalisation of rechunker ``Pipeline`` with extra attributes."""
 
-    stage: Stage
+    function: StageFunction
+    name: str
+    mappable: Iterable
     config: Config
     target_array: Any
     projected_mem: int

@@ -14,7 +14,6 @@ from cubed.utils import chunk_memory, get_item, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
-from cubed.vendor.rechunker.types import Stage
 
 from .types import CubedArrayProxy, CubedPipeline
 
@@ -204,12 +203,6 @@ def blockwise(
     write_proxy = CubedArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(block_function, func_with_kwargs, read_proxies, write_proxy)
 
-    stage = Stage(
-        apply_blockwise,
-        gensym("apply_blockwise"),
-        mappable=output_blocks,
-    )
-
     # calculate projected memory
     projected_mem = reserved_mem + extra_projected_mem
     # inputs
@@ -231,7 +224,15 @@ def blockwise(
         )
 
     return CubedPipeline(
-        stage, spec, target_array, projected_mem, reserved_mem, num_tasks, None
+        apply_blockwise,
+        gensym("apply_blockwise"),
+        output_blocks,
+        spec,
+        target_array,
+        projected_mem,
+        reserved_mem,
+        num_tasks,
+        None,
     )
 
 
@@ -242,7 +243,7 @@ def is_fuse_candidate(pipeline: CubedPipeline) -> bool:
     """
     Return True if a pipeline is a candidate for blockwise fusion.
     """
-    return pipeline.stage.function == apply_blockwise
+    return pipeline.function == apply_blockwise
 
 
 def can_fuse_pipelines(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> bool:
@@ -258,13 +259,7 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
 
     assert pipeline1.num_tasks == pipeline2.num_tasks
 
-    mappable = pipeline2.stage.mappable
-
-    stage = Stage(
-        apply_blockwise,
-        gensym("fused_apply_blockwise"),
-        mappable=mappable,
-    )
+    mappable = pipeline2.mappable
 
     def fused_blockwise_func(out_key):
         return pipeline1.config.block_function(
@@ -284,7 +279,15 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     num_tasks = pipeline2.num_tasks
 
     return CubedPipeline(
-        stage, spec, target_array, projected_mem, reserved_mem, num_tasks, None
+        apply_blockwise,
+        gensym("fused_apply_blockwise"),
+        mappable,
+        spec,
+        target_array,
+        projected_mem,
+        reserved_mem,
+        num_tasks,
+        None,
     )
 
 

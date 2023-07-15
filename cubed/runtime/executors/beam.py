@@ -124,7 +124,11 @@ class BeamDagExecutor(DagExecutor):
 
 def add_to_pcoll(name, rechunker_pipeline, pcoll):
     step = 0
-    stage = rechunker_pipeline.stage
+    stage = Stage(
+        rechunker_pipeline.function,
+        rechunker_pipeline.name,
+        rechunker_pipeline.mappable,
+    )
     if stage.mappable is not None:
         pcoll |= stage.name >> _SingleArgumentStage(
             step, stage, rechunker_pipeline.config, name
