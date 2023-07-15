@@ -1,7 +1,6 @@
 from typing import Any, Callable, Optional, Sequence
 
 from networkx import MultiDiGraph
-from tenacity import retry, stop_after_attempt
 
 from cubed.core.array import Callback, Spec, TaskEndEvent
 from cubed.core.plan import visit_nodes
@@ -9,7 +8,6 @@ from cubed.primitive.types import CubedPipeline
 from cubed.runtime.types import DagExecutor
 
 
-@retry(reraise=True, stop=stop_after_attempt(3))
 def exec_stage_func(func: Callable[..., Any], *args, **kwargs):
     return func(*args, **kwargs)
 
