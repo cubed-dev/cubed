@@ -2,15 +2,17 @@ import asyncio
 import copy
 import time
 from asyncio.exceptions import TimeoutError
+from functools import partial
 from typing import Any, AsyncIterator, Dict, Iterable, Optional, Sequence
 
+from aiostream import stream
 from modal.exception import ConnectionError
 from modal.functions import Function
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.core.array import Callback
-from cubed.core.plan import visit_nodes
+from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.modal import Container, run_remotely, stub
 from cubed.runtime.types import DagExecutor
@@ -115,6 +117,29 @@ async def map_unordered(
                     backups[new_task] = task
 
 
+def pipeline_to_stream(app_function, name, pipeline, **kwargs):
+    if any([stage for stage in pipeline.stages if stage.mappable is None]):
+        raise NotImplementedError("All stages must be mappable in pipelines")
+    it = stream.iterate(
+        [
+            partial(
+                map_unordered,
+                app_function,
+                stage.mappable,
+                return_stats=True,
+                name=name,
+                func=stage.function,
+                config=pipeline.config,
+                **kwargs,
+            )
+            for stage in pipeline.stages
+            if stage.mappable is not None
+        ]
+    )
+    # concat stages, running only one stage at a time
+    return stream.concatmap(it, lambda f: f(), task_limit=1)
+
+
 # This just retries the initial connection attempt, not the function calls
 @retry(
     reraise=True,
@@ -127,6 +152,7 @@ async def async_execute_dag(
     array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
     cloud: Optional[str] = None,
+    compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
     async with stub.run():
@@ -137,23 +163,24 @@ async def async_execute_dag(
             app_function = Container().run_remotely
         else:
             raise ValueError(f"Unrecognized cloud: {cloud}")
-        for name, node in visit_nodes(dag, resume=resume):
-            pipeline = node["pipeline"]
-
-            for stage in pipeline.stages:
-                if stage.mappable is not None:
-                    async for _, stats in map_unordered(
-                        app_function,
-                        stage.mappable,
-                        return_stats=True,
-                        name=name,
-                        func=stage.function,
-                        config=pipeline.config,
-                        **kwargs,
-                    ):
+        if not compute_arrays_in_parallel:
+            # run one pipeline at a time
+            for name, node in visit_nodes(dag, resume=resume):
+                st = pipeline_to_stream(app_function, name, node["pipeline"], **kwargs)
+                async with st.stream() as streamer:
+                    async for _, stats in streamer:
                         handle_callbacks(callbacks, stats)
-                else:
-                    raise NotImplementedError()
+        else:
+            for gen in visit_node_generations(dag, resume=resume):
+                # run pipelines in the same topological generation in parallel by merging their streams
+                streams = [
+                    pipeline_to_stream(app_function, name, node["pipeline"], **kwargs)
+                    for name, node in gen
+                ]
+                merged_stream = stream.merge(*streams)
+                async with merged_stream.stream() as streamer:
+                    async for _, stats in streamer:
+                        handle_callbacks(callbacks, stats)
 
 
 class AsyncModalDagExecutor(DagExecutor):
