@@ -336,16 +336,25 @@ def test_reduction_not_enough_memory(tmp_path):
         xp.sum(a, axis=0, dtype=np.uint8)
 
 
-@pytest.mark.parametrize("target_chunks", [(2, 3), (4, 3), (2, 6), (4, 6)])
-def test_merge_chunks(spec, target_chunks):
+@pytest.mark.parametrize(
+    "target_chunks, expected_chunksize",
+    [
+        ((2, 3), None),
+        ((4, 3), None),
+        ((2, 6), None),
+        ((4, 6), None),
+        ((12, 12), (10, 10)),
+    ],
+)
+def test_merge_chunks(spec, target_chunks, expected_chunksize):
     a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)
     b = merge_chunks(a, target_chunks)
-    assert b.chunksize == target_chunks
+    assert b.chunksize == (expected_chunksize or target_chunks)
     assert_array_equal(b.compute(), np.ones((10, 10)))
 
 
 @pytest.mark.parametrize(
-    "target_chunks", [(2,), (2, 3, 1), (3, 2), (1, 3), (5, 5), (12, 12)]
+    "target_chunks", [(2,), (2, 3, 1), (3, 2), (1, 3), (5, 5), (10, 10)]
 )
 def test_merge_chunks_fails(spec, target_chunks):
     a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)

@@ -230,10 +230,51 @@ def test_index_2d(spec, ind):
     assert_array_equal(a[ind].compute(), x[ind])
 
 
+@pytest.mark.parametrize(
+    "shape, chunks, ind, new_chunks_expected",
+    [
+        # step divides chunks exactly
+        (20, 4, slice(3, 14, 2), ((4, 2),)),
+        # step doesn't divide chunks exactly
+        # chunks is prime (so merge_chunks can't restore chunks to 5)
+        (20, 5, slice(3, 14, 2), ((4, 2),)),
+        # step doesn't divide chunks exactly
+        (20, 8, slice(5, 18, 3), ((5,),)),
+        # step is bigger than chunks
+        (50, 5, slice(3, 50, 7), ((5, 2),)),
+    ],
+)
+def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
+    a = xp.arange(shape, chunks=chunks, spec=spec)
+    b = a[ind]
+    assert_array_equal(b.compute(), np.arange(shape)[ind])
+    assert b.chunks == new_chunks_expected
+
+
+# fmt: off
+@pytest.mark.parametrize(
+    "shape, chunks, ind, new_chunks_expected",
+    [
+        (
+            (20, 20),
+            (4, 4),
+            (slice(3, 14, 2), slice(3, 14, 3)),
+            ((4, 2), (3, 1),),
+        ),
+    ],
+)
+# fmt: on
+def test_index_2d_step(spec, shape, chunks, ind, new_chunks_expected):
+    a = xp.ones(shape, chunks=chunks, spec=spec)
+    b = a[ind]
+    assert_array_equal(b.compute(), np.ones(shape)[ind])
+    assert b.chunks == new_chunks_expected
+
+
 def test_index_slice_unsupported_step(spec):
     with pytest.raises(NotImplementedError):
         a = xp.arange(12, chunks=(4,), spec=spec)
-        a[3:10:2]
+        a[::-1]
 
 
 @pytest.mark.xfail(reason="not currently compatible with lazy zarr arrays")
