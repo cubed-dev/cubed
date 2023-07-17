@@ -4,7 +4,6 @@ import cubed
 import cubed.array_api as xp
 from cubed.runtime.executors.coiled import CoiledFunctionsDagExecutor
 
-
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
     spec = cubed.Spec(tmp_path, allowed_mem=100000)
@@ -22,8 +21,8 @@ if __name__ == "__main__":
     c = xp.add(a, b)
     res = c.compute(
         executor=executor,
-        memory='1 GiB',  # must be greater than allowed_mem
-        compute_purchase_option='spot_with_fallback',  # recommended
-        account='dask',  # dask maintainers account - change this to your account
+        memory="1 GiB",  # must be greater than allowed_mem
+        compute_purchase_option="spot_with_fallback",  # recommended
+        account="dask",  # dask maintainers account - change this to your account
     )
     print(res)
