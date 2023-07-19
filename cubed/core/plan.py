@@ -41,6 +41,7 @@ class Plan:
         op_name,
         target,
         pipeline=None,
+        hidden=False,
         *source_arrays,
     ):
         # create an empty DAG or combine from sources
@@ -60,6 +61,7 @@ class Plan:
                 op_name=op_name,
                 target=target,
                 stack_summaries=stack_summaries,
+                hidden=hidden,
             )
         else:
             dag.add_node(
@@ -68,6 +70,7 @@ class Plan:
                 op_name=op_name,
                 target=target,
                 stack_summaries=stack_summaries,
+                hidden=hidden,
                 pipeline=pipeline,
             )
         for x in source_arrays:
