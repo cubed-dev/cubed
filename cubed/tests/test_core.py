@@ -575,7 +575,16 @@ def test_plan_scaling(tmp_path, factor):
 def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parallel):
     from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
 
-    if not isinstance(any_executor, AsyncPythonDagExecutor):
+    supported_executors = [AsyncPythonDagExecutor]
+
+    try:
+        from cubed.runtime.executors.lithops import LithopsDagExecutor
+
+        supported_executors.append(LithopsDagExecutor)
+    except ImportError:
+        pass
+
+    if not isinstance(any_executor, tuple(supported_executors)):
         pytest.skip(f"{type(any_executor)} does not support compute_arrays_in_parallel")
 
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)

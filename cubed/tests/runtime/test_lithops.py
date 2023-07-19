@@ -17,8 +17,9 @@ def run_test(function, input, retries, timeout=10, use_backups=False):
     with LocalhostExecutor() as executor:
         for output in map_unordered(
             executor,
-            function,
-            input,
+            [function],
+            [input],
+            ["group0"],
             timeout=timeout,
             retries=retries,
             use_backups=use_backups,
