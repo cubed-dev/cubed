@@ -48,7 +48,11 @@ def copy_read_to_write(chunk_key: Sequence[slice], *, config: CubedCopySpec) -> 
 
 
 def spec_to_pipeline(
-    spec: CubedCopySpec, target_array: Any, projected_mem: int, num_tasks: int
+    spec: CubedCopySpec,
+    target_array: Any,
+    projected_mem: int,
+    reserved_mem: int,
+    num_tasks: int,
 ) -> CubedPipeline:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
@@ -60,7 +64,13 @@ def spec_to_pipeline(
         )
     ]
     return CubedPipeline(
-        stages, spec, target_array, projected_mem, num_tasks, spec.write.chunks
+        stages,
+        spec,
+        target_array,
+        projected_mem,
+        reserved_mem,
+        num_tasks,
+        spec.write.chunks,
     )
 
 

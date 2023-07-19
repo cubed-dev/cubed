@@ -58,17 +58,23 @@ def rechunk(
     if intermediate is None:
         copy_spec = CubedCopySpec(read_proxy, write_proxy)
         num_tasks = total_chunks(write_proxy.array.shape, write_proxy.chunks)
-        return [spec_to_pipeline(copy_spec, target, projected_mem, num_tasks)]
+        return [
+            spec_to_pipeline(copy_spec, target, projected_mem, reserved_mem, num_tasks)
+        ]
 
     else:
         # break spec into two if there's an intermediate
         copy_spec1 = CubedCopySpec(read_proxy, int_proxy)
         num_tasks = total_chunks(copy_spec1.write.array.shape, copy_spec1.write.chunks)
-        pipeline1 = spec_to_pipeline(copy_spec1, intermediate, projected_mem, num_tasks)
+        pipeline1 = spec_to_pipeline(
+            copy_spec1, intermediate, projected_mem, reserved_mem, num_tasks
+        )
 
         copy_spec2 = CubedCopySpec(int_proxy, write_proxy)
         num_tasks = total_chunks(copy_spec2.write.array.shape, copy_spec2.write.chunks)
-        pipeline2 = spec_to_pipeline(copy_spec2, target, projected_mem, num_tasks)
+        pipeline2 = spec_to_pipeline(
+            copy_spec2, target, projected_mem, reserved_mem, num_tasks
+        )
 
         return [pipeline1, pipeline2]
 

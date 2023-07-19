@@ -268,6 +268,7 @@ def blockwise(
         *zargs,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
+        extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         shape=shape,
         dtype=dtype,
@@ -282,9 +283,6 @@ def blockwise(
         "blockwise",
         pipeline.target_array,
         pipeline,
-        pipeline.projected_mem + extra_projected_mem,
-        spec.reserved_mem,
-        pipeline.num_tasks,
         *source_arrays,
     )
     from cubed.array_api import Array
@@ -614,9 +612,6 @@ def rechunk(x, chunks, target_store=None):
             "rechunk",
             pipeline.target_array,
             pipeline,
-            pipeline.projected_mem,
-            spec.reserved_mem,
-            pipeline.num_tasks,
             x,
         )
         return Array(name, pipeline.target_array, spec, plan)
@@ -628,9 +623,6 @@ def rechunk(x, chunks, target_store=None):
             "rechunk",
             pipeline1.target_array,
             pipeline1,
-            pipeline1.projected_mem,
-            spec.reserved_mem,
-            pipeline1.num_tasks,
             x,
         )
         x_int = Array(name_int, pipeline1.target_array, spec, plan1)
@@ -641,9 +633,6 @@ def rechunk(x, chunks, target_store=None):
             "rechunk",
             pipeline2.target_array,
             pipeline2,
-            pipeline2.projected_mem,
-            spec.reserved_mem,
-            pipeline2.num_tasks,
             x_int,
         )
         return Array(name, pipeline2.target_array, spec, plan2)

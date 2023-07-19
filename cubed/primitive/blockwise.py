@@ -97,6 +97,7 @@ def blockwise(
     new_axes: Optional[Dict[int, int]] = None,
     in_names: Optional[List[str]] = None,
     out_name: Optional[str] = None,
+    extra_projected_mem: int = 0,
     **kwargs,
 ):
     """Apply a function across blocks from multiple source Zarr arrays.
@@ -123,6 +124,9 @@ def blockwise(
         The chunks of the output array.
     new_axes : dict
         New indexes and their dimension lengths
+    extra_projected_mem : int
+        Extra memory projected to be needed (in bytes) in addition to the memory used reading
+        the input arrays and writing the output.
     **kwargs : dict
         Extra keyword arguments to pass to function
 
@@ -209,7 +213,7 @@ def blockwise(
     ]
 
     # calculate projected memory
-    projected_mem = reserved_mem
+    projected_mem = reserved_mem + extra_projected_mem
     # inputs
     for array in arrays:  # inputs
         # memory for a compressed and an uncompressed input array chunk
@@ -228,7 +232,9 @@ def blockwise(
             f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
         )
 
-    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks, None)
+    return CubedPipeline(
+        stages, spec, target_array, projected_mem, reserved_mem, num_tasks, None
+    )
 
 
 # Code for fusing pipelines
@@ -279,9 +285,12 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
 
     target_array = pipeline2.target_array
     projected_mem = max(pipeline1.projected_mem, pipeline2.projected_mem)
+    reserved_mem = max(pipeline1.reserved_mem, pipeline2.reserved_mem)
     num_tasks = pipeline2.num_tasks
 
-    return CubedPipeline(stages, spec, target_array, projected_mem, num_tasks, None)
+    return CubedPipeline(
+        stages, spec, target_array, projected_mem, reserved_mem, num_tasks, None
+    )
 
 
 # blockwise functions
