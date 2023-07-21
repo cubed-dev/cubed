@@ -41,6 +41,15 @@ def test_index(spec):
     run_operation("index", b)
 
 
+@pytest.mark.slow
+def test_index_step(spec):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = a[::2, :]
+    run_operation("index_step", b)
+
+
 # Creation Functions
 
 

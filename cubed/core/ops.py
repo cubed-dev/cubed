@@ -11,6 +11,7 @@ from toolz import accumulate, map
 from zarr.indexing import (
     IntDimIndexer,
     OrthogonalIndexer,
+    SliceDimIndexer,
     is_integer_list,
     is_slice,
     replace_ellipsis,
@@ -335,26 +336,46 @@ def index(x, key):
     # Replace ellipsis with slices
     selection = replace_ellipsis(selection, x.shape)
 
+    # Check selection is supported
+    if any(s.step is not None and s.step < 1 for s in selection if is_slice(s)):
+        raise NotImplementedError(f"Slice step must be >= 1: {key}")
+    assert all(isinstance(s, (slice, list, Integral)) for s in selection)
+    where_list = [i for i, ind in enumerate(selection) if is_integer_list(ind)]
+    if len(where_list) > 1:
+        raise NotImplementedError("Only one integer array index is allowed.")
+
     # Use a Zarr indexer just to find the resulting array shape and chunks
     # Need to use an in-memory representation since the Zarr file has not been written yet
     inmem = zarr.empty_like(x.zarray_maybe_lazy, store=zarr.storage.MemoryStore())
     indexer = OrthogonalIndexer(selection, inmem)
 
+    def chunk_len_for_indexer(s):
+        if not isinstance(s, SliceDimIndexer):
+            return s.dim_chunk_len
+        return max(s.dim_chunk_len // s.step, 1)
+
+    def merged_chunk_len_for_indexer(s):
+        if not isinstance(s, SliceDimIndexer):
+            return s.dim_chunk_len
+        if s.step is None or s.step == 1:
+            return s.dim_chunk_len
+        if (s.dim_chunk_len // s.step) < 1:
+            return s.dim_chunk_len
+        # note that this may not be the same as s.dim_chunk_len
+        # but it is guaranteed to be a multiple of the corresponding
+        # value returned by chunk_len_for_indexer, which is required
+        # by merge_chunks
+        return (s.dim_chunk_len // s.step) * s.step
+
     shape = indexer.shape
     dtype = x.dtype
     chunks = tuple(
-        s.dim_chunk_len
+        chunk_len_for_indexer(s)
         for s in indexer.dim_indexers
         if not isinstance(s, IntDimIndexer)
     )
-    chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
-    assert all(isinstance(s, (slice, list, Integral)) for s in selection)
-    if any(s.step is not None and s.step != 1 for s in selection if is_slice(s)):
-        raise NotImplementedError(f"Slice step must be 1: {key}")
-    where_list = [i for i, ind in enumerate(selection) if is_integer_list(ind)]
-    if len(where_list) > 1:
-        raise NotImplementedError("Only one integer array index is allowed.")
+    target_chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks, zarr will
@@ -366,11 +387,21 @@ def index(x, key):
         x,
         shape=shape,
         dtype=dtype,
-        chunks=chunks,
+        chunks=target_chunks,
         extra_projected_mem=extra_projected_mem,
-        target_chunks=chunks,
+        target_chunks=target_chunks,
         selection=selection,
     )
+
+    # merge chunks for any dims with step > 1 so they are
+    # the same size as the input (or slightly smaller due to rounding)
+    merged_chunks = tuple(
+        merged_chunk_len_for_indexer(s)
+        for s in indexer.dim_indexers
+        if not isinstance(s, IntDimIndexer)
+    )
+    if chunks != merged_chunks:
+        out = merge_chunks(out, merged_chunks)
 
     for axis in where_none:
         from cubed.array_api.manipulation_functions import expand_dims
@@ -396,9 +427,12 @@ def _target_chunk_selection(target_chunks, idx, selection):
     for s in selection:
         if is_slice(s):
             offset = s.start or 0
-            start = tuple(accumulate(add, target_chunks[i], offset))
+            step = s.step if s.step is not None else 1
+            start = tuple(
+                accumulate(add, tuple(x * step for x in target_chunks[i]), offset)
+            )
             j = idx[i]
-            sel.append(slice(start[j], start[j + 1]))
+            sel.append(slice(start[j], start[j + 1], step))
             i += 1
         elif is_integer_list(s):
             # find the cumulative chunk starts
@@ -639,9 +673,7 @@ def rechunk(x, chunks, target_store=None):
 
 
 def merge_chunks(x, chunks):
-    target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
-
-    target_chunksize = to_chunksize(target_chunks)
+    target_chunksize = chunks
     if len(target_chunksize) != x.ndim:
         raise ValueError(
             f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
@@ -651,6 +683,7 @@ def merge_chunks(x, chunks):
             f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
         )
 
+    target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
     return map_direct(
         _copy_chunk,
         x,
