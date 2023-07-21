@@ -16,6 +16,7 @@ class CubedPipeline:
     config: Config
     target_array: Any
     projected_mem: int
+    reserved_mem: int
     num_tasks: int
     write_chunks: Optional[T_RegularChunks]
 

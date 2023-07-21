@@ -42,9 +42,6 @@ class Plan:
         op_name,
         target,
         pipeline=None,
-        projected_mem=None,
-        reserved_mem=None,
-        num_tasks=None,
         *source_arrays,
     ):
         # create an empty DAG or combine from sources
@@ -73,9 +70,6 @@ class Plan:
                 target=target,
                 stack_summaries=stack_summaries,
                 pipeline=pipeline,
-                projected_mem=projected_mem,
-                reserved_mem=reserved_mem,
-                num_tasks=num_tasks,
             )
         for x in source_arrays:
             if hasattr(x, "name"):
@@ -148,7 +142,6 @@ class Plan:
                 target=None,
                 pipeline=pipeline,
                 projected_mem=pipeline.projected_mem,
-                reserved_mem=reserved_mem,
                 num_tasks=pipeline.num_tasks,
             )
             # make create arrays node a dependency of all lazy array nodes
@@ -407,4 +400,6 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     )
     num_tasks = len(lazy_zarr_arrays)
 
-    return CubedPipeline(stages, None, None, projected_mem, num_tasks, None)
+    return CubedPipeline(
+        stages, None, None, projected_mem, reserved_mem, num_tasks, None
+    )
