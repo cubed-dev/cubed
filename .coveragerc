@@ -4,6 +4,7 @@ omit =
     cubed/array_api/*
     cubed/extensions/*
     cubed/runtime/executors/beam.py
+    cubed/runtime/executors/dask.py
     cubed/runtime/executors/lithops.py
     cubed/runtime/executors/modal*.py
     cubed/vendor/*

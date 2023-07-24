@@ -15,7 +15,6 @@ from cubed.extensions.history import HistoryCallback
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
-from cubed.runtime.types import DagExecutor
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -484,8 +483,13 @@ def test_retries(mocker, spec):
     platform.system() == "Windows", reason="measuring memory does not run on windows"
 )
 def test_callbacks(spec, executor):
-    if not isinstance(executor, DagExecutor):
-        pytest.skip(f"{type(executor)} does not support callbacks")
+    try:
+        from cubed.runtime.executors.dask import DaskDelayedExecutor
+
+        if isinstance(executor, DaskDelayedExecutor):
+            pytest.skip(f"{type(executor)} does not support callbacks")
+    except ImportError:
+        pass
 
     task_counter = TaskCounter()
     # test following indirectly by checking they don't cause a failure
