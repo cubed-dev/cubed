@@ -7,8 +7,10 @@ from cubed.array_api.creation_functions import asarray
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import (
     _boolean_dtypes,
+    _complex_floating_dtypes,
     _dtype_categories,
     _floating_dtypes,
+    _integer_dtypes,
     _integer_or_boolean_dtypes,
     _numeric_dtypes,
 )
@@ -144,13 +146,13 @@ class Array(CoreArray):
         return elemwise(np.divide, self, other, dtype=result_type(self, other))
 
     def __floordiv__(self, other, /):
-        other = self._check_allowed_dtypes(other, "numeric", "__floordiv__")
+        other = self._check_allowed_dtypes(other, "real numeric", "__floordiv__")
         if other is NotImplemented:
             return other
         return elemwise(np.floor_divide, self, other, dtype=result_type(self, other))
 
     def __mod__(self, other, /):
-        other = self._check_allowed_dtypes(other, "numeric", "__mod__")
+        other = self._check_allowed_dtypes(other, "real numeric", "__mod__")
         if other is NotImplemented:
             return other
         return elemwise(np.remainder, self, other, dtype=result_type(self, other))
@@ -349,9 +351,16 @@ class Array(CoreArray):
             raise TypeError("bool is only allowed on arrays with 0 dimensions")
         return bool(self.compute())
 
+    def __complex__(self, /):
+        if self.ndim != 0:
+            raise TypeError("complex is only allowed on arrays with 0 dimensions")
+        return complex(self.compute())
+
     def __float__(self, /):
         if self.ndim != 0:
             raise TypeError("float is only allowed on arrays with 0 dimensions")
+        if self.dtype in _complex_floating_dtypes:
+            raise TypeError("float is not allowed on complex floating-point arrays")
         return float(self.compute())
 
     def __index__(self, /):
@@ -362,6 +371,8 @@ class Array(CoreArray):
     def __int__(self, /):
         if self.ndim != 0:
             raise TypeError("int is only allowed on arrays with 0 dimensions")
+        if self.dtype in _complex_floating_dtypes:
+            raise TypeError("int is not allowed on complex floating-point arrays")
         return int(self.compute())
 
     # Utility methods
@@ -369,7 +380,7 @@ class Array(CoreArray):
     def _check_allowed_dtypes(self, other, dtype_category, op):
         if self.dtype not in _dtype_categories[dtype_category]:
             raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
-        if isinstance(other, (int, float, bool)):
+        if isinstance(other, (int, complex, float, bool)):
             other = self._promote_scalar(other)
         elif isinstance(other, CoreArray):
             if other.dtype not in _dtype_categories[dtype_category]:
@@ -392,10 +403,22 @@ class Array(CoreArray):
                 raise TypeError(
                     "Python int scalars cannot be promoted with bool arrays"
                 )
+            if self.dtype in _integer_dtypes:
+                info = np.iinfo(self.dtype)
+                if not (info.min <= scalar <= info.max):
+                    raise OverflowError(
+                        "Python int scalars must be within the bounds of the dtype for integer arrays"
+                    )
+            # int + array(floating) is allowed
         elif isinstance(scalar, float):
             if self.dtype not in _floating_dtypes:
                 raise TypeError(
                     "Python float scalars can only be promoted with floating-point arrays."
+                )
+        elif isinstance(scalar, complex):
+            if self.dtype not in _complex_floating_dtypes:
+                raise TypeError(
+                    "Python complex scalars can only be promoted with complex floating-point arrays."
                 )
         else:
             raise TypeError("'scalar' must be a Python scalar")
