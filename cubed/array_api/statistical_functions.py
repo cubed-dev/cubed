@@ -4,19 +4,29 @@ import numpy as np
 
 from cubed.array_api.dtypes import (
     _numeric_dtypes,
+    _real_floating_dtypes,
+    _real_numeric_dtypes,
     _signed_integer_dtypes,
     _unsigned_integer_dtypes,
+    complex64,
+    complex128,
+    float32,
+    float64,
+    int64,
+    uint64,
 )
 from cubed.core import reduction
 
 
 def max(x, /, *, axis=None, keepdims=False):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in max")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in max")
     return reduction(x, np.max, axis=axis, dtype=x.dtype, keepdims=keepdims)
 
 
 def mean(x, /, *, axis=None, keepdims=False):
+    if x.dtype not in _real_floating_dtypes:
+        raise TypeError("Only real floating-point dtypes are allowed in mean")
     # This implementation uses NumPy and Zarr's structured arrays to store a
     # pair of fields needed to keep per-chunk counts and totals for computing
     # the mean. Structured arrays are row-based, so are less efficient than
@@ -85,8 +95,8 @@ def _numel(x, **kwargs):
 
 
 def min(x, /, *, axis=None, keepdims=False):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in min")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in min")
     return reduction(x, np.min, axis=axis, dtype=x.dtype, keepdims=keepdims)
 
 
@@ -95,11 +105,13 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False):
         raise TypeError("Only numeric dtypes are allowed in prod")
     if dtype is None:
         if x.dtype in _signed_integer_dtypes:
-            dtype = np.int64
+            dtype = int64
         elif x.dtype in _unsigned_integer_dtypes:
-            dtype = np.uint64
-        elif x.dtype == np.float32:
-            dtype = np.float64
+            dtype = uint64
+        elif x.dtype == float32:
+            dtype = float64
+        elif x.dtype == complex64:
+            dtype = complex128
         else:
             dtype = x.dtype
     return reduction(x, np.prod, axis=axis, dtype=dtype, keepdims=keepdims)
@@ -110,11 +122,13 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False):
         raise TypeError("Only numeric dtypes are allowed in sum")
     if dtype is None:
         if x.dtype in _signed_integer_dtypes:
-            dtype = np.int64
+            dtype = int64
         elif x.dtype in _unsigned_integer_dtypes:
-            dtype = np.uint64
-        elif x.dtype == np.float32:
-            dtype = np.float64
+            dtype = uint64
+        elif x.dtype == float32:
+            dtype = float64
+        elif x.dtype == complex64:
+            dtype = complex128
         else:
             dtype = x.dtype
     return reduction(x, np.sum, axis=axis, dtype=dtype, keepdims=keepdims)

@@ -1,14 +1,14 @@
 import numpy as np
 
 from cubed.array_api.data_type_functions import result_type
-from cubed.array_api.dtypes import _numeric_dtypes
+from cubed.array_api.dtypes import _real_numeric_dtypes
 from cubed.array_api.manipulation_functions import reshape
 from cubed.core.ops import arg_reduction, elemwise
 
 
 def argmax(x, /, *, axis=None, keepdims=False):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in argmax")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in argmax")
     if axis is None:
         x = reshape(x, (-1,))
         axis = 0
@@ -17,8 +17,8 @@ def argmax(x, /, *, axis=None, keepdims=False):
 
 
 def argmin(x, /, *, axis=None, keepdims=False):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in argmin")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in argmin")
     if axis is None:
         x = reshape(x, (-1,))
         axis = 0

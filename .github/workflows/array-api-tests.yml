@@ -33,7 +33,6 @@ jobs:
         with:
           repository: data-apis/array-api-tests
           path: array-api-tests
-          ref: 2022.05.18
           submodules: "true"
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
@@ -83,8 +82,9 @@ jobs:
           # don't run special cases yet
           array_api_tests/test_special_cases.py
 
-          # don't test signatures yet as some are not implemented
+          # don't test signatures or names yet as some are not implemented
           array_api_tests/test_signatures.py
+          array_api_tests/test_has_names.py
 
           # very slow
           array_api_tests/test_creation_functions.py::test_eye

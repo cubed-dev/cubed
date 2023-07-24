@@ -1,6 +1,6 @@
 __all__ = []
 
-__array_api_version__ = "2021.12"
+__array_api_version__ = "2022.12"
 
 __all__ += ["__array_api_version__"]
 
@@ -48,12 +48,14 @@ __all__ += [
     "zeros_like",
 ]
 
-from .data_type_functions import astype, can_cast, finfo, iinfo, result_type
+from .data_type_functions import astype, can_cast, finfo, iinfo, isdtype, result_type
 
-__all__ += ["astype", "can_cast", "finfo", "iinfo", "result_type"]
+__all__ += ["astype", "can_cast", "finfo", "iinfo", "isdtype", "result_type"]
 
 from .dtypes import (
     bool,
+    complex64,
+    complex128,
     float32,
     float64,
     int8,
@@ -68,6 +70,8 @@ from .dtypes import (
 
 __all__ += [
     "bool",
+    "complex64",
+    "complex128",
     "float32",
     "float64",
     "int8",
@@ -97,6 +101,7 @@ from .elementwise_functions import (
     bitwise_right_shift,
     bitwise_xor,
     ceil,
+    conj,
     cos,
     cosh,
     divide,
@@ -107,6 +112,7 @@ from .elementwise_functions import (
     floor_divide,
     greater,
     greater_equal,
+    imag,
     isfinite,
     isinf,
     isnan,
@@ -126,6 +132,7 @@ from .elementwise_functions import (
     not_equal,
     positive,
     pow,
+    real,
     remainder,
     round,
     sign,
@@ -156,6 +163,7 @@ __all__ += [
     "bitwise_right_shift",
     "bitwise_xor",
     "ceil",
+    "conj",
     "cos",
     "cosh",
     "divide",
@@ -166,6 +174,7 @@ __all__ += [
     "floor_divide",
     "greater",
     "greater_equal",
+    "imag",
     "isfinite",
     "isinf",
     "isnan",
@@ -185,6 +194,7 @@ __all__ += [
     "not_equal",
     "positive",
     "pow",
+    "real",
     "remainder",
     "round",
     "sign",

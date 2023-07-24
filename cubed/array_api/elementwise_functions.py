@@ -3,10 +3,17 @@ import numpy as np
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import (
     _boolean_dtypes,
+    _complex_floating_dtypes,
     _floating_dtypes,
     _integer_dtypes,
     _integer_or_boolean_dtypes,
     _numeric_dtypes,
+    _real_floating_dtypes,
+    _real_numeric_dtypes,
+    complex64,
+    complex128,
+    float32,
+    float64,
 )
 from cubed.core import elemwise
 
@@ -14,7 +21,13 @@ from cubed.core import elemwise
 def abs(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in abs")
-    return elemwise(np.abs, x, dtype=x.dtype)
+    if x.dtype == complex64:
+        dtype = float32
+    elif x.dtype == complex128:
+        dtype = float64
+    else:
+        dtype = x.dtype
+    return elemwise(np.abs, x, dtype=dtype)
 
 
 def acos(x, /):
@@ -54,8 +67,8 @@ def atan(x, /):
 
 
 def atan2(x1, x2, /):
-    if x1.dtype not in _floating_dtypes or x2.dtype not in _floating_dtypes:
-        raise TypeError("Only floating-point dtypes are allowed in atan2")
+    if x1.dtype not in _real_floating_dtypes or x2.dtype not in _real_floating_dtypes:
+        raise TypeError("Only real floating-point dtypes are allowed in atan2")
     return elemwise(np.arctan2, x1, x2, dtype=result_type(x1, x2))
 
 
@@ -111,12 +124,18 @@ def bitwise_xor(x1, x2, /):
 
 
 def ceil(x, /):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in ceil")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in ceil")
     if x.dtype in _integer_dtypes:
         # Note: The return dtype of ceil is the same as the input
         return x
     return elemwise(np.ceil, x, dtype=x.dtype)
+
+
+def conj(x, /):
+    if x.dtype not in _complex_floating_dtypes:
+        raise TypeError("Only complex floating-point dtypes are allowed in conj")
+    return elemwise(np.conj, x, dtype=x.dtype)
 
 
 def cos(x, /):
@@ -154,8 +173,8 @@ def equal(x1, x2, /):
 
 
 def floor(x, /):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in floor")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in floor")
     if x.dtype in _integer_dtypes:
         # Note: The return dtype of floor is the same as the input
         return x
@@ -163,8 +182,8 @@ def floor(x, /):
 
 
 def floor_divide(x1, x2, /):
-    if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in floor_divide")
+    if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in floor_divide")
     return elemwise(np.floor_divide, x1, x2, dtype=result_type(x1, x2))
 
 
@@ -174,6 +193,16 @@ def greater(x1, x2, /):
 
 def greater_equal(x1, x2, /):
     return elemwise(np.greater_equal, x1, x2, dtype=np.bool_)
+
+
+def imag(x, /):
+    if x.dtype == complex64:
+        dtype = float32
+    elif x.dtype == complex128:
+        dtype = float64
+    else:
+        raise TypeError("Only complex floating-point dtypes are allowed in imag")
+    return elemwise(np.imag, x, dtype=dtype)
 
 
 def isfinite(x, /):
@@ -227,8 +256,8 @@ def log10(x, /):
 
 
 def logaddexp(x1, x2, /):
-    if x1.dtype not in _floating_dtypes or x2.dtype not in _floating_dtypes:
-        raise TypeError("Only floating-point dtypes are allowed in logaddexp")
+    if x1.dtype not in _real_floating_dtypes or x2.dtype not in _real_floating_dtypes:
+        raise TypeError("Only real floating-point dtypes are allowed in logaddexp")
     return elemwise(np.logaddexp, x1, x2, dtype=result_type(x1, x2))
 
 
@@ -284,9 +313,19 @@ def pow(x1, x2, /):
     return elemwise(np.power, x1, x2, dtype=result_type(x1, x2))
 
 
+def real(x, /):
+    if x.dtype == complex64:
+        dtype = float32
+    elif x.dtype == complex128:
+        dtype = float64
+    else:
+        raise TypeError("Only complex floating-point dtypes are allowed in real")
+    return elemwise(np.real, x, dtype=dtype)
+
+
 def remainder(x1, x2, /):
-    if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in remainder")
+    if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in remainder")
     return elemwise(np.remainder, x1, x2, dtype=result_type(x1, x2))
 
 
@@ -345,8 +384,8 @@ def tanh(x, /):
 
 
 def trunc(x, /):
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in trunc")
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in trunc")
     if x.dtype in _integer_dtypes:
         # Note: The return dtype of trunc is the same as the input
         return x
