@@ -181,7 +181,7 @@ def permute_dims(x, /, axes):
     )
 
 
-def reshape(x, /, shape):
+def reshape(x, /, shape, *, copy=None):
     # based on dask reshape
 
     known_sizes = [s for s in shape if s != -1]
