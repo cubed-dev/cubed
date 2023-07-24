@@ -122,8 +122,8 @@ class Plan:
         lazy_zarr_arrays = []
         reserved_mem_values = []
         for n, d in dag.nodes(data=True):
-            if "reserved_mem" in d and d["reserved_mem"] is not None:
-                reserved_mem_values.append(d["reserved_mem"])
+            if "pipeline" in d and d["pipeline"].reserved_mem is not None:
+                reserved_mem_values.append(d["pipeline"].reserved_mem)
             if isinstance(d["target"], LazyZarrArray):
                 all_array_nodes.append(n)
                 lazy_zarr_arrays.append(d["target"])
