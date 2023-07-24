@@ -144,12 +144,13 @@ def full(
     # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
     if dtype is None:
-        if isinstance(fill_value, int):
+        # check bool first since True/False are instances of int and float
+        if isinstance(fill_value, bool):
+            dtype = np.bool_
+        elif isinstance(fill_value, int):
             dtype = np.int64
         elif isinstance(fill_value, float):
             dtype = np.float64
-        elif isinstance(fill_value, bool):
-            dtype = np.bool_
         else:
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
