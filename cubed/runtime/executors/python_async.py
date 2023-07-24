@@ -10,7 +10,7 @@ from networkx import MultiDiGraph
 from tenacity import Retrying, stop_after_attempt
 
 from cubed.core.array import Callback
-from cubed.core.plan import visit_node_generations
+from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.primitive.types import CubedPipeline
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import execution_stats, handle_callbacks
@@ -99,21 +99,32 @@ async def async_execute_dag(
     callbacks: Optional[Sequence[Callback]] = None,
     array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
+    compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
     with ThreadPoolExecutor() as concurrent_executor:
-        for gen in visit_node_generations(dag, resume=resume):
-            # run pipelines in the same topological generation in parallel by merging their streams
-            streams = [
-                pipeline_to_stream(
+        if not compute_arrays_in_parallel:
+            # run one pipeline at a time
+            for name, node in visit_nodes(dag, resume=resume):
+                st = pipeline_to_stream(
                     concurrent_executor, name, node["pipeline"], **kwargs
                 )
-                for name, node in gen
-            ]
-            merged_stream = stream.merge(*streams)
-            async with merged_stream.stream() as streamer:
-                async for _, stats in streamer:
-                    handle_callbacks(callbacks, stats)
+                async with st.stream() as streamer:
+                    async for _, stats in streamer:
+                        handle_callbacks(callbacks, stats)
+        else:
+            for gen in visit_node_generations(dag, resume=resume):
+                # run pipelines in the same topological generation in parallel by merging their streams
+                streams = [
+                    pipeline_to_stream(
+                        concurrent_executor, name, node["pipeline"], **kwargs
+                    )
+                    for name, node in gen
+                ]
+                merged_stream = stream.merge(*streams)
+                async with merged_stream.stream() as streamer:
+                    async for _, stats in streamer:
+                        handle_callbacks(callbacks, stats)
 
 
 class AsyncPythonDagExecutor(DagExecutor):

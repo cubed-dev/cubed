@@ -29,6 +29,8 @@ class VirtualOffsetsArray:
 
 
 def _key_to_index_tuple(selection):
+    if isinstance(selection, slice):
+        selection = (selection,)
     assert all(isinstance(s, (slice, Integral)) for s in selection)
     sel = []
     for s in selection:

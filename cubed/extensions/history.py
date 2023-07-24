@@ -18,7 +18,7 @@ class HistoryCallback(Callback):
                     array_name=name,
                     op_name=node["op_name"],
                     projected_mem=pipeline.projected_mem,
-                    reserved_mem=node["reserved_mem"],
+                    reserved_mem=pipeline.reserved_mem,
                     num_tasks=pipeline.num_tasks,
                 )
             )
