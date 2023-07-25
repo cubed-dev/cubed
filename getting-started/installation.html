@@ -368,15 +368,29 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
 <span class="w">    </span><span class="na">&quot;seaborn&quot;,</span>
 <span class="na">]</span>
 <span class="na">beam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;apache-beam&quot;, &quot;gcsfs&quot;]</span>
+<span class="na">dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;dask&quot;]</span>
 <span class="na">lithops</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;lithops[aws] &gt;= 2.7.0&quot;]</span>
 <span class="na">modal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
 <span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
 <span class="w">    </span><span class="na">&quot;modal-client&quot;,</span>
 <span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
 <span class="na">]</span>
+<span class="na">coiled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
+<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;coiled&quot;,</span>
+<span class="w">    </span><span class="na">&quot;dask[complete]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
+<span class="na">]</span>
 <span class="na">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
 <span class="w">    </span><span class="na">&quot;apache-beam&quot;,  # beam but not gcsfs as tests use local beam runner</span>
 <span class="w">    </span><span class="na">&quot;cubed[diagnostics,lithops]&quot;,  # modal tests separate due to conflicting package reqs</span>
+<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
+<span class="na">]</span>
+<span class="na">test-dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
+<span class="w">    </span><span class="na">&quot;cubed[dask,diagnostics]&quot;,</span>
 <span class="w">    </span><span class="na">&quot;dill&quot;,</span>
 <span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
 <span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
