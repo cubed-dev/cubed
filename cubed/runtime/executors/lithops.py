@@ -204,7 +204,9 @@ def execute_dag(
                 group_names = []
                 for name, node in gen:
                     pipeline = node["pipeline"]
-                    f = partial(run_func, func=pipeline.function, config=pipeline.config)
+                    f = partial(
+                        run_func, func=pipeline.function, config=pipeline.config
+                    )
                     group_map_functions.append(f)
                     group_map_iterdata.append(pipeline.mappable)
                     group_names.append(name)
