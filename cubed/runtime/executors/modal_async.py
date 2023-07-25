@@ -11,10 +11,15 @@ from modal.functions import Function
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.core.array import Callback
+from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.runtime.backup import should_launch_backup
-from cubed.runtime.executors.modal import Container, run_remotely, stub
+from cubed.runtime.executors.modal import (
+    Container,
+    check_runtime_memory,
+    run_remotely,
+    stub,
+)
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import handle_callbacks
 
@@ -151,10 +156,13 @@ async def async_execute_dag(
     callbacks: Optional[Sequence[Callback]] = None,
     array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
+    spec: Optional[Spec] = None,
     cloud: Optional[str] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
+    if spec is not None:
+        check_runtime_memory(spec)
     async with stub.run():
         cloud = cloud or "aws"
         if cloud == "aws":
@@ -195,6 +203,7 @@ class AsyncModalDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -204,6 +213,7 @@ class AsyncModalDagExecutor(DagExecutor):
                 callbacks=callbacks,
                 array_names=array_names,
                 resume=resume,
+                spec=spec,
                 **merged_kwargs,
             )
         )

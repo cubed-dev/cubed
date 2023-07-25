@@ -9,7 +9,7 @@ from aiostream.core import Stream
 from networkx import MultiDiGraph
 from tenacity import Retrying, stop_after_attempt
 
-from cubed.core.array import Callback
+from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.primitive.types import CubedPipeline
 from cubed.runtime.types import DagExecutor
@@ -99,6 +99,7 @@ async def async_execute_dag(
     callbacks: Optional[Sequence[Callback]] = None,
     array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
+    spec: Optional[Spec] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
@@ -136,6 +137,7 @@ class AsyncPythonDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
         **kwargs,
     ) -> None:
         asyncio.run(
@@ -144,6 +146,7 @@ class AsyncPythonDagExecutor(DagExecutor):
                 callbacks=callbacks,
                 array_names=array_names,
                 resume=resume,
+                spec=spec,
                 **kwargs,
             )
         )

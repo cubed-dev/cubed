@@ -398,7 +398,8 @@ def compute(
     **kwargs,
 ):
     """Compute multiple arrays at once."""
-    plan = arrays_to_plan(*arrays)  # guarantees all arrays have same spec
+    spec = check_array_specs(arrays)  # guarantees all arrays have same spec
+    plan = arrays_to_plan(*arrays)
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
@@ -413,6 +414,7 @@ def compute(
         optimize_graph=optimize_graph,
         resume=resume,
         array_names=[a.name for a in arrays],
+        spec=spec,
         **kwargs,
     )
 

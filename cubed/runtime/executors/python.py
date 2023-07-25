@@ -3,7 +3,7 @@ from typing import Any, Callable, Optional, Sequence
 from networkx import MultiDiGraph
 from tenacity import retry, stop_after_attempt
 
-from cubed.core.array import Callback, TaskEndEvent
+from cubed.core.array import Callback, Spec, TaskEndEvent
 from cubed.core.plan import visit_nodes
 from cubed.primitive.types import CubedPipeline
 from cubed.runtime.types import DagExecutor
@@ -23,6 +23,7 @@ class PythonDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
         **kwargs,
     ) -> None:
         for name, node in visit_nodes(dag, resume=resume):

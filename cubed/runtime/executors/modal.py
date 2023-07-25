@@ -8,10 +8,12 @@ from modal.exception import ConnectionError
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.core.array import Callback
+from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_nodes
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import execute_with_stats, handle_callbacks
+
+RUNTIME_MEMORY_MIB = 2000
 
 stub = modal.Stub("cubed-stub")
 
@@ -48,10 +50,20 @@ else:
     )
 
 
+def check_runtime_memory(spec):
+    allowed_mem = spec.allowed_mem if spec is not None else None
+    runtime_memory = RUNTIME_MEMORY_MIB * 1024 * 1024
+    if allowed_mem is not None:
+        if runtime_memory < allowed_mem:
+            raise ValueError(
+                f"Runtime memory ({runtime_memory}) is less than allowed_mem ({allowed_mem})"
+            )
+
+
 @stub.function(
     image=aws_image,
     secret=modal.Secret.from_name("my-aws-secret"),
-    memory=2000,
+    memory=RUNTIME_MEMORY_MIB,
     retries=2,
     cloud="aws",
 )
@@ -66,7 +78,7 @@ def run_remotely(input, func=None, config=None):
 @stub.cls(
     image=gcp_image,
     secret=modal.Secret.from_name("my-googlecloud-secret"),
-    memory=2000,
+    memory=RUNTIME_MEMORY_MIB,
     retries=2,
     cloud="gcp",
 )
@@ -97,9 +109,12 @@ def execute_dag(
     callbacks: Optional[Sequence[Callback]] = None,
     array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
+    spec: Optional[Spec] = None,
     cloud: Optional[str] = None,
     **kwargs,
 ) -> None:
+    if spec is not None:
+        check_runtime_memory(spec)
     with stub.run():
         cloud = cloud or "aws"
         if cloud == "aws":
@@ -138,6 +153,7 @@ class ModalDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -146,5 +162,6 @@ class ModalDagExecutor(DagExecutor):
             callbacks=callbacks,
             array_names=array_names,
             resume=resume,
+            spec=spec,
             **merged_kwargs,
         )

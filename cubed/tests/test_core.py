@@ -633,3 +633,17 @@ def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_para
     finally:
         fs = fsspec.open(tmp_path).fs
         fs.rm(tmp_path, recursive=True)
+
+
+@pytest.mark.cloud
+def test_check_runtime_memory_modal(spec, modal_executor):
+    tmp_path = "s3://cubed-unittest/check-runtime-memory"
+    spec = cubed.Spec(tmp_path, allowed_mem="4GB")  # larger than Modal runtime memory
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(
+        ValueError,
+        match=r"Runtime memory \(2097152000\) is less than allowed_mem \(4000000000\)",
+    ):
+        c.compute(executor=modal_executor)
