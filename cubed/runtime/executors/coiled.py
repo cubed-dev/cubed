@@ -31,22 +31,18 @@ class CoiledFunctionsDagExecutor(DagExecutor):
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
         for name, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
-            for stage in pipeline.stages:
-                if stage.mappable is not None:
-                    futures = []
-                    for m in stage.mappable:
-                        future_func = exec_stage_func(
-                            stage.function, m, coiled_kwargs, config=pipeline.config
-                        )
-                        futures.append(future_func)
-                else:
-                    raise NotImplementedError()
+            futures = []
+            for m in pipeline.mappable:
+                future_func = exec_stage_func(
+                    pipeline.function, m, coiled_kwargs, config=pipeline.config
+                )
+                futures.append(future_func)
 
-                # gather the results of the coiled functions
-                ac = as_completed(futures)
-                if callbacks is not None:
-                    for future in ac:
-                        result, stats = future.result()
-                        if name is not None:
-                            stats["array_name"] = name
-                        handle_callbacks(callbacks, stats)
+            # gather the results of the coiled functions
+            ac = as_completed(futures)
+            if callbacks is not None:
+                for future in ac:
+                    result, stats = future.result()
+                    if name is not None:
+                        stats["array_name"] = name
+                    handle_callbacks(callbacks, stats)

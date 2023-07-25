@@ -71,23 +71,19 @@ async def map_unordered(
 def pipeline_to_stream(
     concurrent_executor: Executor, name: str, pipeline: CubedPipeline, **kwargs
 ) -> Stream:
-    if any([stage for stage in pipeline.stages if stage.mappable is None]):
-        raise NotImplementedError("All stages must be mappable in pipelines")
     it = stream.iterate(
         [
             partial(
                 map_unordered,
                 concurrent_executor,
                 run_func,
-                stage.mappable,
+                pipeline.mappable,
                 return_stats=True,
                 name=name,
-                func=stage.function,
+                func=pipeline.function,
                 config=pipeline.config,
                 **kwargs,
             )
-            for stage in pipeline.stages
-            if stage.mappable is not None
         ]
     )
     # concat stages, running only one stage at a time

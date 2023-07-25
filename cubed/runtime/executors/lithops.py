@@ -185,22 +185,18 @@ def execute_dag(
         if not compute_arrays_in_parallel:
             for name, node in visit_nodes(dag, resume=resume):
                 pipeline = node["pipeline"]
-                for stage in pipeline.stages:
-                    if stage.mappable is not None:
-                        for _, stats in map_unordered(
-                            executor,
-                            [run_func],
-                            [stage.mappable],
-                            [name],
-                            func=stage.function,
-                            config=pipeline.config,
-                            name=name,
-                            use_backups=use_backups,
-                            return_stats=True,
-                        ):
-                            handle_callbacks(callbacks, stats)
-                    else:
-                        raise NotImplementedError()
+                for _, stats in map_unordered(
+                    executor,
+                    [run_func],
+                    [pipeline.mappable],
+                    [name],
+                    func=pipeline.function,
+                    config=pipeline.config,
+                    name=name,
+                    use_backups=use_backups,
+                    return_stats=True,
+                ):
+                    handle_callbacks(callbacks, stats)
         else:
             for gen in visit_node_generations(dag, resume=resume):
                 group_map_functions = []
@@ -208,10 +204,11 @@ def execute_dag(
                 group_names = []
                 for name, node in gen:
                     pipeline = node["pipeline"]
-                    stage = pipeline.stages[0]  # assume one
-                    f = partial(run_func, func=stage.function, config=pipeline.config)
+                    f = partial(
+                        run_func, func=pipeline.function, config=pipeline.config
+                    )
                     group_map_functions.append(f)
-                    group_map_iterdata.append(stage.mappable)
+                    group_map_iterdata.append(pipeline.mappable)
                     group_names.append(name)
                 for _, stats in map_unordered(
                     executor,

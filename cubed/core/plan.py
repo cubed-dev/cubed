@@ -10,7 +10,6 @@ from cubed.primitive.types import CubedPipeline
 from cubed.runtime.pipeline import already_computed
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
-from cubed.vendor.rechunker.types import Stage
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -379,14 +378,6 @@ def create_zarr_array(lazy_zarr_array, *, config=None):
 
 
 def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
-    stages = [
-        Stage(
-            create_zarr_array,
-            "create_zarr_array",
-            mappable=lazy_zarr_arrays,
-        )
-    ]
-
     # projected memory is size of largest initial values, or dtype size if there aren't any
     projected_mem = (
         max(
@@ -403,5 +394,13 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     num_tasks = len(lazy_zarr_arrays)
 
     return CubedPipeline(
-        stages, None, None, projected_mem, reserved_mem, num_tasks, None
+        create_zarr_array,
+        "create_zarr_array",
+        lazy_zarr_arrays,
+        None,
+        None,
+        projected_mem,
+        reserved_mem,
+        num_tasks,
+        None,
     )
