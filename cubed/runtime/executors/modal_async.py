@@ -1,9 +1,7 @@
 import asyncio
-import copy
 import time
 from asyncio.exceptions import TimeoutError
-from functools import partial
-from typing import Any, AsyncIterator, Dict, Iterable, Optional, Sequence
+from typing import Any, AsyncIterator, Iterable, Optional, Sequence
 
 from aiostream import stream
 from modal.exception import ConnectionError
@@ -13,7 +11,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
-from cubed.runtime.backup import should_launch_backup
+from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.executors.modal import (
     Container,
     check_runtime_memory,
@@ -45,9 +43,9 @@ async def map_unordered(
 
     :return: Function values (and optionally stats) as they are completed, not necessarily in the input order.
     """
-    task_create_tstamp = time.time()
 
     if not use_backups:
+        task_create_tstamp = time.time()
         async for result in app_function.map(input, order_outputs=False, kwargs=kwargs):
             if return_stats:
                 result, stats = result
@@ -59,86 +57,44 @@ async def map_unordered(
                 yield result
         return
 
+    def create_futures_func(input, **kwargs):
+        return [
+            (i, asyncio.ensure_future(app_function.call.aio(i, **kwargs)))
+            for i in input
+        ]
+
     backup_function = backup_function or app_function
 
-    tasks = {
-        asyncio.ensure_future(app_function.call.aio(i, **kwargs)): i for i in input
-    }
-    pending = set(tasks.keys())
-    t = time.monotonic()
-    start_times = {f: t for f in pending}
-    end_times = {}
-    backups: Dict[asyncio.Future, asyncio.Future] = {}
+    def create_backup_futures_func(input, **kwargs):
+        return [
+            (i, asyncio.ensure_future(backup_function.call.aio(i, **kwargs)))
+            for i in input
+        ]
 
-    while pending:
-        finished, pending = await asyncio.wait(
-            pending, return_when=asyncio.FIRST_COMPLETED, timeout=2
-        )
-        for task in finished:
-            # TODO: use exception groups in Python 3.11 to handle case of multiple task exceptions
-            if task.exception():
-                # if the task has a backup that is not done, or is done with no exception, then don't raise this exception
-                backup = backups.get(task, None)
-                if backup:
-                    if not backup.done() or not backup.exception():
-                        continue
-                raise task.exception()
-            end_times[task] = time.monotonic()
-            if return_stats:
-                result, stats = task.result()
-                if name is not None:
-                    stats["array_name"] = name
-                stats["task_create_tstamp"] = task_create_tstamp
-                yield result, stats
-            else:
-                yield task.result()
-
-            # remove any backup task
-            if use_backups:
-                backup = backups.get(task, None)
-                if backup:
-                    if backup in pending:
-                        pending.remove(backup)
-                    del backups[task]
-                    del backups[backup]
-                    backup.cancel()
-
-        if use_backups:
-            now = time.monotonic()
-            for task in copy.copy(pending):
-                if task not in backups and should_launch_backup(
-                    task, now, start_times, end_times
-                ):
-                    # launch backup task
-                    print("Launching backup task")
-                    i = tasks[task]
-                    new_task = asyncio.ensure_future(
-                        backup_function.call.aio(i, **kwargs)
-                    )
-                    tasks[new_task] = i
-                    start_times[new_task] = time.monotonic()
-                    pending.add(new_task)
-                    backups[task] = new_task
-                    backups[new_task] = task
+    async for result in async_map_unordered(
+        create_futures_func,
+        input,
+        use_backups=use_backups,
+        create_backup_futures_func=create_backup_futures_func,
+        return_stats=return_stats,
+        name=name,
+        **kwargs,
+    ):
+        yield result
 
 
 def pipeline_to_stream(app_function, name, pipeline, **kwargs):
-    it = stream.iterate(
-        [
-            partial(
-                map_unordered,
-                app_function,
-                pipeline.mappable,
-                return_stats=True,
-                name=name,
-                func=pipeline.function,
-                config=pipeline.config,
-                **kwargs,
-            )
-        ]
+    return stream.iterate(
+        map_unordered(
+            app_function,
+            pipeline.mappable,
+            return_stats=True,
+            name=name,
+            func=pipeline.function,
+            config=pipeline.config,
+            **kwargs,
+        )
     )
-    # concat stages, running only one stage at a time
-    return stream.concatmap(it, lambda f: f(), task_limit=1)
 
 
 # This just retries the initial connection attempt, not the function calls

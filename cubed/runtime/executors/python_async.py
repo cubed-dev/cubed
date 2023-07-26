@@ -1,5 +1,4 @@
 import asyncio
-import time
 from concurrent.futures import Executor, ThreadPoolExecutor
 from functools import partial
 from typing import Any, AsyncIterator, Callable, Iterable, Optional, Sequence
@@ -12,6 +11,7 @@ from tenacity import Retrying, stop_after_attempt
 from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.primitive.types import CubedPipeline
+from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import execution_stats, handle_callbacks
 
@@ -33,61 +33,49 @@ async def map_unordered(
     name: Optional[str] = None,
     **kwargs,
 ) -> AsyncIterator[Any]:
-    if name is not None:
-        print(f"{name}: running map_unordered")
     if retries == 0:
         retrying_function = function
     else:
         retryer = Retrying(reraise=True, stop=stop_after_attempt(retries + 1))
         retrying_function = partial(retryer, function)
 
-    task_create_tstamp = time.time()
-    tasks = {
-        asyncio.wrap_future(
-            concurrent_executor.submit(retrying_function, i, **kwargs)
-        ): i
-        for i in input
-    }
-    pending = set(tasks.keys())
+    def create_futures_func(input, **kwargs):
+        return [
+            (
+                i,
+                asyncio.wrap_future(
+                    concurrent_executor.submit(retrying_function, i, **kwargs)
+                ),
+            )
+            for i in input
+        ]
 
-    while pending:
-        finished, pending = await asyncio.wait(
-            pending, return_when=asyncio.FIRST_COMPLETED, timeout=2
-        )
-        for task in finished:
-            # TODO: use exception groups in Python 3.11 to handle case of multiple task exceptions
-            if task.exception():
-                raise task.exception()
-            if return_stats:
-                result, stats = task.result()
-                if name is not None:
-                    stats["array_name"] = name
-                stats["task_create_tstamp"] = task_create_tstamp
-                yield result, stats
-            else:
-                yield task.result()
+    async for result in async_map_unordered(
+        create_futures_func,
+        input,
+        use_backups=use_backups,
+        return_stats=return_stats,
+        name=name,
+        **kwargs,
+    ):
+        yield result
 
 
 def pipeline_to_stream(
     concurrent_executor: Executor, name: str, pipeline: CubedPipeline, **kwargs
 ) -> Stream:
-    it = stream.iterate(
-        [
-            partial(
-                map_unordered,
-                concurrent_executor,
-                run_func,
-                pipeline.mappable,
-                return_stats=True,
-                name=name,
-                func=pipeline.function,
-                config=pipeline.config,
-                **kwargs,
-            )
-        ]
+    return stream.iterate(
+        map_unordered(
+            concurrent_executor,
+            run_func,
+            pipeline.mappable,
+            return_stats=True,
+            name=name,
+            func=pipeline.function,
+            config=pipeline.config,
+            **kwargs,
+        )
     )
-    # concat stages, running only one stage at a time
-    return stream.concatmap(it, lambda f: f(), task_limit=1)
 
 
 async def async_execute_dag(
@@ -99,7 +87,8 @@ async def async_execute_dag(
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
-    with ThreadPoolExecutor() as concurrent_executor:
+    concurrent_executor = ThreadPoolExecutor()
+    try:
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
             for name, node in visit_nodes(dag, resume=resume):
@@ -122,6 +111,10 @@ async def async_execute_dag(
                 async with merged_stream.stream() as streamer:
                     async for _, stats in streamer:
                         handle_callbacks(callbacks, stats)
+
+    finally:
+        # don't wait for any cancelled tasks
+        concurrent_executor.shutdown(wait=False)
 
 
 class AsyncPythonDagExecutor(DagExecutor):
