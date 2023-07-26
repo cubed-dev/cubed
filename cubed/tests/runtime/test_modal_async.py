@@ -36,6 +36,11 @@ def deterministic_failure_modal(i, path=None, timing_map=None):
     return deterministic_failure(path, timing_map, i)
 
 
+@stub.function(image=image, secret=modal.Secret.from_name("my-aws-secret"), timeout=10)
+def deterministic_failure_modal_no_retries(i, path=None, timing_map=None):
+    return deterministic_failure(path, timing_map, i)
+
+
 @stub.function(
     image=image, secret=modal.Secret.from_name("my-aws-secret"), retries=2, timeout=300
 )
@@ -47,7 +52,10 @@ async def run_test(app_function, input, use_backups=False, **kwargs):
     outputs = set()
     async with stub.run():
         async for output in map_unordered(
-            app_function, input, use_backups=use_backups, **kwargs
+            app_function,
+            input,
+            use_backups=use_backups,
+            **kwargs,
         ):
             outputs.add(output)
     return outputs
