@@ -92,6 +92,20 @@ def pipeline_to_stream(
     )
 
 
+def check_runtime_memory(spec, client):
+    allowed_mem = spec.allowed_mem if spec is not None else None
+    scheduler_info = client.scheduler_info()
+    workers = scheduler_info.get("workers")
+    if workers is None or len(workers) == 0:
+        raise ValueError("Cluster has no workers running")
+    runtime_memory = min(w["memory_limit"] // w["nthreads"] for w in workers.values())
+    if allowed_mem is not None:
+        if runtime_memory < allowed_mem:
+            raise ValueError(
+                f"Runtime memory ({runtime_memory}) is less than allowed_mem ({allowed_mem})"
+            )
+
+
 async def async_execute_dag(
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
@@ -104,6 +118,8 @@ async def async_execute_dag(
 ) -> None:
     compute_kwargs = compute_kwargs or {}
     async with Client(asynchronous=True, **compute_kwargs) as client:
+        if spec is not None:
+            check_runtime_memory(spec, client)
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
             for name, node in visit_nodes(dag, resume=resume):

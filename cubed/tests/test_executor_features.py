@@ -215,6 +215,55 @@ def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_para
         fs.rm(tmp_path, recursive=True)
 
 
+def test_check_runtime_memory_dask(spec, executor):
+    pytest.importorskip("dask.distributed")
+    try:
+        from cubed.runtime.executors.dask_distributed_async import (
+            AsyncDaskDistributedExecutor,
+        )
+
+        if not isinstance(executor, AsyncDaskDistributedExecutor):
+            pytest.skip(f"{type(executor)} does not support check_runtime_memory")
+    except ImportError:
+        pass
+
+    spec = cubed.Spec(spec.work_dir, allowed_mem="4GB")  # larger than runtime memory
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(
+        ValueError,
+        match=r"Runtime memory \(2000000000\) is less than allowed_mem \(4000000000\)",
+    ):
+        c.compute(
+            executor=executor,
+            compute_kwargs=dict(memory_limit="2 GB", threads_per_worker=1),
+        )
+
+
+def test_check_runtime_memory_dask_no_workers(spec, executor):
+    pytest.importorskip("dask.distributed")
+    try:
+        from cubed.runtime.executors.dask_distributed_async import (
+            AsyncDaskDistributedExecutor,
+        )
+
+        if not isinstance(executor, AsyncDaskDistributedExecutor):
+            pytest.skip(f"{type(executor)} does not support check_runtime_memory")
+    except ImportError:
+        pass
+
+    spec = cubed.Spec(spec.work_dir, allowed_mem=100000)
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(ValueError, match=r"Cluster has no workers running"):
+        c.compute(
+            executor=executor,
+            compute_kwargs=dict(n_workers=0),
+        )
+
+
 @pytest.mark.cloud
 def test_check_runtime_memory_modal(spec, modal_executor):
     tmp_path = "s3://cubed-unittest/check-runtime-memory"
