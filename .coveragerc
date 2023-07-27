@@ -5,7 +5,7 @@ omit =
     cubed/extensions/*
     cubed/runtime/executors/beam.py
     cubed/runtime/executors/coiled.py
-    cubed/runtime/executors/dask.py
+    cubed/runtime/executors/dask*.py
     cubed/runtime/executors/lithops.py
     cubed/runtime/executors/modal*.py
     cubed/vendor/*
