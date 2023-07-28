@@ -43,6 +43,7 @@ diagnostics = [
 ]
 beam = ["apache-beam", "gcsfs"]
 dask = ["dask"]
+dask-distributed = ["distributed"]
 lithops = ["lithops[aws] >= 2.7.0"]
 modal = [
     "cubed[diagnostics]",
@@ -65,6 +66,13 @@ test = [
 ]
 test-dask = [
     "cubed[dask,diagnostics]",
+    "dill",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+test-dask-distributed = [
+    "cubed[dask-distributed,diagnostics]",
     "dill",
     "pytest",
     "pytest-cov",

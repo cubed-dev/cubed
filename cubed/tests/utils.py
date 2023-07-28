@@ -41,6 +41,17 @@ except ImportError:
     pass
 
 try:
+    from cubed.runtime.executors.dask_distributed_async import (
+        AsyncDaskDistributedExecutor,
+    )
+
+    ALL_EXECUTORS.append(AsyncDaskDistributedExecutor())
+
+    MAIN_EXECUTORS.append(AsyncDaskDistributedExecutor())
+except ImportError:
+    pass
+
+try:
     from cubed.runtime.executors.lithops import LithopsDagExecutor
 
     ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
