@@ -369,6 +369,7 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
 <span class="na">]</span>
 <span class="na">beam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;apache-beam&quot;, &quot;gcsfs&quot;]</span>
 <span class="na">dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;dask&quot;]</span>
+<span class="na">dask-distributed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;distributed&quot;]</span>
 <span class="na">lithops</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;lithops[aws] &gt;= 2.7.0&quot;]</span>
 <span class="na">modal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
 <span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
@@ -391,6 +392,13 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
 <span class="na">]</span>
 <span class="na">test-dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
 <span class="w">    </span><span class="na">&quot;cubed[dask,diagnostics]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
+<span class="na">]</span>
+<span class="na">test-dask-distributed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
+<span class="w">    </span><span class="na">&quot;cubed[dask-distributed,diagnostics]&quot;,</span>
 <span class="w">    </span><span class="na">&quot;dill&quot;,</span>
 <span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
 <span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
