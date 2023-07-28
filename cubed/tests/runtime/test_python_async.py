@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
@@ -8,7 +9,7 @@ from cubed.runtime.executors.python_async import map_unordered
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 
-async def run_test(function, input, retries=2, use_backups=False):
+async def run_test(function, input, retries=2, use_backups=False, batch_size=None):
     outputs = set()
     concurrent_executor = ThreadPoolExecutor()
     try:
@@ -18,6 +19,7 @@ async def run_test(function, input, retries=2, use_backups=False):
             input,
             retries=retries,
             use_backups=use_backups,
+            batch_size=batch_size,
         ):
             outputs.add(output)
     finally:
@@ -95,3 +97,18 @@ def test_stragglers(tmp_path, timing_map, n_tasks, retries):
     assert outputs == set(range(n_tasks))
 
     check_invocation_counts(tmp_path, timing_map, n_tasks, retries)
+
+
+def test_batch(tmp_path):
+    # input is unbounded, so if entire input were consumed and not read
+    # in batches then it would never return, since it would never
+    # run the first (failing) input
+    with pytest.raises(RuntimeError):
+        asyncio.run(
+            run_test(
+                function=partial(deterministic_failure, tmp_path, {0: [-1]}),
+                input=itertools.count(),
+                retries=0,
+                batch_size=10,
+            )
+        )
