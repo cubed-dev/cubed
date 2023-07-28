@@ -77,14 +77,6 @@ def test_retries(mocker, spec):
     platform.system() == "Windows", reason="measuring memory does not run on windows"
 )
 def test_callbacks(spec, executor):
-    try:
-        from cubed.runtime.executors.dask import DaskDelayedExecutor
-
-        if isinstance(executor, DaskDelayedExecutor):
-            pytest.skip(f"{type(executor)} does not support callbacks")
-    except ImportError:
-        pass
-
     task_counter = TaskCounter()
     # test following indirectly by checking they don't cause a failure
     progress = TqdmProgressBar()
@@ -131,14 +123,6 @@ def test_resume(spec, executor):
         from cubed.runtime.executors.beam import BeamDagExecutor
 
         if isinstance(executor, BeamDagExecutor):
-            pytest.skip(f"{type(executor)} does not support resume")
-    except ImportError:
-        pass
-
-    try:
-        from cubed.runtime.executors.dask import DaskDelayedExecutor
-
-        if isinstance(executor, DaskDelayedExecutor):
             pytest.skip(f"{type(executor)} does not support resume")
     except ImportError:
         pass
