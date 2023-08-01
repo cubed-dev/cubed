@@ -9,7 +9,7 @@ from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
-from typing import Tuple, Union
+from typing import Dict, Tuple, Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
@@ -200,7 +200,7 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
     -------
     int: The size in bytes
     """
-    units: dict[str, int] = {"kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
+    units: Dict[str, int] = {"kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
 
     def is_numeric_str(s: str) -> bool:
         try:
@@ -214,14 +214,14 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
 
         # check if the format of the string is valid
         if is_numeric_str(size):
-            unit_factor = 1
+            unit_factor = 1.0
             value = size
         elif size[-1] == "B" and is_numeric_str(size[:-1]):
-            unit_factor = 1
+            unit_factor = 1.0
             value = size[:-1]
         elif size[-2:] in units and is_numeric_str(size[:-2]):
             unit = size[-2:]
-            unit_factor: float = 1000 ** units[unit]
+            unit_factor = 1000 ** units[unit]
             value = size[:-2]
         else:
             raise ValueError(
