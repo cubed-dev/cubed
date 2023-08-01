@@ -2,7 +2,13 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 from lithops import FunctionExecutor
 from lithops.future import ResponseFuture
-from lithops.wait import ALL_COMPLETED, ALWAYS, ANY_COMPLETED
+from lithops.wait import (
+    ALL_COMPLETED,
+    ALWAYS,
+    ANY_COMPLETED,
+    THREADPOOL_SIZE,
+    WAIT_DUR_SEC,
+)
 from six import reraise
 
 
@@ -86,80 +92,96 @@ class RetryingFuture:
         return res
 
 
-def map_with_retries(
-    function_executor: FunctionExecutor,
-    map_function: Callable[..., Any],
-    map_iterdata: Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
-    timeout: Optional[int] = None,
-    include_modules: Optional[List[str]] = [],
-    retries: Optional[int] = None,
-    group_name: Optional[str] = None,
-) -> List[RetryingFuture]:
+class RetryingFunctionExecutor:
     """
-    A generalisation of Lithops `map`, with retries.
+    A wrapper around Lithops `FunctionExecutor` that supports retries.
     """
 
-    inputs = list(map_iterdata)
-    futures_list = function_executor.map(
-        map_function, inputs, timeout=timeout, include_modules=include_modules
-    )
-    return [
-        RetryingFuture(
-            f,
-            map_function=map_function,
-            input=i,
-            map_kwargs=dict(timeout=timeout, include_modules=include_modules),
-            retries=retries,
-            group_name=group_name,
+    def __init__(self, executor: FunctionExecutor):
+        self.executor = executor
+
+    def __enter__(self):
+        self.executor.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.executor.__exit__(exc_type, exc_value, traceback)
+
+    def map(
+        self,
+        map_function: Callable[..., Any],
+        map_iterdata: Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
+        *,
+        retries: Optional[int] = None,
+        group_name: Optional[str] = None,
+        **kwargs,
+    ) -> List[RetryingFuture]:
+        inputs = list(map_iterdata)
+        futures_list = self.executor.map(
+            map_function,
+            inputs,
+            **kwargs,
         )
-        for i, f in zip(inputs, futures_list)
-    ]
+        return [
+            RetryingFuture(
+                f,
+                map_function=map_function,
+                input=i,
+                map_kwargs=kwargs,
+                retries=retries,
+                group_name=group_name,
+            )
+            for i, f in zip(inputs, futures_list)
+        ]
 
+    def wait(
+        self,
+        fs: List[RetryingFuture],
+        throw_except: Optional[bool] = True,
+        return_when: Optional[Any] = ALL_COMPLETED,
+        download_results: Optional[bool] = False,
+        timeout: Optional[int] = None,
+        threadpool_size: Optional[int] = THREADPOOL_SIZE,
+        wait_dur_sec: Optional[int] = WAIT_DUR_SEC,
+        show_progressbar: Optional[bool] = True,
+    ) -> Tuple[List[RetryingFuture], List[RetryingFuture]]:
+        lookup = {f.response_future: f for f in fs}
 
-def wait_with_retries(
-    function_executor: FunctionExecutor,
-    fs: List[RetryingFuture],
-    throw_except: Optional[bool] = True,
-    return_when: Optional[Any] = ALL_COMPLETED,
-    show_progressbar: Optional[bool] = True,
-) -> Tuple[List[RetryingFuture], List[RetryingFuture]]:
-    """
-    A generalisation of Lithops `wait`, with retries.
-    """
+        while True:
+            response_futures = [f.response_future for f in fs]
 
-    lookup = {f.response_future: f for f in fs}
+            done, pending = self.executor.wait(
+                response_futures,
+                throw_except=throw_except,
+                return_when=return_when,
+                download_results=download_results,
+                timeout=timeout,
+                threadpool_size=threadpool_size,
+                wait_dur_sec=wait_dur_sec,
+                show_progressbar=show_progressbar,
+            )
 
-    while True:
-        response_futures = [f.response_future for f in fs]
-
-        done, pending = function_executor.wait(
-            response_futures,
-            throw_except=throw_except,
-            return_when=return_when,
-            show_progressbar=show_progressbar,
-        )
-
-        retrying_done = []
-        retrying_pending = [lookup[response_future] for response_future in pending]
-        for response_future in done:
-            retrying_future = lookup[response_future]
-            if response_future.error:
-                retrying_future._inc_failure_count()
-                if retrying_future._should_retry():
-                    retrying_future._retry(function_executor)
-                    # put back into pending since we are retrying this input
-                    retrying_pending.append(retrying_future)
-                    lookup[retrying_future.response_future] = retrying_future
+            retrying_done = []
+            retrying_pending = [lookup[response_future] for response_future in pending]
+            for response_future in done:
+                retrying_future = lookup[response_future]
+                if response_future.error:
+                    retrying_future._inc_failure_count()
+                    if retrying_future._should_retry():
+                        retrying_future._retry(self.executor)
+                        # put back into pending since we are retrying this input
+                        retrying_pending.append(retrying_future)
+                        lookup[retrying_future.response_future] = retrying_future
+                    else:
+                        retrying_done.append(retrying_future)
                 else:
                     retrying_done.append(retrying_future)
-            else:
-                retrying_done.append(retrying_future)
 
-        if return_when == ALWAYS:
-            break
-        elif return_when == ANY_COMPLETED and len(retrying_done) > 0:
-            break
-        elif return_when == ALL_COMPLETED and len(retrying_pending) == 0:
-            break
+            if return_when == ALWAYS:
+                break
+            elif return_when == ANY_COMPLETED and len(retrying_done) > 0:
+                break
+            elif return_when == ALL_COMPLETED and len(retrying_pending) == 0:
+                break
 
-    return retrying_done, retrying_pending
+        return retrying_done, retrying_pending

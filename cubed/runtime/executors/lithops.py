@@ -24,9 +24,8 @@ from cubed.core.array import Callback, Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.lithops_retries import (
+    RetryingFunctionExecutor,
     RetryingFuture,
-    map_with_retries,
-    wait_with_retries,
 )
 from cubed.runtime.types import DagExecutor
 from cubed.runtime.utils import handle_callbacks
@@ -40,7 +39,7 @@ def run_func(input, func=None, config=None, name=None):
 
 
 def map_unordered(
-    lithops_function_executor: FunctionExecutor,
+    lithops_function_executor: RetryingFunctionExecutor,
     group_map_functions: Sequence[Callable[..., Any]],
     group_map_iterdata: Sequence[
         Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]]
@@ -88,8 +87,7 @@ def map_unordered(
         partial_map_function = lambda x: map_function(x, **kwargs)
         group_name_to_function[group_name] = partial_map_function
 
-        futures = map_with_retries(
-            lithops_function_executor,
+        futures = lithops_function_executor.map(
             partial_map_function,
             map_iterdata,
             timeout=timeout,
@@ -101,8 +99,7 @@ def map_unordered(
         pending.extend(futures)
 
     while pending:
-        finished, pending = wait_with_retries(
-            lithops_function_executor,
+        finished, pending = lithops_function_executor.wait(
             pending,
             throw_except=False,
             return_when=return_when,
@@ -142,8 +139,7 @@ def map_unordered(
                 ):
                     input = future.input
                     logger.info("Running backup task for %s", input)
-                    futures = map_with_retries(
-                        lithops_function_executor,
+                    futures = lithops_function_executor.map(
                         group_name_to_function[group_name],
                         [input],
                         timeout=timeout,
@@ -172,16 +168,17 @@ def execute_dag(
 ) -> None:
     use_backups = kwargs.pop("use_backups", False)
     allowed_mem = spec.allowed_mem if spec is not None else None
-    with FunctionExecutor(**kwargs) as executor:
-        runtime_memory_mb = executor.config[executor.backend].get(
-            "runtime_memory", None
-        )
-        if runtime_memory_mb is not None and allowed_mem is not None:
-            runtime_memory = runtime_memory_mb * 1_000_000
-            if runtime_memory < allowed_mem:
-                raise ValueError(
-                    f"Runtime memory ({runtime_memory}) is less than allowed_mem ({allowed_mem})"
-                )
+    function_executor = FunctionExecutor(**kwargs)
+    runtime_memory_mb = function_executor.config[function_executor.backend].get(
+        "runtime_memory", None
+    )
+    if runtime_memory_mb is not None and allowed_mem is not None:
+        runtime_memory = runtime_memory_mb * 1_000_000
+        if runtime_memory < allowed_mem:
+            raise ValueError(
+                f"Runtime memory ({runtime_memory}) is less than allowed_mem ({allowed_mem})"
+            )
+    with RetryingFunctionExecutor(function_executor) as executor:
         if not compute_arrays_in_parallel:
             for name, node in visit_nodes(dag, resume=resume):
                 pipeline = node["pipeline"]
