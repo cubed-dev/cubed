@@ -9,7 +9,7 @@ from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
-from typing import Tuple, Union
+from typing import Dict, Tuple, Union
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
@@ -185,7 +185,7 @@ def extract_array_names(frame):
     return array_names_to_variable_names
 
 
-def convert_to_bytes(size: Union[int, str]) -> int:
+def convert_to_bytes(size: Union[int, float, str]) -> int:
     """
     Converts the input data size to bytes.
 
@@ -193,33 +193,53 @@ def convert_to_bytes(size: Union[int, str]) -> int:
 
     Parameters
     ----------
-    size: in or str:
-        Size of data. If int it should be >=0. If str it should be of form <value><unit> where unit can be kB, MB, GB, TB etc.
+    size: int, float, or str:
+        Size of data. If numeric it should represent an integer >=0. If str it should be of form <value><unit> where unit can be B, kB, MB, GB, TB etc.
 
     Returns
     -------
     int: The size in bytes
     """
-    units = {"B": 0, "kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
+    units: Dict[str, int] = {"kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
 
-    if isinstance(size, int) and size >= 0:
-        return size
-    elif isinstance(size, str):
-        # check if the format is valid
-        if size[-1] == "B" and size[:-1].isdigit():
-            unit = "B"
+    def is_numeric_str(s: str) -> bool:
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
+    if isinstance(size, str):
+        size = size.replace(" ", "")
+
+        # check if the format of the string is valid
+        if is_numeric_str(size):
+            unit_factor = 1.0
+            value = size
+        elif size[-1] == "B" and is_numeric_str(size[:-1]):
+            unit_factor = 1.0
             value = size[:-1]
-        elif size[-2:] in units and size[:-2].isdigit():
+        elif size[-2:] in units and is_numeric_str(size[:-2]):
             unit = size[-2:]
+            unit_factor = 1000 ** units[unit]
             value = size[:-2]
         else:
             raise ValueError(
-                f"Invalid value: {size}. Expected a string ending with an SI prefix."
+                f"Invalid value: {size}. Expected the string to be a numeric value ending with an SI prefix."
             )
 
-        if unit in units and value.isdigit():
-            # convert to bytes
-            return int(value) * (1000 ** units[unit])
-    raise ValueError(
-        f"Invalid value: {size}. Expected a positive integer or a string ending with an SI prefix."
-    )
+        # convert to float number of bytes
+        size = float(value) * unit_factor
+
+    if isinstance(size, float):
+        if size.is_integer():
+            size = int(size)
+        else:
+            raise ValueError(
+                f"Invalid value: {size}. Can't have a non-integer number of bytes"
+            )
+
+    if size >= 0:
+        return size
+    else:
+        raise ValueError(f"Invalid value: {size}. Must be a positive value")
