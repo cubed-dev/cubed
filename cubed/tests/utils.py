@@ -32,15 +32,6 @@ except ImportError:
     pass
 
 try:
-    from cubed.runtime.executors.dask import DaskDelayedExecutor
-
-    ALL_EXECUTORS.append(DaskDelayedExecutor())
-
-    MAIN_EXECUTORS.append(DaskDelayedExecutor())
-except ImportError:
-    pass
-
-try:
     from cubed.runtime.executors.dask_distributed_async import (
         AsyncDaskDistributedExecutor,
     )
