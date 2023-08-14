@@ -284,6 +284,7 @@ def blockwise(
         "blockwise",
         pipeline.target_array,
         pipeline,
+        False,
         *source_arrays,
     )
     from cubed.array_api import Array
@@ -454,12 +455,12 @@ def map_blocks(
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
     if has_keyword(func, "block_id"):
-        from cubed.array_api.creation_functions import offsets_array
+        from cubed.array_api.creation_functions import offsets_virtual_array
 
         # Create an array of index offsets with the same chunk structure as the args,
         # which we convert to block ids (chunk coordinates) later.
         a = args[0]
-        offsets = offsets_array(a.numblocks, a.spec)
+        offsets = offsets_virtual_array(a.numblocks, a.spec)
         new_args = args + (offsets,)
 
         def offset_to_block_id(offset):
@@ -588,12 +589,12 @@ def map_direct(
         (`args`) will be used (if any).
     """
 
-    from cubed.array_api.creation_functions import empty
+    from cubed.array_api.creation_functions import empty_virtual_array
 
     if spec is None and len(args) > 0 and hasattr(args[0], "spec"):
         spec = args[0].spec
 
-    out = empty(shape, dtype=dtype, chunks=chunks, spec=spec)
+    out = empty_virtual_array(shape, dtype=dtype, chunks=chunks, spec=spec)
 
     kwargs["arrays"] = args
 
@@ -646,6 +647,7 @@ def rechunk(x, chunks, target_store=None):
             "rechunk",
             pipeline.target_array,
             pipeline,
+            False,
             x,
         )
         return Array(name, pipeline.target_array, spec, plan)
@@ -657,6 +659,7 @@ def rechunk(x, chunks, target_store=None):
             "rechunk",
             pipeline1.target_array,
             pipeline1,
+            False,
             x,
         )
         x_int = Array(name_int, pipeline1.target_array, spec, plan1)
@@ -667,6 +670,7 @@ def rechunk(x, chunks, target_store=None):
             "rechunk",
             pipeline2.target_array,
             pipeline2,
+            False,
             x_int,
         )
         return Array(name, pipeline2.target_array, spec, plan2)

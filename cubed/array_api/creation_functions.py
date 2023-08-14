@@ -6,7 +6,7 @@ from zarr.util import normalize_shape
 from cubed.core import Plan, gensym, map_blocks
 from cubed.core.ops import map_direct
 from cubed.core.plan import new_temp_path
-from cubed.storage.virtual import virtual_offsets
+from cubed.storage.virtual import virtual_empty, virtual_offsets
 from cubed.storage.zarr import lazy_from_array, lazy_full
 from cubed.utils import to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
@@ -88,6 +88,22 @@ def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Arr
     return empty(**_like_args(x, dtype, device, chunks, spec))
 
 
+def empty_virtual_array(
+    shape, *, dtype=None, device=None, chunks="auto", spec=None
+) -> "Array":
+    if dtype is None:
+        dtype = np.float64
+
+    chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
+    name = gensym()
+    target = virtual_empty(shape, dtype=dtype, chunks=chunksize)
+
+    from .array_object import Array
+
+    plan = Plan._new(name, "empty", target, hidden=True)
+    return Array(name, target, spec, plan)
+
+
 def eye(
     n_rows, n_cols=None, /, *, k=0, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
@@ -154,13 +170,13 @@ def full(
     return Array(name, target, spec, plan)
 
 
-def offsets_array(shape, spec=None) -> "Array":
+def offsets_virtual_array(shape, spec=None) -> "Array":
     name = gensym()
     target = virtual_offsets(shape)
 
     from .array_object import Array
 
-    plan = Plan._new(name, "block_ids", target)
+    plan = Plan._new(name, "block_ids", target, hidden=True)
     return Array(name, target, spec, plan)
 
 

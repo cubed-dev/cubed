@@ -2,9 +2,34 @@ from numbers import Integral
 
 import numpy as np
 import zarr
-from zarr.indexing import is_slice
+from zarr.indexing import BasicIndexer, is_slice
 
-from cubed.types import T_Shape
+from cubed.types import T_DType, T_RegularChunks, T_Shape
+
+
+class VirtualEmptyArray:
+    """An array that is never materialized (in memory or on disk) and contains empty values."""
+
+    def __init__(
+        self,
+        shape: T_Shape,
+        dtype: T_DType,
+        chunks: T_RegularChunks,
+    ):
+        # use an empty in-memory Zarr array as a template since it normalizes its properties
+        template = zarr.empty(
+            shape, dtype=dtype, chunks=chunks, store=zarr.storage.MemoryStore()
+        )
+        self.shape = template.shape
+        self.dtype = template.dtype
+        self.chunks = template.chunks
+        self.template = template
+
+    def __getitem__(self, key):
+        if not isinstance(key, tuple):
+            key = (key,)
+        indexer = BasicIndexer(key, self.template)
+        return np.empty(indexer.shape, dtype=self.dtype)
 
 
 class VirtualOffsetsArray:
@@ -41,6 +66,12 @@ def _key_to_index_tuple(selection):
         else:
             raise NotImplementedError(f"Offset selection not supported: {selection}")
     return tuple(sel)
+
+
+def virtual_empty(
+    shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, **kwargs
+) -> VirtualEmptyArray:
+    return VirtualEmptyArray(shape, dtype, chunks, **kwargs)
 
 
 def virtual_offsets(shape: T_Shape) -> VirtualOffsetsArray:
