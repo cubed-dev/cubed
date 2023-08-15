@@ -4,20 +4,19 @@ pytest.importorskip("lithops")
 
 from lithops.executors import LocalhostExecutor
 
-from cubed.runtime.executors.lithops_retries import map_with_retries, wait_with_retries
+from cubed.runtime.executors.lithops_retries import RetryingFunctionExecutor
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 
 def run_test(function, input, retries, timeout=10):
-    with LocalhostExecutor() as executor:
-        futures = map_with_retries(
-            executor,
+    with RetryingFunctionExecutor(LocalhostExecutor()) as executor:
+        futures = executor.map(
             function,
             input,
             timeout=timeout,
             retries=retries,
         )
-        done, pending = wait_with_retries(executor, futures, throw_except=False)
+        done, pending = executor.wait(futures, throw_except=False)
         assert len(pending) == 0
     outputs = set(f.result() for f in done)
     return outputs

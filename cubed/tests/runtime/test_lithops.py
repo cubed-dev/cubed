@@ -10,11 +10,12 @@ pytest.importorskip("lithops")
 from lithops.executors import LocalhostExecutor
 
 from cubed.runtime.executors.lithops import map_unordered
+from cubed.runtime.executors.lithops_retries import RetryingFunctionExecutor
 
 
 def run_test(function, input, retries, timeout=10, use_backups=False):
     outputs = set()
-    with LocalhostExecutor() as executor:
+    with RetryingFunctionExecutor(LocalhostExecutor()) as executor:
         for output in map_unordered(
             executor,
             [function],
