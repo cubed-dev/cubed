@@ -28,6 +28,7 @@ async def map_unordered(
     input: Iterable[Any],
     use_backups: bool = False,
     backup_function: Optional[Function] = None,
+    batch_size: Optional[int] = None,
     return_stats: bool = False,
     name: Optional[str] = None,
     **kwargs,
@@ -44,7 +45,7 @@ async def map_unordered(
     :return: Function values (and optionally stats) as they are completed, not necessarily in the input order.
     """
 
-    if not use_backups:
+    if not use_backups and batch_size is None:
         task_create_tstamp = time.time()
         async for result in app_function.map(input, order_outputs=False, kwargs=kwargs):
             if return_stats:
@@ -76,6 +77,7 @@ async def map_unordered(
         input,
         use_backups=use_backups,
         create_backup_futures_func=create_backup_futures_func,
+        batch_size=batch_size,
         return_stats=return_stats,
         name=name,
         **kwargs,

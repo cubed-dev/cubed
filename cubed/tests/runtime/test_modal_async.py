@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 
 modal = pytest.importorskip("modal")
@@ -48,13 +50,14 @@ def deterministic_failure_modal_long_timeout(i, path=None, timing_map=None):
     return deterministic_failure(path, timing_map, i)
 
 
-async def run_test(app_function, input, use_backups=False, **kwargs):
+async def run_test(app_function, input, use_backups=False, batch_size=None, **kwargs):
     outputs = set()
     async with stub.run():
         async for output in map_unordered(
             app_function,
             input,
             use_backups=use_backups,
+            batch_size=batch_size,
             **kwargs,
         ):
             outputs.add(output)
@@ -177,6 +180,28 @@ def test_stragglers(timing_map, n_tasks, retries, expected_invocation_counts_ove
 
         assert outputs == set(range(n_tasks))
         check_invocation_counts(tmp_path, timing_map, n_tasks, retries, expected_invocation_counts_overrides)
+
+    finally:
+        fs = fsspec.open(tmp_path).fs
+        fs.rm(tmp_path, recursive=True)
+
+
+@pytest.mark.cloud
+def test_batch(tmp_path):
+    # input is unbounded, so if entire input were consumed and not read
+    # in batches then it would never return, since it would never
+    # run the first (failing) input
+    try:
+        with pytest.raises(RuntimeError):
+            asyncio.run(
+                run_test(
+                    app_function=deterministic_failure_modal_no_retries,
+                    input=itertools.count(),
+                    path=tmp_path,
+                    timing_map={0: [-1]},
+                    batch_size=10,
+                )
+            )
 
     finally:
         fs = fsspec.open(tmp_path).fs

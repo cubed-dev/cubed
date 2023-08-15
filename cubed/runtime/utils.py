@@ -1,5 +1,6 @@
 import time
 from functools import partial
+from itertools import islice
 
 from cubed.utils import peak_measured_mem
 
@@ -52,3 +53,13 @@ def handle_callbacks(callbacks, stats):
         else:
             event = TaskEndEvent(**stats)
         [callback.on_task_end(event) for callback in callbacks]
+
+
+# this will be in Python 3.12 https://docs.python.org/3.12/library/itertools.html#itertools.batched
+def batched(iterable, n):
+    # batched('ABCDEFG', 3) --> ABC DEF G
+    if n < 1:
+        raise ValueError("n must be at least one")
+    it = iter(iterable)
+    while batch := tuple(islice(it, n)):
+        yield batch

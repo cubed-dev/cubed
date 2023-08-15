@@ -5,6 +5,7 @@ from asyncio import Future
 from typing import Any, AsyncIterator, Callable, Dict, Iterable, List, Optional, Tuple
 
 from cubed.runtime.backup import should_launch_backup
+from cubed.runtime.utils import batched
 
 
 async def async_map_unordered(
@@ -14,6 +15,7 @@ async def async_map_unordered(
     create_backup_futures_func: Optional[
         Callable[..., List[Tuple[Any, Future]]]
     ] = None,
+    batch_size: Optional[int] = None,
     return_stats: bool = False,
     name: Optional[str] = None,
     **kwargs,
@@ -25,8 +27,14 @@ async def async_map_unordered(
     if create_backup_futures_func is None:
         create_backup_futures_func = create_futures_func
 
+    if batch_size is None:
+        inputs = input
+    else:
+        input_batches = batched(input, batch_size)
+        inputs = next(input_batches)
+
     task_create_tstamp = time.time()
-    tasks = {task: i for i, task in create_futures_func(input, **kwargs)}
+    tasks = {task: i for i, task in create_futures_func(inputs, **kwargs)}
     pending = set(tasks.keys())
     t = time.monotonic()
     start_times = {f: t for f in pending}
@@ -81,3 +89,14 @@ async def async_map_unordered(
                     pending.add(new_task)
                     backups[task] = new_task
                     backups[new_task] = task
+
+        if batch_size is not None and len(pending) < batch_size:
+            inputs = next(input_batches, None)  # type: ignore
+            if inputs is not None:
+                new_tasks = {
+                    task: i for i, task in create_futures_func(inputs, **kwargs)
+                }
+                tasks.update(new_tasks)
+                pending.update(new_tasks.keys())
+                t = time.monotonic()
+                start_times = {f: t for f in new_tasks.keys()}
