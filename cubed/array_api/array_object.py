@@ -13,6 +13,10 @@ from cubed.array_api.dtypes import (
     _integer_dtypes,
     _integer_or_boolean_dtypes,
     _numeric_dtypes,
+    complex64,
+    complex128,
+    float32,
+    float64,
 )
 from cubed.array_api.linear_algebra_functions import matmul
 from cubed.core.array import CoreArray
@@ -337,7 +341,13 @@ class Array(CoreArray):
     def __abs__(self, /):
         if self.dtype not in _numeric_dtypes:
             raise TypeError("Only numeric dtypes are allowed in __abs__")
-        return elemwise(np.abs, self, dtype=self.dtype)
+        if self.dtype == complex64:
+            dtype = float32
+        elif self.dtype == complex128:
+            dtype = float64
+        else:
+            dtype = self.dtype
+        return elemwise(np.abs, self, dtype=dtype)
 
     def __array_namespace__(self, /, *, api_version=None):
         if api_version is not None and not api_version.startswith("2021."):
