@@ -61,7 +61,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
 
     execute_pipeline(pipeline, executor=executor)
 
-    res = zarr.open_array(target_store)
+    res = zarr.open_array(target_store, zarr_version=3)
     assert_array_equal(res[:], np.outer([0, 1, 2], [10, 50, 100]))
 
 
@@ -124,7 +124,7 @@ def test_blockwise_with_args(tmp_path, executor):
 
     execute_pipeline(pipeline, executor=executor)
 
-    res = zarr.open_array(target_store)
+    res = zarr.open_array(target_store, zarr_version=3)
     assert_array_equal(
         res[:], np.transpose(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), axes=(1, 0))
     )

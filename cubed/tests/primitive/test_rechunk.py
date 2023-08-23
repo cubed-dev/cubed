@@ -92,7 +92,7 @@ def test_rechunk(
     for pipeline in pipelines:
         execute_pipeline(pipeline, executor=executor)
 
-    res = zarr.open_array(target_store)
+    res = zarr.open_array(target_store, zarr_version=3)
     assert_array_equal(res[:], np.ones(shape))
     assert res.chunks == target_chunks
 

@@ -57,6 +57,7 @@ class LazyZarrArray:
             dtype=self.dtype,
             chunks=self.chunks,
             fill_value=self.fill_value,
+            zarr_version=3,
             **self.kwargs,
         )
         if self.initial_values is not None and self.initial_values.size > 0:
@@ -75,6 +76,7 @@ class LazyZarrArray:
             shape=self.shape,
             dtype=self.dtype,
             chunks=self.chunks,
+            zarr_version=3,
         )
 
     def __repr__(self) -> str:
