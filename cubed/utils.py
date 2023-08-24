@@ -177,8 +177,7 @@ def extract_array_names(frame):
             array_names_to_variable_names[arr.name] = var
         elif (
             type(arr).__module__.split(".")[0] == "xarray"
-            and hasattr(arr, "data")
-            and hasattr(arr, "name")
+            and arr.__class__.__name__ == "DataArray"
         ):
             if isinstance(arr.data, Array):
                 array_names_to_variable_names[arr.data.name] = arr.name
