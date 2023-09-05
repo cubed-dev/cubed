@@ -9,7 +9,7 @@ import cubed.random
 from cubed.extensions.history import HistoryCallback
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
-from cubed.runtime.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.lithops_async import AsyncLithopsExecutor
 
 logging.basicConfig(level=logging.INFO)
 # suppress harmless connection pool warnings
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     tmp_path = sys.argv[1]
     runtime = sys.argv[2]
     spec = cubed.Spec(tmp_path, allowed_mem=2_000_000_000)
-    executor = LithopsDagExecutor()
+    executor = AsyncLithopsExecutor()
 
     a = cubed.random.random(
         (50000, 50000), chunks=(5000, 5000), spec=spec

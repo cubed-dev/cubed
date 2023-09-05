@@ -2,13 +2,13 @@ import sys
 
 import cubed
 import cubed.array_api as xp
-from cubed.runtime.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.lithops_async import AsyncLithopsExecutor
 
 if __name__ == "__main__":
     tmp_path = sys.argv[1]
     runtime = sys.argv[2]
     spec = cubed.Spec(tmp_path, allowed_mem=100000)
-    executor = LithopsDagExecutor()
+    executor = AsyncLithopsExecutor()
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
