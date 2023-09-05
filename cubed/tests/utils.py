@@ -42,14 +42,25 @@ try:
 except ImportError:
     pass
 
+# try:
+#     from cubed.runtime.executors.lithops import LithopsDagExecutor
+
+#     ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+
+#     MAIN_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+# except ImportError:
+#     pass
+
+
 try:
-    from cubed.runtime.executors.lithops import LithopsDagExecutor
+    from cubed.runtime.executors.lithops_async import AsyncLithopsExecutor
 
-    ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+    ALL_EXECUTORS.append(AsyncLithopsExecutor(config=LITHOPS_LOCAL_CONFIG))
 
-    MAIN_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+    MAIN_EXECUTORS.append(AsyncLithopsExecutor(config=LITHOPS_LOCAL_CONFIG))
 except ImportError:
     pass
+
 
 MODAL_EXECUTORS = []
 
