@@ -61,7 +61,7 @@ def test_no_fusion(spec):
     c = xp.positive(b)
     d = xp.equal(b, c)
 
-    num_created_arrays = 4  # a, b, c, d
+    num_created_arrays = 3  # b, c, d
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 3
     assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 3
 
@@ -81,7 +81,7 @@ def test_no_fusion_multiple_edges(spec):
     # this should not be fused under the current logic
     d = xp.equal(b, c)
 
-    num_created_arrays = 3  # a, c, d
+    num_created_arrays = 2  # c, d
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 2
     assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 2
 

@@ -1,4 +1,5 @@
 from numbers import Integral
+from typing import Any
 
 import numpy as np
 import zarr
@@ -30,6 +31,45 @@ class VirtualEmptyArray:
             key = (key,)
         indexer = BasicIndexer(key, self.template)
         return np.empty(indexer.shape, dtype=self.dtype)
+
+    @property
+    def oindex(self):
+        return self.template.oindex
+
+
+class VirtualFullArray:
+    """An array that is never materialized (in memory or on disk) and contains a single fill value."""
+
+    def __init__(
+        self,
+        shape: T_Shape,
+        dtype: T_DType,
+        chunks: T_RegularChunks,
+        fill_value: Any = None,
+    ):
+        # use an empty in-memory Zarr array as a template since it normalizes its properties
+        template = zarr.full(
+            shape,
+            fill_value,
+            dtype=dtype,
+            chunks=chunks,
+            store=zarr.storage.MemoryStore(),
+        )
+        self.shape = template.shape
+        self.dtype = template.dtype
+        self.chunks = template.chunks
+        self.template = template
+        self.fill_value = fill_value
+
+    def __getitem__(self, key):
+        if not isinstance(key, tuple):
+            key = (key,)
+        indexer = BasicIndexer(key, self.template)
+        return np.full(indexer.shape, fill_value=self.fill_value, dtype=self.dtype)
+
+    @property
+    def oindex(self):
+        return self.template.oindex
 
 
 class VirtualOffsetsArray:
@@ -72,6 +112,17 @@ def virtual_empty(
     shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, **kwargs
 ) -> VirtualEmptyArray:
     return VirtualEmptyArray(shape, dtype, chunks, **kwargs)
+
+
+def virtual_full(
+    shape: T_Shape,
+    fill_value: Any,
+    *,
+    dtype: T_DType,
+    chunks: T_RegularChunks,
+    **kwargs,
+) -> VirtualFullArray:
+    return VirtualFullArray(shape, dtype, chunks, fill_value, **kwargs)
 
 
 def virtual_offsets(shape: T_Shape) -> VirtualOffsetsArray:
