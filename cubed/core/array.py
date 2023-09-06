@@ -6,7 +6,6 @@ from warnings import warn
 import numpy as np
 from toolz import map, reduce
 
-from cubed.runtime.pipeline import already_computed
 from cubed.runtime.types import Executor
 from cubed.storage.zarr import open_if_lazy_zarr_array
 from cubed.utils import chunk_memory, convert_to_bytes
@@ -190,20 +189,6 @@ class CoreArray:
         from cubed.core.ops import index
 
         return index(self, key)
-
-    def __setitem__(self, key, value):
-        if isinstance(value, CoreArray) and value.ndim != 0:
-            raise NotImplementedError(
-                "Calling __setitem__ on an array with more than 0 dimensions is not supported."
-            )
-
-        nodes = {n: d for (n, d) in self.plan.dag.nodes(data=True)}
-        if not already_computed(nodes[self.name]):
-            raise NotImplementedError(
-                "Calling __setitem__ on an array that has not been computed is not supported."
-            )
-
-        self.zarray.__setitem__(key, value)
 
     def __repr__(self):
         return f"cubed.core.CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
