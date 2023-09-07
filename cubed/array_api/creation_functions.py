@@ -6,8 +6,8 @@ from zarr.util import normalize_shape
 from cubed.core import Plan, gensym, map_blocks
 from cubed.core.ops import map_direct
 from cubed.core.plan import new_temp_path
-from cubed.storage.virtual import virtual_empty, virtual_offsets
-from cubed.storage.zarr import lazy_from_array, lazy_full
+from cubed.storage.virtual import virtual_empty, virtual_full, virtual_offsets
+from cubed.storage.zarr import lazy_from_array
 from cubed.utils import to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 
@@ -79,9 +79,9 @@ def asarray(
 
 
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
-    if dtype is None:
-        dtype = np.float64
-    return full(shape, None, dtype=dtype, device=device, chunks=chunks, spec=spec)
+    return empty_virtual_array(
+        shape, dtype=dtype, device=device, chunks=chunks, spec=spec, hidden=False
+    )
 
 
 def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
@@ -89,7 +89,7 @@ def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Arr
 
 
 def empty_virtual_array(
-    shape, *, dtype=None, device=None, chunks="auto", spec=None
+    shape, *, dtype=None, device=None, chunks="auto", spec=None, hidden=True
 ) -> "Array":
     if dtype is None:
         dtype = np.float64
@@ -100,7 +100,7 @@ def empty_virtual_array(
 
     from .array_object import Array
 
-    plan = Plan._new(name, "empty", target, hidden=True)
+    plan = Plan._new(name, "empty", target, hidden=hidden)
     return Array(name, target, spec, plan)
 
 
@@ -140,8 +140,6 @@ def _eye(x, *arrays, k=None, chunksize=None, block_id=None):
 def full(
     shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
-    # write to zarr
-    # note that write_empty_chunks=False means no chunks are written to disk, so it is very efficient to create large arrays
     shape = normalize_shape(shape)
     if dtype is None:
         # check bool first since True/False are instances of int and float
@@ -155,15 +153,7 @@ def full(
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
-    zarr_path = new_temp_path(name=name, spec=spec)
-    target = lazy_full(
-        shape,
-        fill_value,
-        dtype=dtype,
-        chunks=chunksize,
-        store=zarr_path,
-        write_empty_chunks=False,
-    )
+    target = virtual_full(shape, fill_value, dtype=dtype, chunks=chunksize)
 
     from .array_object import Array
 
