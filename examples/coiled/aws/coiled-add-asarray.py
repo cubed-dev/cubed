@@ -22,7 +22,8 @@ if __name__ == "__main__":
     res = c.compute(
         executor=executor,
         memory="1 GiB",  # must be greater than allowed_mem
-        compute_purchase_option="spot_with_fallback",  # recommended
-        account="dask",  # dask maintainers account - change this to your account
+        spot_policy="spot_with_fallback",  # recommended
+        account=None,  # use your default account (or change to use a specific account)
+        keepalive="30 seconds",  # change this to keep clusters alive longer
     )
     print(res)
