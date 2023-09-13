@@ -26,3 +26,9 @@ python coiled-add-asarray.py "s3://cubed-$USER-temp"
 ```
 
 If successful it should print a 4x4 matrix.
+
+Run the other example in a similar way
+
+```shell
+python coiled-add-random.py "s3://cubed-modal-$USER-temp"
+```
