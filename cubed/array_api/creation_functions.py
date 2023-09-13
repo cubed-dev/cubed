@@ -79,6 +79,7 @@ def asarray(
 
 
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
+    shape = normalize_shape(shape)
     return empty_virtual_array(
         shape, dtype=dtype, device=device, chunks=chunks, spec=spec, hidden=False
     )
