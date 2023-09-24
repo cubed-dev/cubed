@@ -45,6 +45,7 @@ Chunk-specific functions
 
     apply_gufunc
     map_blocks
+    map_overlap
 
 Non-standardised functions
 ==========================
