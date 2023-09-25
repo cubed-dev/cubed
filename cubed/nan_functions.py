@@ -1,0 +1,73 @@
+import numpy as np
+
+from cubed.array_api.dtypes import (
+    _numeric_dtypes,
+    _signed_integer_dtypes,
+    _unsigned_integer_dtypes,
+    complex64,
+    complex128,
+    float32,
+    float64,
+    int64,
+    uint64,
+)
+from cubed.core import reduction
+
+# TODO: refactor once nan functions are standardized:
+# https://github.com/data-apis/array-api/issues/621
+
+
+def nanmean(x, /, *, axis=None, keepdims=False):
+    """Compute the arithmetic mean along the specified axis, ignoring NaNs."""
+    dtype = x.dtype
+    intermediate_dtype = [("n", np.int64), ("total", np.float64)]
+    return reduction(
+        x,
+        _nanmean_func,
+        combine_func=_nanmean_combine,
+        aggegrate_func=_nanmean_aggregate,
+        axis=axis,
+        intermediate_dtype=intermediate_dtype,
+        dtype=dtype,
+        keepdims=keepdims,
+    )
+
+
+def _nanmean_func(a, **kwargs):
+    n = _nannumel(a, **kwargs)
+    total = np.nansum(a, **kwargs)
+    return {"n": n, "total": total}
+
+
+def _nanmean_combine(a, **kwargs):
+    n = np.nansum(a["n"], **kwargs)
+    total = np.nansum(a["total"], **kwargs)
+    return {"n": n, "total": total}
+
+
+def _nanmean_aggregate(a):
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.divide(a["total"], a["n"])
+
+
+def _nannumel(x, **kwargs):
+    """A reduction to count the number of elements, excluding nans"""
+    return np.sum(~(np.isnan(x)), **kwargs)
+
+
+def nansum(x, /, *, axis=None, dtype=None, keepdims=False):
+    """Return the sum of array elements over a given axis treating NaNs as zero."""
+    if x.dtype not in _numeric_dtypes:
+        raise TypeError("Only numeric dtypes are allowed in nansum")
+    if dtype is None:
+        if x.dtype in _signed_integer_dtypes:
+            dtype = int64
+        elif x.dtype in _unsigned_integer_dtypes:
+            dtype = uint64
+        elif x.dtype == float32:
+            dtype = float64
+        elif x.dtype == complex64:
+            dtype = complex128
+        else:
+            dtype = x.dtype
+    return reduction(x, np.nansum, axis=axis, dtype=dtype, keepdims=keepdims)

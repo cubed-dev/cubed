@@ -46,6 +46,17 @@ Chunk-specific functions
     apply_gufunc
     map_blocks
 
+Non-standardised functions
+==========================
+
+.. currentmodule:: cubed
+.. autosummary::
+    :nosignatures:
+    :toctree: generated/
+
+    nanmean
+    nansum
+
 Random number generation
 ========================
 

@@ -729,24 +729,20 @@ def reduction(
     allowed_mem = x.spec.allowed_mem
     max_mem = allowed_mem - x.spec.reserved_mem
 
-    # reduce initial chunks (if any axis chunksize is > 1)
-    if (
-        any(s > 1 for i, s in enumerate(result.chunksize) if i in axis)
-        or func != combine_func
-    ):
-        args = (result, inds)
-        adjust_chunks = {
-            i: (1,) * len(c) if i in axis else c for i, c in enumerate(result.chunks)
-        }
-        result = blockwise(
-            func,
-            inds,
-            *args,
-            axis=axis,
-            keepdims=True,
-            dtype=intermediate_dtype,
-            adjust_chunks=adjust_chunks,
-        )
+    # reduce initial chunks
+    args = (result, inds)
+    adjust_chunks = {
+        i: (1,) * len(c) if i in axis else c for i, c in enumerate(result.chunks)
+    }
+    result = blockwise(
+        func,
+        inds,
+        *args,
+        axis=axis,
+        keepdims=True,
+        dtype=intermediate_dtype,
+        adjust_chunks=adjust_chunks,
+    )
 
     # merge/reduce along axis in multiple rounds until there's a single block in each reduction axis
     while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
