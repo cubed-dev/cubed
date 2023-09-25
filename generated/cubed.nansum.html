@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>cubed.from_zarr &#8212; Cubed</title>
+    <title>cubed.nansum &#8212; Cubed</title>
   
   
   
@@ -41,11 +41,11 @@
     <script src="../_static/doctools.js"></script>
     <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.from_zarr';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.nansum';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.store" href="cubed.store.html" />
-    <link rel="prev" title="cubed.from_array" href="cubed.from_array.html" />
+    <link rel="next" title="cubed.random.random" href="cubed.random.random.html" />
+    <link rel="prev" title="cubed.nanmean" href="cubed.nanmean.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -156,13 +156,13 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.compute.html">cubed.compute</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.visualize.html">cubed.visualize</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.from_array.html">cubed.from_array</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.from_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.from_zarr.html">cubed.from_zarr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.store.html">cubed.store</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.to_zarr.html">cubed.to_zarr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.map_blocks.html">cubed.map_blocks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nanmean.html">cubed.nanmean</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.nansum.html">cubed.nansum</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.nansum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.random.random.html">cubed.random.random</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
@@ -254,7 +254,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/edit/main/generated/cubed.from_zarr.rst" target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/edit/main/generated/cubed.nansum.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -271,7 +271,7 @@
       
       
       
-      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.from_zarr.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/tomwhite/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.nansum.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -319,7 +319,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.from_zarr</h1>
+    <h1>cubed.nansum</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -329,7 +329,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.from_zarr"><code class="docutils literal notranslate"><span class="pre">from_zarr()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.nansum"><code class="docutils literal notranslate"><span class="pre">nansum()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -341,26 +341,12 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="cubed-from-zarr">
-<h1>cubed.from_zarr<a class="headerlink" href="#cubed-from-zarr" title="Permalink to this heading">#</a></h1>
+  <section id="cubed-nansum">
+<h1>cubed.nansum<a class="headerlink" href="#cubed-nansum" title="Permalink to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="cubed.from_zarr">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">from_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.from_zarr" title="Permalink to this definition">#</a></dt>
-<dd><p>Load an array from Zarr storage.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> (<em>string</em>) – Path to input Zarr store</p></li>
-<li><p><strong>spec</strong> (<a class="reference internal" href="cubed.Spec.html#cubed.Spec" title="cubed.Spec"><em>cubed.Spec</em></a><em>, </em><em>optional</em>) – The spec to use for the computation.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The array loaded from Zarr storage.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="cubed.Array.html#cubed.Array" title="cubed.Array">cubed.Array</a></p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="cubed.nansum">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">nansum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.nansum" title="Permalink to this definition">#</a></dt>
+<dd><p>Return the sum of array elements over a given axis treating NaNs as zero.</p>
 </dd></dl>
 
 </section>
@@ -377,20 +363,20 @@ document.write(`
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.from_array.html"
+       href="cubed.nanmean.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.from_array</p>
+        <p class="prev-next-title">cubed.nanmean</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.store.html"
+       href="cubed.random.random.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.store</p>
+        <p class="prev-next-title">cubed.random.random</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -409,7 +395,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.from_zarr"><code class="docutils literal notranslate"><span class="pre">from_zarr()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.nansum"><code class="docutils literal notranslate"><span class="pre">nansum()</span></code></a></li>
 </ul>
   </nav></div>
 
