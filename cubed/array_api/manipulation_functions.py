@@ -159,6 +159,32 @@ def flatten(x):
     return reshape(x, (-1,))
 
 
+def moveaxis(
+    x,
+    source,
+    destination,
+    /,
+):
+    # From NumPy: https://github.com/numpy/numpy/blob/a4120979d216cce00dcee511aad70bf7b45ef6e0/numpy/core/numeric.py#L1389-L1457
+    from numpy.core.numeric import normalize_axis_tuple
+
+    source = normalize_axis_tuple(source, x.ndim, "source")
+    destination = normalize_axis_tuple(destination, x.ndim, "destination")
+    if len(source) != len(destination):
+        raise ValueError(
+            "`source` and `destination` arguments must have "
+            "the same number of elements"
+        )
+
+    order = [n for n in range(x.ndim) if n not in source]
+
+    for dest, src in sorted(zip(destination, source)):
+        order.insert(dest, src)
+
+    result = permute_dims(x, order)
+    return result
+
+
 def permute_dims(x, /, axes):
     # From dask transpose
     if axes:

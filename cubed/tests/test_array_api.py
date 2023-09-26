@@ -439,6 +439,15 @@ def test_expand_dims(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.expand_dims([1, 2, 3], 0))
 
 
+def test_moveaxis(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.moveaxis(a, [0, -1], [-1, 0])
+    assert_array_equal(
+        b.compute(),
+        np.moveaxis(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), [0, -1], [-1, 0]),
+    )
+
+
 def test_permute_dims(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.permute_dims(a, (1, 0))
