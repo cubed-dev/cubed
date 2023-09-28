@@ -7,7 +7,7 @@ Contributions to Cubed are very welcome. Please head over to [GitHub](https://gi
 Create an environment with
 
 ```shell
-conda create --name cubed python=3.8
+conda create --name cubed python=3.9
 conda activate cubed
 pip install -r requirements.txt
 pip install -e .
