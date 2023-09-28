@@ -12,7 +12,7 @@
 3. Install a Python environment with the coiled package in it by running the following from this directory:
 
 ```shell
-conda create --name cubed-coiled-examples -y python=3.8
+conda create --name cubed-coiled-examples -y python=3.9
 conda activate cubed-coiled-examples
 pip install 'cubed[coiled]'
 ```
