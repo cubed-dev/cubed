@@ -1,3 +1,4 @@
+import math
 from typing import TYPE_CHECKING, Iterable, List
 
 import numpy as np
@@ -20,7 +21,7 @@ def arange(
 ) -> "Array":
     if stop is None:
         start, stop = 0, start
-    num = int(max(np.ceil((stop - start) / step), 0))
+    num = int(max(math.ceil((stop - start) / step), 0))
     if dtype is None:
         dtype = np.arange(start, stop, step * num if num else step).dtype
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
