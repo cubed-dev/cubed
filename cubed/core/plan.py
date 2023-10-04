@@ -6,8 +6,8 @@ from datetime import datetime
 import networkx as nx
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
-from cubed.primitive.types import CubedPipeline
 from cubed.runtime.pipeline import visit_nodes
+from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
 

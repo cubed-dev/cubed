@@ -1,8 +1,9 @@
 from math import ceil, prod
 from typing import List, Optional, Tuple
 
-from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, CubedPipeline
+from cubed.primitive.types import CubedArrayProxy, CubedCopySpec
 from cubed.runtime.pipeline import spec_to_pipeline
+from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_RegularChunks, T_Shape, T_Store
 from cubed.vendor.rechunker.algorithm import rechunking_plan

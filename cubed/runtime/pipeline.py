@@ -5,7 +5,8 @@ from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tupl
 import networkx as nx
 import numpy as np
 
-from cubed.primitive.types import CubedCopySpec, CubedPipeline
+from cubed.primitive.types import CubedCopySpec
+from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import open_if_lazy_zarr_array
 
 from .utils import gensym
