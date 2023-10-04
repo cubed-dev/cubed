@@ -1,12 +1,23 @@
+import itertools
+import math
 from math import ceil, prod
-from typing import List, Optional, Tuple
+from typing import Any, Iterable, Iterator, List, Optional, Sequence, Tuple
+
+import numpy as np
 
 from cubed.primitive.types import CubedArrayProxy, CubedCopySpec
-from cubed.runtime.pipeline import spec_to_pipeline
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_RegularChunks, T_Shape, T_Store
 from cubed.vendor.rechunker.algorithm import rechunking_plan
+
+sym_counter = 0
+
+
+def gensym(name: str) -> str:
+    global sym_counter
+    sym_counter += 1
+    return f"{name}-{sym_counter:03}"
 
 
 def rechunk(
@@ -136,3 +147,61 @@ def _setup_array_rechunk(
 def total_chunks(shape: T_Shape, chunks: T_RegularChunks) -> int:
     # cf rechunker's chunk_keys
     return prod(ceil(s / c) for s, c in zip(shape, chunks))
+
+
+# differs from rechunker's chunk_keys to return a list rather than a tuple, to keep lithops happy
+def chunk_keys(
+    shape: Tuple[int, ...], chunks: Tuple[int, ...]
+) -> Iterator[List[slice]]:
+    """Iterator over array indexing keys of the desired chunk sized.
+
+    The union of all keys indexes every element of an array of shape ``shape``
+    exactly once. Each array resulting from indexing is of shape ``chunks``,
+    except possibly for the last arrays along each dimension (if ``chunks``
+    do not even divide ``shape``).
+    """
+    ranges = [range(math.ceil(s / c)) for s, c in zip(shape, chunks)]
+    for indices in itertools.product(*ranges):
+        yield [
+            slice(c * i, min(c * (i + 1), s)) for i, s, c in zip(indices, shape, chunks)
+        ]
+
+
+# need a ChunkKeys Iterable instead of a generator, to avoid beam pickle error
+class ChunkKeys(Iterable[Tuple[slice, ...]]):
+    def __init__(self, shape: Tuple[int, ...], chunks: Tuple[int, ...]):
+        self.shape = shape
+        self.chunks = chunks
+
+    def __iter__(self):
+        return chunk_keys(self.shape, self.chunks)
+
+
+def copy_read_to_write(chunk_key: Sequence[slice], *, config: CubedCopySpec) -> None:
+    # workaround limitation of lithops.utils.verify_args
+    if isinstance(chunk_key, list):
+        chunk_key = tuple(chunk_key)
+    data = np.asarray(config.read.open()[chunk_key])
+    config.write.open()[chunk_key] = data
+
+
+def spec_to_pipeline(
+    spec: CubedCopySpec,
+    target_array: Any,
+    projected_mem: int,
+    reserved_mem: int,
+    num_tasks: int,
+) -> CubedPipeline:
+    # typing won't work until we start using numpy types
+    shape = spec.read.array.shape  # type: ignore
+    return CubedPipeline(
+        copy_read_to_write,
+        gensym("copy_read_to_write"),
+        ChunkKeys(shape, spec.write.chunks),
+        spec,
+        target_array,
+        projected_mem,
+        reserved_mem,
+        num_tasks,
+        spec.write.chunks,
+    )
