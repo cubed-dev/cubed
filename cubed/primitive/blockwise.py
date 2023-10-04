@@ -8,6 +8,7 @@ import toolz
 import zarr
 from toolz import map
 
+from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
 from cubed.utils import chunk_memory, get_item, to_chunksize
@@ -15,7 +16,7 @@ from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
 
-from .types import CubedArrayProxy, CubedPipeline
+from .types import CubedArrayProxy
 
 sym_counter = 0
 

@@ -6,8 +6,8 @@ from datetime import datetime
 import networkx as nx
 
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
-from cubed.primitive.types import CubedPipeline
-from cubed.runtime.pipeline import already_computed
+from cubed.runtime.pipeline import visit_nodes
+from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
 
@@ -351,28 +351,6 @@ def new_temp_path(name, suffix=".zarr", spec=None):
         work_dir = tempfile.gettempdir()
     context_dir = join_path(work_dir, CONTEXT_ID)
     return join_path(context_dir, f"{name}{suffix}")
-
-
-def visit_nodes(dag, resume=None):
-    """Return a generator that visits the nodes in the DAG in topological order."""
-    nodes = {n: d for (n, d) in dag.nodes(data=True)}
-    for name in list(nx.topological_sort(dag)):
-        if already_computed(nodes[name], resume=resume):
-            continue
-        yield name, nodes[name]
-
-
-def visit_node_generations(dag, resume=None):
-    """Return a generator that visits the nodes in the DAG in groups of topological generations."""
-    nodes = {n: d for (n, d) in dag.nodes(data=True)}
-    for names in nx.topological_generations(dag):
-        gen = [
-            (name, nodes[name])
-            for name in names
-            if not already_computed(nodes[name], resume=resume)
-        ]
-        if len(gen) > 0:
-            yield gen
 
 
 def create_zarr_array(lazy_zarr_array, *, config=None):

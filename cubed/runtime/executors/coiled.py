@@ -3,10 +3,10 @@ from typing import Any, Mapping, Optional, Sequence
 import coiled
 from networkx import MultiDiGraph
 
-from cubed.core.array import Callback, Spec
-from cubed.core.plan import visit_nodes
-from cubed.runtime.types import DagExecutor
+from cubed.runtime.pipeline import visit_nodes
+from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import execution_stats, handle_callbacks
+from cubed.spec import Spec
 
 
 def make_coiled_function(func, coiled_kwargs):
