@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from cubed.core.plan import visit_nodes
+from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback
 
 

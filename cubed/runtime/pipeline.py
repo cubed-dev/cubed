@@ -2,6 +2,7 @@ import itertools
 import math
 from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
+import networkx as nx
 import numpy as np
 
 from cubed.primitive.types import CubedCopySpec, CubedPipeline
@@ -85,3 +86,25 @@ def already_computed(node_dict: Dict[str, Any], resume: Optional[bool] = None) -
             return True
 
     return False
+
+
+def visit_nodes(dag, resume=None):
+    """Return a generator that visits the nodes in the DAG in topological order."""
+    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+    for name in list(nx.topological_sort(dag)):
+        if already_computed(nodes[name], resume=resume):
+            continue
+        yield name, nodes[name]
+
+
+def visit_node_generations(dag, resume=None):
+    """Return a generator that visits the nodes in the DAG in groups of topological generations."""
+    nodes = {n: d for (n, d) in dag.nodes(data=True)}
+    for names in nx.topological_generations(dag):
+        gen = [
+            (name, nodes[name])
+            for name in names
+            if not already_computed(nodes[name], resume=resume)
+        ]
+        if len(gen) > 0:
+            yield gen

@@ -3,8 +3,8 @@ from typing import Any, Callable, Optional, Sequence
 from networkx import MultiDiGraph
 
 from cubed.core.array import Spec
-from cubed.core.plan import visit_nodes
 from cubed.primitive.types import CubedPipeline
+from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback, DagExecutor, TaskEndEvent
 
 
