@@ -14,7 +14,6 @@ except Exception:  # pragma: no cover
 
 from .array_api import Array
 from .core.array import (
-    Spec,
     compute,
     measure_reserved_mem,
     measure_reserved_memory,
@@ -24,6 +23,7 @@ from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
 from .nan_functions import nanmean, nansum
 from .runtime.types import Callback, TaskEndEvent
+from .spec import Spec
 
 __all__ = [
     "__version__",

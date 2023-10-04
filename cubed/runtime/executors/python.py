@@ -2,9 +2,9 @@ from typing import Any, Callable, Optional, Sequence
 
 from networkx import MultiDiGraph
 
-from cubed.core.array import Spec
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor, TaskEndEvent
+from cubed.spec import Spec
 
 
 def exec_stage_func(func: Callable[..., Any], *args, **kwargs):

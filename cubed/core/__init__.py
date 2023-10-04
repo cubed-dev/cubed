@@ -1,7 +1,6 @@
 # flake8: noqa
 from .array import (
     CoreArray,
-    Spec,
     compute,
     gensym,
     measure_reserved_mem,

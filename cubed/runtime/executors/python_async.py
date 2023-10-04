@@ -8,11 +8,11 @@ from aiostream.core import Stream
 from networkx import MultiDiGraph
 from tenacity import Retrying, stop_after_attempt
 
-from cubed.core.array import Spec
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
 from cubed.runtime.utils import execution_stats, handle_callbacks
+from cubed.spec import Spec
 
 
 @execution_stats

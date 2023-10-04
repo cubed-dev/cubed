@@ -17,11 +17,11 @@ from aiostream.core import Stream
 from dask.distributed import Client
 from networkx import MultiDiGraph
 
-from cubed.core.array import Spec
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
 from cubed.runtime.utils import execution_stats, gensym, handle_callbacks
+from cubed.spec import Spec
 
 
 # note we can't call `pipeline_func` just `func` here as it clashes with `dask.distributed.Client.map``
