@@ -8,7 +8,7 @@ import pandas as pd
 import pylab
 import seaborn as sns
 
-from cubed.core.array import Callback
+from cubed.runtime.types import Callback
 
 sns.set_style("whitegrid")
 pylab.switch_backend("Agg")

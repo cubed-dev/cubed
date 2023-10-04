@@ -2,6 +2,7 @@ import time
 from functools import partial
 from itertools import islice
 
+from cubed.runtime.types import TaskEndEvent
 from cubed.utils import peak_measured_mem
 
 sym_counter = 0
@@ -40,8 +41,6 @@ def execution_stats(func):
 
 def handle_callbacks(callbacks, stats):
     """Construct a TaskEndEvent from stats and send to all callbacks."""
-
-    from cubed.core.array import TaskEndEvent
 
     if callbacks is not None:
         if "task_result_tstamp" not in stats:

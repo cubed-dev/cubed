@@ -8,9 +8,9 @@ from modal.exception import ConnectionError
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.core.array import Callback, Spec
+from cubed.core.array import Spec
 from cubed.core.plan import visit_nodes
-from cubed.runtime.types import DagExecutor
+from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import execute_with_stats, handle_callbacks
 
 RUNTIME_MEMORY_MIB = 2000

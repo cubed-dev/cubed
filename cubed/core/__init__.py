@@ -1,9 +1,7 @@
 # flake8: noqa
 from .array import (
-    Callback,
     CoreArray,
     Spec,
-    TaskEndEvent,
     compute,
     gensym,
     measure_reserved_mem,

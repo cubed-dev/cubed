@@ -9,7 +9,7 @@ from modal.functions import Function
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.core.array import Callback, Spec
+from cubed.core.array import Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.executors.modal import (
@@ -18,7 +18,7 @@ from cubed.runtime.executors.modal import (
     run_remotely,
     stub,
 )
-from cubed.runtime.types import DagExecutor
+from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import handle_callbacks
 
 

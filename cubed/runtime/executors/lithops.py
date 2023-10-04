@@ -20,14 +20,14 @@ from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from networkx import MultiDiGraph
 
-from cubed.core.array import Callback, Spec
+from cubed.core.array import Spec
 from cubed.core.plan import visit_node_generations, visit_nodes
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.lithops_retries import (
     RetryingFunctionExecutor,
     RetryingFuture,
 )
-from cubed.runtime.types import DagExecutor
+from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import handle_callbacks
 
 logger = logging.getLogger(__name__)

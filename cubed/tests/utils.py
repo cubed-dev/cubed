@@ -5,9 +5,9 @@ import networkx as nx
 import numpy as np
 import zarr
 
-from cubed.core.array import Callback
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+from cubed.runtime.types import Callback
 
 LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
 
