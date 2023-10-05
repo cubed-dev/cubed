@@ -6,6 +6,7 @@ import numpy as np
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import _numeric_dtypes
 from cubed.array_api.manipulation_functions import expand_dims
+from cubed.backend_array_api import namespace as nxp
 from cubed.core import blockwise, reduction, squeeze
 
 
@@ -59,7 +60,7 @@ def matmul(x1, x2, /):
 
 
 def _matmul(a, b):
-    chunk = np.matmul(a, b)
+    chunk = nxp.matmul(a, b)
     return chunk[..., np.newaxis, :]
 
 
@@ -71,7 +72,7 @@ def _sum_wo_cat(a, axis=None, dtype=None):
 
 
 def _chunk_sum(a, axis=None, dtype=None, keepdims=None):
-    return np.sum(a, axis=axis, dtype=dtype, keepdims=True)
+    return nxp.sum(a, axis=axis, dtype=dtype, keepdims=True)
 
 
 def matrix_transpose(x, /):
@@ -86,7 +87,7 @@ def matrix_transpose(x, /):
 
 
 def outer(x1, x2, /):
-    return blockwise(np.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)
+    return blockwise(nxp.linalg.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)
 
 
 def tensordot(x1, x2, /, *, axes=2):
@@ -137,7 +138,7 @@ def tensordot(x1, x2, /, *, axes=2):
 
 
 def _tensordot(a, b, axes):
-    x = np.tensordot(a, b, axes=axes)
+    x = nxp.tensordot(a, b, axes=axes)
     ind = [slice(None, None)] * x.ndim
     for a in sorted(axes[0]):
         ind.insert(a, None)

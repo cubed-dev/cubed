@@ -7,6 +7,7 @@ import tlz
 from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
+from cubed.backend_array_api import namespace as nxp
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import blockwise, rechunk, unify_chunks
 from cubed.core.ops import elemwise, map_blocks, map_direct
@@ -70,7 +71,7 @@ def broadcast_to(x, /, shape, *, chunks=None):
 
 
 def _broadcast_like(x, template):
-    return np.broadcast_to(x, template.shape)
+    return nxp.broadcast_to(x, template.shape)
 
 
 def concat(arrays, /, *, axis=0):
@@ -127,7 +128,7 @@ def _read_concat_chunk(x, *arrays, axis=None, offsets=None, block_id=None):
     for ai, sl in _array_slices(offsets, start, stop):
         key = tuple(sl if i == axis else k for i, k in enumerate(key))
         parts.append(arrays[ai].zarray[key])
-    return np.concatenate(parts, axis=axis)
+    return nxp.concat(parts, axis=axis)
 
 
 def _array_slices(offsets, start, stop):
@@ -151,7 +152,7 @@ def expand_dims(x, /, *, axis):
     chunks = tuple(1 if i in axis else next(chunks_it) for i in range(ndim_new))
 
     return map_blocks(
-        np.expand_dims, x, dtype=x.dtype, chunks=chunks, new_axis=axis, axis=axis
+        nxp.expand_dims, x, dtype=x.dtype, chunks=chunks, new_axis=axis, axis=axis
     )
 
 
@@ -197,7 +198,7 @@ def permute_dims(x, /, axes):
     # extra memory copy due to Zarr enforcing C order on transposed array
     extra_projected_mem = x.chunkmem
     return blockwise(
-        np.transpose,
+        nxp.permute_dims,
         axes,
         x,
         tuple(range(x.ndim)),
@@ -268,7 +269,7 @@ def _reshape_chunk(e, x, inchunks=None, outchunks=None, block_id=None):
     out_keys = list(product(*[range(len(c)) for c in outchunks]))
     idx = in_keys[out_keys.index(block_id)]
     out = x.zarray[get_item(x.chunks, idx)]
-    return np.reshape(out, e.shape)
+    return nxp.reshape(out, e.shape)
 
 
 def stack(arrays, /, *, axis=0):
@@ -305,5 +306,5 @@ def _read_stack_chunk(x, *arrays, axis=None, block_id=None):
     array = arrays[block_id[axis]]
     idx = tuple(v for i, v in enumerate(block_id) if i != axis)
     out = array.zarray[get_item(array.chunks, idx)]
-    out = np.expand_dims(out, axis=axis)
+    out = nxp.expand_dims(out, axis=axis)
     return out

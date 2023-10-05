@@ -11,6 +11,7 @@ from cubed.array_api.dtypes import (
     int64,
     uint64,
 )
+from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
 # TODO: refactor once nan functions are standardized:
@@ -33,26 +34,29 @@ def nanmean(x, /, *, axis=None, keepdims=False):
     )
 
 
+# note that the array API doesn't have nansum or nanmean, so these functions may fail
+
+
 def _nanmean_func(a, **kwargs):
     n = _nannumel(a, **kwargs)
-    total = np.nansum(a, **kwargs)
+    total = nxp.nansum(a, **kwargs)
     return {"n": n, "total": total}
 
 
 def _nanmean_combine(a, **kwargs):
-    n = np.nansum(a["n"], **kwargs)
-    total = np.nansum(a["total"], **kwargs)
+    n = nxp.nansum(a["n"], **kwargs)
+    total = nxp.nansum(a["total"], **kwargs)
     return {"n": n, "total": total}
 
 
 def _nanmean_aggregate(a):
     with np.errstate(divide="ignore", invalid="ignore"):
-        return np.divide(a["total"], a["n"])
+        return nxp.divide(a["total"], a["n"])
 
 
 def _nannumel(x, **kwargs):
     """A reduction to count the number of elements, excluding nans"""
-    return np.sum(~(np.isnan(x)), **kwargs)
+    return nxp.sum(~(nxp.isnan(x)), **kwargs)
 
 
 def nansum(x, /, *, axis=None, dtype=None, keepdims=False):
@@ -70,4 +74,4 @@ def nansum(x, /, *, axis=None, dtype=None, keepdims=False):
             dtype = complex128
         else:
             dtype = x.dtype
-    return reduction(x, np.nansum, axis=axis, dtype=dtype, keepdims=keepdims)
+    return reduction(x, nxp.nansum, axis=axis, dtype=dtype, keepdims=keepdims)

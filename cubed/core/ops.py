@@ -17,6 +17,7 @@ from zarr.indexing import (
     replace_ellipsis,
 )
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
@@ -836,7 +837,8 @@ def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False):
 
 def _arg_map_func(a, axis, arg_func=None, size=None, block_id=None):
     i = arg_func(a, axis=axis, keepdims=True)
-    v = np.take_along_axis(a, i, axis=axis)
+    # note that the array API doesn't have take_along_axis, so this may fail
+    v = nxp.take_along_axis(a, i, axis=axis)
     # add block offset to i so it is absolute index within whole array
     offset = block_id[axis] * size
     return {"i": i + offset, "v": v}
@@ -856,8 +858,9 @@ def _arg_combine(a, arg_func=None, **kwargs):
 
     # find indexes of values in v and apply to i and v
     vi = arg_func(v, axis=axis, **kwargs)
-    i_combined = np.take_along_axis(i, vi, axis=axis)
-    v_combined = np.take_along_axis(v, vi, axis=axis)
+    # note that the array API doesn't have take_along_axis, so this may fail
+    i_combined = nxp.take_along_axis(i, vi, axis=axis)
+    v_combined = nxp.take_along_axis(v, vi, axis=axis)
     return {"i": i_combined, "v": v_combined}
 
 
@@ -878,7 +881,7 @@ def squeeze(x, /, axis):
     chunks = tuple(c for i, c in enumerate(x.chunks) if i not in axis)
 
     return map_blocks(
-        np.squeeze, x, dtype=x.dtype, chunks=chunks, drop_axis=axis, axis=axis
+        nxp.squeeze, x, dtype=x.dtype, chunks=chunks, drop_axis=axis, axis=axis
     )
 
 

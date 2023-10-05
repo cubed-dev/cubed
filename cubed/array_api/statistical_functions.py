@@ -15,13 +15,14 @@ from cubed.array_api.dtypes import (
     int64,
     uint64,
 )
+from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
 
 def max(x, /, *, axis=None, keepdims=False):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in max")
-    return reduction(x, np.max, axis=axis, dtype=x.dtype, keepdims=keepdims)
+    return reduction(x, nxp.max, axis=axis, dtype=x.dtype, keepdims=keepdims)
 
 
 def mean(x, /, *, axis=None, keepdims=False):
@@ -52,19 +53,19 @@ def mean(x, /, *, axis=None, keepdims=False):
 def _mean_func(a, **kwargs):
     dtype = dict(kwargs.pop("dtype"))
     n = _numel(a, dtype=dtype["n"], **kwargs)
-    total = np.sum(a, dtype=dtype["total"], **kwargs)
+    total = nxp.sum(a, dtype=dtype["total"], **kwargs)
     return {"n": n, "total": total}
 
 
 def _mean_combine(a, **kwargs):
     dtype = dict(kwargs.pop("dtype"))
-    n = np.sum(a["n"], dtype=dtype["n"], **kwargs)
-    total = np.sum(a["total"], dtype=dtype["total"], **kwargs)
+    n = nxp.sum(a["n"], dtype=dtype["n"], **kwargs)
+    total = nxp.sum(a["total"], dtype=dtype["total"], **kwargs)
     return {"n": n, "total": total}
 
 
 def _mean_aggregate(a):
-    return np.divide(a["total"], a["n"])
+    return nxp.divide(a["total"], a["n"])
 
 
 # based on dask
@@ -82,7 +83,7 @@ def _numel(x, **kwargs):
         if keepdims is False:
             return prod
 
-        return np.full(shape=(1,) * len(shape), fill_value=prod, dtype=dtype)
+        return nxp.full(shape=(1,) * len(shape), fill_value=prod, dtype=dtype)
 
     if not isinstance(axis, (tuple, list)):
         axis = [axis]
@@ -95,13 +96,13 @@ def _numel(x, **kwargs):
     else:
         new_shape = tuple(shape[dim] for dim in range(len(shape)) if dim not in axis)
 
-    return np.broadcast_to(np.array(prod, dtype=dtype), new_shape)
+    return nxp.broadcast_to(nxp.asarray(prod, dtype=dtype), new_shape)
 
 
 def min(x, /, *, axis=None, keepdims=False):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in min")
-    return reduction(x, np.min, axis=axis, dtype=x.dtype, keepdims=keepdims)
+    return reduction(x, nxp.min, axis=axis, dtype=x.dtype, keepdims=keepdims)
 
 
 def prod(x, /, *, axis=None, dtype=None, keepdims=False):
@@ -121,7 +122,7 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False):
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
-        np.prod,
+        nxp.prod,
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,
@@ -146,7 +147,7 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False):
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
-        np.sum,
+        nxp.sum,
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,

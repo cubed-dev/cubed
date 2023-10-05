@@ -9,6 +9,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import merge_chunks
 from cubed.tests.utils import (
     ALL_EXECUTORS,
@@ -148,14 +149,14 @@ def test_to_zarr(tmp_path, spec, executor):
 def test_map_blocks_with_kwargs(spec, executor):
     # based on dask test
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=5, spec=spec)
-    b = cubed.map_blocks(np.max, a, axis=0, keepdims=True, dtype=a.dtype, chunks=(1,))
+    b = cubed.map_blocks(nxp.max, a, axis=0, keepdims=True, dtype=a.dtype, chunks=(1,))
     assert_array_equal(b.compute(executor=executor), np.array([4, 9]))
 
 
 def test_map_blocks_with_block_id(spec, executor):
     # based on dask test
     def func(block, block_id=None, c=0):
-        return np.ones_like(block) * int(sum(block_id)) + c
+        return nxp.ones_like(block) * int(sum(block_id)) + c
 
     a = xp.arange(10, dtype="int64", chunks=(2,))
     b = cubed.map_blocks(func, a, dtype="int64")

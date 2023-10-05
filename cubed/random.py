@@ -1,10 +1,10 @@
 import random as pyrandom
 
 import numpy as np
-import numpy.array_api as nxp
 from numpy.random import Generator, Philox
 from zarr.util import normalize_shape
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import map_direct
 from cubed.vendor.dask.array.core import normalize_chunks
 
