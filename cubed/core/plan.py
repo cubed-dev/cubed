@@ -5,6 +5,7 @@ from datetime import datetime
 
 import networkx as nx
 
+from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.primitive.blockwise import can_fuse_pipelines, fuse
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import CubedPipeline
@@ -363,7 +364,8 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     projected_mem = (
         max(
             [
-                lza.initial_values.nbytes
+                # TODO: calculate nbytes from size and dtype itemsize
+                backend_array_to_numpy_array(lza.initial_values).nbytes
                 if lza.initial_values is not None
                 else lza.dtype.itemsize
                 for lza in lazy_zarr_arrays

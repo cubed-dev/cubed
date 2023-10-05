@@ -18,6 +18,7 @@ from zarr.indexing import (
 )
 
 from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
@@ -78,6 +79,7 @@ def _from_array(e, x, outchunks=None, asarray=None, block_id=None):
     out = x[get_item(outchunks, block_id)]
     if asarray:
         out = np.asarray(out)
+    out = numpy_array_to_backend_array(out)
     return out
 
 
@@ -419,6 +421,7 @@ def _read_index_chunk(x, *arrays, target_chunks=None, selection=None, block_id=N
     array = arrays[0]
     idx = block_id
     out = array.zarray.oindex[_target_chunk_selection(target_chunks, idx, selection)]
+    out = numpy_array_to_backend_array(out)
     return out
 
 
@@ -704,7 +707,9 @@ def merge_chunks(x, chunks):
 
 
 def _copy_chunk(e, x, target_chunks=None, block_id=None):
-    return x.zarray[get_item(target_chunks, block_id)]
+    out = x.zarray[get_item(target_chunks, block_id)]
+    out = numpy_array_to_backend_array(out)
+    return out
 
 
 def reduction(

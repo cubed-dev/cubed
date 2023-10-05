@@ -19,5 +19,5 @@ def backend_array_to_numpy_array(arr):
     return np.asarray(arr)
 
 
-def numpy_array_to_backend_array(arr):
-    return namespace.asarray(arr)
+def numpy_array_to_backend_array(arr, *, dtype=None):
+    return namespace.asarray(arr, dtype=dtype)

@@ -8,6 +8,7 @@ from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
 from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import blockwise, rechunk, unify_chunks
 from cubed.core.ops import elemwise, map_blocks, map_direct
@@ -269,6 +270,7 @@ def _reshape_chunk(e, x, inchunks=None, outchunks=None, block_id=None):
     out_keys = list(product(*[range(len(c)) for c in outchunks]))
     idx = in_keys[out_keys.index(block_id)]
     out = x.zarray[get_item(x.chunks, idx)]
+    out = numpy_array_to_backend_array(out)
     return nxp.reshape(out, e.shape)
 
 

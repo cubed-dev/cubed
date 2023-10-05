@@ -3,6 +3,7 @@ from typing import Any, Optional, Union
 import zarr
 from numpy import ndarray
 
+from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
@@ -60,7 +61,7 @@ class LazyZarrArray:
             **self.kwargs,
         )
         if self.initial_values is not None and self.initial_values.size > 0:
-            target[...] = self.initial_values
+            target[...] = backend_array_to_numpy_array(self.initial_values)
         return target
 
     def open(self) -> zarr.Array:

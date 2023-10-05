@@ -5,6 +5,7 @@ from numpy.random import Generator, Philox
 from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.ops import map_direct
 from cubed.vendor.dask.array.core import normalize_chunks
 
@@ -36,7 +37,9 @@ def random(size, *, chunks=None, spec=None):
 def _random(x, *arrays, numblocks=None, root_seed=None, block_id=None):
     stream_id = block_id_to_offset(block_id, numblocks)
     rg = Generator(Philox(key=root_seed + stream_id))
-    return rg.random(x.shape)
+    out = rg.random(x.shape)
+    out = numpy_array_to_backend_array(out)
+    return out
 
 
 def block_id_to_offset(block_id, numblocks):
