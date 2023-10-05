@@ -155,7 +155,7 @@ def test_map_blocks_with_kwargs(spec, executor):
 def test_map_blocks_with_block_id(spec, executor):
     # based on dask test
     def func(block, block_id=None, c=0):
-        return np.ones_like(block) * sum(block_id) + c
+        return np.ones_like(block) * int(sum(block_id)) + c
 
     a = xp.arange(10, dtype="int64", chunks=(2,))
     b = cubed.map_blocks(func, a, dtype="int64")

@@ -43,7 +43,7 @@ def arange(
 
 
 def _arange(a, size, start, stop, step):
-    i = a[0]
+    i = int(a[0])
     blockstart = start + (i * size * step)
     blockstop = start + ((i + 1) * size * step)
     return np.arange(blockstart, min(blockstop, stop), step)

@@ -470,7 +470,8 @@ def map_blocks(
 
         def func_with_block_id(func):
             def wrap(*a, **kw):
-                block_id = offset_to_block_id(a[-1].item())
+                offset = int(a[-1])  # convert from 0-d array
+                block_id = offset_to_block_id(offset)
                 return func(*a[:-1], block_id=block_id, **kw)
 
             return wrap

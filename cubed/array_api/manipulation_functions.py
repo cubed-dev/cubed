@@ -268,7 +268,7 @@ def _reshape_chunk(e, x, inchunks=None, outchunks=None, block_id=None):
     out_keys = list(product(*[range(len(c)) for c in outchunks]))
     idx = in_keys[out_keys.index(block_id)]
     out = x.zarray[get_item(x.chunks, idx)]
-    return out.reshape(e.shape)
+    return np.reshape(out, e.shape)
 
 
 def stack(arrays, /, *, axis=0):
