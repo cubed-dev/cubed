@@ -2,6 +2,7 @@ from typing import Optional, Union
 
 import zarr
 
+from cubed.storage.backend import open_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
@@ -20,6 +21,7 @@ class LazyZarrArray:
         dtype: T_DType,
         chunks: T_RegularChunks,
         path: Optional[str] = None,
+        storage_name: Optional[str] = None,
         **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
@@ -33,6 +35,7 @@ class LazyZarrArray:
         self.nbytes = template.nbytes
         self.store = store
         self.path = path
+        self.storage_name = storage_name
         self.kwargs = kwargs
 
     def create(self, mode: str = "w-") -> zarr.Array:
@@ -47,13 +50,14 @@ class LazyZarrArray:
             The mode to open the Zarr array with using ``zarr.open``.
             Default is 'w-', which means create, fail it already exists.
         """
-        target = zarr.open_array(
+        target = open_backend_array(
             self.store,
             mode=mode,
             shape=self.shape,
             dtype=self.dtype,
             chunks=self.chunks,
             path=self.path,
+            storage_name=self.storage_name,
             **self.kwargs,
         )
         return target
@@ -64,13 +68,14 @@ class LazyZarrArray:
         Note that the Zarr array must have been created or this method will raise an exception.
         """
         # r+ means read/write, fail if it doesn't exist
-        return zarr.open_array(
+        return open_backend_array(
             self.store,
             mode="r+",
             shape=self.shape,
             dtype=self.dtype,
             chunks=self.chunks,
             path=self.path,
+            storage_name=self.storage_name,
             **self.kwargs,
         )
 
@@ -87,6 +92,7 @@ def lazy_zarr_array(
     dtype: T_DType,
     chunks: T_RegularChunks,
     path: Optional[str] = None,
+    storage_name: Optional[str] = None,
     **kwargs,
 ) -> LazyZarrArray:
     return LazyZarrArray(
@@ -95,6 +101,7 @@ def lazy_zarr_array(
         dtype,
         chunks,
         path=path,
+        storage_name=storage_name,
         **kwargs,
     )
 

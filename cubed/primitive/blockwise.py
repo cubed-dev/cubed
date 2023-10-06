@@ -129,6 +129,7 @@ def blockwise(
     out_name: Optional[str] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
+    storage_name: Optional[str] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     **kwargs,
@@ -214,6 +215,7 @@ def blockwise(
         in_names=in_names,
         extra_projected_mem=extra_projected_mem,
         extra_func_kwargs=extra_func_kwargs,
+        storage_name=storage_name,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
         **kwargs,
@@ -235,6 +237,7 @@ def general_blockwise(
     in_names: Optional[List[str]] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
+    storage_name: Optional[str] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     **kwargs,
@@ -289,6 +292,7 @@ def general_blockwise(
             dtype,
             chunks=chunksize,
             path=target_path,
+            storage_name=storage_name,
             storage_options=storage_options,
         )
 

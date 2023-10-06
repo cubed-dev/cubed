@@ -29,6 +29,7 @@ from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
+from cubed.storage.backend import open_backend_array
 from cubed.utils import (
     _concatenate2,
     chunk_memory,
@@ -113,8 +114,12 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     spec or spec_from_config(config)
 
     name = gensym()
-    target = zarr.open_array(
-        store, path=path, mode="r", storage_options=spec.storage_options
+    target = open_backend_array(
+        store,
+        mode="r",
+        path=path,
+        storage_name=spec.storage_name,
+        storage_options=spec.storage_options,
     )
 
     from cubed.array_api import Array
@@ -313,6 +318,7 @@ def blockwise(
         in_names=in_names,
         out_name=name,
         extra_func_kwargs=extra_func_kwargs,
+        storage_name=spec.storage_name,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
         **kwargs,
@@ -374,6 +380,7 @@ def general_blockwise(
         chunks=chunks,
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
+        storage_name=spec.storage_name,
         num_input_blocks=num_input_blocks,
         **kwargs,
     )
@@ -754,6 +761,7 @@ def rechunk(x, chunks, target_store=None):
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
         temp_store=temp_store,
+        storage_name=spec.storage_name,
         storage_options=spec.storage_options,
     )
 
@@ -820,6 +828,11 @@ def merge_chunks(x, chunks):
 
 
 def _copy_chunk(e, x, target_chunks=None, block_id=None):
+    if isinstance(x.zarray, dict):
+        return {
+            k: numpy_array_to_backend_array(v[get_item(target_chunks, block_id)])
+            for k, v in x.zarray.items()
+        }
     out = x.zarray[get_item(target_chunks, block_id)]
     out = numpy_array_to_backend_array(out)
     return out

@@ -20,6 +20,7 @@ class Spec:
         executor: Union[Executor, None] = None,
         executor_name: Optional[str] = None,
         executor_options: Optional[dict] = None,
+        storage_name: Optional[str] = None,
         storage_options: Union[dict, None] = None,
     ):
         """
@@ -40,6 +41,9 @@ class Spec:
             If int it should be >=0. If str it should be of form <value><unit> where unit can be kB, MB, GB, TB etc.
         executor : Executor, optional
             The default executor for running computations.
+        storage_name: str, optional
+            The name of the storage backend for intermediate data. Must be one of `zarr` or `tensorstore`.
+            If not set, defaults to the Zarr backend.
         storage_options : dict, optional
             Storage options to be passed to fsspec.
         """
@@ -59,6 +63,8 @@ class Spec:
             self._executor = create_executor(executor_name, executor_options)
         else:
             self._executor = None
+
+        self._storage_name = storage_name
 
         self._storage_options = storage_options
 
@@ -91,6 +97,11 @@ class Spec:
     def executor(self) -> Optional[Executor]:
         """The default executor for running computations."""
         return self._executor
+
+    @property
+    def storage_name(self) -> Optional[str]:
+        """The name of the storage backend for intermediate data."""
+        return self._storage_name
 
     @property
     def storage_options(self) -> Optional[dict]:

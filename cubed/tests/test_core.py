@@ -167,7 +167,7 @@ def test_store_fails(tmp_path, spec):
 @pytest.mark.parametrize("path", [None, "sub", "sub/group"])
 def test_to_zarr(tmp_path, spec, executor, path):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-    store = zarr.storage.DirectoryStore(tmp_path / "output.zarr")
+    store = tmp_path / "output.zarr"
     cubed.to_zarr(a, store, path=path, executor=executor)
     res = zarr.open_array(store, path=path)
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))

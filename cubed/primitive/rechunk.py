@@ -29,6 +29,7 @@ def rechunk(
     reserved_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
+    storage_name: Optional[str] = None,
     storage_options: Optional[Dict[str, Any]] = None,
 ) -> List[PrimitiveOperation]:
     """Change the chunking of an array, without changing its shape or dtype.
@@ -65,6 +66,7 @@ def rechunk(
         max_mem=rechunker_max_mem,
         target_store=target_store,
         temp_store=temp_store,
+        storage_name=storage_name,
         storage_options=storage_options,
     )
 
@@ -122,6 +124,7 @@ def _setup_array_rechunk(
     max_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
+    storage_name: Optional[str] = None,
     storage_options: Optional[Dict[str, Any]] = None,
 ) -> Tuple[CubedArrayProxy, CubedArrayProxy, CubedArrayProxy]:
     shape = source_array.shape
@@ -148,6 +151,7 @@ def _setup_array_rechunk(
         shape,
         dtype,
         chunks=target_chunks,
+        storage_name=storage_name,
         storage_options=storage_options,
     )
 
@@ -158,7 +162,12 @@ def _setup_array_rechunk(
         if temp_store is None:
             raise ValueError("A temporary store location must be provided.")
         int_array = lazy_zarr_array(
-            temp_store, shape, dtype, chunks=int_chunks, storage_options=storage_options
+            temp_store,
+            shape,
+            dtype,
+            chunks=int_chunks,
+            storage_name=storage_name,
+            storage_options=storage_options,
         )
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
