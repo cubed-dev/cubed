@@ -77,7 +77,8 @@ def apply_blockwise(out_key: List[int], *, config: BlockwiseSpec) -> None:
     if isinstance(result, dict):  # structured array with named fields
         for k, v in result.items():
             v = backend_array_to_numpy_array(v)
-            config.write.open().set_basic_selection(out_chunk_key, v, fields=k)
+            # config.write.open().set_basic_selection(out_chunk_key, v, fields=k)
+            config.write.open()[k][out_chunk_key] = v
     else:
         result = backend_array_to_numpy_array(result)
         config.write.open()[out_chunk_key] = result

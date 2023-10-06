@@ -1,8 +1,120 @@
+import dataclasses
+import math
 from typing import Any, Union
 
+import numpy as np
+import tensorstore
 import zarr
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
+
+
+@dataclasses.dataclass(frozen=True)
+class TensorstoreArray:
+    array: tensorstore.TensorStore
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        return self.array.shape
+
+    @property
+    def dtype(self) -> np.dtype:
+        return self.array.dtype.numpy_dtype
+
+    @property
+    def chunks(self) -> tuple[int, ...]:
+        return self.array.chunk_layout.read_chunk.shape or ()
+
+    @property
+    def ndim(self) -> int:
+        return len(self.shape)
+
+    @property
+    def size(self) -> int:
+        return math.prod(self.shape)
+
+    @property
+    def oindex(self):
+        return self.array.oindex
+
+    def __getitem__(self, key):
+        # read eagerly
+        return self.array.__getitem__(key).read().result()
+
+    def __setitem__(self, key, value):
+        self.array.__setitem__(key, value)
+
+
+def encode_dtype(d):
+    if d.fields is None:
+        return d.str
+    else:
+        return d.descr
+
+
+def open_tensorstore_array(
+    store: T_Store,
+    mode: str,
+    *,
+    shape: T_Shape,
+    dtype: T_DType,
+    chunks: T_RegularChunks,
+    fill_value: Any = None,
+    **kwargs,
+):
+    store = str(store)  # TODO: check if Path or str
+    if mode == "r":
+        open_kwargs = dict(read=True, open=True)
+    if mode == "r+":
+        open_kwargs = dict(read=True, write=True, open=True)
+    elif mode == "a":
+        open_kwargs = dict(read=True, write=True, open=True, create=True)
+    elif mode == "w":
+        open_kwargs = dict(write=True, create=True, delete_existing=True)
+    elif mode == "w-":
+        open_kwargs = dict(write=True, create=True)
+    else:
+        raise ValueError(f"Mode not supported: {mode}")
+    if dtype.fields is None:
+        return TensorstoreArray(
+            tensorstore.open(
+                {
+                    "driver": "zarr",
+                    "kvstore": {"driver": "file", "path": store},
+                    "metadata": {
+                        "chunks": chunks,
+                        "dtype": encode_dtype(dtype),
+                    },
+                },
+                shape=shape,
+                dtype=dtype,
+                fill_value=fill_value,
+                **open_kwargs,
+            ).result()
+        )
+    else:
+        ret = {}
+        for field in dtype.fields:
+            field_dtype, _ = dtype.fields[field]
+            target = TensorstoreArray(
+                tensorstore.open(
+                    {
+                        "driver": "zarr",
+                        "kvstore": {"driver": "file", "path": store},
+                        "field": field,
+                        "metadata": {
+                            "chunks": chunks,
+                            "dtype": encode_dtype(dtype),
+                        },
+                    },
+                    shape=shape,
+                    dtype=field_dtype,
+                    fill_value=fill_value,
+                    **open_kwargs,
+                ).result()
+            )
+            ret[field] = target
+        return ret
 
 
 class LazyZarrArray:
@@ -47,7 +159,7 @@ class LazyZarrArray:
             The mode to open the Zarr array with using ``zarr.open``.
             Default is 'w-', which means create, fail it already exists.
         """
-        target = zarr.open_array(
+        target = open_tensorstore_array(
             self.store,
             mode=mode,
             shape=self.shape,
@@ -64,7 +176,7 @@ class LazyZarrArray:
         Note that the Zarr array must have been created or this method will raise an exception.
         """
         # r+ means read/write, fail if it doesn't exist
-        return zarr.open_array(
+        return open_tensorstore_array(
             self.store,
             mode="r+",
             shape=self.shape,
