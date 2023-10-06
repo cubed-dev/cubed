@@ -22,6 +22,10 @@ def open_backend_array(
         from cubed.storage.backends.zarr_python import open_zarr_array
 
         open_func = open_zarr_array
+    elif storage_name == "tensorstore":
+        from cubed.storage.backends.tensorstore import open_tensorstore_array
+
+        open_func = open_tensorstore_array
     else:
         raise ValueError(f"Unrecognized storage name: {storage_name}")
 
