@@ -60,7 +60,7 @@ async def map_unordered(
 
     def create_futures_func(input, **kwargs):
         return [
-            (i, asyncio.ensure_future(app_function.call.aio(i, **kwargs)))
+            (i, asyncio.ensure_future(app_function.remote.aio(i, **kwargs)))
             for i in input
         ]
 
@@ -68,7 +68,7 @@ async def map_unordered(
 
     def create_backup_futures_func(input, **kwargs):
         return [
-            (i, asyncio.ensure_future(backup_function.call.aio(i, **kwargs)))
+            (i, asyncio.ensure_future(backup_function.remote.aio(i, **kwargs)))
             for i in input
         ]
 
