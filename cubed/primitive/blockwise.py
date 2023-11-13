@@ -98,6 +98,7 @@ def blockwise(
     in_names: Optional[List[str]] = None,
     out_name: Optional[str] = None,
     extra_projected_mem: int = 0,
+    extra_func_kwargs: Optional[Dict[str, Any]] = None,
     **kwargs,
 ):
     """Apply a function across blocks from multiple source Zarr arrays.
@@ -127,6 +128,9 @@ def blockwise(
     extra_projected_mem : int
         Extra memory projected to be needed (in bytes) in addition to the memory used reading
         the input arrays and writing the output.
+    extra_func_kwargs : dict
+        Extra keyword arguments to pass to function that can't be passed as regular keyword arguments
+        since they clash with other blockwise arguments (such as dtype).
     **kwargs : dict
         Extra keyword arguments to pass to function
 
@@ -197,7 +201,8 @@ def blockwise(
             shape, dtype=dtype, chunks=chunksize, store=target_store
         )
 
-    func_with_kwargs = partial(func, **kwargs)
+    func_kwargs = extra_func_kwargs or {}
+    func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
     read_proxies = {
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
