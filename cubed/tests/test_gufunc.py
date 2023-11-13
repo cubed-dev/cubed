@@ -15,7 +15,8 @@ def spec(tmp_path):
 @pytest.mark.parametrize("vectorize", [False, True])
 def test_apply_reduction(spec, vectorize):
     def stats(x):
-        return np.mean(x, axis=-1)
+        # note dtype matches output_dtypes in apply_gufunc below
+        return np.mean(x, axis=-1, dtype=np.float32)
 
     r = np.random.normal(size=(10, 20, 30))
     a = cubed.from_array(r, chunks=(5, 5, 30), spec=spec)
