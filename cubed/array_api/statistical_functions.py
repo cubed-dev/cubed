@@ -114,7 +114,15 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False):
             dtype = complex128
         else:
             dtype = x.dtype
-    return reduction(x, np.prod, axis=axis, dtype=dtype, keepdims=keepdims)
+    extra_func_kwargs = dict(dtype=dtype)
+    return reduction(
+        x,
+        np.prod,
+        axis=axis,
+        dtype=dtype,
+        keepdims=keepdims,
+        extra_func_kwargs=extra_func_kwargs,
+    )
 
 
 def sum(x, /, *, axis=None, dtype=None, keepdims=False):
@@ -131,4 +139,12 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False):
             dtype = complex128
         else:
             dtype = x.dtype
-    return reduction(x, np.sum, axis=axis, dtype=dtype, keepdims=keepdims)
+    extra_func_kwargs = dict(dtype=dtype)
+    return reduction(
+        x,
+        np.sum,
+        axis=axis,
+        dtype=dtype,
+        keepdims=keepdims,
+        extra_func_kwargs=extra_func_kwargs,
+    )
