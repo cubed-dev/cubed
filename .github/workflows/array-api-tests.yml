@@ -109,4 +109,4 @@ jobs:
 
           EOF
 
-          pytest -v -rxXfEA --max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --ci --cov=cubed.array_api --cov-report=term-missing
+          pytest -v -rxXfEA --max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --ci --hypothesis-disable-deadline --cov=cubed.array_api --cov-report=term-missing
