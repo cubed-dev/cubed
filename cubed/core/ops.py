@@ -186,6 +186,7 @@ def blockwise(
     new_axes=None,
     align_arrays=True,
     target_store=None,
+    extra_func_kwargs=None,
     **kwargs,
 ) -> "Array":
     arrays = args[::2]
@@ -277,6 +278,7 @@ def blockwise(
         new_axes=new_axes,
         in_names=in_names,
         out_name=name,
+        extra_func_kwargs=extra_func_kwargs,
         **kwargs,
     )
     plan = Plan._new(
@@ -712,6 +714,7 @@ def reduction(
     intermediate_dtype=None,
     dtype=None,
     keepdims=False,
+    extra_func_kwargs=None,
 ) -> "Array":
     if combine_func is None:
         combine_func = func
@@ -742,6 +745,7 @@ def reduction(
         keepdims=True,
         dtype=intermediate_dtype,
         adjust_chunks=adjust_chunks,
+        extra_func_kwargs=extra_func_kwargs,
     )
 
     # merge/reduce along axis in multiple rounds until there's a single block in each reduction axis
@@ -783,6 +787,7 @@ def reduction(
                 keepdims=True,
                 dtype=intermediate_dtype,
                 adjust_chunks=adjust_chunks,
+                extra_func_kwargs=extra_func_kwargs,
             )
 
     if aggegrate_func is not None:
