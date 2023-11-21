@@ -2,6 +2,7 @@ import inspect
 import tempfile
 import uuid
 from datetime import datetime
+from warnings import warn
 
 import networkx as nx
 
@@ -165,6 +166,13 @@ class Plan:
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
         dag = self.create_lazy_zarr_arrays(dag)
 
+        # TODO(#328): Consider caching the DAG somehow.
+        if self.max_projected_mem() > spec.allowed_mem:
+            warn(
+                "The projected maximum memory is above the allowed memory. This may be due to an error in Cubed. "
+                "Please report a bug: https://github.com/tomwhite/cubed/issues."
+            )
+
         if callbacks is not None:
             [callback.on_compute_start(dag, resume=resume) for callback in callbacks]
         executor.execute_dag(
@@ -193,7 +201,7 @@ class Plan:
         dag = self.optimize().dag if optimize_graph else self.dag
         return dag.number_of_nodes()
 
-    def max_projected_mem(self, optimize_graph=True, resume=None):
+    def max_projected_mem(self, optimize_graph=True, resume=None) -> int:
         """Return the maximum projected memory across all tasks to execute this plan."""
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
         dag = self.create_lazy_zarr_arrays(dag)
