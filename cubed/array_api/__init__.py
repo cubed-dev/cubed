@@ -262,7 +262,7 @@ from .searching_functions import argmax, argmin, where
 
 __all__ += ["argmax", "argmin", "where"]
 
-from .statistical_functions import max, mean, min, prod, sum, std, var
+from .statistical_functions import max, mean, min, prod, std, sum, var
 
 __all__ += ["max", "mean", "min", "prod", "sum", "std", "var"]
 

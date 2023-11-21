@@ -768,7 +768,9 @@ def test_var_keepdims_true(spec, executor):
     b = xp.var(a, keepdims=True)
     assert_array_equal(
         b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(keepdims=True),
+        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(
+            keepdims=True
+        ),
     )
 
 
