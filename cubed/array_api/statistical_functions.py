@@ -15,8 +15,8 @@ from cubed.array_api.dtypes import (
     int64,
     uint64,
 )
+from cubed.array_api.elementwise_functions import sqrt, square, subtract
 from cubed.core import reduction
-from cubed.array_api.elementwise_functions import subtract, square, sqrt
 
 
 def max(x, /, *, axis=None, keepdims=False):
