@@ -3,6 +3,7 @@
 # https://help.github.com/en/github/visualizing-repository-data-with-graphs/listing-the-packages-that-a-repository-depends-on
 
 aiostream
+array-api-compat
 fsspec
 mypy_extensions # for rechunker
 networkx < 2.8.3

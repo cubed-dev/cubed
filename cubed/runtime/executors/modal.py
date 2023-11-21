@@ -26,6 +26,7 @@ if requirements_file:
 else:
     aws_image = modal.Image.debian_slim().pip_install(
         [
+            "array-api-compat",
             "fsspec",
             "mypy_extensions",  # for rechunker
             "networkx",
@@ -38,6 +39,7 @@ else:
     )
     gcp_image = modal.Image.debian_slim().pip_install(
         [
+            "array-api-compat",
             "fsspec",
             "mypy_extensions",  # for rechunker
             "networkx",
