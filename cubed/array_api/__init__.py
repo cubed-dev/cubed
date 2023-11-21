@@ -264,7 +264,7 @@ __all__ += ["argmax", "argmin", "where"]
 
 from .statistical_functions import max, mean, min, prod, std, sum, var
 
-__all__ += ["max", "mean", "min", "prod", "sum", "std", "var"]
+__all__ += ["max", "mean", "min", "prod", "std", "sum", "var"]
 
 from .utility_functions import all, any
 
