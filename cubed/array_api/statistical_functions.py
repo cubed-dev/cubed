@@ -15,6 +15,7 @@ from cubed.array_api.dtypes import (
     int64,
     uint64,
 )
+from cubed.array_api.elementwise_functions import sqrt, square, subtract
 from cubed.core import reduction
 
 
@@ -152,3 +153,12 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False):
         keepdims=keepdims,
         extra_func_kwargs=extra_func_kwargs,
     )
+
+
+def var(x, /, *, axis=None, keepdims=False):
+    mu = mean(x, axis=axis, keepdims=True)
+    return mean(square(subtract(x, mu)), axis=axis, keepdims=keepdims)
+
+
+def std(x, /, *, axis=None, keepdims=False):
+    return sqrt(var(x, axis=axis, keepdims=keepdims))
