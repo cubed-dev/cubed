@@ -16,6 +16,7 @@ from cubed.array_api.dtypes import (
 )
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
+from cubed.array_api.elementwise_functions import subtract, square, sqrt
 
 
 def max(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
@@ -184,3 +185,12 @@ def sum(
         split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )
+
+
+def var(x, /, *, axis=None, keepdims=False):
+    mu = mean(x, axis=axis, keepdims=True)
+    return mean(square(subtract(x, mu)), axis=axis, keepdims=keepdims)
+
+
+def std(x, /, *, axis=None, keepdims=False):
+    return sqrt(var(x, axis=axis, keepdims=keepdims))
