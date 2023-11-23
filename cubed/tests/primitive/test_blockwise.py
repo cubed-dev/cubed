@@ -3,6 +3,7 @@ import pytest
 import zarr
 from numpy.testing import assert_array_equal
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.primitive.blockwise import blockwise, make_blockwise_function
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr, execute_pipeline
@@ -26,7 +27,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
     target_store = tmp_path / "target.zarr"
 
     pipeline = blockwise(
-        np.outer,
+        nxp.linalg.outer,
         "ij",
         source1,
         "i",
@@ -74,7 +75,7 @@ def _permute_dims(x, /, axes, allowed_mem, reserved_mem, target_store):
         axes = tuple(range(x.ndim))[::-1]
     axes = tuple(d + x.ndim if d < 0 else d for d in axes)
     return blockwise(
-        np.transpose,
+        nxp.permute_dims,
         axes,
         x,
         tuple(range(x.ndim)),
@@ -146,7 +147,7 @@ def test_blockwise_allowed_mem_exceeded(tmp_path, reserved_mem):
         match=r"Projected blockwise memory \(\d+\) exceeds allowed_mem \(100\), including reserved_mem \(\d+\)",
     ):
         blockwise(
-            np.outer,
+            nxp.linalg.outer,
             "ij",
             source1,
             "i",

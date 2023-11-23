@@ -5,6 +5,8 @@ import numpy as np
 import zarr
 from zarr.indexing import BasicIndexer, is_slice
 
+from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
 
 
@@ -30,7 +32,7 @@ class VirtualEmptyArray:
         if not isinstance(key, tuple):
             key = (key,)
         indexer = BasicIndexer(key, self.template)
-        return np.empty(indexer.shape, dtype=self.dtype)
+        return nxp.empty(indexer.shape, dtype=self.dtype)
 
     @property
     def oindex(self):
@@ -65,7 +67,7 @@ class VirtualFullArray:
         if not isinstance(key, tuple):
             key = (key,)
         indexer = BasicIndexer(key, self.template)
-        return np.full(indexer.shape, fill_value=self.fill_value, dtype=self.dtype)
+        return nxp.full(indexer.shape, fill_value=self.fill_value, dtype=self.dtype)
 
     @property
     def oindex(self):
@@ -89,8 +91,10 @@ class VirtualOffsetsArray:
 
     def __getitem__(self, key):
         if key == () and self.shape == ():
-            return np.array(0, dtype=self.dtype)
-        return np.ravel_multi_index(_key_to_index_tuple(key), self.shape)
+            return nxp.asarray(0, dtype=self.dtype)
+        return numpy_array_to_backend_array(
+            np.ravel_multi_index(_key_to_index_tuple(key), self.shape), dtype=self.dtype
+        )
 
 
 def _key_to_index_tuple(selection):

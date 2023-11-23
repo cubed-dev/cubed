@@ -8,6 +8,10 @@ import toolz
 import zarr
 from toolz import map
 
+from cubed.backend_array_api import (
+    backend_array_to_numpy_array,
+    numpy_array_to_backend_array,
+)
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
@@ -66,13 +70,16 @@ def apply_blockwise(out_key: List[int], *, config: BlockwiseSpec) -> None:
         arr = config.reads_map[name].open()
         chunk_key = key_to_slices(chunk_ind, arr)
         arg = arr[chunk_key]
+        arg = numpy_array_to_backend_array(arg)
         args.append(arg)
 
     result = config.function(*args)
     if isinstance(result, dict):  # structured array with named fields
         for k, v in result.items():
+            v = backend_array_to_numpy_array(v)
             config.write.open().set_basic_selection(out_chunk_key, v, fields=k)
     else:
+        result = backend_array_to_numpy_array(result)
         config.write.open()[out_chunk_key] = result
 
 

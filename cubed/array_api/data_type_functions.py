@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.array_api._typing import Dtype
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.core import CoreArray, map_blocks
 
 from .dtypes import (
@@ -25,7 +26,7 @@ def astype(x, dtype, /, *, copy=True):
 
 
 def _astype(a, astype_dtype):
-    return a.astype(astype_dtype)
+    return nxp.astype(a, astype_dtype)
 
 
 def can_cast(from_, to, /):

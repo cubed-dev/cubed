@@ -1,8 +1,10 @@
+import math
 from typing import TYPE_CHECKING, Iterable, List
 
 import numpy as np
 from zarr.util import normalize_shape
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.core import Plan, gensym, map_blocks
 from cubed.core.ops import map_direct
 from cubed.core.plan import new_temp_path
@@ -20,9 +22,9 @@ def arange(
 ) -> "Array":
     if stop is None:
         start, stop = 0, start
-    num = int(max(np.ceil((stop - start) / step), 0))
+    num = int(max(math.ceil((stop - start) / step), 0))
     if dtype is None:
-        dtype = np.arange(start, stop, step * num if num else step).dtype
+        dtype = nxp.arange(start, stop, step * num if num else step).dtype
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
     numblocks = len(chunks[0])
@@ -43,10 +45,10 @@ def arange(
 
 
 def _arange(a, size, start, stop, step):
-    i = a[0]
+    i = int(a[0])
     blockstart = start + (i * size * step)
     blockstop = start + ((i + 1) * size * step)
-    return np.arange(blockstart, min(blockstop, stop), step)
+    return nxp.arange(blockstart, min(blockstop, stop), step)
 
 
 def asarray(
@@ -64,7 +66,7 @@ def asarray(
         return asarray(a.data)
     elif not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
-        a = np.asarray(a, dtype=dtype)
+        a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
         dtype = a.dtype
 
@@ -133,9 +135,9 @@ def _eye(x, *arrays, k=None, chunksize=None, block_id=None):
     i, j = block_id
     bk = (j - i) * chunksize
     if bk - chunksize <= k <= bk + chunksize:
-        return np.eye(x.shape[0], x.shape[1], k=k - bk, dtype=x.dtype)
+        return nxp.eye(x.shape[0], x.shape[1], k=k - bk, dtype=x.dtype)
     else:
-        return np.zeros_like(x)
+        return nxp.zeros_like(x)
 
 
 def full(
@@ -225,7 +227,7 @@ def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=
     adjusted_bs = bs - 1 if endpoint else bs
     blockstart = start + (i * size * step)
     blockstop = blockstart + (adjusted_bs * step)
-    return np.linspace(
+    return nxp.linspace(
         blockstart, blockstop, bs, endpoint=endpoint, dtype=linspace_dtype
     )
 
