@@ -22,7 +22,7 @@ def test_apply_reduction(spec, vectorize):
     r = np.random.normal(size=(10, 20, 30))
     a = cubed.from_array(r, chunks=(5, 5, 30), spec=spec)
     actual = apply_gufunc(stats, "(i)->()", a, output_dtypes="f", vectorize=vectorize)
-    expected = np.mean(r, axis=-1)
+    expected = np.mean(r, axis=-1, dtype=np.float32)
 
     assert actual.compute().shape == expected.shape
     assert_allclose(actual.compute(), expected)
