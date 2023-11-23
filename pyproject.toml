@@ -51,6 +51,11 @@ modal = [
     "modal-client",
     "s3fs",
 ]
+modal-gcp = [
+    "cubed[diagnostics]",
+    "modal-client",
+    "gcsfs",
+]
 coiled = [
     "cubed[diagnostics]",
     "coiled",

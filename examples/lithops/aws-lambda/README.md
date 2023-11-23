@@ -10,7 +10,7 @@
 1. Install a Python environment with the basic package requirements:
 
 ```shell
-conda create --name cubed-lithops-aws-examples -y python=3.8
+conda create --name cubed-lithops-aws-examples -y python=3.9
 conda activate cubed-lithops-aws-examples
 pip install -r requirements.txt  # use requirements file from same directory as this readme
 ```
