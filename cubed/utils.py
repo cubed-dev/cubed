@@ -4,6 +4,7 @@ import platform
 import sys
 import sysconfig
 import traceback
+from collections.abc import Iterator
 from dataclasses import dataclass
 from itertools import islice
 from math import prod
@@ -252,3 +253,29 @@ def split_into(iterable, sizes):
     it = iter(iterable)
     for size in sizes:
         yield list(islice(it, size))
+
+
+def map_nested(func, seq):
+    """Apply a function inside nested lists or iterators, while preserving
+    the nesting, and the collection or iterator type.
+
+    Examples
+    --------
+
+    >>> from cubed.utils import map_nested
+    >>> inc = lambda x: x + 1
+    >>> map_nested(inc, [[1, 2], [3, 4]])
+    [[2, 3], [4, 5]]
+
+    >>> it = map_nested(inc, iter([1, 2]))
+    >>> next(it)
+    2
+    >>> next(it)
+    3
+    """
+    if isinstance(seq, list):
+        return [map_nested(func, item) for item in seq]
+    elif isinstance(seq, Iterator):
+        return map(lambda item: map_nested(func, item), seq)
+    else:
+        return func(seq)

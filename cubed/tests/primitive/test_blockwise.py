@@ -4,7 +4,11 @@ import zarr
 from numpy.testing import assert_array_equal
 
 from cubed.backend_array_api import namespace as nxp
-from cubed.primitive.blockwise import blockwise, make_blockwise_function
+from cubed.primitive.blockwise import (
+    blockwise,
+    general_blockwise,
+    make_blockwise_function,
+)
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr, execute_pipeline
 from cubed.vendor.dask.blockwise import make_blockwise_graph
@@ -160,6 +164,64 @@ def test_blockwise_allowed_mem_exceeded(tmp_path, reserved_mem):
             dtype=np.int64,
             chunks=(2, 2),
         )
+
+
+def test_general_blockwise(tmp_path, executor):
+    source = create_zarr(
+        list(range(20)),
+        dtype=int,
+        chunks=(2,),
+        store=tmp_path / "source.zarr",
+    )
+    allowed_mem = 1000
+    target_store = tmp_path / "target.zarr"
+
+    numblocks = 10
+    in_name = "x"
+    merge_factor = 3
+
+    def merge_chunks(xs):
+        return nxp.concat(xs, axis=0)
+
+    def block_function(out_key):
+        out_coords = out_key[1:]
+
+        k = merge_factor
+        out_coord = out_coords[0]  # this is just 1d
+        # return a tuple with a single item that is the list of input keys to be merged
+        return (
+            [
+                (in_name, out_coord * k + i)
+                for i in range(k)
+                if out_coord * k + i < numblocks
+            ],
+        )
+
+    pipeline = general_blockwise(
+        merge_chunks,
+        block_function,
+        source,
+        allowed_mem=allowed_mem,
+        reserved_mem=0,
+        target_store=target_store,
+        shape=(20,),
+        dtype=int,
+        chunks=(6,),
+        in_names=[in_name],
+    )
+
+    assert pipeline.target_array.shape == (20,)
+    assert pipeline.target_array.dtype == int
+    assert pipeline.target_array.chunks == (6,)
+
+    assert pipeline.num_tasks == 4
+
+    pipeline.target_array.create()  # create lazy zarr array
+
+    execute_pipeline(pipeline, executor=executor)
+
+    res = zarr.open_array(target_store)
+    assert_array_equal(res[:], np.arange(20))
 
 
 def test_make_blockwise_function_map():
