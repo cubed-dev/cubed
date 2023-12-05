@@ -93,7 +93,7 @@ def test_callbacks(spec, executor):
         np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
     )
 
-    num_created_arrays = 3
+    num_created_arrays = 1
     assert task_counter.value == num_created_arrays + 4
 
 
@@ -132,12 +132,12 @@ def test_resume(spec, executor):
     c = xp.add(a, b)
     d = xp.negative(c)
 
-    num_created_arrays = 4  # a, b, c, d
+    num_created_arrays = 2  # c, d
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 8
 
     task_counter = TaskCounter()
     c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
-    num_created_arrays = 3  # a, b, c
+    num_created_arrays = 1  # c
     assert task_counter.value == num_created_arrays + 4
 
     # since c has already been computed, when computing d only 4 tasks are run, instead of 8
@@ -146,7 +146,7 @@ def test_resume(spec, executor):
         executor=executor, callbacks=[task_counter], optimize_graph=False, resume=True
     )
     # the create arrays tasks are run again, even though they exist
-    num_created_arrays = 4  # a, b, c, d
+    num_created_arrays = 2  # c, d
     assert task_counter.value == num_created_arrays + 4
 
 

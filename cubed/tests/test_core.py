@@ -220,9 +220,8 @@ def test_rechunk_same_chunks(spec):
     b = a.rechunk((2, 1))
     task_counter = TaskCounter()
     res = b.compute(callbacks=[task_counter])
-    # no tasks except array creation task should have run since chunks are same
-    num_created_arrays = 1
-    assert task_counter.value == num_created_arrays
+    # no tasks should have run since chunks are same
+    assert task_counter.value == 0
 
     assert_array_equal(res, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
