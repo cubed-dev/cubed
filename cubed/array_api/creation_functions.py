@@ -5,7 +5,7 @@ import numpy as np
 from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
-from cubed.core import Plan, gensym, map_blocks
+from cubed.core import Plan, gensym
 from cubed.core.ops import map_direct
 from cubed.core.plan import new_temp_path
 from cubed.storage.virtual import virtual_empty, virtual_full, virtual_offsets
@@ -23,32 +23,32 @@ def arange(
     if stop is None:
         start, stop = 0, start
     num = int(max(math.ceil((stop - start) / step), 0))
+    shape = (num,)
     if dtype is None:
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
-    numblocks = len(chunks[0])
-    # create small array of block numbers
-    out = asarray(np.arange(numblocks), chunks=(1,), spec=spec)
-    # then map each block to partial arange
-    out = map_blocks(
+
+    return map_direct(
         _arange,
-        out,
+        shape=shape,
         dtype=dtype,
         chunks=chunks,
+        extra_projected_mem=0,
+        spec=spec,
         size=chunksize,
         start=start,
         stop=stop,
         step=step,
+        arange_dtype=dtype,
     )
-    return out
 
 
-def _arange(a, size, start, stop, step):
-    i = int(a[0])
+def _arange(x, *arrays, size, start, stop, step, arange_dtype, block_id=None):
+    i = block_id[0]
     blockstart = start + (i * size * step)
     blockstop = start + ((i + 1) * size * step)
-    return nxp.arange(blockstart, min(blockstop, stop), step)
+    return nxp.arange(blockstart, min(blockstop, stop), step, dtype=arange_dtype)
 
 
 def asarray(
