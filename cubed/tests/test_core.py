@@ -508,3 +508,16 @@ def test_plan_scaling(tmp_path, factor):
 
     assert c.plan.num_tasks() > 0
     c.visualize(filename=tmp_path / "c")
+
+
+@pytest.mark.parametrize("t_length", [50, 500, 5000, 50000])
+def test_plan_quad_means(tmp_path, t_length):
+    # based on sizes from https://gist.github.com/TomNicholas/c6a28f7c22c6981f75bce280d3e28283
+    spec = cubed.Spec(tmp_path, allowed_mem="2GB", reserved_mem="100MB")
+    u = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
+    v = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
+    uv = u * v
+    m = xp.mean(uv, axis=0)
+
+    assert m.plan.num_tasks() > 0
+    m.visualize(filename=tmp_path / "quad_means")
