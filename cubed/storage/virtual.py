@@ -8,6 +8,7 @@ from zarr.indexing import BasicIndexer, is_slice
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
+from cubed.utils import memory_repr
 
 
 class VirtualEmptyArray:
@@ -104,7 +105,12 @@ class VirtualInMemoryArray:
         self,
         array: np.ndarray,  # TODO: generalise
         chunks: T_RegularChunks,
+        max_nbytes: int = 10**6,
     ):
+        if array.nbytes > max_nbytes:
+            raise ValueError(
+                f"Size of in memory array is {memory_repr(array.nbytes)} which exceeds maximum of {memory_repr(max_nbytes)}. Consider loading the array from storage using `from_array`."
+            )
         self.array = array
         # use an in-memory Zarr array as a template since it normalizes its properties
         # and is needed for oindex

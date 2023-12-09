@@ -40,6 +40,15 @@ def modal_executor(request):
     return request.param
 
 
+def test_as_array_fails(spec):
+    a = np.ones((1000, 1000))
+    with pytest.raises(
+        ValueError,
+        match="Size of in memory array is 8.0 MB which exceeds maximum of 1.0 MB.",
+    ):
+        xp.asarray(a, chunks=(100, 100), spec=spec)
+
+
 def test_regular_chunks(spec):
     xp.ones((5, 5), chunks=((2, 2, 1), (5,)), spec=spec)
     with pytest.raises(ValueError):
