@@ -89,9 +89,10 @@ class BeamDagExecutor(DagExecutor):
         pipeline = beam.Pipeline(**kwargs)
 
         for name, node in visit_nodes(dag, resume=resume):
-            rechunker_pipeline = node["pipeline"]
+            cubed_pipeline = node["pipeline"]
 
-            dep_nodes = list(dag.predecessors(name))
+            inputs = list(dag.predecessors(name))
+            dep_nodes = list(p for n in inputs for p in dag.predecessors(n))
 
             pcolls = [
                 p
@@ -100,17 +101,17 @@ class BeamDagExecutor(DagExecutor):
             ]
             if len(pcolls) == 0:
                 pcoll = pipeline | gensym("Start") >> beam.Create([-1])
-                pcoll = add_to_pcoll(name, rechunker_pipeline, pcoll)
+                pcoll = add_to_pcoll(name, cubed_pipeline, pcoll)
                 dag.nodes[name]["pcoll"] = pcoll
 
             elif len(pcolls) == 1:
                 pcoll = pcolls[0]
-                pcoll = add_to_pcoll(name, rechunker_pipeline, pcoll)
+                pcoll = add_to_pcoll(name, cubed_pipeline, pcoll)
                 dag.nodes[name]["pcoll"] = pcoll
             else:
                 pcoll = pcolls | gensym("Flatten") >> beam.Flatten()
                 pcoll |= gensym("Distinct") >> beam.Distinct()
-                pcoll = add_to_pcoll(name, rechunker_pipeline, pcoll)
+                pcoll = add_to_pcoll(name, cubed_pipeline, pcoll)
                 dag.nodes[name]["pcoll"] = pcoll
 
         result = pipeline.run()
@@ -121,23 +122,23 @@ class BeamDagExecutor(DagExecutor):
             wait_until_finish_with_callbacks(result, callbacks)
 
 
-def add_to_pcoll(name, rechunker_pipeline, pcoll):
+def add_to_pcoll(name, cubed_pipeline, pcoll):
     step = 0
     stage = Stage(
-        rechunker_pipeline.function,
-        rechunker_pipeline.name,
-        rechunker_pipeline.mappable,
+        cubed_pipeline.function,
+        cubed_pipeline.name,
+        cubed_pipeline.mappable,
     )
     if stage.mappable is not None:
         pcoll |= stage.name >> _SingleArgumentStage(
-            step, stage, rechunker_pipeline.config, name
+            step, stage, cubed_pipeline.config, name
         )
     else:
         pcoll |= stage.name >> beam.Map(
             _no_arg_stage,
             current=step,
             fun=stage.function,
-            config=rechunker_pipeline.config,
+            config=cubed_pipeline.config,
         )
 
     # This prevents fusion:
