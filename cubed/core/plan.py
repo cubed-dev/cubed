@@ -2,6 +2,7 @@ import inspect
 import tempfile
 import uuid
 from datetime import datetime
+from functools import lru_cache
 
 import networkx as nx
 
@@ -84,6 +85,7 @@ class Plan:
     def arrays_to_plan(cls, *arrays):
         return Plan(arrays_to_dag(*arrays))
 
+    @lru_cache
     def optimize(self):
         # note there is no need to prune the dag, since the way it is built
         # ensures that only the transitive dependencies of the target arrays are included
@@ -119,6 +121,7 @@ class Plan:
 
         return Plan(dag)
 
+    @lru_cache
     def create_lazy_zarr_arrays(self, dag):
         # find all lazy zarr arrays in dag
         all_array_nodes = []
