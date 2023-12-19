@@ -2,6 +2,7 @@ import inspect
 import tempfile
 import uuid
 from datetime import datetime
+from functools import lru_cache
 
 import networkx as nx
 
@@ -119,7 +120,7 @@ class Plan:
 
         return Plan(dag)
 
-    def create_lazy_zarr_arrays(self, dag):
+    def _create_lazy_zarr_arrays(self, dag):
         # find all lazy zarr arrays in dag
         all_array_nodes = []
         lazy_zarr_arrays = []
@@ -153,6 +154,11 @@ class Plan:
 
         return dag
 
+    @lru_cache
+    def _finalize_dag(self, optimize_graph: bool = True) -> nx.MultiDiGraph:
+        dag = self.optimize().dag if optimize_graph else self.dag.copy()
+        return self._create_lazy_zarr_arrays(dag)
+
     def execute(
         self,
         executor=None,
@@ -163,8 +169,7 @@ class Plan:
         array_names=None,
         **kwargs,
     ):
-        dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        dag = self.create_lazy_zarr_arrays(dag)
+        dag = self._finalize_dag(optimize_graph=optimize_graph)
 
         if callbacks is not None:
             [callback.on_compute_start(dag, resume=resume) for callback in callbacks]
@@ -181,8 +186,7 @@ class Plan:
 
     def num_tasks(self, optimize_graph=True, resume=None):
         """Return the number of tasks needed to execute this plan."""
-        dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        dag = self.create_lazy_zarr_arrays(dag)
+        dag = self._finalize_dag(optimize_graph=optimize_graph)
         tasks = 0
         for _, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
@@ -191,13 +195,12 @@ class Plan:
 
     def num_arrays(self, optimize_graph: bool = True) -> int:
         """Return the number of arrays in this plan."""
-        dag = self.optimize().dag if optimize_graph else self.dag
-        return dag.number_of_nodes()
+        dag = self._finalize_dag(optimize_graph=optimize_graph)
+        return sum(n != "create-arrays" for n in dag.nodes())
 
     def max_projected_mem(self, optimize_graph=True, resume=None):
         """Return the maximum projected memory across all tasks to execute this plan."""
-        dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        dag = self.create_lazy_zarr_arrays(dag)
+        dag = self._finalize_dag(optimize_graph=optimize_graph)
         projected_mem_values = [
             node["pipeline"].projected_mem
             for _, node in visit_nodes(dag, resume=resume)
@@ -207,8 +210,7 @@ class Plan:
     def visualize(
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
     ):
-        dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        dag = self.create_lazy_zarr_arrays(dag)
+        dag = self._finalize_dag(optimize_graph=optimize_graph)
 
         # remove edges from create-arrays node to avoid cluttering the diagram
         dag.remove_edges_from(list(dag.out_edges("create-arrays")))
