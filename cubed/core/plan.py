@@ -157,7 +157,8 @@ class Plan:
     @lru_cache
     def _finalize_dag(self, optimize_graph: bool = True) -> nx.MultiDiGraph:
         dag = self.optimize().dag if optimize_graph else self.dag.copy()
-        return self._create_lazy_zarr_arrays(dag)
+        dag = self._create_lazy_zarr_arrays(dag)
+        return nx.freeze(dag)
 
     def execute(
         self,
@@ -211,6 +212,7 @@ class Plan:
         self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
     ):
         dag = self._finalize_dag(optimize_graph=optimize_graph)
+        dag = dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays node to avoid cluttering the diagram
         dag.remove_edges_from(list(dag.out_edges("create-arrays")))
