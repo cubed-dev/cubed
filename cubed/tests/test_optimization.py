@@ -19,8 +19,10 @@ def test_fusion(spec):
     d = xp.negative(c)
 
     num_created_arrays = 4  # a, b, c, d
+    assert d.plan.num_arrays(optimize_graph=False) == num_created_arrays
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 12
     num_created_arrays = 2  # a, d
+    assert d.plan.num_arrays(optimize_graph=True) == num_created_arrays
     assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
 
     task_counter = TaskCounter()
