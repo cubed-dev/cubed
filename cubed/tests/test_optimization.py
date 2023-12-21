@@ -18,11 +18,13 @@ def test_fusion(spec):
     c = xp.astype(b, np.float32)
     d = xp.negative(c)
 
-    num_created_arrays = 3  # b, c, d
-    assert d.plan.num_arrays(optimize_graph=False) == num_created_arrays
+    num_arrays = 4  # a, b, c, d
+    num_created_arrays = 3  # b, c, d (a is not created on disk)
+    assert d.plan.num_arrays(optimize_graph=False) == num_arrays
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 12
-    num_created_arrays = 1  # d
-    assert d.plan.num_arrays(optimize_graph=True) == num_created_arrays
+    num_arrays = 2  # a, d
+    num_created_arrays = 1  # d (a is not created on disk)
+    assert d.plan.num_arrays(optimize_graph=True) == num_arrays
     assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
 
     task_counter = TaskCounter()
