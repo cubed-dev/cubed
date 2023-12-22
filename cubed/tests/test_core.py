@@ -40,6 +40,15 @@ def modal_executor(request):
     return request.param
 
 
+def test_as_array_fails(spec):
+    a = np.ones((1000, 1000))
+    with pytest.raises(
+        ValueError,
+        match="Size of in memory array is 8.0 MB which exceeds maximum of 1.0 MB.",
+    ):
+        xp.asarray(a, chunks=(100, 100), spec=spec)
+
+
 def test_regular_chunks(spec):
     xp.ones((5, 5), chunks=((2, 2, 1), (5,)), spec=spec)
     with pytest.raises(ValueError):
@@ -220,9 +229,8 @@ def test_rechunk_same_chunks(spec):
     b = a.rechunk((2, 1))
     task_counter = TaskCounter()
     res = b.compute(callbacks=[task_counter])
-    # no tasks except array creation task should have run since chunks are same
-    num_created_arrays = 1
-    assert task_counter.value == num_created_arrays
+    # no tasks should have run since chunks are same
+    assert task_counter.value == 0
 
     assert_array_equal(res, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 

@@ -1,9 +1,7 @@
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import zarr
-from numpy import ndarray
 
-from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
@@ -21,7 +19,6 @@ class LazyZarrArray:
         dtype: T_DType,
         chunks: T_RegularChunks,
         store: T_Store,
-        initial_values: Optional[ndarray] = None,
         fill_value: Any = None,
         **kwargs,
     ):
@@ -35,7 +32,6 @@ class LazyZarrArray:
         self.chunks = template.chunks
 
         self.store = store
-        self.initial_values = initial_values
         self.fill_value = fill_value
         self.kwargs = kwargs
 
@@ -60,8 +56,6 @@ class LazyZarrArray:
             fill_value=self.fill_value,
             **self.kwargs,
         )
-        if self.initial_values is not None and self.initial_values.size > 0:
-            target[...] = backend_array_to_numpy_array(self.initial_values)
         return target
 
     def open(self) -> zarr.Array:
@@ -89,14 +83,6 @@ def lazy_empty(
     shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, store: T_Store, **kwargs
 ) -> LazyZarrArray:
     return LazyZarrArray(shape, dtype, chunks, store, **kwargs)
-
-
-def lazy_from_array(
-    array: ndarray, *, dtype: T_DType, chunks: T_RegularChunks, store: T_Store, **kwargs
-) -> LazyZarrArray:
-    return LazyZarrArray(
-        array.shape, dtype, chunks, store, initial_values=array, **kwargs
-    )
 
 
 def lazy_full(

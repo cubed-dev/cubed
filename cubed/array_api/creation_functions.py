@@ -7,9 +7,12 @@ from zarr.util import normalize_shape
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import Plan, gensym
 from cubed.core.ops import map_direct
-from cubed.core.plan import new_temp_path
-from cubed.storage.virtual import virtual_empty, virtual_full, virtual_offsets
-from cubed.storage.zarr import lazy_from_array
+from cubed.storage.virtual import (
+    virtual_empty,
+    virtual_full,
+    virtual_in_memory,
+    virtual_offsets,
+)
 from cubed.utils import to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 
@@ -70,11 +73,9 @@ def asarray(
     if dtype is None:
         dtype = a.dtype
 
-    # write to zarr
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
-    zarr_path = new_temp_path(name=name, spec=spec)
-    target = lazy_from_array(a, dtype=dtype, chunks=chunksize, store=zarr_path)
+    target = virtual_in_memory(a, chunks=chunksize)
 
     plan = Plan._new(name, "asarray", target)
     return Array(name, target, spec, plan)

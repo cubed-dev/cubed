@@ -8,6 +8,7 @@ from zarr.indexing import BasicIndexer, is_slice
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
+from cubed.utils import memory_repr
 
 
 class VirtualEmptyArray:
@@ -97,6 +98,43 @@ class VirtualOffsetsArray:
         )
 
 
+class VirtualInMemoryArray:
+    """A small array that is held in memory but never materialized on disk."""
+
+    def __init__(
+        self,
+        array: np.ndarray,  # TODO: generalise
+        chunks: T_RegularChunks,
+        max_nbytes: int = 10**6,
+    ):
+        if array.nbytes > max_nbytes:
+            raise ValueError(
+                f"Size of in memory array is {memory_repr(array.nbytes)} which exceeds maximum of {memory_repr(max_nbytes)}. Consider loading the array from storage using `from_array`."
+            )
+        self.array = array
+        # use an in-memory Zarr array as a template since it normalizes its properties
+        # and is needed for oindex
+        template = zarr.empty(
+            array.shape,
+            dtype=array.dtype,
+            chunks=chunks,
+            store=zarr.storage.MemoryStore(),
+        )
+        self.shape = template.shape
+        self.dtype = template.dtype
+        self.chunks = template.chunks
+        self.template = template
+        if array.size > 0:
+            template[...] = array
+
+    def __getitem__(self, key):
+        return self.array.__getitem__(key)
+
+    @property
+    def oindex(self):
+        return self.template.oindex
+
+
 def _key_to_index_tuple(selection):
     if isinstance(selection, slice):
         selection = (selection,)
@@ -131,3 +169,10 @@ def virtual_full(
 
 def virtual_offsets(shape: T_Shape) -> VirtualOffsetsArray:
     return VirtualOffsetsArray(shape)
+
+
+def virtual_in_memory(
+    array: np.ndarray,
+    chunks: T_RegularChunks,
+) -> VirtualInMemoryArray:
+    return VirtualInMemoryArray(array, chunks)
