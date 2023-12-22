@@ -15,7 +15,7 @@ from cubed.backend_array_api import (
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
-from cubed.utils import chunk_memory, get_item, to_chunksize
+from cubed.utils import chunk_memory, get_item, split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
@@ -265,6 +265,16 @@ def can_fuse_pipelines(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> bo
     return False
 
 
+def can_fuse_multiple_pipelines(
+    pipeline: CubedPipeline, *predecessor_pipelines: CubedPipeline
+) -> bool:
+    if is_fuse_candidate(pipeline) and all(
+        is_fuse_candidate(p) for p in predecessor_pipelines
+    ):
+        return all(pipeline.num_tasks == p.num_tasks for p in predecessor_pipelines)
+    return False
+
+
 def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     """
     Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
@@ -290,6 +300,84 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     projected_mem = max(pipeline1.projected_mem, pipeline2.projected_mem)
     reserved_mem = max(pipeline1.reserved_mem, pipeline2.reserved_mem)
     num_tasks = pipeline2.num_tasks
+
+    return CubedPipeline(
+        apply_blockwise,
+        gensym("fused_apply_blockwise"),
+        mappable,
+        spec,
+        target_array,
+        projected_mem,
+        reserved_mem,
+        num_tasks,
+        None,
+    )
+
+
+def fuse_multiple(
+    pipeline: CubedPipeline,
+    *predecessor_pipelines: CubedPipeline,
+    predecessor_funcs_nargs=None,
+) -> CubedPipeline:
+    """
+    Fuse a blockwise pipeline and its predecessors into a single pipeline, avoiding writing to (or reading from) the targets of the predecessor pipelines.
+    """
+
+    assert all(
+        pipeline.num_tasks == p.num_tasks
+        for p in predecessor_pipelines
+        if p is not None
+    )
+
+    mappable = pipeline.mappable
+
+    def apply_pipeline_block_func(pipeline, arg):
+        if pipeline is None:
+            return (arg,)
+        return pipeline.config.block_function(arg)
+
+    def fused_blockwise_func(out_key):
+        # this will change when multiple outputs are supported
+        args = pipeline.config.block_function(out_key)
+        # flatten one level of args as the fused_func adds back grouping structure
+        func_args = tuple(
+            item
+            for p, a in zip(predecessor_pipelines, args)
+            for item in apply_pipeline_block_func(p, a)
+        )
+        return func_args
+
+    def apply_pipeline_func(pipeline, *args):
+        if pipeline is None:
+            return args[0]
+        return pipeline.config.function(*args)
+
+    def fused_func(*args):
+        # split all args to the fused function into groups, one for each predecessor function
+        split_args = split_into(args, predecessor_funcs_nargs)
+        func_args = [
+            apply_pipeline_func(p, *a)
+            for p, a in zip(predecessor_pipelines, split_args)
+        ]
+        return pipeline.config.function(*func_args)
+
+    read_proxies = dict(pipeline.config.reads_map)
+    for p in predecessor_pipelines:
+        if p is not None:
+            read_proxies.update(p.config.reads_map)
+    write_proxy = pipeline.config.write
+    spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
+
+    target_array = pipeline.target_array
+    projected_mem = max(
+        pipeline.projected_mem,
+        *(p.projected_mem for p in predecessor_pipelines if p is not None),
+    )
+    reserved_mem = max(
+        pipeline.reserved_mem,
+        *(p.reserved_mem for p in predecessor_pipelines if p is not None),
+    )
+    num_tasks = pipeline.num_tasks
 
     return CubedPipeline(
         apply_blockwise,

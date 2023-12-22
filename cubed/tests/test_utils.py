@@ -10,6 +10,7 @@ from cubed.utils import (
     join_path,
     memory_repr,
     peak_measured_mem,
+    split_into,
     to_chunksize,
 )
 
@@ -70,3 +71,9 @@ def test_extract_stack_summaries():
     assert stack_summaries[-1].name == "test_extract_stack_summaries"
     assert stack_summaries[-1].module == "cubed.tests.test_utils"
     assert not stack_summaries[-1].is_cubed()
+
+
+def test_split_into():
+    assert list(split_into([1, 2, 3, 4, 5, 6], [1, 2, 3])) == [[1], [2, 3], [4, 5, 6]]
+    assert list(split_into([1, 2, 3, 4, 5, 6], [2, 3])) == [[1, 2], [3, 4, 5]]
+    assert list(split_into([1, 2, 3, 4], [1, 2, 3, 4])) == [[1], [2, 3], [4], []]
