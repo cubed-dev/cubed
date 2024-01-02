@@ -111,7 +111,7 @@ def test_callbacks_modal(spec, modal_executor):
             np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
         )
 
-        num_created_arrays = 3
+        num_created_arrays = 1
         assert task_counter.value == num_created_arrays + 4
     finally:
         fs = fsspec.open(tmp_path).fs
