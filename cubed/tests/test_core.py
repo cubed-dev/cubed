@@ -331,7 +331,9 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     b = xp.sum(a, axis=0, dtype=np.uint8)
     # check that there is > 1 blockwise step (after optimization)
     blockwises = [
-        n for (n, d) in b.plan.dag.nodes(data=True) if d["op_name"] == "blockwise"
+        n
+        for (n, d) in b.plan.dag.nodes(data=True)
+        if d.get("op_name", None) == "blockwise"
     ]
     assert len(blockwises) > 1
     assert b.plan.max_projected_mem() <= 1000
