@@ -457,9 +457,24 @@ def _target_chunk_selection(target_chunks, idx, selection):
 
 
 def map_blocks(
-    func, *args: "Array", dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+    func,
+    *args: "Array",
+    dtype=None,
+    chunks=None,
+    drop_axis=[],
+    new_axis=None,
+    spec=None,
+    **kwargs,
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
+
+    # Handle the case where an array is created by calling `map_blocks` with no input arrays
+    if len(args) == 0:
+        from cubed.array_api.creation_functions import empty_virtual_array
+
+        shape = tuple(map(sum, chunks))
+        args = (empty_virtual_array(shape, dtype=dtype, chunks=chunks, spec=spec),)
+
     if has_keyword(func, "block_id"):
         from cubed.array_api.creation_functions import offsets_virtual_array
 
