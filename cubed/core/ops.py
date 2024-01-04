@@ -62,21 +62,19 @@ def from_array(x, chunks="auto", asarray=None, spec=None) -> "Array":
     if asarray is None:
         asarray = not hasattr(x, "__array_function__")
 
-    return map_direct(
+    return map_blocks(
         _from_array,
-        x,
-        shape=x.shape,
         dtype=x.dtype,
         chunks=outchunks,
-        extra_projected_mem=0,
         spec=spec,
+        input_array=x,
         outchunks=outchunks,
         asarray=asarray,
     )
 
 
-def _from_array(e, x, outchunks=None, asarray=None, block_id=None):
-    out = x[get_item(outchunks, block_id)]
+def _from_array(block, input_array, outchunks=None, asarray=None, block_id=None):
+    out = input_array[get_item(outchunks, block_id)]
     if asarray:
         out = np.asarray(out)
     out = numpy_array_to_backend_array(out)
