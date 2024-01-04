@@ -6,7 +6,7 @@ from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import Plan, gensym
-from cubed.core.ops import map_direct
+from cubed.core.ops import map_blocks
 from cubed.storage.virtual import (
     virtual_empty,
     virtual_full,
@@ -26,18 +26,15 @@ def arange(
     if stop is None:
         start, stop = 0, start
     num = int(max(math.ceil((stop - start) / step), 0))
-    shape = (num,)
     if dtype is None:
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
-    return map_direct(
+    return map_blocks(
         _arange,
-        shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_projected_mem=0,
         spec=spec,
         size=chunksize,
         start=start,
@@ -47,7 +44,7 @@ def arange(
     )
 
 
-def _arange(x, *arrays, size, start, stop, step, arange_dtype, block_id=None):
+def _arange(x, size, start, stop, step, arange_dtype, block_id=None):
     i = block_id[0]
     blockstart = start + (i * size * step)
     blockstop = start + ((i + 1) * size * step)
@@ -120,19 +117,17 @@ def eye(
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
     chunksize = to_chunksize(chunks)[0]
 
-    return map_direct(
+    return map_blocks(
         _eye,
-        shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_projected_mem=0,
         spec=spec,
         k=k,
         chunksize=chunksize,
     )
 
 
-def _eye(x, *arrays, k=None, chunksize=None, block_id=None):
+def _eye(x, k=None, chunksize=None, block_id=None):
     i, j = block_id
     bk = (j - i) * chunksize
     if bk - chunksize <= k <= bk + chunksize:
@@ -198,21 +193,18 @@ def linspace(
     if div == 0:
         div = 1
     step = float(range_) / div
-    shape = (num,)
     if dtype is None:
         dtype = np.float64
-    chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
+    chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
     if num == 0:
         return asarray(0.0, dtype=dtype, spec=spec)
 
-    return map_direct(
+    return map_blocks(
         _linspace,
-        shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_projected_mem=0,
         spec=spec,
         size=chunksize,
         start=start,
@@ -222,7 +214,7 @@ def linspace(
     )
 
 
-def _linspace(x, *arrays, size, start, step, endpoint, linspace_dtype, block_id=None):
+def _linspace(x, size, start, step, endpoint, linspace_dtype, block_id=None):
     bs = x.shape[0]
     i = block_id[0]
     adjusted_bs = bs - 1 if endpoint else bs
