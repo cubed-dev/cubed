@@ -129,6 +129,7 @@ class CoreArray:
         executor=None,
         callbacks=None,
         optimize_graph=True,
+        optimize_function=None,
         resume=None,
         **kwargs,
     ):
@@ -138,6 +139,7 @@ class CoreArray:
             executor=executor,
             callbacks=callbacks,
             optimize_graph=optimize_graph,
+            optimize_function=optimize_function,
             resume=resume,
             **kwargs,
         )
@@ -161,7 +163,9 @@ class CoreArray:
 
         return rechunk(self, chunks)
 
-    def visualize(self, filename="cubed", format=None, optimize_graph=True):
+    def visualize(
+        self, filename="cubed", format=None, optimize_graph=True, optimize_function=None
+    ):
         """Produce a visualization of the computation graph for this array.
 
         Parameters
@@ -182,7 +186,11 @@ class CoreArray:
             in a notebook), otherwise None.
         """
         return visualize(
-            self, filename=filename, format=format, optimize_graph=optimize_graph
+            self,
+            filename=filename,
+            format=format,
+            optimize_graph=optimize_graph,
+            optimize_function=optimize_function,
         )
 
     def __getitem__(self: T_ChunkedArray, key, /) -> T_ChunkedArray:
@@ -208,6 +216,7 @@ def compute(
     executor=None,
     callbacks=None,
     optimize_graph=True,
+    optimize_function=None,
     resume=None,
     **kwargs,
 ):
@@ -226,6 +235,7 @@ def compute(
         executor=executor,
         callbacks=callbacks,
         optimize_graph=optimize_graph,
+        optimize_function=optimize_function,
         resume=resume,
         array_names=[a.name for a in arrays],
         spec=spec,
@@ -236,7 +246,9 @@ def compute(
         return tuple(a._read_stored() for a in arrays)
 
 
-def visualize(*arrays, filename="cubed", format=None, optimize_graph=True):
+def visualize(
+    *arrays, filename="cubed", format=None, optimize_graph=True, optimize_function=None
+):
     """Produce a visualization of the computation graph for multiple arrays.
 
     Parameters
@@ -260,7 +272,10 @@ def visualize(*arrays, filename="cubed", format=None, optimize_graph=True):
     """
     plan = arrays_to_plan(*arrays)
     return plan.visualize(
-        filename=filename, format=format, optimize_graph=optimize_graph
+        filename=filename,
+        format=format,
+        optimize_graph=optimize_graph,
+        optimize_function=optimize_function,
     )
 
 

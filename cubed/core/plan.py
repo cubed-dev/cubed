@@ -3,11 +3,12 @@ import tempfile
 import uuid
 from datetime import datetime
 from functools import lru_cache
+from typing import Callable, Optional
 
 import networkx as nx
 import zarr
 
-from cubed.primitive.blockwise import can_fuse_pipelines, fuse
+from cubed.core.optimization import simple_optimize_dag
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
@@ -121,59 +122,13 @@ class Plan:
     def arrays_to_plan(cls, *arrays):
         return Plan(arrays_to_dag(*arrays))
 
-    def optimize(self):
-        # note there is no need to prune the dag, since the way it is built
-        # ensures that only the transitive dependencies of the target arrays are included
-
-        # fuse map blocks
-        dag = self.dag.copy()
-        nodes = {n: d for (n, d) in dag.nodes(data=True)}
-
-        def can_fuse(n):
-            # fuse a single chain looking like this:
-            # op1 -> op2_input -> op2
-
-            op2 = n
-
-            # if node (op2) does not have a pipeline then it can't be fused
-            if "pipeline" not in nodes[op2]:
-                return False
-
-            # if node (op2) does not have exactly one input then don't fuse
-            # (it could have no inputs or multiple inputs)
-            if dag.in_degree(op2) != 1:
-                return False
-
-            # if input is used by another node then don't fuse
-            op2_input = next(dag.predecessors(op2))
-            if dag.out_degree(op2_input) != 1:
-                return False
-
-            # if node producing input (op1) has more than one output then don't fuse
-            op1 = next(dag.predecessors(op2_input))
-            if dag.out_degree(op1) != 1:
-                return False
-
-            # op1 and op2 must have pipelines that can be fused
-            if "pipeline" not in nodes[op1]:
-                return False
-            return can_fuse_pipelines(nodes[op1]["pipeline"], nodes[op2]["pipeline"])
-
-        for n in list(dag.nodes()):
-            if can_fuse(n):
-                op2 = n
-                op2_input = next(dag.predecessors(op2))
-                op1 = next(dag.predecessors(op2_input))
-                op1_inputs = list(dag.predecessors(op1))
-
-                pipeline = fuse(nodes[op1]["pipeline"], nodes[op2]["pipeline"])
-                nodes[op2]["pipeline"] = pipeline
-
-                for n in op1_inputs:
-                    dag.add_edge(n, op2)
-                dag.remove_node(op2_input)
-                dag.remove_node(op1)
-
+    def optimize(
+        self,
+        optimize_function: Optional[Callable[..., nx.MultiDiGraph]] = None,
+    ):
+        if optimize_function is None:
+            optimize_function = simple_optimize_dag
+        dag = optimize_function(self.dag)
         return Plan(dag)
 
     def _create_lazy_zarr_arrays(self, dag):
@@ -217,8 +172,12 @@ class Plan:
         return dag
 
     @lru_cache
-    def _finalize_dag(self, optimize_graph: bool = True) -> nx.MultiDiGraph:
-        dag = self.optimize().dag if optimize_graph else self.dag.copy()
+    def _finalize_dag(
+        self, optimize_graph: bool = True, optimize_function=None
+    ) -> nx.MultiDiGraph:
+        dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
+        # create a copy since _create_lazy_zarr_arrays mutates the dag
+        dag = dag.copy()
         dag = self._create_lazy_zarr_arrays(dag)
         return nx.freeze(dag)
 
@@ -227,12 +186,13 @@ class Plan:
         executor=None,
         callbacks=None,
         optimize_graph=True,
+        optimize_function=None,
         resume=None,
         spec=None,
         array_names=None,
         **kwargs,
     ):
-        dag = self._finalize_dag(optimize_graph=optimize_graph)
+        dag = self._finalize_dag(optimize_graph, optimize_function)
 
         if callbacks is not None:
             [callback.on_compute_start(dag, resume=resume) for callback in callbacks]
@@ -247,23 +207,25 @@ class Plan:
         if callbacks is not None:
             [callback.on_compute_end(dag) for callback in callbacks]
 
-    def num_tasks(self, optimize_graph=True, resume=None):
+    def num_tasks(self, optimize_graph=True, optimize_function=None, resume=None):
         """Return the number of tasks needed to execute this plan."""
-        dag = self._finalize_dag(optimize_graph=optimize_graph)
+        dag = self._finalize_dag(optimize_graph, optimize_function)
         tasks = 0
         for _, node in visit_nodes(dag, resume=resume):
             pipeline = node["pipeline"]
             tasks += pipeline.num_tasks
         return tasks
 
-    def num_arrays(self, optimize_graph: bool = True) -> int:
+    def num_arrays(self, optimize_graph: bool = True, optimize_function=None) -> int:
         """Return the number of arrays in this plan."""
-        dag = self._finalize_dag(optimize_graph=optimize_graph)
+        dag = self._finalize_dag(optimize_graph, optimize_function)
         return sum(d.get("type") == "array" for _, d in dag.nodes(data=True))
 
-    def max_projected_mem(self, optimize_graph=True, resume=None):
+    def max_projected_mem(
+        self, optimize_graph=True, optimize_function=None, resume=None
+    ):
         """Return the maximum projected memory across all tasks to execute this plan."""
-        dag = self._finalize_dag(optimize_graph=optimize_graph)
+        dag = self._finalize_dag(optimize_graph, optimize_function)
         projected_mem_values = [
             node["pipeline"].projected_mem
             for _, node in visit_nodes(dag, resume=resume)
@@ -271,9 +233,14 @@ class Plan:
         return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
     def visualize(
-        self, filename="cubed", format=None, rankdir="TB", optimize_graph=True
+        self,
+        filename="cubed",
+        format=None,
+        rankdir="TB",
+        optimize_graph=True,
+        optimize_function=None,
     ):
-        dag = self._finalize_dag(optimize_graph=optimize_graph)
+        dag = self._finalize_dag(optimize_graph, optimize_function)
         dag = dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
@@ -287,8 +254,8 @@ class Plan:
         dag.graph["graph"] = {
             "rankdir": rankdir,
             "label": (
-                f"num tasks: {self.num_tasks(optimize_graph=optimize_graph)}\n"
-                f"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph=optimize_graph))}"
+                f"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\n"
+                f"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}"
             ),
             "labelloc": "bottom",
             "labeljust": "left",

@@ -94,3 +94,25 @@ def test_no_fusion_multiple_edges(spec):
     assert task_counter.value == num_created_arrays + 2
 
     assert_array_equal(result, np.full((2, 2), True))
+
+
+def test_custom_optimize_function(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.negative(a)
+    c = xp.astype(b, np.float32)
+    d = xp.negative(c)
+
+    num_tasks_with_no_optimization = d.plan.num_tasks(optimize_graph=False)
+
+    assert d.plan.num_tasks(optimize_graph=True) < num_tasks_with_no_optimization
+
+    def custom_optimize_function(dag):
+        # leave DAG unchanged
+        return dag
+
+    assert (
+        d.plan.num_tasks(
+            optimize_graph=True, optimize_function=custom_optimize_function
+        )
+        == num_tasks_with_no_optimization
+    )
