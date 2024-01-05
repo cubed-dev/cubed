@@ -232,6 +232,17 @@ class Plan:
         ]
         return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
+    def total_nbytes(self, optimize_graph: bool = True, optimize_function=None) -> int:
+        """Return the total number of bytes for all materialized arrays in this plan."""
+        dag = self._finalize_dag(optimize_graph, optimize_function)
+        nbytes = 0
+        for _, d in dag.nodes(data=True):
+            if d.get("type") == "array":
+                target = d["target"]
+                if isinstance(target, (LazyZarrArray, zarr.Array)):
+                    nbytes += target.nbytes
+        return nbytes
+
     def visualize(
         self,
         filename="cubed",
@@ -255,7 +266,8 @@ class Plan:
             "rankdir": rankdir,
             "label": (
                 f"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\n"
-                f"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}"
+                f"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}\n"
+                f"total nbytes: {memory_repr(self.total_nbytes(optimize_graph, optimize_function))}"
             ),
             "labelloc": "bottom",
             "labeljust": "left",
@@ -341,11 +353,13 @@ class Plan:
             elif node_type == "array":
                 target = d["target"]
                 chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
+                nbytes = None
 
                 # materialized arrays are light orange, virtual arrays are white
                 if isinstance(target, (LazyZarrArray, zarr.Array)):
                     d["style"] = "filled"
                     d["fillcolor"] = "#ffd8b1"
+                    nbytes = memory_repr(target.nbytes)
                 if n in array_display_names:
                     var_name = array_display_names[n]
                     d["label"] = f"{n} ({var_name})"
@@ -356,6 +370,8 @@ class Plan:
                 tooltip += f"chunks: {target.chunks}\n"
                 tooltip += f"dtype: {target.dtype}\n"
                 tooltip += f"chunk memory: {chunkmem}\n"
+                if nbytes is not None:
+                    tooltip += f"nbytes: {nbytes}\n"
 
                 del d["target"]
 

@@ -30,6 +30,7 @@ class LazyZarrArray:
         self.shape = template.shape
         self.dtype = template.dtype
         self.chunks = template.chunks
+        self.nbytes = template.nbytes
 
         self.store = store
         self.fill_value = fill_value
