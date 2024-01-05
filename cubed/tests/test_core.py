@@ -191,6 +191,19 @@ def test_map_blocks_with_block_id(spec, executor):
     )
 
 
+def test_map_blocks_no_array_args(spec, executor):
+    def func(block, block_id=None):
+        return nxp.ones_like(block) * int(sum(block_id))
+
+    a = cubed.map_blocks(func, dtype="int64", chunks=((5, 3),), spec=spec)
+    assert a.chunks == ((5, 3),)
+
+    assert_array_equal(
+        a.compute(executor=executor),
+        np.array([0, 0, 0, 0, 0, 1, 1, 1], dtype="int64"),
+    )
+
+
 def test_map_blocks_with_different_block_shapes(spec):
     def func(x, y):
         return x

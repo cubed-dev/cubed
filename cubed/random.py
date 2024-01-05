@@ -6,7 +6,7 @@ from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
-from cubed.core.ops import map_direct
+from cubed.core.ops import map_blocks
 from cubed.vendor.dask.array.core import normalize_chunks
 
 
@@ -18,23 +18,17 @@ def random(size, *, chunks=None, spec=None):
     numblocks = tuple(map(len, chunks))
     root_seed = pyrandom.getrandbits(128)
 
-    # no extra memory is projected to be needed since input is an empty array whose
-    # memory is never allocated, see https://pythonspeed.com/articles/measuring-memory-python/#phantom-memory
-    extra_projected_mem = 0
-
-    return map_direct(
+    return map_blocks(
         _random,
-        shape=shape,
         dtype=dtype,
         chunks=chunks,
-        extra_projected_mem=extra_projected_mem,
         spec=spec,
         numblocks=numblocks,
         root_seed=root_seed,
     )
 
 
-def _random(x, *arrays, numblocks=None, root_seed=None, block_id=None):
+def _random(x, numblocks=None, root_seed=None, block_id=None):
     stream_id = block_id_to_offset(block_id, numblocks)
     rg = Generator(Philox(key=root_seed + stream_id))
     out = rg.random(x.shape)

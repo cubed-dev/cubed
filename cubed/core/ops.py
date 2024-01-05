@@ -62,21 +62,19 @@ def from_array(x, chunks="auto", asarray=None, spec=None) -> "Array":
     if asarray is None:
         asarray = not hasattr(x, "__array_function__")
 
-    return map_direct(
+    return map_blocks(
         _from_array,
-        x,
-        shape=x.shape,
         dtype=x.dtype,
         chunks=outchunks,
-        extra_projected_mem=0,
         spec=spec,
+        input_array=x,
         outchunks=outchunks,
         asarray=asarray,
     )
 
 
-def _from_array(e, x, outchunks=None, asarray=None, block_id=None):
-    out = x[get_item(outchunks, block_id)]
+def _from_array(block, input_array, outchunks=None, asarray=None, block_id=None):
+    out = input_array[get_item(outchunks, block_id)]
     if asarray:
         out = np.asarray(out)
     out = numpy_array_to_backend_array(out)
@@ -457,9 +455,24 @@ def _target_chunk_selection(target_chunks, idx, selection):
 
 
 def map_blocks(
-    func, *args: "Array", dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+    func,
+    *args: "Array",
+    dtype=None,
+    chunks=None,
+    drop_axis=[],
+    new_axis=None,
+    spec=None,
+    **kwargs,
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
+
+    # Handle the case where an array is created by calling `map_blocks` with no input arrays
+    if len(args) == 0:
+        from cubed.array_api.creation_functions import empty_virtual_array
+
+        shape = tuple(map(sum, chunks))
+        args = (empty_virtual_array(shape, dtype=dtype, chunks=chunks, spec=spec),)
+
     if has_keyword(func, "block_id"):
         from cubed.array_api.creation_functions import offsets_virtual_array
 
