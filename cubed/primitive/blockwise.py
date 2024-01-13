@@ -1,5 +1,6 @@
 import itertools
 import math
+from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
@@ -446,10 +447,19 @@ def fuse_multiple(
 
     mappable = pipeline.mappable
 
-    def apply_pipeline_block_func(pipeline, arg):
+    def apply_pipeline_block_func(pipeline, n_input_blocks, arg):
         if pipeline is None:
             return (arg,)
-        return pipeline.config.block_function(arg)
+        if n_input_blocks == 1:
+            assert isinstance(arg, tuple)
+            return pipeline.config.block_function(arg)
+        else:
+            # more than one input block is being read from arg
+            assert isinstance(arg, (list, Iterator))
+            return tuple(
+                list(item)
+                for item in zip(*(pipeline.config.block_function(a) for a in arg))
+            )
 
     def fused_blockwise_func(out_key):
         # this will change when multiple outputs are supported
@@ -457,20 +467,28 @@ def fuse_multiple(
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
             item
-            for p, a in zip(predecessor_pipelines, args)
-            for item in apply_pipeline_block_func(p, a)
+            for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
+            for item in apply_pipeline_block_func(
+                p, primitive_op.num_input_blocks[i], a
+            )
         )
         return split_into(func_args, predecessor_funcs_nargs)
 
-    def apply_pipeline_func(pipeline, *args):
+    def apply_pipeline_func(pipeline, n_input_blocks, *args):
         if pipeline is None:
             return args[0]
-        return pipeline.config.function(*args)
+        if n_input_blocks == 1:
+            ret = pipeline.config.function(*args)
+        else:
+            # more than one input block is being read from this group of args to primitive op
+            ret = [pipeline.config.function(*item) for item in list(zip(*args))]
+        return ret
 
     def fused_func(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_pipeline_func(p, *a) for p, a in zip(predecessor_pipelines, args)
+            apply_pipeline_func(p, primitive_op.num_input_blocks[i], *a)
+            for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
         ]
         return pipeline.config.function(*func_args)
 
