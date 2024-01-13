@@ -119,6 +119,7 @@ def blockwise(
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
+    num_input_blocks: Optional[Tuple[int, ...]] = None,
     **kwargs,
 ):
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -201,6 +202,7 @@ def blockwise(
         extra_projected_mem=extra_projected_mem,
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
+        num_input_blocks=num_input_blocks,
         **kwargs,
     )
 
@@ -219,6 +221,7 @@ def general_blockwise(
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
+    num_input_blocks: Optional[Tuple[int, ...]] = None,
     **kwargs,
 ):
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -317,6 +320,7 @@ def general_blockwise(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=fusable,
+        num_input_blocks=num_input_blocks,
     )
 
 
@@ -399,6 +403,9 @@ def fuse(
     allowed_mem = primitive_op2.allowed_mem
     reserved_mem = primitive_op2.reserved_mem
     num_tasks = primitive_op2.num_tasks
+    num_input_blocks = tuple(
+        n * primitive_op2.num_input_blocks[0] for n in primitive_op1.num_input_blocks
+    )
 
     pipeline = CubedPipeline(
         apply_blockwise,
@@ -414,6 +421,7 @@ def fuse(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,
+        num_input_blocks=num_input_blocks,
     )
 
 
@@ -490,6 +498,12 @@ def fuse_multiple(
     allowed_mem = primitive_op.allowed_mem
     reserved_mem = primitive_op.reserved_mem
     num_tasks = primitive_op.num_tasks
+    tmp = [
+        p.num_input_blocks if p is not None else (1,) for p in predecessor_primitive_ops
+    ]
+    num_input_blocks = tuple(
+        primitive_op.num_input_blocks[0] * n for n in itertools.chain(*tmp)
+    )
 
     fused_pipeline = CubedPipeline(
         apply_blockwise,
@@ -505,6 +519,7 @@ def fuse_multiple(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,
+        num_input_blocks=num_input_blocks,
     )
 
 

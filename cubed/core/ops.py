@@ -266,6 +266,7 @@ def blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     fusable = kwargs.pop("fusable", True)
+    num_input_blocks = kwargs.pop("num_input_blocks", (1,) * len(source_arrays))
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -287,6 +288,7 @@ def blockwise(
         out_name=name,
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
+        num_input_blocks=num_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -324,6 +326,8 @@ def general_blockwise(
 
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
+    num_input_blocks = kwargs.pop("num_input_blocks", (1,) * len(source_arrays))
+
     name = gensym()
     spec = check_array_specs(arrays)
     if target_store is None:
@@ -341,6 +345,7 @@ def general_blockwise(
         chunks=chunks,
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
+        num_input_blocks=num_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -1059,6 +1064,7 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
         dtype=dtype,
         chunks=chunks,
         extra_projected_mem=extra_projected_mem,
+        num_input_blocks=(sum(split_every.values()),),
         reduce_func=func,
         initial_func=initial_func,
         axis=axis,

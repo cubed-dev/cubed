@@ -326,6 +326,10 @@ class Plan:
                     tooltip += f"\ntasks: {primitive_op.num_tasks}"
                     if primitive_op.write_chunks is not None:
                         tooltip += f"\nwrite chunks: {primitive_op.write_chunks}"
+                    if primitive_op.num_input_blocks is not None:
+                        tooltip += (
+                            f"\nnum input blocks: {primitive_op.num_input_blocks}"
+                        )
                     del d["primitive_op"]
 
                 # remove pipeline attribute since it is a long string that causes graphviz to fail
