@@ -265,10 +265,11 @@ class Plan:
         dag.graph["graph"] = {
             "rankdir": rankdir,
             "label": (
-                f"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\n"
-                f"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}\n"
-                f"total nbytes: {memory_repr(self.total_nbytes(optimize_graph, optimize_function))}\n"
-                f"optimized: {optimize_graph}"
+                # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
+                rf"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\l"
+                rf"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}\l"
+                rf"total nbytes: {memory_repr(self.total_nbytes(optimize_graph, optimize_function))}\l"
+                rf"optimized: {optimize_graph}\l"
             ),
             "labelloc": "bottom",
             "labeljust": "left",
