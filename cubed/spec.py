@@ -1,5 +1,4 @@
 from typing import Optional, Union
-from warnings import warn
 
 from cubed.runtime.types import Executor
 from cubed.utils import convert_to_bytes
@@ -11,7 +10,6 @@ class Spec:
     def __init__(
         self,
         work_dir: Union[str, None] = None,
-        max_mem: Union[int, None] = None,
         allowed_mem: Union[int, str, None] = None,
         reserved_mem: Union[int, str, None] = 0,
         executor: Union[Executor, None] = None,
@@ -24,8 +22,6 @@ class Spec:
         ----------
         work_dir : str or None
             The directory path (specified as an fsspec URL) used for storing intermediate data.
-        max_mem : int, optional
-            **Deprecated**. The maximum memory available to a worker for data use for the computation, in bytes.
         allowed_mem : int or str, optional
             The total memory available to a worker for running a task, in bytes.
 
@@ -41,18 +37,11 @@ class Spec:
             Storage options to be passed to fsspec.
         """
 
-        if max_mem is not None:
-            warn(
-                "`max_mem` is deprecated, please use `allowed_mem` instead",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         self._work_dir = work_dir
 
         self._reserved_mem = convert_to_bytes(reserved_mem or 0)
         if allowed_mem is None:
-            self._allowed_mem = (max_mem or 0) + self.reserved_mem
+            self._allowed_mem = self.reserved_mem
         else:
             self._allowed_mem = convert_to_bytes(allowed_mem)
 

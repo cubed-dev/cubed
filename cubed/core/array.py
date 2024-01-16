@@ -1,6 +1,5 @@
 from operator import mul
 from typing import Optional, TypeVar
-from warnings import warn
 
 import numpy as np
 from toolz import map, reduce
@@ -282,17 +281,6 @@ def visualize(
 class PeakMeasuredMemoryCallback(Callback):
     def on_task_end(self, event):
         self.peak_measured_mem = event.peak_measured_mem_end
-
-
-def measure_reserved_memory(
-    executor: Executor, work_dir: Optional[str] = None, **kwargs
-) -> int:
-    warn(
-        "`measure_reserved_memory` is deprecated, please use `measure_reserved_mem` instead",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return measure_reserved_mem(executor, work_dir=work_dir, **kwargs)
 
 
 def measure_reserved_mem(
