@@ -21,31 +21,35 @@ Cubed uses external runtimes for computation. It follows the Rechunker model (an
 
 There are two primitive operations on arrays:
 
-<dl>
-  <dt><code>blockwise</code></dt>
-  <dd>Applies a function to multiple blocks from multiple inputs, expressed using concise indexing rules.</dd>
-  <dt><code>rechunk</code></dt>
-  <dd>Changes the chunking of an array, without changing its shape or dtype.</dd>
-</dl>
+```{eval-rst}
+.. currentmodule:: cubed.primitive.blockwise
+.. autosummary::
+    :nosignatures:
+
+    blockwise
+.. currentmodule:: cubed.primitive.rechunk
+.. autosummary::
+    :nosignatures:
+
+    rechunk
+```
 
 ## Core operations
 
 These are built on top of the primitive operations, and provide functions that are needed to implement all array operations.
 
-<dl>
-  <dt><code>elemwise</code></dt>
-  <dd>Applies a function elementwise to its arguments, respecting broadcasting.</dd>
-  <dt><code>map_blocks</code></dt>
-  <dd>Applies a function to corresponding blocks from multiple inputs.</dd>
-  <dt><code>map_direct</code></dt>
-  <dd>Applies a function across blocks of a new array, reading directly from side inputs (not necessarily in a blockwise fashion).</dd>
-  <dt><code>index</code> (<code>__getitem__</code>)</dt>
-  <dd>Subsets an array, along one or more axes.</dd>
-  <dt><code>reduction</code></dt>
-  <dd>Applies a function to reduce an array along one or more axes.</dd>
-  <dt><code>arg_reduction</code></dt>
-  <dd>A reduction that returns the array indexes, not the values.</dd>
-</dl>
+```{eval-rst}
+.. currentmodule:: cubed.core.ops
+.. autosummary::
+    :nosignatures:
+
+    elemwise
+    map_blocks
+    map_direct
+    index
+    reduction
+    arg_reduction
+```
 
 ## Array API
 

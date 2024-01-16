@@ -108,7 +108,7 @@ def blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     **kwargs,
 ):
-    """Apply a function across blocks from multiple source Zarr arrays.
+    """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
 
     Parameters
     ----------

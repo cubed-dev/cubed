@@ -28,7 +28,7 @@ def rechunk(
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
 ) -> List[CubedPipeline]:
-    """Rechunk a Zarr array to have target_chunks.
+    """Change the chunking of an array, without changing its shape or dtype.
 
     Parameters
     ----------
