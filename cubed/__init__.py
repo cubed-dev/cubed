@@ -13,12 +13,7 @@ except Exception:  # pragma: no cover
     __version__ = "unknown"
 
 from .array_api import Array
-from .core.array import (
-    compute,
-    measure_reserved_mem,
-    measure_reserved_memory,
-    visualize,
-)
+from .core.array import compute, measure_reserved_mem, visualize
 from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
 from .nan_functions import nanmean, nansum
@@ -37,7 +32,6 @@ __all__ = [
     "from_zarr",
     "map_blocks",
     "measure_reserved_mem",
-    "measure_reserved_memory",
     "nanmean",
     "nansum",
     "store",

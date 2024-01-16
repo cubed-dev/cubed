@@ -291,51 +291,43 @@ def test_different_specs(tmp_path):
         xp.add(a, b)
 
 
-class TestSpecMemArgTypes:
-    def test_max_mem_deprecation_warning(self):
-        # Remove once max_mem fully deprecated in favour of allowed_mem
-        with pytest.warns(
-            DeprecationWarning,
-            match="`max_mem` is deprecated, please use `allowed_mem` instead",
-        ):
-            cubed.Spec(max_mem=100_000)
+@pytest.mark.parametrize(
+    "input_value, expected_value",
+    [
+        (500, 500),
+        (100_000, 100_000),
+        (50.0, 50),
+        ("500B", 500),
+        ("1kB", 1000),
+        ("1MB", 1000**2),
+        ("1GB", 1000**3),
+        ("1TB", 1000**4),
+        ("1PB", 1000**5),
+        ("100_000", 100_000),
+        ("1.2MB", 1.2 * 1000**2),
+        ("1 MB", 1000**2),
+        ("1.2 MB", 1.2 * 1000**2),
+    ],
+)
+def test_convert_to_bytes(input_value, expected_value):
+    spec = cubed.Spec(allowed_mem=input_value)
+    assert spec.allowed_mem == expected_value
 
-    @pytest.mark.parametrize(
-        "input_value, expected_value",
-        [
-            (500, 500),
-            (100_000, 100_000),
-            (50.0, 50),
-            ("500B", 500),
-            ("1kB", 1000),
-            ("1MB", 1000**2),
-            ("1GB", 1000**3),
-            ("1TB", 1000**4),
-            ("1PB", 1000**5),
-            ("100_000", 100_000),
-            ("1.2MB", 1.2 * 1000**2),
-            ("1 MB", 1000**2),
-            ("1.2 MB", 1.2 * 1000**2),
-        ],
-    )
-    def test_convert_to_bytes(self, input_value, expected_value):
-        spec = cubed.Spec(allowed_mem=input_value)
-        assert spec.allowed_mem == expected_value
 
-    @pytest.mark.parametrize(
-        "input_value",
-        [
-            "1EB",  # EB is not a valid unit in this function
-            "1kb",  # lower-case k is not valid
-            "invalid",  # completely invalid input
-            -512,  # negative integer
-            "kB",  # only unit, no value
-            "1.1B",  # can't have a fractional number of bytes
-        ],
-    )
-    def test_convert_to_bytes_error(self, input_value):
-        with pytest.raises(ValueError):
-            cubed.Spec(allowed_mem=input_value)
+@pytest.mark.parametrize(
+    "input_value",
+    [
+        "1EB",  # EB is not a valid unit in this function
+        "1kb",  # lower-case k is not valid
+        "invalid",  # completely invalid input
+        -512,  # negative integer
+        "kB",  # only unit, no value
+        "1.1B",  # can't have a fractional number of bytes
+    ],
+)
+def test_convert_to_bytes_error(input_value):
+    with pytest.raises(ValueError):
+        cubed.Spec(allowed_mem=input_value)
 
 
 def test_reduction_multiple_rounds(tmp_path, executor):
