@@ -5,7 +5,7 @@ from typing import Any, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from cubed.primitive.types import CubedArrayProxy, CubedCopySpec
+from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_empty
 from cubed.types import T_RegularChunks, T_Shape, T_Store
@@ -27,7 +27,7 @@ def rechunk(
     reserved_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
-) -> List[CubedPipeline]:
+) -> List[PrimitiveOperation]:
     """Change the chunking of an array, without changing its shape or dtype.
 
     Parameters
@@ -46,7 +46,7 @@ def rechunk(
 
     Returns
     -------
-    CubedPipeline to run the operation
+    PrimitiveOperation to run the operation
     """
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
@@ -71,24 +71,26 @@ def rechunk(
         copy_spec = CubedCopySpec(read_proxy, write_proxy)
         num_tasks = total_chunks(write_proxy.array.shape, write_proxy.chunks)
         return [
-            spec_to_pipeline(copy_spec, target, projected_mem, reserved_mem, num_tasks)
+            spec_to_primitive_op(
+                copy_spec, target, projected_mem, reserved_mem, num_tasks
+            )
         ]
 
     else:
         # break spec into two if there's an intermediate
         copy_spec1 = CubedCopySpec(read_proxy, int_proxy)
         num_tasks = total_chunks(copy_spec1.write.array.shape, copy_spec1.write.chunks)
-        pipeline1 = spec_to_pipeline(
+        op1 = spec_to_primitive_op(
             copy_spec1, intermediate, projected_mem, reserved_mem, num_tasks
         )
 
         copy_spec2 = CubedCopySpec(int_proxy, write_proxy)
         num_tasks = total_chunks(copy_spec2.write.array.shape, copy_spec2.write.chunks)
-        pipeline2 = spec_to_pipeline(
+        op2 = spec_to_primitive_op(
             copy_spec2, target, projected_mem, reserved_mem, num_tasks
         )
 
-        return [pipeline1, pipeline2]
+        return [op1, op2]
 
 
 # from rechunker, but simpler since it only has to handle Zarr arrays
@@ -185,23 +187,26 @@ def copy_read_to_write(chunk_key: Sequence[slice], *, config: CubedCopySpec) -> 
     config.write.open()[chunk_key] = data
 
 
-def spec_to_pipeline(
+def spec_to_primitive_op(
     spec: CubedCopySpec,
     target_array: Any,
     projected_mem: int,
     reserved_mem: int,
     num_tasks: int,
-) -> CubedPipeline:
+) -> PrimitiveOperation:
     # typing won't work until we start using numpy types
     shape = spec.read.array.shape  # type: ignore
-    return CubedPipeline(
+    pipeline = CubedPipeline(
         copy_read_to_write,
         gensym("copy_read_to_write"),
         ChunkKeys(shape, spec.write.chunks),
         spec,
-        target_array,
-        projected_mem,
-        reserved_mem,
-        num_tasks,
-        spec.write.chunks,
+    )
+    return PrimitiveOperation(
+        pipeline=pipeline,
+        target_array=target_array,
+        projected_mem=projected_mem,
+        reserved_mem=reserved_mem,
+        num_tasks=num_tasks,
+        write_chunks=spec.write.chunks,
     )

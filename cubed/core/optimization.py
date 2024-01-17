@@ -1,8 +1,8 @@
 import networkx as nx
 
 from cubed.primitive.blockwise import (
-    can_fuse_multiple_pipelines,
-    can_fuse_pipelines,
+    can_fuse_multiple_primitive_ops,
+    can_fuse_primitive_ops,
     fuse,
     fuse_multiple,
 )
@@ -23,8 +23,8 @@ def simple_optimize_dag(dag):
 
         op2 = n
 
-        # if node (op2) does not have a pipeline then it can't be fused
-        if "pipeline" not in nodes[op2]:
+        # if node (op2) does not have a primitive op then it can't be fused
+        if "primitive_op" not in nodes[op2]:
             return False
 
         # if node (op2) does not have exactly one input then don't fuse
@@ -42,10 +42,12 @@ def simple_optimize_dag(dag):
         if dag.out_degree(op1) != 1:
             return False
 
-        # op1 and op2 must have pipelines that can be fused
-        if "pipeline" not in nodes[op1]:
+        # op1 and op2 must have primitive ops that can be fused
+        if "primitive_op" not in nodes[op1]:
             return False
-        return can_fuse_pipelines(nodes[op1]["pipeline"], nodes[op2]["pipeline"])
+        return can_fuse_primitive_ops(
+            nodes[op1]["primitive_op"], nodes[op2]["primitive_op"]
+        )
 
     for n in list(dag.nodes()):
         if can_fuse(n):
@@ -54,8 +56,9 @@ def simple_optimize_dag(dag):
             op1 = next(dag.predecessors(op2_input))
             op1_inputs = list(dag.predecessors(op1))
 
-            pipeline = fuse(nodes[op1]["pipeline"], nodes[op2]["pipeline"])
-            nodes[op2]["pipeline"] = pipeline
+            primitive_op = fuse(nodes[op1]["primitive_op"], nodes[op2]["primitive_op"])
+            nodes[op2]["primitive_op"] = primitive_op
+            nodes[op2]["pipeline"] = primitive_op.pipeline
 
             for n in op1_inputs:
                 dag.add_edge(n, op2)
@@ -89,7 +92,7 @@ def predecessor_ops(dag, name):
 
 def is_fusable(node_dict):
     "Return True if a node can be fused."
-    return "pipeline" in node_dict
+    return "primitive_op" in node_dict
 
 
 def can_fuse_predecessors(dag, name, *, max_total_nargs=4):
@@ -113,12 +116,14 @@ def can_fuse_predecessors(dag, name, *, max_total_nargs=4):
         if total_nargs > max_total_nargs:
             return False
 
-    predecessor_pipelines = [
-        nodes[pre]["pipeline"]
+    predecessor_primitive_ops = [
+        nodes[pre]["primitive_op"]
         for pre in predecessor_ops(dag, name)
         if is_fusable(nodes[pre])
     ]
-    return can_fuse_multiple_pipelines(nodes[name]["pipeline"], *predecessor_pipelines)
+    return can_fuse_multiple_primitive_ops(
+        nodes[name]["primitive_op"], *predecessor_primitive_ops
+    )
 
 
 def fuse_predecessors(dag, name):
@@ -130,11 +135,11 @@ def fuse_predecessors(dag, name):
 
     nodes = dict(dag.nodes(data=True))
 
-    pipeline = nodes[name]["pipeline"]
+    primitive_op = nodes[name]["primitive_op"]
 
-    # if a predecessor op has no pipeline then just use None
-    predecessor_pipelines = [
-        nodes[pre]["pipeline"] if is_fusable(nodes[pre]) else None
+    # if a predecessor op has no primitive op then just use None
+    predecessor_primitive_ops = [
+        nodes[pre]["primitive_op"] if is_fusable(nodes[pre]) else None
         for pre in predecessor_ops(dag, name)
     ]
 
@@ -144,16 +149,17 @@ def fuse_predecessors(dag, name):
         for pre in predecessor_ops(dag, name)
     ]
 
-    fused_pipeline = fuse_multiple(
-        pipeline,
-        *predecessor_pipelines,
+    fused_primitive_op = fuse_multiple(
+        primitive_op,
+        *predecessor_primitive_ops,
         predecessor_funcs_nargs=predecessor_funcs_nargs,
     )
 
     fused_dag = dag.copy()
     fused_nodes = dict(fused_dag.nodes(data=True))
 
-    fused_nodes[name]["pipeline"] = fused_pipeline
+    fused_nodes[name]["primitive_op"] = fused_primitive_op
+    fused_nodes[name]["pipeline"] = fused_primitive_op.pipeline
 
     # re-wire dag to remove predecessor nodes that have been fused
 

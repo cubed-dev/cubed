@@ -20,7 +20,7 @@ class TqdmProgressBar(Callback):
         self.pbars = {}
         i = 0
         for name, node in visit_nodes(dag, resume):
-            num_tasks = node["pipeline"].num_tasks
+            num_tasks = node["primitive_op"].num_tasks
             self.pbars[name] = tqdm(
                 *self.args, desc=name, total=num_tasks, position=i, **self.kwargs
             )
