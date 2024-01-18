@@ -9,7 +9,11 @@ import cubed
 import cubed.array_api as xp
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import elemwise
-from cubed.core.optimization import fuse_predecessors, gensym
+from cubed.core.optimization import (
+    fuse_predecessors,
+    gensym,
+    multiple_inputs_optimize_dag,
+)
 from cubed.core.plan import arrays_to_plan
 from cubed.tests.utils import TaskCounter
 
@@ -127,9 +131,14 @@ def test_custom_optimize_function(spec):
     )
 
 
-def get_optimize_function(arr):
+def fuse_one_level(arr):
     # use fuse_predecessors to test one level of fusion
     return partial(fuse_predecessors, name=next(arr.plan.dag.predecessors(arr.name)))
+
+
+def fuse_multiple_levels(*, max_total_nargs=4):
+    # use multiple_inputs_optimize_dag to test multiple levels of fusion
+    return partial(multiple_inputs_optimize_dag, max_total_nargs=max_total_nargs)
 
 
 # utility functions for testing structural equivalence of dags
@@ -198,7 +207,7 @@ def test_fuse_unary_op(spec):
     b = xp.negative(a)
     c = xp.negative(b)
 
-    opt_fn = get_optimize_function(c)
+    opt_fn = fuse_one_level(c)
 
     c.visualize(optimize_function=opt_fn)
 
@@ -238,7 +247,7 @@ def test_fuse_binary_op(spec):
     d = xp.negative(b)
     e = xp.add(c, d)
 
-    opt_fn = get_optimize_function(e)
+    opt_fn = fuse_one_level(e)
 
     e.visualize(optimize_function=opt_fn)
 
@@ -279,7 +288,7 @@ def test_fuse_unary_and_binary_op(spec):
     e = xp.add(b, c)
     f = xp.add(d, e)
 
-    opt_fn = get_optimize_function(f)
+    opt_fn = fuse_one_level(f)
 
     f.visualize(optimize_function=opt_fn)
 
@@ -312,7 +321,7 @@ def test_fuse_mixed_levels(spec):
     d = xp.add(b, c)
     e = xp.add(a, d)
 
-    opt_fn = get_optimize_function(e)
+    opt_fn = fuse_one_level(e)
 
     e.visualize(optimize_function=opt_fn)
 
@@ -344,7 +353,7 @@ def test_fuse_diamond(spec):
     c = xp.positive(a)
     d = xp.add(b, c)
 
-    opt_fn = get_optimize_function(d)
+    opt_fn = fuse_one_level(d)
 
     d.visualize(optimize_function=opt_fn)
 
@@ -377,7 +386,7 @@ def test_fuse_mixed_levels_and_diamond(spec):
     c = xp.positive(b)
     d = xp.add(b, c)
 
-    opt_fn = get_optimize_function(d)
+    opt_fn = fuse_one_level(d)
 
     d.visualize(optimize_function=opt_fn)
 
@@ -408,7 +417,7 @@ def test_fuse_repeated_argument(spec):
     b = xp.negative(a)
     c = xp.add(b, b)
 
-    opt_fn = get_optimize_function(c)
+    opt_fn = fuse_one_level(c)
 
     c.visualize(optimize_function=opt_fn)
 
@@ -439,7 +448,7 @@ def test_fuse_other_dependents(spec):
     d = xp.negative(b)
 
     # only fuse c; leave d unfused
-    opt_fn = get_optimize_function(c)
+    opt_fn = fuse_one_level(c)
 
     # note multi-arg forms of visualize and compute below
     cubed.visualize(c, d, optimize_function=opt_fn)
@@ -458,74 +467,6 @@ def test_fuse_other_dependents(spec):
     c_result, d_result = cubed.compute(c, d, optimize_function=opt_fn)
     assert_array_equal(c_result, np.ones((2, 2)))
     assert_array_equal(d_result, np.ones((2, 2)))
-
-
-# large fan-in
-#
-#  a   b c   d e   f g   h   ->   a   b c   d e   f g   h
-#   \ /   \ /   \ /   \ /          \ /   \ /   \ /   \ /
-#    i     j     k     m            i     j     k     m
-#     \   /       \   /              \     \   /     /
-#       n           o                 \     \ /     /
-#        \         /                   ----- p -----
-#         \       /
-#          \     /
-#             p
-#
-def test_fuse_large_fan_in(spec):
-    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    b = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    c = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    d = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    e = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    f = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    g = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    h = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-
-    i = xp.add(a, b)
-    j = xp.add(c, d)
-    k = xp.add(e, f)
-    m = xp.add(g, h)
-
-    n = xp.add(i, j)
-    o = xp.add(k, m)
-
-    p = xp.add(n, o)
-
-    opt_fn = get_optimize_function(p)
-
-    p.visualize(optimize_function=opt_fn)
-
-    # check structure of optimized dag
-    expected_fused_dag = create_dag()
-    add_placeholder_op(expected_fused_dag, (), (a,))
-    add_placeholder_op(expected_fused_dag, (), (b,))
-    add_placeholder_op(expected_fused_dag, (), (c,))
-    add_placeholder_op(expected_fused_dag, (), (d,))
-    add_placeholder_op(expected_fused_dag, (), (e,))
-    add_placeholder_op(expected_fused_dag, (), (f,))
-    add_placeholder_op(expected_fused_dag, (), (g,))
-    add_placeholder_op(expected_fused_dag, (), (h,))
-    add_placeholder_op(expected_fused_dag, (a, b), (i,))
-    add_placeholder_op(expected_fused_dag, (c, d), (j,))
-    add_placeholder_op(expected_fused_dag, (e, f), (k,))
-    add_placeholder_op(expected_fused_dag, (g, h), (m,))
-    add_placeholder_op(
-        expected_fused_dag,
-        (
-            i,
-            j,
-            k,
-            m,
-        ),
-        (p,),
-    )
-    assert structurally_equivalent(
-        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
-
-    result = p.compute(optimize_function=opt_fn)
-    assert_array_equal(result, 8 * np.ones((2, 2)))
 
 
 # unary large fan-in
@@ -556,7 +497,8 @@ def test_fuse_unary_large_fan_in(spec):
     i = elemwise(stack_add, a, b, c, d, e, f, g, h, dtype=a.dtype)
     j = xp.negative(i)
 
-    opt_fn = get_optimize_function(j)
+    # max_total_nargs is left at its default (4) which does not limit fusion since j is unary
+    opt_fn = fuse_one_level(j)
 
     j.visualize(optimize_function=opt_fn)
 
@@ -590,3 +532,130 @@ def test_fuse_unary_large_fan_in(spec):
 
     result = j.compute(optimize_function=opt_fn)
     assert_array_equal(result, -8 * np.ones((2, 2)))
+
+
+# large fan-in default
+#
+#  a   b c   d e   f g   h   ->   a  b   c  d e  f   g  h
+#   \ /   \ /   \ /   \ /          \  \ /  /   \  \ /  /
+#    i     j     k     m            -- n --     -- o --
+#     \   /       \   /                 \         /
+#       n           o                    \       /
+#        \         /                      -- p --
+#         \       /
+#          \     /
+#             p
+#
+def test_fuse_large_fan_in_default(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    c = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    d = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    e = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    f = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    g = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    h = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+
+    i = xp.add(a, b)
+    j = xp.add(c, d)
+    k = xp.add(e, f)
+    m = xp.add(g, h)
+
+    n = xp.add(i, j)
+    o = xp.add(k, m)
+
+    p = xp.add(n, o)
+
+    # max_total_nargs is left at its default (4) so only one level is fused
+    opt_fn = fuse_multiple_levels()
+
+    p.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (), (b,))
+    add_placeholder_op(expected_fused_dag, (), (c,))
+    add_placeholder_op(expected_fused_dag, (), (d,))
+    add_placeholder_op(expected_fused_dag, (), (e,))
+    add_placeholder_op(expected_fused_dag, (), (f,))
+    add_placeholder_op(expected_fused_dag, (), (g,))
+    add_placeholder_op(expected_fused_dag, (), (h,))
+    add_placeholder_op(expected_fused_dag, (a, b, c, d), (n,))
+    add_placeholder_op(expected_fused_dag, (e, f, g, h), (o,))
+    add_placeholder_op(expected_fused_dag, (n, o), (p,))
+    assert structurally_equivalent(
+        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
+    )
+
+    result = p.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 8 * np.ones((2, 2)))
+
+
+# large fan-in override
+#
+#  a   b c   d e   f g   h   ->   a b c d         e f g h
+#   \ /   \ /   \ /   \ /          \ \ \ \       / / / /
+#    i     j     k     m            \ \ \ \     / / / /
+#     \   /       \   /              \ \ \ \   / / / /
+#       n           o                 \ \ \ \ / / / /
+#        \         /                   ----- p -----
+#         \       /
+#          \     /
+#             p
+#
+def test_fuse_large_fan_in_override(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    c = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    d = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    e = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    f = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    g = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    h = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+
+    i = xp.add(a, b)
+    j = xp.add(c, d)
+    k = xp.add(e, f)
+    m = xp.add(g, h)
+
+    n = xp.add(i, j)
+    o = xp.add(k, m)
+
+    p = xp.add(n, o)
+
+    # max_total_nargs is overriden so multiple levels are fused
+    opt_fn = fuse_multiple_levels(max_total_nargs=8)
+
+    p.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (), (b,))
+    add_placeholder_op(expected_fused_dag, (), (c,))
+    add_placeholder_op(expected_fused_dag, (), (d,))
+    add_placeholder_op(expected_fused_dag, (), (e,))
+    add_placeholder_op(expected_fused_dag, (), (f,))
+    add_placeholder_op(expected_fused_dag, (), (g,))
+    add_placeholder_op(expected_fused_dag, (), (h,))
+    add_placeholder_op(
+        expected_fused_dag,
+        (
+            a,
+            b,
+            c,
+            d,
+            e,
+            f,
+            g,
+            h,
+        ),
+        (p,),
+    )
+    assert structurally_equivalent(
+        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
+    )
+
+    result = p.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 8 * np.ones((2, 2)))
