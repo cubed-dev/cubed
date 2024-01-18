@@ -22,6 +22,7 @@ from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
+from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.utils import chunk_memory, get_item, to_chunksize
 from cubed.vendor.dask.array.core import common_blockdim, normalize_chunks
@@ -279,6 +280,60 @@ def blockwise(
         new_axes=new_axes,
         in_names=in_names,
         out_name=name,
+        extra_func_kwargs=extra_func_kwargs,
+        **kwargs,
+    )
+    plan = Plan._new(
+        name,
+        "blockwise",
+        pipeline.target_array,
+        pipeline,
+        False,
+        *source_arrays,
+    )
+    from cubed.array_api import Array
+
+    return Array(name, pipeline.target_array, spec, plan)
+
+
+def general_blockwise(
+    func,
+    block_function,
+    *arrays,
+    shape,
+    dtype,
+    chunks,
+    target_store=None,
+    extra_func_kwargs=None,
+    **kwargs,
+) -> "Array":
+    assert len(arrays) > 0
+
+    # replace arrays with zarr arrays
+    zargs = [a.zarray_maybe_lazy for a in arrays]
+    in_names = [a.name for a in arrays]
+
+    extra_source_arrays = kwargs.pop("extra_source_arrays", [])
+    source_arrays = list(arrays) + list(extra_source_arrays)
+
+    extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
+
+    name = gensym()
+    spec = check_array_specs(arrays)
+    if target_store is None:
+        target_store = new_temp_path(name=name, spec=spec)
+    pipeline = primitive_general_blockwise(
+        func,
+        block_function,
+        *zargs,
+        allowed_mem=spec.allowed_mem,
+        reserved_mem=spec.reserved_mem,
+        extra_projected_mem=extra_projected_mem,
+        target_store=target_store,
+        shape=shape,
+        dtype=dtype,
+        chunks=chunks,
+        in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         **kwargs,
     )
