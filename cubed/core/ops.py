@@ -296,6 +296,7 @@ def blockwise(
 
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
+    """Apply a function elementwise to array arguments, respecting broadcasting."""
     shapes = [arg.shape for arg in args]
     out_ndim = len(np.broadcast_shapes(*shapes))
     expr_inds = tuple(range(out_ndim))[::-1]
@@ -310,6 +311,7 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
 
 
 def index(x, key):
+    "Subset an array, along one or more axes."
     if not isinstance(key, tuple):
         key = (key,)
 
@@ -586,7 +588,7 @@ def map_direct(
     func, *args: "Array", shape, dtype, chunks, extra_projected_mem, spec=None, **kwargs
 ) -> "Array":
     """
-    Map a function across blocks of a new array, using side-input arrays to read directly from.
+    Apply a function across blocks of a new array, reading directly from side inputs (not necessarily in a blockwise fashion).
 
     Parameters
     ----------
@@ -736,6 +738,7 @@ def reduction(
     keepdims=False,
     extra_func_kwargs=None,
 ) -> "Array":
+    """Apply a function to reduce an array along one or more axes."""
     if combine_func is None:
         combine_func = func
     if axis is None:
@@ -826,6 +829,7 @@ def reduction(
 
 
 def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False):
+    """A reduction that returns the array indexes, not the values."""
     dtype = np.int64  # index data type
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
 
