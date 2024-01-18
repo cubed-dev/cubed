@@ -432,12 +432,6 @@ def fuse_multiple(
     Fuse a blockwise operation and its predecessors into a single operation, avoiding writing to (or reading from) the targets of the predecessor operations.
     """
 
-    assert all(
-        primitive_op.num_tasks == p.num_tasks
-        for p in predecessor_primitive_ops
-        if p is not None
-    )
-
     pipeline = primitive_op.pipeline
     predecessor_pipelines = [
         primitive_op.pipeline if primitive_op is not None else None
