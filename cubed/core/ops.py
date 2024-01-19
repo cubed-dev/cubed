@@ -24,7 +24,7 @@ from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
-from cubed.utils import chunk_memory, get_item, to_chunksize
+from cubed.utils import chunk_memory, get_item, offset_to_block_id, to_chunksize
 from cubed.vendor.dask.array.core import common_blockdim, normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
@@ -535,17 +535,15 @@ def map_blocks(
 
         # Create an array of index offsets with the same chunk structure as the args,
         # which we convert to block ids (chunk coordinates) later.
-        a = args[0]
-        offsets = offsets_virtual_array(a.numblocks, a.spec)
+        arg0 = args[0]
+        numblocks = arg0.numblocks
+        offsets = offsets_virtual_array(numblocks, arg0.spec)
         new_args = args + (offsets,)
-
-        def offset_to_block_id(offset):
-            return np.unravel_index(offset, a.numblocks)
 
         def func_with_block_id(func):
             def wrap(*a, **kw):
                 offset = int(a[-1])  # convert from 0-d array
-                block_id = offset_to_block_id(offset)
+                block_id = offset_to_block_id(offset, numblocks)
                 return func(*a[:-1], block_id=block_id, **kw)
 
             return wrap

@@ -1,12 +1,12 @@
 import random as pyrandom
 
-import numpy as np
 from numpy.random import Generator, Philox
 from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.ops import map_blocks
+from cubed.utils import block_id_to_offset
 from cubed.vendor.dask.array.core import normalize_chunks
 
 
@@ -34,8 +34,3 @@ def _random(x, numblocks=None, root_seed=None, block_id=None):
     out = rg.random(x.shape)
     out = numpy_array_to_backend_array(out)
     return out
-
-
-def block_id_to_offset(block_id, numblocks):
-    arr = np.empty(numblocks, dtype=np.int8)
-    return sum((np.array(block_id) * arr.strides).tolist())

@@ -28,6 +28,16 @@ def chunk_memory(dtype: T_DType, chunksize: T_RegularChunks) -> int:
     return np.dtype(dtype).itemsize * prod(chunksize)
 
 
+def offset_to_block_id(offset: int, numblocks: Tuple[int, ...]) -> Tuple[int, ...]:
+    """Convert an index offset to a block ID (chunk coordinates)."""
+    return tuple(int(i) for i in np.unravel_index(offset, numblocks))
+
+
+def block_id_to_offset(block_id: Tuple[int, ...], numblocks: Tuple[int, ...]) -> int:
+    """Convert a block ID (chunk coordinates) to an index offset."""
+    return int(np.ravel_multi_index(block_id, numblocks))
+
+
 def get_item(chunks: T_RectangularChunks, idx: Tuple[int, ...]) -> Tuple[slice, ...]:
     """Convert a chunk index to a tuple of slices."""
     # could use Dask's cached_cumsum here if it improves performance

@@ -1,15 +1,18 @@
 import inspect
+import itertools
 import platform
 
 import numpy as np
 import pytest
 
 from cubed.utils import (
+    block_id_to_offset,
     chunk_memory,
     extract_stack_summaries,
     join_path,
     map_nested,
     memory_repr,
+    offset_to_block_id,
     peak_measured_mem,
     split_into,
     to_chunksize,
@@ -21,6 +24,19 @@ def test_chunk_memory():
     assert chunk_memory(np.int32, (3,)) == 12
     assert chunk_memory(np.int32, (3, 5)) == 60
     assert chunk_memory(np.int32, (0,)) == 0
+
+
+def test_block_id_to_offset():
+    numblocks = (5, 3)
+    for block_id in itertools.product(*[list(range(n)) for n in numblocks]):
+        offset = block_id_to_offset(block_id, numblocks)
+        assert offset_to_block_id(offset, numblocks) == block_id
+
+    with pytest.raises(ValueError):
+        block_id_to_offset((6, 12), numblocks)
+
+    with pytest.raises(ValueError):
+        offset_to_block_id(100, numblocks)
 
 
 def test_to_chunksize():
