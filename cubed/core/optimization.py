@@ -92,7 +92,7 @@ def predecessor_ops(dag, name):
 
 def is_fusable(node_dict):
     "Return True if a node can be fused."
-    return "primitive_op" in node_dict
+    return "primitive_op" in node_dict and node_dict["primitive_op"].fusable
 
 
 def can_fuse_predecessors(dag, name, *, max_total_nargs=4):
@@ -137,13 +137,13 @@ def fuse_predecessors(dag, name):
 
     primitive_op = nodes[name]["primitive_op"]
 
-    # if a predecessor op has no primitive op then just use None
+    # if a predecessor has no primitive op then just use None
     predecessor_primitive_ops = [
         nodes[pre]["primitive_op"] if is_fusable(nodes[pre]) else None
         for pre in predecessor_ops(dag, name)
     ]
 
-    # if a predecessor op has no func then use 1 for nargs
+    # if a predecessor has no primitive op then use 1 for nargs
     predecessor_funcs_nargs = [
         len(list(predecessors(dag, pre))) if is_fusable(nodes[pre]) else 1
         for pre in predecessor_ops(dag, name)
@@ -167,12 +167,12 @@ def fuse_predecessors(dag, name):
     for input in predecessors(dag, name):
         pre = next(predecessors(dag, input))
         if not is_fusable(fused_nodes[pre]):
-            # if a predecessor is marked as not fusable then don't change the edge
+            # if a predecessor is not fusable then don't change the edge
             continue
         fused_dag.remove_edge(input, name)
     for pre in predecessor_ops(dag, name):
         if not is_fusable(fused_nodes[pre]):
-            # if a predecessor is marked as not fusable then don't change the edge
+            # if a predecessor is not fusable then don't change the edge
             continue
         for input in predecessors(dag, pre):
             fused_dag.add_edge(input, name)

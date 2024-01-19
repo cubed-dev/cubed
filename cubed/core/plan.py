@@ -447,4 +447,5 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
         projected_mem=projected_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
+        fusable=False,
     )

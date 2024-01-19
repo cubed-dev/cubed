@@ -27,6 +27,9 @@ class PrimitiveOperation:
     num_tasks: int
     """The number of tasks needed to run this operation."""
 
+    fusable: bool = True
+    """Whether this operation should be considered for fusion."""
+
     write_chunks: Optional[T_RegularChunks] = None
     """The chunk size used by this operation."""
 
