@@ -217,3 +217,20 @@ def multiple_inputs_optimize_dag(
             never_fuse=never_fuse,
         )
     return dag
+
+
+def fuse_all_optimize_dag(dag):
+    """Force all operations to be fused."""
+    dag = dag.copy()
+    always_fuse = [op for op in dag.nodes() if op.startswith("op-")]
+    return multiple_inputs_optimize_dag(dag, always_fuse=always_fuse)
+
+
+def fuse_only_optimize_dag(dag, *, only_fuse=None):
+    """Force only specified operations to be fused, all others will be left even if they are suitable for fusion."""
+    dag = dag.copy()
+    always_fuse = only_fuse
+    never_fuse = set(op for op in dag.nodes() if op.startswith("op-")) - set(only_fuse)
+    return multiple_inputs_optimize_dag(
+        dag, always_fuse=always_fuse, never_fuse=never_fuse
+    )

@@ -10,6 +10,8 @@ import cubed.array_api as xp
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import elemwise
 from cubed.core.optimization import (
+    fuse_all_optimize_dag,
+    fuse_only_optimize_dag,
     fuse_predecessors,
     gensym,
     multiple_inputs_optimize_dag,
@@ -659,3 +661,41 @@ def test_fuse_large_fan_in_override(spec):
 
     result = p.compute(optimize_function=opt_fn)
     assert_array_equal(result, 8 * np.ones((2, 2)))
+
+    # now force everything to be fused with fuse_all_optimize_dag
+    # note that max_total_nargs is *not* set
+    opt_fn = fuse_all_optimize_dag
+
+    assert structurally_equivalent(
+        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
+    )
+
+    result = p.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 8 * np.ones((2, 2)))
+
+
+def test_fuse_only_optimize_dag(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.negative(a)
+    c = xp.negative(b)
+    d = xp.negative(c)
+
+    # only fuse d (with c)
+    # b should remain un-fused, even though it is fusable
+    op_name = next(d.plan.dag.predecessors(d.name))
+    opt_fn = partial(fuse_only_optimize_dag, only_fuse=[op_name])
+
+    c.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (b,))
+    add_placeholder_op(expected_fused_dag, (b,), (d,))
+    assert structurally_equivalent(
+        d.plan.optimize(optimize_function=opt_fn).dag,
+        expected_fused_dag,
+    )
+
+    result = d.compute(optimize_function=opt_fn)
+    assert_array_equal(result, -np.ones((2, 2)))
