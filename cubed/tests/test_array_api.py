@@ -480,6 +480,19 @@ def test_reshape_chunks(spec, executor):
     )
 
 
+def test_reshape_chunks_with_smaller_end_chunk(spec, executor):
+    a = xp.arange(10, chunks=4, spec=spec)
+    b = reshape_chunks(a, (2, 5), (2, 2))
+
+    assert b.shape == (2, 5)
+    assert b.chunks == ((2,), (2, 2, 1))
+
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.array([[0, 1, 4, 5, 8], [2, 3, 6, 7, 9]]),
+    )
+
+
 def test_squeeze_1d(spec, executor):
     a = xp.asarray([[1, 2, 3]], chunks=(1, 2), spec=spec)
     b = xp.squeeze(a, 0)
