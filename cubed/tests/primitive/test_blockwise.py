@@ -30,7 +30,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
     allowed_mem = 1000
     target_store = tmp_path / "target.zarr"
 
-    pipeline = blockwise(
+    op = blockwise(
         nxp.linalg.outer,
         "ij",
         source1,
@@ -45,12 +45,12 @@ def test_blockwise(tmp_path, executor, reserved_mem):
         chunks=(2, 2),
     )
 
-    assert pipeline.target_array.shape == (3, 3)
-    assert pipeline.target_array.dtype == int
-    assert pipeline.target_array.chunks == (2, 2)
+    assert op.target_array.shape == (3, 3)
+    assert op.target_array.dtype == int
+    assert op.target_array.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert pipeline.projected_mem == (
+    assert op.projected_mem == (
         reserved_mem  # projected includes reserved
         + (itemsize * 2)  # source1 compressed chunk
         + (itemsize * 2)  # source1 uncompressed chunk
@@ -60,11 +60,11 @@ def test_blockwise(tmp_path, executor, reserved_mem):
         + (itemsize * 2 * 2)  # output uncompressed chunk
     )
 
-    assert pipeline.num_tasks == 4
+    assert op.num_tasks == 4
 
-    pipeline.target_array.create()  # create lazy zarr array
+    op.target_array.create()  # create lazy zarr array
 
-    execute_pipeline(pipeline, executor=executor)
+    execute_pipeline(op.pipeline, executor=executor)
 
     res = zarr.open_array(target_store)
     assert_array_equal(res[:], np.outer([0, 1, 2], [10, 50, 100]))
@@ -103,7 +103,7 @@ def test_blockwise_with_args(tmp_path, executor):
     allowed_mem = 1000
     target_store = tmp_path / "target.zarr"
 
-    pipeline = _permute_dims(
+    op = _permute_dims(
         source,
         axes=(1, 0),
         allowed_mem=allowed_mem,
@@ -111,23 +111,23 @@ def test_blockwise_with_args(tmp_path, executor):
         target_store=target_store,
     )
 
-    assert pipeline.target_array.shape == (3, 3)
-    assert pipeline.target_array.dtype == int
-    assert pipeline.target_array.chunks == (2, 2)
+    assert op.target_array.shape == (3, 3)
+    assert op.target_array.dtype == int
+    assert op.target_array.chunks == (2, 2)
 
     itemsize = np.dtype(int).itemsize
-    assert pipeline.projected_mem == (
+    assert op.projected_mem == (
         (itemsize * 2 * 2)  # source compressed chunk
         + (itemsize * 2 * 2)  # source uncompressed chunk
         + (itemsize * 2 * 2)  # output compressed chunk
         + (itemsize * 2 * 2)  # output uncompressed chunk
     )
 
-    assert pipeline.num_tasks == 4
+    assert op.num_tasks == 4
 
-    pipeline.target_array.create()  # create lazy zarr array
+    op.target_array.create()  # create lazy zarr array
 
-    execute_pipeline(pipeline, executor=executor)
+    execute_pipeline(op.pipeline, executor=executor)
 
     res = zarr.open_array(target_store)
     assert_array_equal(
@@ -197,7 +197,7 @@ def test_general_blockwise(tmp_path, executor):
             ],
         )
 
-    pipeline = general_blockwise(
+    op = general_blockwise(
         merge_chunks,
         block_function,
         source,
@@ -210,15 +210,15 @@ def test_general_blockwise(tmp_path, executor):
         in_names=[in_name],
     )
 
-    assert pipeline.target_array.shape == (20,)
-    assert pipeline.target_array.dtype == int
-    assert pipeline.target_array.chunks == (6,)
+    assert op.target_array.shape == (20,)
+    assert op.target_array.dtype == int
+    assert op.target_array.chunks == (6,)
 
-    assert pipeline.num_tasks == 4
+    assert op.num_tasks == 4
 
-    pipeline.target_array.create()  # create lazy zarr array
+    op.target_array.create()  # create lazy zarr array
 
-    execute_pipeline(pipeline, executor=executor)
+    execute_pipeline(op.pipeline, executor=executor)
 
     res = zarr.open_array(target_store)
     assert_array_equal(res[:], np.arange(20))

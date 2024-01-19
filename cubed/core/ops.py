@@ -266,7 +266,7 @@ def blockwise(
     spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
-    pipeline = primitive_blockwise(
+    op = primitive_blockwise(
         func,
         out_ind,
         *zargs,
@@ -286,14 +286,14 @@ def blockwise(
     plan = Plan._new(
         name,
         "blockwise",
-        pipeline.target_array,
-        pipeline,
+        op.target_array,
+        op,
         False,
         *source_arrays,
     )
     from cubed.array_api import Array
 
-    return Array(name, pipeline.target_array, spec, plan)
+    return Array(name, op.target_array, spec, plan)
 
 
 def general_blockwise(
@@ -322,7 +322,7 @@ def general_blockwise(
     spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
-    pipeline = primitive_general_blockwise(
+    op = primitive_general_blockwise(
         func,
         block_function,
         *zargs,
@@ -340,14 +340,14 @@ def general_blockwise(
     plan = Plan._new(
         name,
         "blockwise",
-        pipeline.target_array,
-        pipeline,
+        op.target_array,
+        op,
         False,
         *source_arrays,
     )
     from cubed.array_api import Array
 
-    return Array(name, pipeline.target_array, spec, plan)
+    return Array(name, op.target_array, spec, plan)
 
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
@@ -706,7 +706,7 @@ def rechunk(x, chunks, target_store=None):
         target_store = new_temp_path(name=name, spec=spec)
     name_int = f"{name}-int"
     temp_store = new_temp_path(name=name_int, spec=spec)
-    pipelines = primitive_rechunk(
+    ops = primitive_rechunk(
         x.zarray_maybe_lazy,
         target_chunks=target_chunks,
         allowed_mem=spec.allowed_mem,
@@ -717,40 +717,40 @@ def rechunk(x, chunks, target_store=None):
 
     from cubed.array_api import Array
 
-    if len(pipelines) == 1:
-        pipeline = pipelines[0]
+    if len(ops) == 1:
+        op = ops[0]
         plan = Plan._new(
             name,
             "rechunk",
-            pipeline.target_array,
-            pipeline,
+            op.target_array,
+            op,
             False,
             x,
         )
-        return Array(name, pipeline.target_array, spec, plan)
+        return Array(name, op.target_array, spec, plan)
 
     else:
-        pipeline1 = pipelines[0]
+        op1 = ops[0]
         plan1 = Plan._new(
             name_int,
             "rechunk",
-            pipeline1.target_array,
-            pipeline1,
+            op1.target_array,
+            op1,
             False,
             x,
         )
-        x_int = Array(name_int, pipeline1.target_array, spec, plan1)
+        x_int = Array(name_int, op1.target_array, spec, plan1)
 
-        pipeline2 = pipelines[1]
+        op2 = ops[1]
         plan2 = Plan._new(
             name,
             "rechunk",
-            pipeline2.target_array,
-            pipeline2,
+            op2.target_array,
+            op2,
             False,
             x_int,
         )
-        return Array(name, pipeline2.target_array, spec, plan2)
+        return Array(name, op2.target_array, spec, plan2)
 
 
 def merge_chunks(x, chunks):

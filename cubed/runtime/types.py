@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional
+from typing import Iterable, Optional
 
 from networkx import MultiDiGraph
 
-from cubed.types import T_RegularChunks
 from cubed.vendor.rechunker.types import Config, StageFunction
 
 
@@ -23,11 +22,6 @@ class CubedPipeline:
     name: str
     mappable: Iterable
     config: Config
-    target_array: Any
-    projected_mem: int
-    reserved_mem: int
-    num_tasks: int
-    write_chunks: Optional[T_RegularChunks]
 
 
 class Callback:

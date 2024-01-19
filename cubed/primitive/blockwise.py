@@ -20,7 +20,7 @@ from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
 
-from .types import CubedArrayProxy
+from .types import CubedArrayProxy, PrimitiveOperation
 
 sym_counter = 0
 
@@ -249,7 +249,7 @@ def general_blockwise(
 
     Returns
     -------
-    CubedPipeline to run the operation
+    PrimitiveOperation to run the operation
     """
     array_names = in_names or [f"in_{i}" for i in range(len(arrays))]
     array_map = {name: array for name, array in zip(array_names, arrays)}
@@ -295,51 +295,62 @@ def general_blockwise(
     output_blocks = map(list, itertools.product(*[range(len(c)) for c in chunks]))
     num_tasks = math.prod(len(c) for c in chunks)
 
-    return CubedPipeline(
+    pipeline = CubedPipeline(
         apply_blockwise,
         gensym("apply_blockwise"),
         output_blocks,
         spec,
-        target_array,
-        projected_mem,
-        reserved_mem,
-        num_tasks,
-        None,
+    )
+    return PrimitiveOperation(
+        pipeline=pipeline,
+        target_array=target_array,
+        projected_mem=projected_mem,
+        reserved_mem=reserved_mem,
+        num_tasks=num_tasks,
     )
 
 
-# Code for fusing pipelines
+# Code for fusing blockwise operations
 
 
-def is_fuse_candidate(pipeline: CubedPipeline) -> bool:
+def is_fuse_candidate(primitive_op: PrimitiveOperation) -> bool:
     """
-    Return True if a pipeline is a candidate for blockwise fusion.
+    Return True if a primitive operation is a candidate for blockwise fusion.
     """
-    return pipeline.function == apply_blockwise
+    return primitive_op.pipeline.function == apply_blockwise
 
 
-def can_fuse_pipelines(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> bool:
-    if is_fuse_candidate(pipeline1) and is_fuse_candidate(pipeline2):
-        return pipeline1.num_tasks == pipeline2.num_tasks
-    return False
-
-
-def can_fuse_multiple_pipelines(
-    pipeline: CubedPipeline, *predecessor_pipelines: CubedPipeline
+def can_fuse_primitive_ops(
+    primitive_op1: PrimitiveOperation, primitive_op2: PrimitiveOperation
 ) -> bool:
-    if is_fuse_candidate(pipeline) and all(
-        is_fuse_candidate(p) for p in predecessor_pipelines
-    ):
-        return all(pipeline.num_tasks == p.num_tasks for p in predecessor_pipelines)
+    if is_fuse_candidate(primitive_op1) and is_fuse_candidate(primitive_op2):
+        return primitive_op1.num_tasks == primitive_op2.num_tasks
     return False
 
 
-def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
+def can_fuse_multiple_primitive_ops(
+    primitive_op: PrimitiveOperation, *predecessor_primitive_ops: PrimitiveOperation
+) -> bool:
+    if is_fuse_candidate(primitive_op) and all(
+        is_fuse_candidate(p) for p in predecessor_primitive_ops
+    ):
+        return all(
+            primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
+        )
+    return False
+
+
+def fuse(
+    primitive_op1: PrimitiveOperation, primitive_op2: PrimitiveOperation
+) -> PrimitiveOperation:
     """
-    Fuse two blockwise pipelines into a single pipeline, avoiding writing to (or reading from) the target of the first pipeline.
+    Fuse two blockwise operations into a single operation, avoiding writing to (or reading from) the target of the first operation.
     """
 
-    assert pipeline1.num_tasks == pipeline2.num_tasks
+    assert primitive_op1.num_tasks == primitive_op2.num_tasks
+
+    pipeline1 = primitive_op1.pipeline
+    pipeline2 = primitive_op2.pipeline
 
     mappable = pipeline2.mappable
 
@@ -355,38 +366,46 @@ def fuse(pipeline1: CubedPipeline, pipeline2: CubedPipeline) -> CubedPipeline:
     write_proxy = pipeline2.config.write
     spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
 
-    target_array = pipeline2.target_array
-    projected_mem = max(pipeline1.projected_mem, pipeline2.projected_mem)
-    reserved_mem = max(pipeline1.reserved_mem, pipeline2.reserved_mem)
-    num_tasks = pipeline2.num_tasks
+    target_array = primitive_op2.target_array
+    projected_mem = max(primitive_op1.projected_mem, primitive_op2.projected_mem)
+    reserved_mem = max(primitive_op1.reserved_mem, primitive_op2.reserved_mem)
+    num_tasks = primitive_op2.num_tasks
 
-    return CubedPipeline(
+    pipeline = CubedPipeline(
         apply_blockwise,
         gensym("fused_apply_blockwise"),
         mappable,
         spec,
-        target_array,
-        projected_mem,
-        reserved_mem,
-        num_tasks,
-        None,
+    )
+    return PrimitiveOperation(
+        pipeline=pipeline,
+        target_array=target_array,
+        projected_mem=projected_mem,
+        reserved_mem=reserved_mem,
+        num_tasks=num_tasks,
     )
 
 
 def fuse_multiple(
-    pipeline: CubedPipeline,
-    *predecessor_pipelines: CubedPipeline,
+    primitive_op: PrimitiveOperation,
+    *predecessor_primitive_ops: PrimitiveOperation,
     predecessor_funcs_nargs=None,
-) -> CubedPipeline:
+) -> PrimitiveOperation:
     """
-    Fuse a blockwise pipeline and its predecessors into a single pipeline, avoiding writing to (or reading from) the targets of the predecessor pipelines.
+    Fuse a blockwise operation and its predecessors into a single operation, avoiding writing to (or reading from) the targets of the predecessor operations.
     """
 
     assert all(
-        pipeline.num_tasks == p.num_tasks
-        for p in predecessor_pipelines
+        primitive_op.num_tasks == p.num_tasks
+        for p in predecessor_primitive_ops
         if p is not None
     )
+
+    pipeline = primitive_op.pipeline
+    predecessor_pipelines = [
+        primitive_op.pipeline if primitive_op is not None else None
+        for primitive_op in predecessor_primitive_ops
+    ]
 
     mappable = pipeline.mappable
 
@@ -427,27 +446,29 @@ def fuse_multiple(
     write_proxy = pipeline.config.write
     spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
 
-    target_array = pipeline.target_array
+    target_array = primitive_op.target_array
     projected_mem = max(
-        pipeline.projected_mem,
-        *(p.projected_mem for p in predecessor_pipelines if p is not None),
+        primitive_op.projected_mem,
+        *(p.projected_mem for p in predecessor_primitive_ops if p is not None),
     )
     reserved_mem = max(
-        pipeline.reserved_mem,
-        *(p.reserved_mem for p in predecessor_pipelines if p is not None),
+        primitive_op.reserved_mem,
+        *(p.reserved_mem for p in predecessor_primitive_ops if p is not None),
     )
-    num_tasks = pipeline.num_tasks
+    num_tasks = primitive_op.num_tasks
 
-    return CubedPipeline(
+    fused_pipeline = CubedPipeline(
         apply_blockwise,
         gensym("fused_apply_blockwise"),
         mappable,
         spec,
-        target_array,
-        projected_mem,
-        reserved_mem,
-        num_tasks,
-        None,
+    )
+    return PrimitiveOperation(
+        pipeline=fused_pipeline,
+        target_array=target_array,
+        projected_mem=projected_mem,
+        reserved_mem=reserved_mem,
+        num_tasks=num_tasks,
     )
 
 

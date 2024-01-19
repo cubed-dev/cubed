@@ -63,7 +63,7 @@ def test_rechunk(
     target_store = tmp_path / "target.zarr"
     temp_store = tmp_path / "temp.zarr"
 
-    pipelines = rechunk(
+    ops = rechunk(
         source,
         target_chunks=target_chunks,
         allowed_mem=allowed_mem,
@@ -72,25 +72,25 @@ def test_rechunk(
         temp_store=temp_store,
     )
 
-    assert len(pipelines) == len(expected_num_tasks)
+    assert len(ops) == len(expected_num_tasks)
 
-    for i, pipeline in enumerate(pipelines):
-        assert pipeline.target_array.shape == shape
-        assert pipeline.target_array.dtype == source.dtype
+    for i, op in enumerate(ops):
+        assert op.target_array.shape == shape
+        assert op.target_array.dtype == source.dtype
 
-        assert pipeline.projected_mem == expected_projected_mem
+        assert op.projected_mem == expected_projected_mem
 
-        assert pipeline.num_tasks == expected_num_tasks[i]
+        assert op.num_tasks == expected_num_tasks[i]
 
-    last_pipeline = pipelines[-1]
-    assert last_pipeline.target_array.chunks == target_chunks
+    last_op = ops[-1]
+    assert last_op.target_array.chunks == target_chunks
 
     # create lazy zarr arrays
-    for pipeline in pipelines:
-        pipeline.target_array.create()
+    for op in ops:
+        op.target_array.create()
 
-    for pipeline in pipelines:
-        execute_pipeline(pipeline, executor=executor)
+    for op in ops:
+        execute_pipeline(op.pipeline, executor=executor)
 
     res = zarr.open_array(target_store)
     assert_array_equal(res[:], np.ones(shape))

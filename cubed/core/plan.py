@@ -9,6 +9,7 @@ import networkx as nx
 import zarr
 
 from cubed.core.optimization import simple_optimize_dag
+from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
@@ -57,7 +58,7 @@ class Plan:
         name,
         op_name,
         target,
-        pipeline=None,
+        primitive_op=None,
         hidden=False,
         *source_arrays,
     ):
@@ -73,7 +74,7 @@ class Plan:
 
         op_name_unique = gensym()
 
-        if pipeline is None:
+        if primitive_op is None:
             # op
             dag.add_node(
                 op_name_unique,
@@ -101,7 +102,8 @@ class Plan:
                 type="op",
                 stack_summaries=stack_summaries,
                 hidden=hidden,
-                pipeline=pipeline,
+                primitive_op=primitive_op,
+                pipeline=primitive_op.pipeline,
             )
             # array (when multiple outputs are supported there could be more than one)
             dag.add_node(
@@ -137,8 +139,8 @@ class Plan:
         lazy_zarr_arrays = []
         reserved_mem_values = []
         for n, d in dag.nodes(data=True):
-            if "pipeline" in d and d["pipeline"].reserved_mem is not None:
-                reserved_mem_values.append(d["pipeline"].reserved_mem)
+            if "primitive_op" in d and d["primitive_op"].reserved_mem is not None:
+                reserved_mem_values.append(d["primitive_op"].reserved_mem)
                 all_pipeline_nodes.append(n)
             if "target" in d and isinstance(d["target"], LazyZarrArray):
                 lazy_zarr_arrays.append(d["target"])
@@ -149,15 +151,14 @@ class Plan:
             # add new node and edges
             name = "create-arrays"
             op_name = name
-            pipeline = create_zarr_arrays(lazy_zarr_arrays, reserved_mem)
+            primitive_op = create_zarr_arrays(lazy_zarr_arrays, reserved_mem)
             dag.add_node(
                 name,
                 name=name,
                 op_name=op_name,
                 type="op",
-                pipeline=pipeline,
-                projected_mem=pipeline.projected_mem,
-                num_tasks=pipeline.num_tasks,
+                primitive_op=primitive_op,
+                pipeline=primitive_op.pipeline,
             )
             dag.add_node(
                 "arrays",
@@ -212,8 +213,7 @@ class Plan:
         dag = self._finalize_dag(optimize_graph, optimize_function)
         tasks = 0
         for _, node in visit_nodes(dag, resume=resume):
-            pipeline = node["pipeline"]
-            tasks += pipeline.num_tasks
+            tasks += node["primitive_op"].num_tasks
         return tasks
 
     def num_arrays(self, optimize_graph: bool = True, optimize_function=None) -> int:
@@ -227,7 +227,7 @@ class Plan:
         """Return the maximum projected memory across all tasks to execute this plan."""
         dag = self._finalize_dag(optimize_graph, optimize_function)
         projected_mem_values = [
-            node["pipeline"].projected_mem
+            node["primitive_op"].projected_mem
             for _, node in visit_nodes(dag, resume=resume)
         ]
         return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
@@ -314,16 +314,18 @@ class Plan:
                     op_name_summary = ""
                 tooltip += f"op: {op_name}"
 
-                if "pipeline" in d:
-                    pipeline = d["pipeline"]
+                if "primitive_op" in d:
+                    primitive_op = d["primitive_op"]
                     tooltip += (
-                        f"\nprojected memory: {memory_repr(pipeline.projected_mem)}"
+                        f"\nprojected memory: {memory_repr(primitive_op.projected_mem)}"
                     )
-                    tooltip += f"\ntasks: {pipeline.num_tasks}"
-                    if pipeline.write_chunks is not None:
-                        tooltip += f"\nwrite chunks: {pipeline.write_chunks}"
+                    tooltip += f"\ntasks: {primitive_op.num_tasks}"
+                    if primitive_op.write_chunks is not None:
+                        tooltip += f"\nwrite chunks: {primitive_op.write_chunks}"
+                    del d["primitive_op"]
 
-                    # remove pipeline attribute since it is a long string that causes graphviz to fail
+                # remove pipeline attribute since it is a long string that causes graphviz to fail
+                if "pipeline" in d:
                     del d["pipeline"]
 
                 if "stack_summaries" in d and d["stack_summaries"] is not None:
@@ -433,14 +435,16 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
     )
     num_tasks = len(lazy_zarr_arrays)
 
-    return CubedPipeline(
+    pipeline = CubedPipeline(
         create_zarr_array,
         "create_zarr_array",
         lazy_zarr_arrays,
         None,
-        None,
-        projected_mem,
-        reserved_mem,
-        num_tasks,
-        None,
+    )
+    return PrimitiveOperation(
+        pipeline=pipeline,
+        target_array=None,
+        projected_mem=projected_mem,
+        reserved_mem=reserved_mem,
+        num_tasks=num_tasks,
     )
