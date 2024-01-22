@@ -13,11 +13,22 @@ class PrimitiveOperation:
     """Encapsulates metadata about a ``blockwise`` or ``rechunk`` primitive operation."""
 
     pipeline: CubedPipeline
+    """The pipeline that runs this operation."""
+
     target_array: Any
+    """The array being computed by this operation."""
+
     projected_mem: int
+    """An upper bound of the memory needed to run a task, in bytes."""
+
     reserved_mem: int
+    """The memory reserved on a worker for non-data use when running a task, in bytes."""
+
     num_tasks: int
+    """The number of tasks needed to run this operation."""
+
     write_chunks: Optional[T_RegularChunks] = None
+    """The chunk size used by this operation."""
 
 
 class CubedArrayProxy:
