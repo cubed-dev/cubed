@@ -15,6 +15,7 @@ from cubed.core.optimization import (
     fuse_predecessors,
     gensym,
     multiple_inputs_optimize_dag,
+    simple_optimize_dag,
 )
 from cubed.core.plan import arrays_to_plan
 from cubed.tests.utils import TaskCounter
@@ -80,12 +81,14 @@ def test_no_fusion(spec):
     c = xp.positive(b)
     d = xp.equal(b, c)
 
+    opt_fn = simple_optimize_dag
+
     num_created_arrays = 3  # b, c, d
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 3
-    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 3
+    assert d.plan.num_tasks(optimize_function=opt_fn) == num_created_arrays + 3
 
     task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
+    result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
     assert task_counter.value == num_created_arrays + 3
 
     assert_array_equal(result, np.ones((2, 2)))
@@ -100,12 +103,14 @@ def test_no_fusion_multiple_edges(spec):
     # this should not be fused under the current logic
     d = xp.equal(b, c)
 
+    opt_fn = simple_optimize_dag
+
     num_created_arrays = 2  # c, d
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 2
-    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 2
+    assert d.plan.num_tasks(optimize_function=opt_fn) == num_created_arrays + 2
 
     task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
+    result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
     assert task_counter.value == num_created_arrays + 2
 
     assert_array_equal(result, np.full((2, 2), True))
