@@ -92,10 +92,12 @@ def predecessor_ops(dag, name):
 
 def is_fusable(node_dict):
     "Return True if a node can be fused."
-    return "primitive_op" in node_dict
+    return "primitive_op" in node_dict and node_dict["primitive_op"].fusable
 
 
-def can_fuse_predecessors(dag, name, *, max_total_nargs=4):
+def can_fuse_predecessors(
+    dag, name, *, max_total_nargs=4, always_fuse=None, never_fuse=None
+):
     nodes = dict(dag.nodes(data=True))
 
     # if node itself can't be fused then there is nothing to fuse
@@ -105,6 +107,12 @@ def can_fuse_predecessors(dag, name, *, max_total_nargs=4):
     # if no predecessor ops can be fused then there is nothing to fuse
     if all(not is_fusable(nodes[pre]) for pre in predecessor_ops(dag, name)):
         return False
+
+    # if node is in never_fuse or always_fuse list then it overrides logic below
+    if never_fuse is not None and name in never_fuse:
+        return False
+    if always_fuse is not None and name in always_fuse:
+        return True
 
     # if there is more than a single predecessor op, and the total number of args to
     # the fused function would be more than an allowed maximum, then don't fuse
@@ -126,24 +134,32 @@ def can_fuse_predecessors(dag, name, *, max_total_nargs=4):
     )
 
 
-def fuse_predecessors(dag, name):
+def fuse_predecessors(
+    dag, name, *, max_total_nargs=4, always_fuse=None, never_fuse=None
+):
     """Fuse a node with its immediate predecessors."""
 
     # if can't fuse then return dag unchanged
-    if not can_fuse_predecessors(dag, name):
+    if not can_fuse_predecessors(
+        dag,
+        name,
+        max_total_nargs=max_total_nargs,
+        always_fuse=always_fuse,
+        never_fuse=never_fuse,
+    ):
         return dag
 
     nodes = dict(dag.nodes(data=True))
 
     primitive_op = nodes[name]["primitive_op"]
 
-    # if a predecessor op has no primitive op then just use None
+    # if a predecessor has no primitive op then just use None
     predecessor_primitive_ops = [
         nodes[pre]["primitive_op"] if is_fusable(nodes[pre]) else None
         for pre in predecessor_ops(dag, name)
     ]
 
-    # if a predecessor op has no func then use 1 for nargs
+    # if a predecessor has no primitive op then use 1 for nargs
     predecessor_funcs_nargs = [
         len(list(predecessors(dag, pre))) if is_fusable(nodes[pre]) else 1
         for pre in predecessor_ops(dag, name)
@@ -167,12 +183,12 @@ def fuse_predecessors(dag, name):
     for input in predecessors(dag, name):
         pre = next(predecessors(dag, input))
         if not is_fusable(fused_nodes[pre]):
-            # if a predecessor is marked as not fusable then don't change the edge
+            # if a predecessor is not fusable then don't change the edge
             continue
         fused_dag.remove_edge(input, name)
     for pre in predecessor_ops(dag, name):
         if not is_fusable(fused_nodes[pre]):
-            # if a predecessor is marked as not fusable then don't change the edge
+            # if a predecessor is not fusable then don't change the edge
             continue
         for input in predecessors(dag, pre):
             fused_dag.add_edge(input, name)
@@ -188,8 +204,33 @@ def fuse_predecessors(dag, name):
     return fused_dag
 
 
-def multiple_inputs_optimize_dag(dag):
+def multiple_inputs_optimize_dag(
+    dag, *, max_total_nargs=4, always_fuse=None, never_fuse=None
+):
     """Fuse multiple inputs."""
     for name in list(nx.topological_sort(dag)):
-        dag = fuse_predecessors(dag, name)
+        dag = fuse_predecessors(
+            dag,
+            name,
+            max_total_nargs=max_total_nargs,
+            always_fuse=always_fuse,
+            never_fuse=never_fuse,
+        )
     return dag
+
+
+def fuse_all_optimize_dag(dag):
+    """Force all operations to be fused."""
+    dag = dag.copy()
+    always_fuse = [op for op in dag.nodes() if op.startswith("op-")]
+    return multiple_inputs_optimize_dag(dag, always_fuse=always_fuse)
+
+
+def fuse_only_optimize_dag(dag, *, only_fuse=None):
+    """Force only specified operations to be fused, all others will be left even if they are suitable for fusion."""
+    dag = dag.copy()
+    always_fuse = only_fuse
+    never_fuse = set(op for op in dag.nodes() if op.startswith("op-")) - set(only_fuse)
+    return multiple_inputs_optimize_dag(
+        dag, always_fuse=always_fuse, never_fuse=never_fuse
+    )

@@ -262,6 +262,8 @@ def blockwise(
 
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
+    fusable = kwargs.pop("fusable", True)
+
     name = gensym()
     spec = check_array_specs(arrays)
     if target_store is None:
@@ -281,6 +283,7 @@ def blockwise(
         in_names=in_names,
         out_name=name,
         extra_func_kwargs=extra_func_kwargs,
+        fusable=fusable,
         **kwargs,
     )
     plan = Plan._new(
@@ -688,6 +691,7 @@ def map_direct(
         chunks=chunks,
         extra_source_arrays=args,
         extra_projected_mem=extra_projected_mem,
+        fusable=False,  # don't allow fusion since side inputs are not accounted for
         **kwargs,
     )
 

@@ -115,6 +115,7 @@ def blockwise(
     out_name: Optional[str] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
+    fusable: bool = True,
     **kwargs,
 ):
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -196,6 +197,7 @@ def blockwise(
         in_names=in_names,
         extra_projected_mem=extra_projected_mem,
         extra_func_kwargs=extra_func_kwargs,
+        fusable=fusable,
         **kwargs,
     )
 
@@ -213,6 +215,7 @@ def general_blockwise(
     in_names: Optional[List[str]] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
+    fusable: bool = True,
     **kwargs,
 ):
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -307,6 +310,7 @@ def general_blockwise(
         projected_mem=projected_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
+        fusable=fusable,
     )
 
 
@@ -383,6 +387,7 @@ def fuse(
         projected_mem=projected_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
+        fusable=True,
     )
 
 
@@ -469,6 +474,7 @@ def fuse_multiple(
         projected_mem=projected_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
+        fusable=True,
     )
 
 
