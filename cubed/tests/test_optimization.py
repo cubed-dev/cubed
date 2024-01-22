@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import elemwise
+from cubed.core.ops import elemwise, merge_chunks_new
 from cubed.core.optimization import (
     fuse_all_optimize_dag,
     fuse_only_optimize_dag,
@@ -138,9 +138,13 @@ def test_custom_optimize_function(spec):
     )
 
 
-def fuse_one_level(arr):
+def fuse_one_level(arr, *, always_fuse=None):
     # use fuse_predecessors to test one level of fusion
-    return partial(fuse_predecessors, name=next(arr.plan.dag.predecessors(arr.name)))
+    return partial(
+        fuse_predecessors,
+        name=next(arr.plan.dag.predecessors(arr.name)),
+        always_fuse=always_fuse,
+    )
 
 
 def fuse_multiple_levels(*, max_total_source_arrays=4):
@@ -679,6 +683,101 @@ def test_fuse_large_fan_in_override(spec):
 
     result = p.compute(optimize_function=opt_fn)
     assert_array_equal(result, 8 * np.ones((2, 2)))
+
+
+# merge chunks with same number of tasks
+#
+#  a        ->       a
+#  |                 |
+#  b                 c
+#  |
+#  c
+#
+def test_fuse_with_merge_chunks_unary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = merge_chunks_new(a, chunks=(3, 2))
+    c = xp.negative(b)
+
+    opt_fn = fuse_one_level(c)
+
+    c.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (c,))
+    assert structurally_equivalent(
+        c.plan.optimize(optimize_function=opt_fn).dag,
+        expected_fused_dag,
+    )
+
+    result = c.compute(optimize_function=opt_fn)
+    assert_array_equal(result, -np.ones((3, 2)))
+
+
+# merge chunks with different number of tasks (b has more tasks than c)
+#
+#  a        ->       a
+#  |                 |
+#  b                 c
+#  |
+#  c
+#
+def test_fuse_merge_chunks_unary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.negative(a)
+    c = merge_chunks_new(b, chunks=(3, 2))
+
+    # force c to fuse
+    last_op = sorted(c.plan.dag.nodes())[-1]
+    opt_fn = fuse_one_level(c, always_fuse=[last_op])
+
+    c.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (c,))
+    assert structurally_equivalent(
+        c.plan.optimize(optimize_function=opt_fn).dag,
+        expected_fused_dag,
+    )
+
+    result = c.compute(optimize_function=opt_fn)
+    assert_array_equal(result, -np.ones((3, 2)))
+
+
+# merge chunks with different number of tasks (c has more tasks than d)
+#
+#  a   b    ->   a   b
+#   \ /           \ /
+#    c             d
+#    |
+#    d
+#
+def test_fuse_merge_chunks_binary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    c = xp.add(a, b)
+    d = merge_chunks_new(c, chunks=(3, 2))
+
+    # force d to fuse
+    last_op = sorted(d.plan.dag.nodes())[-1]
+    opt_fn = fuse_one_level(d, always_fuse=[last_op])
+
+    d.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (), (b,))
+    add_placeholder_op(expected_fused_dag, (a, b), (d,))
+    assert structurally_equivalent(
+        d.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
+    )
+
+    result = d.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 2 * np.ones((3, 2)))
 
 
 def test_fuse_only_optimize_dag(spec):
