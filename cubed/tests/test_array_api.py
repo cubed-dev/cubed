@@ -551,11 +551,12 @@ def test_argmin_axis_0(spec):
 # Statistical functions
 
 
-def test_mean_axis_0(spec, executor):
+@pytest.mark.parametrize("use_new_impl", [False, True])
+def test_mean_axis_0(spec, executor, use_new_impl):
     a = xp.asarray(
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
     )
-    b = xp.mean(a, axis=0)
+    b = xp.mean(a, axis=0, use_new_impl=use_new_impl)
     assert_array_equal(
         b.compute(executor=executor),
         np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).mean(axis=0),

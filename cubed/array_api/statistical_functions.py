@@ -25,7 +25,7 @@ def max(x, /, *, axis=None, keepdims=False):
     return reduction(x, nxp.max, axis=axis, dtype=x.dtype, keepdims=keepdims)
 
 
-def mean(x, /, *, axis=None, keepdims=False):
+def mean(x, /, *, axis=None, keepdims=False, use_new_impl=False):
     if x.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in mean")
     # This implementation uses NumPy and Zarr's structured arrays to store a
@@ -46,6 +46,7 @@ def mean(x, /, *, axis=None, keepdims=False):
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
         keepdims=keepdims,
+        use_new_impl=use_new_impl,
         extra_func_kwargs=extra_func_kwargs,
     )
 
@@ -64,7 +65,7 @@ def _mean_combine(a, **kwargs):
     return {"n": n, "total": total}
 
 
-def _mean_aggregate(a):
+def _mean_aggregate(a, **kwargs):
     return nxp.divide(a["total"], a["n"])
 
 

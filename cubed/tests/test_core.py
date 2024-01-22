@@ -10,7 +10,7 @@ import cubed
 import cubed.array_api as xp
 import cubed.random
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import merge_chunks
+from cubed.core.ops import merge_chunks, partial_reduce, tree_reduce
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -350,6 +350,23 @@ def test_reduction_not_enough_memory(tmp_path):
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     with pytest.raises(ValueError, match=r"Not enough memory for reduction"):
         xp.sum(a, axis=0, dtype=np.uint8)
+
+
+def test_partial_reduce(spec):
+    a = xp.asarray(np.arange(242).reshape((11, 22)), chunks=(3, 4), spec=spec)
+    b = partial_reduce(a, np.sum, split_every={0: 2})
+    c = partial_reduce(b, np.sum, split_every={0: 2})
+    assert_array_equal(
+        c.compute(), np.arange(242).reshape((11, 22)).sum(axis=0, keepdims=True)
+    )
+
+
+def test_tree_reduce(spec):
+    a = xp.asarray(np.arange(242).reshape((11, 22)), chunks=(3, 4), spec=spec)
+    b = tree_reduce(a, np.sum, axis=0, dtype=np.int64, split_every={0: 2})
+    assert_array_equal(
+        b.compute(), np.arange(242).reshape((11, 22)).sum(axis=0, keepdims=True)
+    )
 
 
 @pytest.mark.parametrize(
