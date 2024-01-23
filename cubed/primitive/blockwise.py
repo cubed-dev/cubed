@@ -1,3 +1,4 @@
+import inspect
 import itertools
 import logging
 import math
@@ -61,8 +62,8 @@ class BlockwiseSpec:
         The number of input blocks read from each input array.
     reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
-    write : CubedArrayProxy
-        Write proxy with an ``array`` attribute that supports ``__setitem__``.
+    writes_list : List[CubedArrayProxy]
+        Write proxy list where entries have an ``array`` attribute that supports ``__setitem__``.
     """
 
     key_function: Callable[..., Any]
@@ -70,16 +71,13 @@ class BlockwiseSpec:
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
     reads_map: Dict[str, CubedArrayProxy]
-    write: CubedArrayProxy
+    writes_list: List[CubedArrayProxy]
 
 
 def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
     """Stage function for blockwise."""
     # lithops needs params to be lists not tuples, so convert back
     out_coords_tuple = tuple(out_coords)
-    out_chunk_key = key_to_slices(
-        out_coords_tuple, config.write.array, config.write.chunks
-    )
 
     # get array chunks for input keys, preserving any nested list structure
     args = []
@@ -90,14 +88,23 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
         arg = map_nested(get_chunk_config, in_key)
         args.append(arg)
 
-    result = config.function(*args)
-    if isinstance(result, dict):  # structured array with named fields
-        for k, v in result.items():
-            v = backend_array_to_numpy_array(v)
-            config.write.open().set_basic_selection(out_chunk_key, v, fields=k)
-    else:
-        result = backend_array_to_numpy_array(result)
-        config.write.open()[out_chunk_key] = result
+    results = config.function(*args)
+    # if blockwise function is a regular function (not a generator) then make it iterable
+    if not inspect.isgeneratorfunction(config.function):
+        results = (results,)
+    for i, result in enumerate(results):
+        out_chunk_key = key_to_slices(
+            out_coords_tuple, config.writes_list[i].array, config.writes_list[i].chunks
+        )
+        if isinstance(result, dict):  # structured array with named fields
+            for k, v in result.items():
+                v = backend_array_to_numpy_array(v)
+                config.writes_list[i].open().set_basic_selection(
+                    out_chunk_key, v, fields=k
+                )
+        else:
+            result = backend_array_to_numpy_array(result)
+            config.writes_list[i].open()[out_chunk_key] = result
 
 
 def key_to_slices(
@@ -140,7 +147,7 @@ def blockwise(
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     **kwargs,
-):
+) -> PrimitiveOperation:
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
 
     Unlike ```general_blockwise``, an index notation is used to specify the block mapping,
@@ -213,13 +220,13 @@ def blockwise(
         *arrays,
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
-        target_store=target_store,
-        target_path=target_path,
+        target_stores=[target_store],
+        target_paths=[target_path] if target_path is not None else None,
         storage_options=storage_options,
         compressor=compressor,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
         in_names=in_names,
         extra_projected_mem=extra_projected_mem,
         extra_func_kwargs=extra_func_kwargs,
@@ -235,22 +242,22 @@ def general_blockwise(
     *arrays: Any,
     allowed_mem: int,
     reserved_mem: int,
-    target_store: T_Store,
-    target_path: Optional[str] = None,
+    target_stores: List[T_Store],
+    target_paths: Optional[List[str]] = None,
     storage_options: Optional[Dict[str, Any]] = None,
     compressor: Union[dict, str, None] = "default",
-    shape: T_Shape,
-    dtype: T_DType,
-    chunks: T_Chunks,
+    shapes: List[T_Shape],
+    dtypes: List[T_DType],
+    chunkss: List[T_Chunks],
     in_names: Optional[List[str]] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     **kwargs,
-):
+) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
-    mapping, rather than an index notation.
+    mapping, rather than an index notation, and which supports multiple outputs.
 
     Parameters
     ----------
@@ -288,35 +295,51 @@ def general_blockwise(
     array_names = in_names or [f"in_{i}" for i in range(len(arrays))]
     array_map = {name: array for name, array in zip(array_names, arrays)}
 
-    chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
-    chunksize = to_chunksize(chunks)
-    if isinstance(target_store, zarr.Array):
-        target_array = target_store
-    else:
-        target_array = lazy_zarr_array(
-            target_store,
-            shape,
-            dtype,
-            chunks=chunksize,
-            path=target_path,
-            storage_options=storage_options,
-            compressor=compressor,
-        )
-
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
     read_proxies = {
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
-    write_proxy = CubedArrayProxy(target_array, chunksize)
+
+    write_proxies = []
+    output_chunk_memory = 0
+    target_array = []
+
+    for i, target_store in enumerate(target_stores):
+        chunks_normal = normalize_chunks(chunkss[i], shape=shapes[i], dtype=dtypes[i])
+        chunksize = to_chunksize(chunks_normal)
+        if isinstance(target_store, zarr.Array):
+            ta = target_store
+        else:
+            ta = lazy_zarr_array(
+                target_store,
+                shapes[i],
+                dtype=dtypes[i],
+                chunks=chunksize,
+                path=target_paths[i] if target_paths is not None else None,
+                storage_options=storage_options,
+                compressor=compressor,
+            )
+        target_array.append(ta)
+
+        write_proxies.append(CubedArrayProxy(ta, chunksize))
+
+        # only one output chunk is read into memory at a time, so we find the largest
+        output_chunk_memory = max(
+            output_chunk_memory, array_memory(dtypes[i], chunksize) * 2
+        )
+
+    if len(target_array) == 1:
+        target_array = target_array[0]
+
     spec = BlockwiseSpec(
         key_function,
         func_with_kwargs,
         len(arrays),
         num_input_blocks,
         read_proxies,
-        write_proxy,
+        write_proxies,
     )
 
     # calculate projected memory
@@ -332,7 +355,7 @@ def general_blockwise(
     # memory for a compressed and an uncompressed output array chunk
     # - this assumes the blockwise function creates a new array)
     # - numcodecs uses a working output buffer that's the size of the array being compressed
-    projected_mem += array_memory(dtype, chunksize) * 2
+    projected_mem += output_chunk_memory
 
     if projected_mem > allowed_mem:
         raise ValueError(
@@ -340,8 +363,10 @@ def general_blockwise(
         )
 
     # this must be an iterator of lists, not of tuples, otherwise lithops breaks
-    output_blocks = map(list, itertools.product(*[range(len(c)) for c in chunks]))
-    num_tasks = math.prod(len(c) for c in chunks)
+    output_blocks = map(
+        list, itertools.product(*[range(len(c)) for c in chunks_normal])
+    )
+    num_tasks = math.prod(len(c) for c in chunks_normal)
 
     pipeline = CubedPipeline(
         apply_blockwise,
@@ -488,7 +513,7 @@ def fuse(
 
     function_nargs = pipeline1.config.function_nargs
     read_proxies = pipeline1.config.reads_map
-    write_proxy = pipeline2.config.write
+    write_proxies = pipeline2.config.writes_list
     num_input_blocks = tuple(
         n * pipeline2.config.num_input_blocks[0]
         for n in pipeline1.config.num_input_blocks
@@ -499,7 +524,7 @@ def fuse(
         function_nargs,
         num_input_blocks,
         read_proxies,
-        write_proxy,
+        write_proxies,
     )
 
     source_array_names = primitive_op1.source_array_names
@@ -595,7 +620,7 @@ def fuse_multiple(
             ret = map(lambda item: pipeline.config.function(*item), zip(*args))
         return ret
 
-    def fused_func(*args):
+    def fused_func_single(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
             apply_pipeline_func(p, pipeline.config.num_input_blocks[i], *a)
@@ -603,6 +628,20 @@ def fuse_multiple(
         ]
         return pipeline.config.function(*func_args)
 
+    # multiple outputs
+    def fused_func_generator(*args):
+        # args are grouped appropriately so they can be called by each predecessor function
+        func_args = [
+            apply_pipeline_func(p, pipeline.config.num_input_blocks[i], *a)
+            for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
+        ]
+        yield from pipeline.config.function(*func_args)
+
+    fused_func = (
+        fused_func_generator
+        if inspect.isgeneratorfunction(pipeline.config.function)
+        else fused_func_single
+    )
     fused_function_nargs = pipeline.config.function_nargs
     # ok to get num_input_blocks[0] since it is uniform (see check in can_fuse_multiple_primitive_ops)
     fused_num_input_blocks = tuple(
@@ -618,14 +657,14 @@ def fuse_multiple(
     for p in predecessor_pipelines:
         if p is not None:
             read_proxies.update(p.config.reads_map)
-    write_proxy = pipeline.config.write
+    write_proxies = pipeline.config.writes_list
     spec = BlockwiseSpec(
         fused_key_func,
         fused_func,
         fused_function_nargs,
         fused_num_input_blocks,
         read_proxies,
-        write_proxy,
+        write_proxies,
     )
 
     source_array_names = []

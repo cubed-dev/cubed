@@ -204,10 +204,10 @@ def test_general_blockwise(tmp_path, executor):
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
-        target_store=target_store,
-        shape=(20,),
-        dtype=int,
-        chunks=(6,),
+        target_stores=[target_store],
+        shapes=[(20,)],
+        dtypes=[int],
+        chunkss=[(6,)],
         in_names=[in_name],
     )
 
@@ -223,6 +223,67 @@ def test_general_blockwise(tmp_path, executor):
 
     res = open_backend_array(target_store, mode="r")
     assert_array_equal(res[:], np.arange(20))
+
+
+def test_blockwise_multiple_outputs(tmp_path, executor):
+    source = create_zarr(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+        dtype=int,
+        chunks=(2, 2),
+        store=tmp_path / "source.zarr",
+    )
+    allowed_mem = 1000
+    target_store1 = tmp_path / "target1.zarr"
+    target_store2 = tmp_path / "target2.zarr"
+
+    in_name = "x"
+
+    def sqrts(x):
+        yield np.sqrt(x)
+        yield -np.sqrt(x)
+
+    def block_function(out_key):
+        out_coords = out_key[1:]
+        return ((in_name, *out_coords),)
+
+    op = general_blockwise(
+        sqrts,
+        block_function,
+        source,
+        allowed_mem=allowed_mem,
+        reserved_mem=0,
+        target_stores=[target_store1, target_store2],
+        shapes=[(3, 3), (3, 3)],
+        dtypes=[float, float],
+        chunkss=[(2, 2), (2, 2)],
+        in_names=[in_name],
+    )
+
+    assert isinstance(op.target_array, list)
+    assert len(op.target_array) == 2
+
+    assert op.target_array[0].shape == (3, 3)
+    assert op.target_array[0].dtype == float
+    assert op.target_array[0].chunks == (2, 2)
+
+    assert op.target_array[1].shape == (3, 3)
+    assert op.target_array[1].dtype == float
+    assert op.target_array[1].chunks == (2, 2)
+
+    assert op.num_tasks == 4
+
+    op.target_array[0].create()  # create lazy zarr array
+    op.target_array[1].create()  # create lazy zarr array
+
+    execute_pipeline(op.pipeline, executor=executor)
+
+    input = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+    res1 = zarr.open_array(target_store1)
+    assert_array_equal(res1[:], np.sqrt(input))
+
+    res2 = zarr.open_array(target_store2)
+    assert_array_equal(res2[:], -np.sqrt(input))
 
 
 def test_make_blockwise_key_function_map():
