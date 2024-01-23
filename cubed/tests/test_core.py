@@ -11,8 +11,9 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.array_api.dtypes import _floating_dtypes
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import merge_chunks, partial_reduce, tree_reduce
+from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.storage.backend import open_backend_array
 from cubed.tests.utils import (
@@ -676,3 +677,36 @@ def test_quad_means_zarr(tmp_path, t_length=50):
     m.visualize(filename=tmp_path / "quad_means", optimize_function=opt_fn)
 
     cubed.to_zarr(m, store=tmp_path / "result", optimize_function=opt_fn)
+
+
+def sqrts(x):
+    if x.dtype not in _floating_dtypes:
+        raise TypeError("Only floating-point dtypes are allowed in sqrts")
+
+    def _sqrts(x):
+        yield nxp.sqrt(x)
+        yield -nxp.sqrt(x)
+
+    def block_function(out_key):
+        return ((x.name,) + out_key[1:],)
+
+    return general_blockwise(
+        _sqrts,
+        block_function,
+        x,
+        shapes=[x.shape, x.shape],
+        dtypes=[x.dtype, x.dtype],
+        chunkss=[x.chunks, x.chunks],
+        target_stores=[None, None],  # filled in by general_blockwise
+    )
+
+
+def test_multiple_outputs():
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), dtype=float)
+    b, c = sqrts(a)
+
+    cubed.compute(b, c)
+
+    input = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert_array_equal(b, np.sqrt(input))
+    assert_array_equal(c, -np.sqrt(input))

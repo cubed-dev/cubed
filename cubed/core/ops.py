@@ -5,7 +5,7 @@ from functools import partial
 from itertools import product
 from numbers import Integral, Number
 from operator import add
-from typing import TYPE_CHECKING, Any, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence, Tuple, Union
 from warnings import warn
 
 import ndindex
@@ -333,14 +333,14 @@ def general_blockwise(
     func,
     key_function,
     *arrays,
-    shape,
-    dtype,
-    chunks,
-    target_store=None,
-    target_path=None,
+    shapes,
+    dtypes,
+    chunkss,
+    target_stores=None,
+    target_paths=None,
     extra_func_kwargs=None,
     **kwargs,
-) -> "Array":
+) -> Union["Array", Tuple["Array", ...]]:
     assert len(arrays) > 0
 
     # replace arrays with zarr arrays
@@ -354,10 +354,19 @@ def general_blockwise(
 
     num_input_blocks = kwargs.pop("num_input_blocks", None)
 
-    name = gensym()
     spec = check_array_specs(arrays)
-    if target_store is None:
-        target_store = new_temp_path(name=name, spec=spec)
+
+    if isinstance(target_stores, list):  # multiple outputs
+        name = [gensym() for _ in range(len(target_stores))]
+        target_stores = [
+            ts if ts is not None else new_temp_path(name=n, spec=spec)
+            for n, ts in zip(name, target_stores)
+        ]
+    else:  # single output
+        name = gensym()
+        if target_stores is None:
+            target_stores = [new_temp_path(name=name, spec=spec)]
+
     op = primitive_general_blockwise(
         func,
         key_function,
@@ -365,13 +374,13 @@ def general_blockwise(
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
-        target_store=target_store,
-        target_path=target_path,
+        target_stores=target_stores,
+        target_paths=target_paths,
         storage_options=spec.storage_options,
         compressor=spec.zarr_compressor,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        shapes=shapes,
+        dtypes=dtypes,
+        chunkss=chunkss,
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
@@ -387,7 +396,10 @@ def general_blockwise(
     )
     from cubed.array_api import Array
 
-    return Array(name, op.target_array, spec, plan)
+    if isinstance(op.target_array, list):  # multiple outputs
+        return tuple(Array(n, ta, spec, plan) for n, ta in zip(name, op.target_array))
+    else:  # single output
+        return Array(name, op.target_array, spec, plan)
 
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
@@ -914,9 +926,9 @@ def merge_chunks_new(x, chunks):
         _concatenate2,
         key_function,
         x,
-        shape=x.shape,
-        dtype=x.dtype,
-        chunks=target_chunks,
+        shapes=[x.shape],
+        dtypes=[x.dtype],
+        chunkss=[target_chunks],
         extra_projected_mem=0,
         num_input_blocks=(num_input_blocks,),
         axes=axes,
@@ -1229,12 +1241,12 @@ def partial_reduce(
     axis = tuple(ax for ax in split_every.keys())
     combine_sizes = combine_sizes or {}
     combine_sizes = {k: combine_sizes.get(k, 1) for k in axis}
-    chunks = [
+    chunks = tuple(
         (combine_sizes[i],) * math.ceil(len(c) / split_every[i])
         if i in split_every
         else c
         for (i, c) in enumerate(x.chunks)
-    ]
+    )
     shape = tuple(map(sum, chunks))
 
     def key_function(out_key):
@@ -1263,9 +1275,9 @@ def partial_reduce(
         _partial_reduce,
         key_function,
         x,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
         extra_projected_mem=extra_projected_mem,
         num_input_blocks=(sum(split_every.values()),),
         reduce_func=func,
