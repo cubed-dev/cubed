@@ -27,10 +27,16 @@ from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
-from cubed.utils import chunk_memory, get_item, offset_to_block_id, to_chunksize
+from cubed.utils import (
+    _concatenate2,
+    chunk_memory,
+    get_item,
+    offset_to_block_id,
+    to_chunksize,
+)
 from cubed.vendor.dask.array.core import common_blockdim, normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
-from cubed.vendor.dask.blockwise import broadcast_dimensions
+from cubed.vendor.dask.blockwise import broadcast_dimensions, lol_product
 from cubed.vendor.dask.utils import has_keyword
 
 if TYPE_CHECKING:
@@ -764,6 +770,7 @@ def rechunk(x, chunks, target_store=None):
 
 
 def merge_chunks(x, chunks):
+    """Merge multiple chunks into one."""
     target_chunksize = chunks
     if len(target_chunksize) != x.ndim:
         raise ValueError(
@@ -790,6 +797,56 @@ def _copy_chunk(e, x, target_chunks=None, block_id=None):
     out = x.zarray[get_item(target_chunks, block_id)]
     out = numpy_array_to_backend_array(out)
     return out
+
+
+def merge_chunks_new(x, chunks):
+    # new implementation that uses general_blockwise rather than map_direct
+    target_chunksize = chunks
+    if len(target_chunksize) != x.ndim:
+        raise ValueError(
+            f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
+        )
+    if not all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunksize)):
+        raise ValueError(
+            f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
+        )
+
+    target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+    axes = [
+        i for (i, (c0, c1)) in enumerate(zip(x.chunksize, target_chunksize)) if c0 != c1
+    ]
+
+    def block_function(out_key):
+        out_coords = out_key[1:]
+
+        in_keys = []
+        for i, (c0, c1) in enumerate(zip(x.chunksize, target_chunksize)):
+            k = c1 // c0  # number of blocks to merge in axis i
+            if k == 1:
+                in_keys.append(out_coords[i])
+            else:
+                start = out_coords[i] * k
+                stop = min(start + k, x.numblocks[i])
+                in_keys.append(list(range(start, stop)))
+
+        # return a tuple with a single item that is the list of input keys to be merged
+        return (lol_product((x.name,), in_keys),)
+
+    num_input_blocks = int(
+        np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])
+    )
+
+    return general_blockwise(
+        _concatenate2,
+        block_function,
+        x,
+        shape=x.shape,
+        dtype=x.dtype,
+        chunks=target_chunks,
+        extra_projected_mem=0,
+        num_input_blocks=(num_input_blocks,),
+        axes=axes,
+    )
 
 
 def reduction(
