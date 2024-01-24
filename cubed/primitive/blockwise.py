@@ -422,13 +422,13 @@ def fuse_multiple(
     def fused_blockwise_func(out_key):
         # this will change when multiple outputs are supported
         args = pipeline.config.block_function(out_key)
-        # flatten one level of args as the fused_func adds back grouping structure
+        # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
             item
             for p, a in zip(predecessor_pipelines, args)
             for item in apply_pipeline_block_func(p, a)
         )
-        return func_args
+        return split_into(func_args, predecessor_funcs_nargs)
 
     def apply_pipeline_func(pipeline, *args):
         if pipeline is None:
@@ -436,11 +436,9 @@ def fuse_multiple(
         return pipeline.config.function(*args)
 
     def fused_func(*args):
-        # split all args to the fused function into groups, one for each predecessor function
-        split_args = split_into(args, predecessor_funcs_nargs)
+        # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_pipeline_func(p, *a)
-            for p, a in zip(predecessor_pipelines, split_args)
+            apply_pipeline_func(p, *a) for p, a in zip(predecessor_pipelines, args)
         ]
         return pipeline.config.function(*func_args)
 
