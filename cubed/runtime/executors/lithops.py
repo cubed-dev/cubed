@@ -27,12 +27,17 @@ from cubed.runtime.executors.lithops_retries import (
 )
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
-from cubed.runtime.utils import handle_callbacks, handle_operation_start_callbacks
+from cubed.runtime.utils import (
+    handle_callbacks,
+    handle_operation_start_callbacks,
+    profile_memray,
+)
 from cubed.spec import Spec
 
 logger = logging.getLogger(__name__)
 
 
+@profile_memray
 def run_func(input, func=None, config=None, name=None, compute_id=None):
     result = func(input, config=config)
     return result
@@ -171,6 +176,7 @@ def execute_dag(
 ) -> None:
     use_backups = kwargs.pop("use_backups", True)
     wait_dur_sec = kwargs.pop("wait_dur_sec", None)
+    compute_id = kwargs.pop("compute_id")
     allowed_mem = spec.allowed_mem if spec is not None else None
     function_executor = FunctionExecutor(**kwargs)
     runtime_memory_mb = function_executor.config[function_executor.backend].get(
@@ -199,6 +205,7 @@ def execute_dag(
                     func=pipeline.function,
                     config=pipeline.config,
                     name=name,
+                    compute_id=compute_id,
                 ):
                     handle_callbacks(callbacks, stats)
         else:
@@ -224,7 +231,8 @@ def execute_dag(
                     use_backups=use_backups,
                     return_stats=True,
                     wait_dur_sec=wait_dur_sec,
-                    # TODO: kwargs
+                    # TODO: other kwargs (func, config, name)
+                    compute_id=compute_id,
                 ):
                     handle_callbacks(callbacks, stats)
 

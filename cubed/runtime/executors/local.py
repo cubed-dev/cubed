@@ -19,6 +19,7 @@ from cubed.runtime.utils import (
     execution_stats,
     handle_callbacks,
     handle_operation_start_callbacks,
+    profile_memray,
 )
 from cubed.spec import Spec
 
@@ -59,6 +60,7 @@ class SingleThreadedExecutor(DagExecutor):
                     [callback.on_task_end(event) for callback in callbacks]
 
 
+@profile_memray
 @execution_stats
 def run_func(input, func=None, config=None, name=None, compute_id=None):
     return func(input, config=config)
