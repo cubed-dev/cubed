@@ -2,6 +2,7 @@ import collections
 import copy
 import logging
 import time
+from contextlib import nullcontext
 from functools import partial
 from typing import (
     Any,
@@ -20,6 +21,11 @@ from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from networkx import MultiDiGraph
 
+try:
+    import memray
+except ImportError:
+    memray = None
+
 from cubed.runtime.backup import should_launch_backup
 from cubed.runtime.executors.lithops_retries import (
     RetryingFunctionExecutor,
@@ -34,8 +40,19 @@ logger = logging.getLogger(__name__)
 
 
 def run_func(input, func=None, config=None, name=None):
-    result = func(input, config=config)
-    return result
+    # only run memray for first input (and only for operations that run on block locations)
+    if (
+        memray is not None
+        and isinstance(input, list)
+        and all(isinstance(i, int) for i in input)
+        and sum(input) == 0
+    ):
+        cm = memray.Tracker(f"memray/{name}.bin")
+    else:
+        cm = nullcontext()
+    with cm:
+        result = func(input, config=config)
+        return result
 
 
 def map_unordered(
