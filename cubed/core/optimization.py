@@ -96,7 +96,7 @@ def is_fusable(node_dict):
 
 
 def can_fuse_predecessors(
-    dag, name, *, max_total_nargs=4, always_fuse=None, never_fuse=None
+    dag, name, *, max_total_source_arrays=4, always_fuse=None, never_fuse=None
 ):
     nodes = dict(dag.nodes(data=True))
 
@@ -114,14 +114,14 @@ def can_fuse_predecessors(
     if always_fuse is not None and name in always_fuse:
         return True
 
-    # if there is more than a single predecessor op, and the total number of args to
+    # if there is more than a single predecessor op, and the total number of source arrays to
     # the fused function would be more than an allowed maximum, then don't fuse
     if len(list(predecessor_ops(dag, name))) > 1:
-        total_nargs = sum(
+        total_source_arrays = sum(
             len(list(predecessors(dag, pre))) if is_fusable(nodes[pre]) else 1
             for pre in predecessor_ops(dag, name)
         )
-        if total_nargs > max_total_nargs:
+        if total_source_arrays > max_total_source_arrays:
             return False
 
     predecessor_primitive_ops = [
@@ -135,7 +135,7 @@ def can_fuse_predecessors(
 
 
 def fuse_predecessors(
-    dag, name, *, max_total_nargs=4, always_fuse=None, never_fuse=None
+    dag, name, *, max_total_source_arrays=4, always_fuse=None, never_fuse=None
 ):
     """Fuse a node with its immediate predecessors."""
 
@@ -143,7 +143,7 @@ def fuse_predecessors(
     if not can_fuse_predecessors(
         dag,
         name,
-        max_total_nargs=max_total_nargs,
+        max_total_source_arrays=max_total_source_arrays,
         always_fuse=always_fuse,
         never_fuse=never_fuse,
     ):
@@ -195,14 +195,14 @@ def fuse_predecessors(
 
 
 def multiple_inputs_optimize_dag(
-    dag, *, max_total_nargs=4, always_fuse=None, never_fuse=None
+    dag, *, max_total_source_arrays=4, always_fuse=None, never_fuse=None
 ):
     """Fuse multiple inputs."""
     for name in list(nx.topological_sort(dag)):
         dag = fuse_predecessors(
             dag,
             name,
-            max_total_nargs=max_total_nargs,
+            max_total_source_arrays=max_total_source_arrays,
             always_fuse=always_fuse,
             never_fuse=never_fuse,
         )
