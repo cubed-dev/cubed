@@ -72,7 +72,7 @@ def rechunk(
         num_tasks = total_chunks(write_proxy.array.shape, write_proxy.chunks)
         return [
             spec_to_primitive_op(
-                copy_spec, target, projected_mem, reserved_mem, num_tasks
+                copy_spec, target, projected_mem, allowed_mem, reserved_mem, num_tasks
             )
         ]
 
@@ -81,13 +81,18 @@ def rechunk(
         copy_spec1 = CubedCopySpec(read_proxy, int_proxy)
         num_tasks = total_chunks(copy_spec1.write.array.shape, copy_spec1.write.chunks)
         op1 = spec_to_primitive_op(
-            copy_spec1, intermediate, projected_mem, reserved_mem, num_tasks
+            copy_spec1,
+            intermediate,
+            projected_mem,
+            allowed_mem,
+            reserved_mem,
+            num_tasks,
         )
 
         copy_spec2 = CubedCopySpec(int_proxy, write_proxy)
         num_tasks = total_chunks(copy_spec2.write.array.shape, copy_spec2.write.chunks)
         op2 = spec_to_primitive_op(
-            copy_spec2, target, projected_mem, reserved_mem, num_tasks
+            copy_spec2, target, projected_mem, allowed_mem, reserved_mem, num_tasks
         )
 
         return [op1, op2]
@@ -191,6 +196,7 @@ def spec_to_primitive_op(
     spec: CubedCopySpec,
     target_array: Any,
     projected_mem: int,
+    allowed_mem: int,
     reserved_mem: int,
     num_tasks: int,
 ) -> PrimitiveOperation:
@@ -206,6 +212,7 @@ def spec_to_primitive_op(
         pipeline=pipeline,
         target_array=target_array,
         projected_mem=projected_mem,
+        allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=False,

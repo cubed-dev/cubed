@@ -137,21 +137,24 @@ class Plan:
         # find all lazy zarr arrays in dag
         all_pipeline_nodes = []
         lazy_zarr_arrays = []
-        reserved_mem_values = []
+        allowed_mem = 0
+        reserved_mem = 0
         for n, d in dag.nodes(data=True):
-            if "primitive_op" in d and d["primitive_op"].reserved_mem is not None:
-                reserved_mem_values.append(d["primitive_op"].reserved_mem)
+            if "primitive_op" in d:
                 all_pipeline_nodes.append(n)
+                allowed_mem = max(allowed_mem, d["primitive_op"].allowed_mem)
+                reserved_mem = max(reserved_mem, d["primitive_op"].reserved_mem)
+
             if "target" in d and isinstance(d["target"], LazyZarrArray):
                 lazy_zarr_arrays.append(d["target"])
-
-        reserved_mem = max(reserved_mem_values, default=0)
 
         if len(lazy_zarr_arrays) > 0:
             # add new node and edges
             name = "create-arrays"
             op_name = name
-            primitive_op = create_zarr_arrays(lazy_zarr_arrays, reserved_mem)
+            primitive_op = create_zarr_arrays(
+                lazy_zarr_arrays, allowed_mem, reserved_mem
+            )
             dag.add_node(
                 name,
                 name=name,
@@ -429,7 +432,7 @@ def create_zarr_array(lazy_zarr_array, *, config=None):
     lazy_zarr_array.create(mode="a")
 
 
-def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
+def create_zarr_arrays(lazy_zarr_arrays, allowed_mem, reserved_mem):
     # projected memory is size of largest dtype size (for a fill value)
     projected_mem = (
         max([lza.dtype.itemsize for lza in lazy_zarr_arrays], default=0) + reserved_mem
@@ -446,6 +449,7 @@ def create_zarr_arrays(lazy_zarr_arrays, reserved_mem):
         pipeline=pipeline,
         target_array=None,
         projected_mem=projected_mem,
+        allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=False,

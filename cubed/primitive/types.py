@@ -21,6 +21,13 @@ class PrimitiveOperation:
     projected_mem: int
     """An upper bound of the memory needed to run a task, in bytes."""
 
+    allowed_mem: int
+    """
+    The total memory available to a worker for running a task, in bytes.
+
+    This includes any ``reserved_mem`` that has been set.
+    """
+
     reserved_mem: int
     """The memory reserved on a worker for non-data use when running a task, in bytes."""
 
@@ -51,3 +58,18 @@ class CubedCopySpec:
 
     read: CubedArrayProxy
     write: CubedArrayProxy
+
+
+class MemoryModeller:
+    """Models peak memory usage for a series of operations."""
+
+    current_mem: int = 0
+    peak_mem: int = 0
+
+    def allocate(self, num_bytes):
+        self.current_mem += num_bytes
+        self.peak_mem = max(self.peak_mem, self.current_mem)
+
+    def free(self, num_bytes):
+        self.current_mem -= num_bytes
+        self.peak_mem = max(self.peak_mem, self.current_mem)
