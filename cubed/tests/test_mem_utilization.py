@@ -3,11 +3,14 @@ import shutil
 
 import pytest
 
+from cubed.core.ops import partial_reduce
+
 pytest.importorskip("lithops")
 
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.backend_array_api import namespace as nxp
 from cubed.extensions.history import HistoryCallback
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
@@ -203,6 +206,15 @@ def test_mean(tmp_path, spec):
     )  # 200MB chunks
     b = xp.mean(a, axis=0)
     run_operation(tmp_path, "mean", b)
+
+
+@pytest.mark.slow
+def test_sum_partial_reduce(tmp_path, spec):
+    a = cubed.random.random(
+        (40000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = partial_reduce(a, nxp.sum, split_every={0: 8})
+    run_operation(tmp_path, "sum_partial_reduce", b)
 
 
 # Internal functions
