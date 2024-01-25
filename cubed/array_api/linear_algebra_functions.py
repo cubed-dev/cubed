@@ -68,7 +68,10 @@ def _sum_wo_cat(a, axis=None, dtype=None):
     if a.shape[axis] == 1:
         return squeeze(a, axis)
 
-    return reduction(a, _chunk_sum, axis=axis, dtype=dtype)
+    extra_func_kwargs = dict(dtype=dtype)
+    return reduction(
+        a, _chunk_sum, axis=axis, dtype=dtype, extra_func_kwargs=extra_func_kwargs
+    )
 
 
 def _chunk_sum(a, axis=None, dtype=None, keepdims=None):
