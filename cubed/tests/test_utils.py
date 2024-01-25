@@ -4,9 +4,12 @@ import platform
 
 import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.utils import (
     block_id_to_offset,
+    broadcast_trick,
     chunk_memory,
     extract_stack_summaries,
     join_path,
@@ -153,3 +156,16 @@ def test_map_nested_iterators():
     assert count == 2
     assert list(out1) == [4, 5]
     assert count == 4
+
+
+def test_broadcast_trick():
+    a = nxp.ones((10, 10), dtype=nxp.int8)
+    b = broadcast_trick(nxp.ones)((10, 10), dtype=nxp.int8)
+
+    assert_array_equal(a, b)
+    assert a.nbytes == 100
+    assert b.base.nbytes == 1
+
+    a = nxp.ones((), dtype=nxp.int8)
+    b = broadcast_trick(nxp.ones)((), dtype=nxp.int8)
+    assert_array_equal(a, b)
