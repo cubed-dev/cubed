@@ -421,8 +421,8 @@ def test_compute_multiple_different_specs(tmp_path):
 
 
 def test_visualize(tmp_path):
-    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
-    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2))
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float64, chunks=(2, 2))
+    b = cubed.random.random((3, 3), chunks=(2, 2))
     c = xp.add(a, b)
     d = c * 2
     e = c * 3
@@ -437,6 +437,9 @@ def test_visualize(tmp_path):
 
     e.visualize(filename=tmp_path / "e")
     assert (tmp_path / "e.svg").exists()
+
+    e.visualize(filename=tmp_path / "e-hidden", show_hidden=True)
+    assert (tmp_path / "e-hidden.svg").exists()
 
     e.visualize(filename=tmp_path / "e", format="png")
     assert (tmp_path / "e.png").exists()
