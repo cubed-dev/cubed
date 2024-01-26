@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=081adb12"></script>
+    <script src="../_static/documentation_options.js?v=0d8bf9ea"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -361,7 +361,7 @@ document.write(`
 <h1>cubed.Array.visualize<a class="headerlink" href="#cubed-array-visualize" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="cubed.Array.visualize">
-<span class="sig-prename descclassname"><span class="pre">Array.</span></span><span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.Array.visualize" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Array.</span></span><span class="sig-name descname"><span class="pre">visualize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.Array.visualize" title="Link to this definition">#</a></dt>
 <dd><p>Produce a visualization of the computation graph for this array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -371,6 +371,10 @@ doesn’t include an extension, ‘.svg’ will be used by default.</p></li>
 <li><p><strong>format</strong> (<em>{'png'</em><em>, </em><em>'pdf'</em><em>, </em><em>'dot'</em><em>, </em><em>'svg'</em><em>, </em><em>'jpeg'</em><em>, </em><em>'jpg'}</em><em>, </em><em>optional</em>) – Format in which to write output file.  Default is ‘svg’.</p></li>
 <li><p><strong>optimize_graph</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the graph is optimized before rendering.  Otherwise,
 the graph is displayed as is. Default is True.</p></li>
+<li><p><strong>optimize_function</strong> (<em>callable</em><em>, </em><em>optional</em>) – Function to optimize the computation graph. Default is to use a
+function that performs map fusion only.</p></li>
+<li><p><strong>show_hidden</strong> (<em>bool</em>) – If True, show arrays and operations that are marked as hidden in the
+visualization. Default is False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
