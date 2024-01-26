@@ -6,6 +6,7 @@ import sysconfig
 import traceback
 from collections.abc import Iterator
 from dataclasses import dataclass
+from functools import partial
 from itertools import islice
 from math import prod
 from operator import add
@@ -17,6 +18,7 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 import numpy as np
 import tlz as toolz
 
+from cubed.backend_array_api import namespace as nxp
 from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks
 from cubed.vendor.dask.array.core import _check_regular_chunks
 
@@ -289,3 +291,22 @@ def map_nested(func, seq):
         return map(lambda item: map_nested(func, item), seq)
     else:
         return func(seq)
+
+
+def _broadcast_trick_inner(func, shape, *args, **kwargs):
+    # cupy-specific hack. numpy is happy with hardcoded shape=().
+    null_shape = () if shape == () else 1
+
+    return nxp.broadcast_to(func(*args, shape=null_shape, **kwargs), shape)
+
+
+def broadcast_trick(func):
+    """Apply Dask's broadcast trick to array API functions that produce arrays
+    containing a single value to save space in memory.
+
+    Note that this should only be used for arrays that never mutated.
+    """
+    inner = partial(_broadcast_trick_inner, func)
+    inner.__doc__ = func.__doc__
+    inner.__name__ = func.__name__
+    return inner

@@ -8,7 +8,7 @@ from zarr.indexing import BasicIndexer, is_slice
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
-from cubed.utils import memory_repr
+from cubed.utils import broadcast_trick, memory_repr
 
 
 class VirtualEmptyArray:
@@ -33,7 +33,8 @@ class VirtualEmptyArray:
         if not isinstance(key, tuple):
             key = (key,)
         indexer = BasicIndexer(key, self.template)
-        return nxp.empty(indexer.shape, dtype=self.dtype)
+        # use broadcast trick so array chunks only occupy a single value in memory
+        return broadcast_trick(nxp.empty)(indexer.shape, dtype=self.dtype)
 
     @property
     def oindex(self):
@@ -68,7 +69,10 @@ class VirtualFullArray:
         if not isinstance(key, tuple):
             key = (key,)
         indexer = BasicIndexer(key, self.template)
-        return nxp.full(indexer.shape, fill_value=self.fill_value, dtype=self.dtype)
+        # use broadcast trick so array chunks only occupy a single value in memory
+        return broadcast_trick(nxp.full)(
+            indexer.shape, fill_value=self.fill_value, dtype=self.dtype
+        )
 
     @property
     def oindex(self):
