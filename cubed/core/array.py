@@ -163,7 +163,12 @@ class CoreArray:
         return rechunk(self, chunks)
 
     def visualize(
-        self, filename="cubed", format=None, optimize_graph=True, optimize_function=None
+        self,
+        filename="cubed",
+        format=None,
+        optimize_graph=True,
+        optimize_function=None,
+        show_hidden=False,
     ):
         """Produce a visualization of the computation graph for this array.
 
@@ -177,6 +182,12 @@ class CoreArray:
         optimize_graph : bool, optional
             If True, the graph is optimized before rendering.  Otherwise,
             the graph is displayed as is. Default is True.
+        optimize_function : callable, optional
+            Function to optimize the computation graph. Default is to use a
+            function that performs map fusion only.
+        show_hidden : bool
+            If True, show arrays and operations that are marked as hidden in the
+            visualization. Default is False.
 
         Returns
         -------
@@ -190,6 +201,7 @@ class CoreArray:
             format=format,
             optimize_graph=optimize_graph,
             optimize_function=optimize_function,
+            show_hidden=show_hidden,
         )
 
     def __getitem__(self: T_ChunkedArray, key, /) -> T_ChunkedArray:
@@ -246,7 +258,12 @@ def compute(
 
 
 def visualize(
-    *arrays, filename="cubed", format=None, optimize_graph=True, optimize_function=None
+    *arrays,
+    filename="cubed",
+    format=None,
+    optimize_graph=True,
+    optimize_function=None,
+    show_hidden=False,
 ):
     """Produce a visualization of the computation graph for multiple arrays.
 
@@ -262,6 +279,12 @@ def visualize(
     optimize_graph : bool, optional
         If True, the graph is optimized before rendering.  Otherwise,
         the graph is displayed as is. Default is True.
+    optimize_function : callable, optional
+        Function to optimize the computation graph. Default is to use a
+        function that performs map fusion only.
+    show_hidden : bool
+        If True, show arrays and operations that are marked as hidden in the
+        visualization. Default is False.
 
     Returns
     -------
@@ -275,6 +298,7 @@ def visualize(
         format=format,
         optimize_graph=optimize_graph,
         optimize_function=optimize_function,
+        show_hidden=show_hidden,
     )
 
 

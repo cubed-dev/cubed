@@ -250,6 +250,7 @@ class Plan:
         rankdir="TB",
         optimize_graph=True,
         optimize_function=None,
+        show_hidden=False,
     ):
         dag = self._finalize_dag(optimize_graph, optimize_function)
         dag = dag.copy()  # make a copy since we mutate the DAG below
@@ -257,10 +258,10 @@ class Plan:
         # remove edges from create-arrays output node to avoid cluttering the diagram
         dag.remove_edges_from(list(dag.out_edges("arrays")))
 
-        # remove hidden nodes
-        dag.remove_nodes_from(
-            list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
-        )
+        if not show_hidden:
+            dag.remove_nodes_from(
+                list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
+            )
 
         dag.graph["graph"] = {
             "rankdir": rankdir,
