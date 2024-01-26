@@ -159,17 +159,7 @@ def fuse_predecessors(
         for pre in predecessor_ops(dag, name)
     ]
 
-    # if a predecessor has no primitive op then use 1 for nargs
-    predecessor_funcs_nargs = [
-        len(list(predecessors(dag, pre))) if is_fusable(nodes[pre]) else 1
-        for pre in predecessor_ops(dag, name)
-    ]
-
-    fused_primitive_op = fuse_multiple(
-        primitive_op,
-        *predecessor_primitive_ops,
-        predecessor_funcs_nargs=predecessor_funcs_nargs,
-    )
+    fused_primitive_op = fuse_multiple(primitive_op, *predecessor_primitive_ops)
 
     fused_dag = dag.copy()
     fused_nodes = dict(fused_dag.nodes(data=True))

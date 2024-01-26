@@ -43,6 +43,8 @@ class BlockwiseSpec:
         A function that maps an output chunk index to one or more input chunk indexes.
     function : Callable
         A function that maps input chunks to an output chunk.
+    function_nargs: int
+        The number of array arguments that ``function`` takes.
     reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
     write : CubedArrayProxy
@@ -51,6 +53,7 @@ class BlockwiseSpec:
 
     block_function: Callable[..., Any]
     function: Callable[..., Any]
+    function_nargs: int
     reads_map: Dict[str, CubedArrayProxy]
     write: CubedArrayProxy
 
@@ -272,7 +275,9 @@ def general_blockwise(
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
     write_proxy = CubedArrayProxy(target_array, chunksize)
-    spec = BlockwiseSpec(block_function, func_with_kwargs, read_proxies, write_proxy)
+    spec = BlockwiseSpec(
+        block_function, func_with_kwargs, len(arrays), read_proxies, write_proxy
+    )
 
     # calculate projected memory
     projected_mem = reserved_mem + extra_projected_mem
@@ -366,9 +371,12 @@ def fuse(
     def fused_func(*args):
         return pipeline2.config.function(pipeline1.config.function(*args))
 
+    function_nargs = pipeline1.config.function_nargs
     read_proxies = pipeline1.config.reads_map
     write_proxy = pipeline2.config.write
-    spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
+    spec = BlockwiseSpec(
+        fused_blockwise_func, fused_func, function_nargs, read_proxies, write_proxy
+    )
 
     target_array = primitive_op2.target_array
     projected_mem = max(primitive_op1.projected_mem, primitive_op2.projected_mem)
@@ -392,9 +400,7 @@ def fuse(
 
 
 def fuse_multiple(
-    primitive_op: PrimitiveOperation,
-    *predecessor_primitive_ops: PrimitiveOperation,
-    predecessor_funcs_nargs=None,
+    primitive_op: PrimitiveOperation, *predecessor_primitive_ops: PrimitiveOperation
 ) -> PrimitiveOperation:
     """
     Fuse a blockwise operation and its predecessors into a single operation, avoiding writing to (or reading from) the targets of the predecessor operations.
@@ -410,6 +416,12 @@ def fuse_multiple(
     predecessor_pipelines = [
         primitive_op.pipeline if primitive_op is not None else None
         for primitive_op in predecessor_primitive_ops
+    ]
+
+    # if a predecessor has no primitive op then use 1 for nargs
+    predecessor_funcs_nargs = [
+        pipeline.config.function_nargs if pipeline is not None else 1
+        for pipeline in predecessor_pipelines
     ]
 
     mappable = pipeline.mappable
@@ -442,12 +454,15 @@ def fuse_multiple(
         ]
         return pipeline.config.function(*func_args)
 
+    function_nargs = pipeline.config.function_nargs
     read_proxies = dict(pipeline.config.reads_map)
     for p in predecessor_pipelines:
         if p is not None:
             read_proxies.update(p.config.reads_map)
     write_proxy = pipeline.config.write
-    spec = BlockwiseSpec(fused_blockwise_func, fused_func, read_proxies, write_proxy)
+    spec = BlockwiseSpec(
+        fused_blockwise_func, fused_func, function_nargs, read_proxies, write_proxy
+    )
 
     target_array = primitive_op.target_array
     projected_mem = max(
