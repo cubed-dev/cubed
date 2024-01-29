@@ -12,7 +12,7 @@ import cubed.array_api as xp
 import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import merge_chunks, partial_reduce, tree_reduce
-from cubed.core.optimization import fuse_all_optimize_dag
+from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -531,10 +531,19 @@ def test_plan_quad_means(tmp_path, t_length):
     u = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
     v = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
     uv = u * v
-    m = xp.mean(uv, axis=0)
+    m = xp.mean(uv, axis=0, split_every=10, use_new_impl=True)
 
     assert m.plan.num_tasks() > 0
-    m.visualize(filename=tmp_path / "quad_means")
+    m.visualize(
+        filename=tmp_path / "quad_means_unoptimized",
+        optimize_graph=False,
+        show_hidden=True,
+    )
+    m.visualize(
+        filename=tmp_path / "quad_means",
+        optimize_function=multiple_inputs_optimize_dag,
+        show_hidden=True,
+    )
 
 
 def quad_means(tmp_path, t_length):
