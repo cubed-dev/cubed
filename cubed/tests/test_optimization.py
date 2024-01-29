@@ -143,9 +143,11 @@ def fuse_one_level(arr):
     return partial(fuse_predecessors, name=next(arr.plan.dag.predecessors(arr.name)))
 
 
-def fuse_multiple_levels(*, max_total_nargs=4):
+def fuse_multiple_levels(*, max_total_source_arrays=4):
     # use multiple_inputs_optimize_dag to test multiple levels of fusion
-    return partial(multiple_inputs_optimize_dag, max_total_nargs=max_total_nargs)
+    return partial(
+        multiple_inputs_optimize_dag, max_total_source_arrays=max_total_source_arrays
+    )
 
 
 # utility functions for testing structural equivalence of dags
@@ -504,7 +506,7 @@ def test_fuse_unary_large_fan_in(spec):
     i = elemwise(stack_add, a, b, c, d, e, f, g, h, dtype=a.dtype)
     j = xp.negative(i)
 
-    # max_total_nargs is left at its default (4) which does not limit fusion since j is unary
+    # max_total_source_arrays is left at its default (4) which does not limit fusion since j is unary
     opt_fn = fuse_one_level(j)
 
     j.visualize(optimize_function=opt_fn)
@@ -573,7 +575,7 @@ def test_fuse_large_fan_in_default(spec):
 
     p = xp.add(n, o)
 
-    # max_total_nargs is left at its default (4) so only one level is fused
+    # max_total_source_arrays is left at its default (4) so only one level is fused
     opt_fn = fuse_multiple_levels()
 
     p.visualize(optimize_function=opt_fn)
@@ -631,8 +633,8 @@ def test_fuse_large_fan_in_override(spec):
 
     p = xp.add(n, o)
 
-    # max_total_nargs is overriden so multiple levels are fused
-    opt_fn = fuse_multiple_levels(max_total_nargs=8)
+    # max_total_source_arrays is overriden so multiple levels are fused
+    opt_fn = fuse_multiple_levels(max_total_source_arrays=8)
 
     p.visualize(optimize_function=opt_fn)
 
@@ -668,7 +670,7 @@ def test_fuse_large_fan_in_override(spec):
     assert_array_equal(result, 8 * np.ones((2, 2)))
 
     # now force everything to be fused with fuse_all_optimize_dag
-    # note that max_total_nargs is *not* set
+    # note that max_total_source_arrays is *not* set
     opt_fn = fuse_all_optimize_dag
 
     assert structurally_equivalent(
