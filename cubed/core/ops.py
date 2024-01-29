@@ -998,11 +998,11 @@ def unify_chunks(*args: "Array", **kwargs):
             arrays.append(a)
         else:
             chunks = tuple(
-                chunkss[j]
-                if a.shape[n] > 1
-                else (a.shape[n],)
-                if not np.isnan(sum(chunkss[j]))
-                else None
+                (
+                    chunkss[j]
+                    if a.shape[n] > 1
+                    else (a.shape[n],) if not np.isnan(sum(chunkss[j])) else None
+                )
                 for n, j in enumerate(i)
             )
             if chunks != a.chunks and all(a.chunks):
