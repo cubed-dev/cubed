@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=697c8b27"></script>
+    <script src="../_static/documentation_options.js?v=8775cbb3"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -363,6 +363,21 @@ document.write(`
 <dt class="sig sig-object py" id="cubed.Array.compute">
 <span class="sig-prename descclassname"><span class="pre">Array.</span></span><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.Array.compute" title="Link to this definition">#</a></dt>
 <dd><p>Compute this array, and any arrays that it depends on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>executor</strong> (<em>Executor</em><em>, </em><em>optional</em>) – The executor to use to run the computation. If not set then the executor
+from the array’s <code class="docutils literal notranslate"><span class="pre">Spec</span></code> is used.</p></li>
+<li><p><strong>callbacks</strong> (<em>list</em><em> of </em><a class="reference internal" href="cubed.Callback.html#cubed.Callback" title="cubed.Callback"><em>Callback</em></a><em>, </em><em>optional</em>) – Callbacks to send events to while running the computation.</p></li>
+<li><p><strong>optimize_graph</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, the graph is optimized before running the computation.
+Otherwise, the graph is computed as is. Default is True.</p></li>
+<li><p><strong>optimize_function</strong> (<em>callable</em><em>, </em><em>optional</em>) – Function to optimize the computation graph. Default is to use a
+function that performs map fusion only.</p></li>
+<li><p><strong>resume</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, intermediate arrays that have already been computed won’t be
+recomputed. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
