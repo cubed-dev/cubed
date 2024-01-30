@@ -20,7 +20,7 @@ from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
 
-from .types import CubedArrayProxy, PrimitiveOperation
+from .types import CubedArrayProxy, MemoryModeller, PrimitiveOperation
 
 sym_counter = 0
 
@@ -313,6 +313,7 @@ def general_blockwise(
         pipeline=pipeline,
         target_array=target_array,
         projected_mem=projected_mem,
+        allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=fusable,
@@ -343,10 +344,25 @@ def can_fuse_multiple_primitive_ops(
     if is_fuse_candidate(primitive_op) and all(
         is_fuse_candidate(p) for p in predecessor_primitive_ops
     ):
+        # if the peak projected memory for running all the predecessor ops in order is
+        # larger than allowed_mem then we can't fuse
+        if peak_projected_mem(predecessor_primitive_ops) > primitive_op.allowed_mem:
+            return False
         return all(
             primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
         )
     return False
+
+
+def peak_projected_mem(primitive_ops):
+    """Calculate the peak projected memory for running a series of primitive ops
+    and retaining their return values in memory."""
+    memory_modeller = MemoryModeller()
+    for p in primitive_ops:
+        memory_modeller.allocate(p.projected_mem)
+        chunkmem = chunk_memory(p.target_array.dtype, p.target_array.chunks)
+        memory_modeller.free(p.projected_mem - chunkmem)
+    return memory_modeller.peak_mem
 
 
 def fuse(
@@ -380,7 +396,8 @@ def fuse(
 
     target_array = primitive_op2.target_array
     projected_mem = max(primitive_op1.projected_mem, primitive_op2.projected_mem)
-    reserved_mem = max(primitive_op1.reserved_mem, primitive_op2.reserved_mem)
+    allowed_mem = primitive_op2.allowed_mem
+    reserved_mem = primitive_op2.reserved_mem
     num_tasks = primitive_op2.num_tasks
 
     pipeline = CubedPipeline(
@@ -393,6 +410,7 @@ def fuse(
         pipeline=pipeline,
         target_array=target_array,
         projected_mem=projected_mem,
+        allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,
@@ -467,12 +485,10 @@ def fuse_multiple(
     target_array = primitive_op.target_array
     projected_mem = max(
         primitive_op.projected_mem,
-        *(p.projected_mem for p in predecessor_primitive_ops if p is not None),
+        peak_projected_mem(p for p in predecessor_primitive_ops if p is not None),
     )
-    reserved_mem = max(
-        primitive_op.reserved_mem,
-        *(p.reserved_mem for p in predecessor_primitive_ops if p is not None),
-    )
+    allowed_mem = primitive_op.allowed_mem
+    reserved_mem = primitive_op.reserved_mem
     num_tasks = primitive_op.num_tasks
 
     fused_pipeline = CubedPipeline(
@@ -485,6 +501,7 @@ def fuse_multiple(
         pipeline=fused_pipeline,
         target_array=target_array,
         projected_mem=projected_mem,
+        allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,

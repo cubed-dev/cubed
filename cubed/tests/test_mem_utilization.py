@@ -1,9 +1,11 @@
 import math
 import shutil
+from functools import partial, reduce
 
 import pytest
 
 from cubed.core.ops import partial_reduce
+from cubed.core.optimization import multiple_inputs_optimize_dag
 
 pytest.importorskip("lithops")
 
@@ -85,6 +87,56 @@ def test_add(tmp_path, spec):
     )  # 200MB chunks
     c = xp.add(a, b)
     run_operation(tmp_path, "add", c)
+
+
+@pytest.mark.slow
+def test_add_reduce_left(tmp_path, spec):
+    # Perform the `add` operation repeatedly on pairs of arrays, also known as fold left.
+    # See https://en.wikipedia.org/wiki/Fold_(higher-order_function)
+    #
+    # o   o
+    #  \ /
+    #   o   o
+    #    \ /
+    #     o   o
+    #      \ /
+    #       o
+    #
+    # Fusing fold left operations will result in a single fused operation.
+    n_arrays = 10
+    arrs = [
+        cubed.random.random((10000, 10000), chunks=(5000, 5000), spec=spec)
+        for _ in range(n_arrays)
+    ]
+    result = reduce(lambda x, y: xp.add(x, y), arrs)
+    opt_fn = partial(multiple_inputs_optimize_dag, max_total_source_arrays=n_arrays * 2)
+    run_operation(tmp_path, "add_reduce_left", result, optimize_function=opt_fn)
+
+
+@pytest.mark.slow
+def test_add_reduce_right(tmp_path, spec):
+    # Perform the `add` operation repeatedly on pairs of arrays, also known as fold right.
+    # See https://en.wikipedia.org/wiki/Fold_(higher-order_function)
+    #
+    #     o   o
+    #      \ /
+    #   o   o
+    #    \ /
+    # o   o
+    #  \ /
+    #   o
+    #
+    # Note that fusing fold right operations will result in unbounded memory usage unless care
+    # is taken to limit fusion - which `multiple_inputs_optimize_dag` will do, with the result
+    # that there is more than one fused operation (not a single fused oepration).
+    n_arrays = 10
+    arrs = [
+        cubed.random.random((10000, 10000), chunks=(5000, 5000), spec=spec)
+        for _ in range(n_arrays)
+    ]
+    result = reduce(lambda x, y: xp.add(y, x), reversed(arrs))
+    opt_fn = partial(multiple_inputs_optimize_dag, max_total_source_arrays=n_arrays * 2)
+    run_operation(tmp_path, "add_reduce_right", result, optimize_function=opt_fn)
 
 
 @pytest.mark.slow
@@ -220,13 +272,19 @@ def test_sum_partial_reduce(tmp_path, spec):
 # Internal functions
 
 
-def run_operation(tmp_path, name, result_array):
+def run_operation(tmp_path, name, result_array, *, optimize_function=None):
     # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
-    # result_array.visualize(f"cubed-{name}")
+    # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
     hist = HistoryCallback()
     # use store=None to write to temporary zarr
-    cubed.to_zarr(result_array, store=None, executor=executor, callbacks=[hist])
+    cubed.to_zarr(
+        result_array,
+        store=None,
+        executor=executor,
+        callbacks=[hist],
+        optimize_function=optimize_function,
+    )
 
     df = hist.stats_df
     print(df)
