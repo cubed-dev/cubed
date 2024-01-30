@@ -1,0 +1,49 @@
+name: JAX tests
+
+on:
+  schedule:
+    # Every weekday at 03:53 UTC, see https://crontab.guru/
+    - cron: "53 3 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.9"]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v1
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[test]' 'jax[cpu]'
+          python -m pip uninstall -y lithops  # tests don't run on Lithops
+
+      - name: Run tests
+        run: |
+          # exclude tests that rely on structured types since JAX doesn't support these
+          pytest -k "not argmax and not argmin and not mean and not apply_reduction and not broadcast_trick"
+        env:
+          CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
+          JAX_ENABLE_X64: True
