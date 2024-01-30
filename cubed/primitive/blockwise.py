@@ -17,7 +17,14 @@ from cubed.backend_array_api import (
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
-from cubed.utils import chunk_memory, get_item, map_nested, split_into, to_chunksize
+from cubed.utils import (
+    array_memory,
+    chunk_memory,
+    get_item,
+    map_nested,
+    split_into,
+    to_chunksize,
+)
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
@@ -316,12 +323,12 @@ def general_blockwise(
         # - we assume compression has no effect (so it's an overestimate)
         # - ideally we'd be able to look at nbytes_stored,
         #   but this is not possible in general since the array has not been written yet
-        projected_mem += chunk_memory(array.dtype, array.chunks) * 2
+        projected_mem += array_memory(array.dtype, array.chunks) * 2
     # output
     # memory for a compressed and an uncompressed output array chunk
     # - this assumes the blockwise function creates a new array)
     # - numcodecs uses a working output buffer that's the size of the array being compressed
-    projected_mem += chunk_memory(dtype, chunksize) * 2
+    projected_mem += array_memory(dtype, chunksize) * 2
 
     if projected_mem > allowed_mem:
         raise ValueError(
@@ -450,7 +457,7 @@ def peak_projected_mem(primitive_ops):
     memory_modeller = MemoryModeller()
     for p in primitive_ops:
         memory_modeller.allocate(p.projected_mem)
-        chunkmem = chunk_memory(p.target_array.dtype, p.target_array.chunks)
+        chunkmem = chunk_memory(p.target_array)
         memory_modeller.free(p.projected_mem - chunkmem)
     return memory_modeller.peak_mem
 

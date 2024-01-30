@@ -378,7 +378,7 @@ class Plan:
 
             elif node_type == "array":
                 target = d["target"]
-                chunkmem = memory_repr(chunk_memory(target.dtype, target.chunks))
+                chunkmem = memory_repr(chunk_memory(target))
                 nbytes = None
 
                 # materialized arrays are light orange, virtual arrays are white
