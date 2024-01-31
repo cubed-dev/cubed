@@ -357,12 +357,14 @@ def can_fuse_multiple_primitive_ops(
     if is_fuse_candidate(primitive_op) and all(
         is_fuse_candidate(p) for p in predecessor_primitive_ops
     ):
-        # if the peak projected memory for running all the predecessor ops in order is
-        # larger than allowed_mem then we can't fuse
+        # If the peak projected memory for running all the predecessor ops in
+        # order is larger than allowed_mem then we can't fuse.
         if peak_projected_mem(predecessor_primitive_ops) > primitive_op.allowed_mem:
             return False
-        # if the number of input blocks for each input is not uniform, then we can't fuse
-        # (this should never happen since all operations are currently uniform)
+        # If the number of input blocks for each input is not uniform, then we
+        # can't fuse. (This should never happen since all operations are
+        # currently uniform, and fused operations are too if fuse is applied in
+        # topological order.)
         num_input_blocks = primitive_op.pipeline.config.num_input_blocks
         if not all(num_input_blocks[0] == n for n in num_input_blocks):
             return False
