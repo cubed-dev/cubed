@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 import zarr
 
@@ -36,9 +36,6 @@ class PrimitiveOperation:
 
     fusable: bool = True
     """Whether this operation should be considered for fusion."""
-
-    num_input_blocks: Optional[Tuple[int, ...]] = None
-    """The number of input blocks read from each input array."""
 
     write_chunks: Optional[T_RegularChunks] = None
     """The chunk size used by this operation."""

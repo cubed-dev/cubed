@@ -272,7 +272,7 @@ def blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     fusable = kwargs.pop("fusable", True)
-    num_input_blocks = kwargs.pop("num_input_blocks", (1,) * len(source_arrays))
+    num_input_blocks = kwargs.pop("num_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -332,7 +332,7 @@ def general_blockwise(
 
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
-    num_input_blocks = kwargs.pop("num_input_blocks", (1,) * len(source_arrays))
+    num_input_blocks = kwargs.pop("num_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)

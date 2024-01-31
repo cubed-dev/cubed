@@ -46,6 +46,8 @@ class BlockwiseSpec:
         A function that maps input chunks to an output chunk.
     function_nargs: int
         The number of array arguments that ``function`` takes.
+    num_input_blocks: Tuple[int, ...]
+        The number of input blocks read from each input array.
     reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
     write : CubedArrayProxy
@@ -55,6 +57,7 @@ class BlockwiseSpec:
     block_function: Callable[..., Any]
     function: Callable[..., Any]
     function_nargs: int
+    num_input_blocks: Tuple[int, ...]
     reads_map: Dict[str, CubedArrayProxy]
     write: CubedArrayProxy
 
@@ -275,12 +278,18 @@ def general_blockwise(
 
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
+    num_input_blocks = num_input_blocks or (1,) * len(arrays)
     read_proxies = {
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
     write_proxy = CubedArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(
-        block_function, func_with_kwargs, len(arrays), read_proxies, write_proxy
+        block_function,
+        func_with_kwargs,
+        len(arrays),
+        num_input_blocks,
+        read_proxies,
+        write_proxy,
     )
 
     # calculate projected memory
@@ -321,7 +330,6 @@ def general_blockwise(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=fusable,
-        num_input_blocks=num_input_blocks,
     )
 
 
@@ -352,6 +360,11 @@ def can_fuse_multiple_primitive_ops(
         # if the peak projected memory for running all the predecessor ops in order is
         # larger than allowed_mem then we can't fuse
         if peak_projected_mem(predecessor_primitive_ops) > primitive_op.allowed_mem:
+            return False
+        # if the number of input blocks for each input is not uniform, then we can't fuse
+        # (this should never happen since all operations are currently uniform)
+        num_input_blocks = primitive_op.pipeline.config.num_input_blocks
+        if not all(num_input_blocks[0] == n for n in num_input_blocks):
             return False
         return all(
             primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
@@ -395,8 +408,17 @@ def fuse(
     function_nargs = pipeline1.config.function_nargs
     read_proxies = pipeline1.config.reads_map
     write_proxy = pipeline2.config.write
+    num_input_blocks = tuple(
+        n * pipeline2.config.num_input_blocks[0]
+        for n in pipeline1.config.num_input_blocks
+    )
     spec = BlockwiseSpec(
-        fused_blockwise_func, fused_func, function_nargs, read_proxies, write_proxy
+        fused_blockwise_func,
+        fused_func,
+        function_nargs,
+        num_input_blocks,
+        read_proxies,
+        write_proxy,
     )
 
     target_array = primitive_op2.target_array
@@ -404,9 +426,6 @@ def fuse(
     allowed_mem = primitive_op2.allowed_mem
     reserved_mem = primitive_op2.reserved_mem
     num_tasks = primitive_op2.num_tasks
-    num_input_blocks = tuple(
-        n * primitive_op2.num_input_blocks[0] for n in primitive_op1.num_input_blocks
-    )
 
     pipeline = CubedPipeline(
         apply_blockwise,
@@ -422,7 +441,6 @@ def fuse(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,
-        num_input_blocks=num_input_blocks,
     )
 
 
@@ -469,7 +487,7 @@ def fuse_multiple(
             item
             for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
             for item in apply_pipeline_block_func(
-                p, primitive_op.num_input_blocks[i], a
+                p, pipeline.config.num_input_blocks[i], a
             )
         )
         return split_into(func_args, predecessor_funcs_nargs)
@@ -487,19 +505,34 @@ def fuse_multiple(
     def fused_func(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_pipeline_func(p, primitive_op.num_input_blocks[i], *a)
+            apply_pipeline_func(p, pipeline.config.num_input_blocks[i], *a)
             for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
         ]
         return pipeline.config.function(*func_args)
 
-    function_nargs = pipeline.config.function_nargs
+    fused_function_nargs = pipeline.config.function_nargs
+    # ok to get num_input_blocks[0] since it is uniform (see check in can_fuse_multiple_primitive_ops)
+    fused_num_input_blocks = tuple(
+        pipeline.config.num_input_blocks[0] * n
+        for n in itertools.chain(
+            *(
+                p.pipeline.config.num_input_blocks if p is not None else (1,)
+                for p in predecessor_primitive_ops
+            )
+        )
+    )
     read_proxies = dict(pipeline.config.reads_map)
     for p in predecessor_pipelines:
         if p is not None:
             read_proxies.update(p.config.reads_map)
     write_proxy = pipeline.config.write
     spec = BlockwiseSpec(
-        fused_blockwise_func, fused_func, function_nargs, read_proxies, write_proxy
+        fused_blockwise_func,
+        fused_func,
+        fused_function_nargs,
+        fused_num_input_blocks,
+        read_proxies,
+        write_proxy,
     )
 
     target_array = primitive_op.target_array
@@ -510,12 +543,6 @@ def fuse_multiple(
     allowed_mem = primitive_op.allowed_mem
     reserved_mem = primitive_op.reserved_mem
     num_tasks = primitive_op.num_tasks
-    tmp = [
-        p.num_input_blocks if p is not None else (1,) for p in predecessor_primitive_ops
-    ]
-    num_input_blocks = tuple(
-        primitive_op.num_input_blocks[0] * n for n in itertools.chain(*tmp)
-    )
 
     fused_pipeline = CubedPipeline(
         apply_blockwise,
@@ -531,7 +558,6 @@ def fuse_multiple(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,
-        num_input_blocks=num_input_blocks,
     )
 
 
