@@ -29,7 +29,7 @@ if __name__ == "__main__":
             store=None,
             executor=executor,
             callbacks=[progress, hist, timeline_viz],
-            memory="2 GiB",  # must be at least allowed_mem
+            memory=["2 GiB", "8 GiB"],  # memory range
             spot_policy="spot_with_fallback",  # recommended
             account=None,  # use your default account (or change to use a specific account)
             keepalive="30 seconds",  # change this to keep clusters alive longer
