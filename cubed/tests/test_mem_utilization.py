@@ -273,8 +273,14 @@ def test_sum_partial_reduce(tmp_path, spec):
 
 
 def run_operation(tmp_path, name, result_array, *, optimize_function=None):
-    # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
-    # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
+    result_array.visualize(
+        f"cubed-{name}-unoptimized", format="png", optimize_graph=False
+    )
+    result_array.visualize(
+        f"cubed-{name}", format="png", optimize_function=optimize_function
+    )
+    result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
+    result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
     hist = HistoryCallback()
     # use store=None to write to temporary zarr
