@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import elemwise
+from cubed.core.ops import elemwise, merge_chunks_new
 from cubed.core.optimization import (
     fuse_all_optimize_dag,
     fuse_only_optimize_dag,
@@ -138,9 +138,18 @@ def test_custom_optimize_function(spec):
     )
 
 
-def fuse_one_level(arr):
+def get_num_input_blocks(dag, arr_name):
+    op_name = next(dag.predecessors(arr_name))
+    return dag.nodes(data=True)[op_name]["pipeline"].config.num_input_blocks
+
+
+def fuse_one_level(arr, *, always_fuse=None):
     # use fuse_predecessors to test one level of fusion
-    return partial(fuse_predecessors, name=next(arr.plan.dag.predecessors(arr.name)))
+    return partial(
+        fuse_predecessors,
+        name=next(arr.plan.dag.predecessors(arr.name)),
+        always_fuse=always_fuse,
+    )
 
 
 def fuse_multiple_levels(*, max_total_source_arrays=4):
@@ -224,10 +233,10 @@ def test_fuse_unary_op(spec):
     expected_fused_dag = create_dag()
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a,), (c,))
-    assert structurally_equivalent(
-        c.plan.optimize(optimize_function=opt_fn).dag,
-        expected_fused_dag,
-    )
+    optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (1,)
+    assert get_num_input_blocks(optimized_dag, c.name) == (1,)
 
     num_created_arrays = 2  # b, c
     assert c.plan.num_tasks(optimize_graph=False) == num_created_arrays + 2
@@ -265,9 +274,10 @@ def test_fuse_binary_op(spec):
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (), (b,))
     add_placeholder_op(expected_fused_dag, (a, b), (e,))
-    assert structurally_equivalent(
-        e.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = e.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(e.plan.dag, e.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, e.name) == (1, 1)
 
     num_created_arrays = 3  # c, d, e
     assert e.plan.num_tasks(optimize_graph=False) == num_created_arrays + 3
@@ -307,9 +317,10 @@ def test_fuse_unary_and_binary_op(spec):
     add_placeholder_op(expected_fused_dag, (), (b,))
     add_placeholder_op(expected_fused_dag, (), (c,))
     add_placeholder_op(expected_fused_dag, (a, b, c), (f,))
-    assert structurally_equivalent(
-        f.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = f.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(f.plan.dag, f.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, f.name) == (1, 1, 1)
 
     result = f.compute(optimize_function=opt_fn)
     assert_array_equal(result, np.ones((2, 2)))
@@ -340,9 +351,10 @@ def test_fuse_mixed_levels(spec):
     add_placeholder_op(expected_fused_dag, (), (b,))
     add_placeholder_op(expected_fused_dag, (), (c,))
     add_placeholder_op(expected_fused_dag, (a, b, c), (e,))
-    assert structurally_equivalent(
-        e.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = e.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(e.plan.dag, e.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, e.name) == (1, 1, 1)
 
     result = e.compute(optimize_function=opt_fn)
     assert_array_equal(result, 3 * np.ones((2, 2)))
@@ -370,9 +382,10 @@ def test_fuse_diamond(spec):
     expected_fused_dag = create_dag()
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a, a), (d,))
-    assert structurally_equivalent(
-        d.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(d.plan.dag, d.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, d.name) == (1, 1)
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 2 * np.ones((2, 2)))
@@ -404,9 +417,10 @@ def test_fuse_mixed_levels_and_diamond(spec):
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a,), (b,))
     add_placeholder_op(expected_fused_dag, (a, b), (d,))
-    assert structurally_equivalent(
-        d.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(d.plan.dag, d.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, d.name) == (1, 1)
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 2 * np.ones((2, 2)))
@@ -434,9 +448,10 @@ def test_fuse_repeated_argument(spec):
     expected_fused_dag = create_dag()
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a, a), (c,))
-    assert structurally_equivalent(
-        c.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, c.name) == (1, 1)
 
     result = c.compute(optimize_function=opt_fn)
     assert_array_equal(result, -2 * np.ones((2, 2)))
@@ -469,9 +484,10 @@ def test_fuse_other_dependents(spec):
     add_placeholder_op(expected_fused_dag, (a,), (c,))
     add_placeholder_op(expected_fused_dag, (b,), (d,))
     plan = arrays_to_plan(c, d)
-    assert structurally_equivalent(
-        plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (1,)
+    assert get_num_input_blocks(optimized_dag, c.name) == (1,)
 
     c_result, d_result = cubed.compute(c, d, optimize_function=opt_fn)
     assert_array_equal(c_result, np.ones((2, 2)))
@@ -535,9 +551,10 @@ def test_fuse_unary_large_fan_in(spec):
         ),
         (j,),
     )
-    assert structurally_equivalent(
-        j.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = j.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(j.plan.dag, j.name) == (1,)
+    assert get_num_input_blocks(optimized_dag, j.name) == (1,) * 8
 
     result = j.compute(optimize_function=opt_fn)
     assert_array_equal(result, -8 * np.ones((2, 2)))
@@ -593,9 +610,10 @@ def test_fuse_large_fan_in_default(spec):
     add_placeholder_op(expected_fused_dag, (a, b, c, d), (n,))
     add_placeholder_op(expected_fused_dag, (e, f, g, h), (o,))
     add_placeholder_op(expected_fused_dag, (n, o), (p,))
-    assert structurally_equivalent(
-        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = p.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(p.plan.dag, p.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, p.name) == (1, 1)
 
     result = p.compute(optimize_function=opt_fn)
     assert_array_equal(result, 8 * np.ones((2, 2)))
@@ -662,9 +680,10 @@ def test_fuse_large_fan_in_override(spec):
         ),
         (p,),
     )
-    assert structurally_equivalent(
-        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = p.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(p.plan.dag, p.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, p.name) == (1,) * 8
 
     result = p.compute(optimize_function=opt_fn)
     assert_array_equal(result, 8 * np.ones((2, 2)))
@@ -672,13 +691,143 @@ def test_fuse_large_fan_in_override(spec):
     # now force everything to be fused with fuse_all_optimize_dag
     # note that max_total_source_arrays is *not* set
     opt_fn = fuse_all_optimize_dag
-
-    assert structurally_equivalent(
-        p.plan.optimize(optimize_function=opt_fn).dag, expected_fused_dag
-    )
+    optimized_dag = p.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
 
     result = p.compute(optimize_function=opt_fn)
     assert_array_equal(result, 8 * np.ones((2, 2)))
+
+
+# merge chunks with same number of tasks (unary)
+#
+#  a        ->       a
+#  | 3               | 3
+#  b                 c
+#  | 1
+#  c
+#
+def test_fuse_with_merge_chunks_unary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = merge_chunks_new(a, chunks=(3, 2))
+    c = xp.negative(b)
+
+    opt_fn = fuse_one_level(c)
+
+    c.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (c,))
+    optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(b.plan.dag, b.name) == (3,)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (1,)
+    assert get_num_input_blocks(optimized_dag, c.name) == (3,)
+
+    result = c.compute(optimize_function=opt_fn)
+    assert_array_equal(result, -np.ones((3, 2)))
+
+
+# merge chunks with same number of tasks (binary)
+#
+#   a   b    ->   a   b
+# 3 |   | 1      3 \ / 1
+#   c   d           e
+#  1 \ / 1
+#     e
+#
+def test_fuse_with_merge_chunks_binary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.ones((3, 2), chunks=(3, 2), spec=spec)
+    c = merge_chunks_new(a, chunks=(3, 2))
+    d = xp.negative(b)
+    e = xp.add(c, d)
+
+    opt_fn = fuse_one_level(e)
+
+    e.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (), (b,))
+    add_placeholder_op(expected_fused_dag, (a, b), (e,))
+    optimized_dag = e.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(e.plan.dag, e.name) == (1, 1)
+    assert get_num_input_blocks(optimized_dag, e.name) == (3, 1)
+
+    result = e.compute(optimize_function=opt_fn)
+    assert_array_equal(result, np.zeros((3, 2)))
+
+
+# merge chunks with different number of tasks (b has more tasks than c)
+#
+#  a        ->       a
+#  | 1               | 3
+#  b                 c
+#  | 3
+#  c
+#
+def test_fuse_merge_chunks_unary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.negative(a)
+    c = merge_chunks_new(b, chunks=(3, 2))
+
+    # force c to fuse
+    last_op = sorted(c.plan.dag.nodes())[-1]
+    opt_fn = fuse_one_level(c, always_fuse=[last_op])
+
+    c.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (c,))
+    optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(b.plan.dag, b.name) == (1,)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (3,)
+    assert get_num_input_blocks(optimized_dag, c.name) == (3,)
+
+    result = c.compute(optimize_function=opt_fn)
+    assert_array_equal(result, -np.ones((3, 2)))
+
+
+# merge chunks with different number of tasks (c has more tasks than d)
+#
+#  a   b    ->   a   b
+# 1 \ / 1       3 \ / 3
+#    c             d
+#    | 3
+#    d
+#
+def test_fuse_merge_chunks_binary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    c = xp.add(a, b)
+    d = merge_chunks_new(c, chunks=(3, 2))
+
+    # force d to fuse
+    last_op = sorted(d.plan.dag.nodes())[-1]
+    opt_fn = fuse_one_level(d, always_fuse=[last_op])
+
+    d.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (), (b,))
+    add_placeholder_op(expected_fused_dag, (a, b), (d,))
+    optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (1, 1)
+    assert get_num_input_blocks(d.plan.dag, d.name) == (3,)
+    assert get_num_input_blocks(optimized_dag, d.name) == (3, 3)
+
+    result = d.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 2 * np.ones((3, 2)))
 
 
 def test_fuse_only_optimize_dag(spec):
@@ -699,10 +848,10 @@ def test_fuse_only_optimize_dag(spec):
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a,), (b,))
     add_placeholder_op(expected_fused_dag, (b,), (d,))
-    assert structurally_equivalent(
-        d.plan.optimize(optimize_function=opt_fn).dag,
-        expected_fused_dag,
-    )
+    optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(d.plan.dag, d.name) == (1,)
+    assert get_num_input_blocks(optimized_dag, d.name) == (1,)
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, -np.ones((2, 2)))

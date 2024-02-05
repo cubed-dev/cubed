@@ -330,6 +330,11 @@ class Plan:
 
                 # remove pipeline attribute since it is a long string that causes graphviz to fail
                 if "pipeline" in d:
+                    pipeline = d["pipeline"]
+                    if pipeline.config is not None:
+                        tooltip += (
+                            f"\nnum input blocks: {pipeline.config.num_input_blocks}"
+                        )
                     del d["pipeline"]
 
                 if "stack_summaries" in d and d["stack_summaries"] is not None:

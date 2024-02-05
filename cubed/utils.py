@@ -310,3 +310,68 @@ def broadcast_trick(func):
     inner.__doc__ = func.__doc__
     inner.__name__ = func.__name__
     return inner
+
+
+# From dask.array.core, but changed to use nxp namespace
+def _concatenate2(arrays, axes=None):
+    """Recursively concatenate nested lists of arrays along axes
+
+    Each entry in axes corresponds to each level of the nested list.  The
+    length of axes should correspond to the level of nesting of arrays.
+    If axes is an empty list or tuple, return arrays, or arrays[0] if
+    arrays is a list.
+
+    >>> x = np.array([[1, 2], [3, 4]])
+    >>> _concatenate2([x, x], axes=[0])
+    array([[1, 2],
+           [3, 4],
+           [1, 2],
+           [3, 4]])
+
+    >>> _concatenate2([x, x], axes=[1])
+    array([[1, 2, 1, 2],
+           [3, 4, 3, 4]])
+
+    >>> _concatenate2([[x, x], [x, x]], axes=[0, 1])
+    array([[1, 2, 1, 2],
+           [3, 4, 3, 4],
+           [1, 2, 1, 2],
+           [3, 4, 3, 4]])
+
+    Supports Iterators
+    >>> _concatenate2(iter([x, x]), axes=[1])
+    array([[1, 2, 1, 2],
+           [3, 4, 3, 4]])
+
+    Special Case
+    >>> _concatenate2([x, x], axes=())
+    array([[1, 2],
+           [3, 4]])
+    """
+    if axes is None:
+        axes = []
+
+    if axes == ():
+        if isinstance(arrays, list):
+            return arrays[0]
+        else:
+            return arrays
+
+    if isinstance(arrays, Iterator):
+        arrays = list(arrays)
+    if not isinstance(arrays, (list, tuple)):
+        return arrays
+    if len(axes) > 1:
+        arrays = [_concatenate2(a, axes=axes[1:]) for a in arrays]
+    concatenate = nxp.concat
+    if isinstance(arrays[0], dict):
+        # Handle concatenation of `dict`s, used as a replacement for structured
+        # arrays when that's not supported by the array library (e.g., CuPy).
+        keys = list(arrays[0].keys())
+        assert all(list(a.keys()) == keys for a in arrays)
+        ret = dict()
+        for k in keys:
+            ret[k] = concatenate(list(a[k] for a in arrays), axis=axes[0])
+        return ret
+    else:
+        return concatenate(arrays, axis=axes[0])
