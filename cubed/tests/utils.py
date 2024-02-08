@@ -67,7 +67,7 @@ class TaskCounter(Callback):
     def __init__(self, check_timestamps=True) -> None:
         self.check_timestamps = check_timestamps
 
-    def on_compute_start(self, dag, resume):
+    def on_compute_start(self, event):
         self.value = 0
 
     def on_task_end(self, event):
