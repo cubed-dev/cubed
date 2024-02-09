@@ -24,38 +24,23 @@ class CubedPipeline:
     config: Config
 
 
-class Callback:
-    """Object to receive callback events during array computation."""
+@dataclass
+class ComputeStartEvent:
+    """Callback information about a computation that is about to start."""
 
-    def on_compute_start(self, dag, resume):
-        """Called when the computation is about to start.
+    dag: MultiDiGraph
+    """The computation DAG."""
 
-        Parameters
-        ----------
-        dag : networkx.MultiDiGraph
-            The computation DAG.
-        """
-        pass  # pragma: no cover
+    resume: bool
+    """If the computation has been resumed."""
 
-    def on_compute_end(self, dag):
-        """Called when the computation has finished.
 
-        Parameters
-        ----------
-        dag : networkx.MultiDiGraph
-            The computation DAG.
-        """
-        pass  # pragma: no cover
+@dataclass
+class ComputeEndEvent:
+    """Callback information about a computation that has finished."""
 
-    def on_task_end(self, event):
-        """Called when the a task ends.
-
-        Parameters
-        ----------
-        event : TaskEndEvent
-            Information about the task execution.
-        """
-        pass  # pragma: no cover
+    dag: MultiDiGraph
+    """The computation DAG."""
 
 
 @dataclass
@@ -85,3 +70,37 @@ class TaskEndEvent:
 
     peak_measured_mem_end: Optional[int] = None
     """Peak memory usage measured on the remote worker after the function finishes executing."""
+
+
+class Callback:
+    """Object to receive callback events during array computation."""
+
+    def on_compute_start(self, event):
+        """Called when the computation is about to start.
+
+        Parameters
+        ----------
+        event : ComputeStartEvent
+            Information about the computation.
+        """
+        pass  # pragma: no cover
+
+    def on_compute_end(self, ComputeEndEvent):
+        """Called when the computation has finished.
+
+        Parameters
+        ----------
+        event : ComputeStartEvent
+            Information about the computation.
+        """
+        pass  # pragma: no cover
+
+    def on_task_end(self, event):
+        """Called when the a task ends.
+
+        Parameters
+        ----------
+        event : TaskEndEvent
+            Information about the task execution.
+        """
+        pass  # pragma: no cover

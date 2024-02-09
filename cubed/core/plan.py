@@ -11,7 +11,7 @@ import zarr
 from cubed.core.optimization import simple_optimize_dag
 from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
-from cubed.runtime.types import CubedPipeline
+from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
 
@@ -199,7 +199,8 @@ class Plan:
         dag = self._finalize_dag(optimize_graph, optimize_function)
 
         if callbacks is not None:
-            [callback.on_compute_start(dag, resume=resume) for callback in callbacks]
+            event = ComputeStartEvent(dag, resume)
+            [callback.on_compute_start(event) for callback in callbacks]
         executor.execute_dag(
             dag,
             callbacks=callbacks,
@@ -209,7 +210,8 @@ class Plan:
             **kwargs,
         )
         if callbacks is not None:
-            [callback.on_compute_end(dag) for callback in callbacks]
+            event = ComputeEndEvent(dag)
+            [callback.on_compute_end(event) for callback in callbacks]
 
     def num_tasks(self, optimize_graph=True, optimize_function=None, resume=None):
         """Return the number of tasks needed to execute this plan."""

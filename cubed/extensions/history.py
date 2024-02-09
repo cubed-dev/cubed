@@ -9,9 +9,9 @@ from cubed.runtime.types import Callback
 
 
 class HistoryCallback(Callback):
-    def on_compute_start(self, dag, resume):
+    def on_compute_start(self, event):
         plan = []
-        for name, node in visit_nodes(dag, resume):
+        for name, node in visit_nodes(event.dag, event.resume):
             primitive_op = node["primitive_op"]
             plan.append(
                 dict(
@@ -29,7 +29,7 @@ class HistoryCallback(Callback):
     def on_task_end(self, event):
         self.events.append(asdict(event))
 
-    def on_compute_end(self, dag):
+    def on_compute_end(self, event):
         self.plan_df = pd.DataFrame(self.plan)
         self.events_df = pd.DataFrame(self.events)
         Path("history").mkdir(exist_ok=True)
