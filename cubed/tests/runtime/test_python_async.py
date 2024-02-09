@@ -40,12 +40,14 @@ async def run_test(function, input, retries=2, use_backups=False, batch_size=Non
     ],
 )
 # fmt: on
-def test_success(tmp_path, timing_map, n_tasks, retries):
+@pytest.mark.parametrize("use_backups", [False, True])
+def test_success(tmp_path, timing_map, n_tasks, retries, use_backups):
     outputs = asyncio.run(
         run_test(
             function=partial(deterministic_failure, tmp_path, timing_map),
             input=range(n_tasks),
             retries=retries,
+            use_backups=use_backups,
         )
     )
 
@@ -62,13 +64,15 @@ def test_success(tmp_path, timing_map, n_tasks, retries):
     ],
 )
 # fmt: on
-def test_failure(tmp_path, timing_map, n_tasks, retries):
+@pytest.mark.parametrize("use_backups", [False, True])
+def test_failure(tmp_path, timing_map, n_tasks, retries, use_backups):
     with pytest.raises(RuntimeError):
         asyncio.run(
             run_test(
                 function=partial(deterministic_failure, tmp_path, timing_map),
                 input=range(n_tasks),
                 retries=retries,
+                use_backups=use_backups,
             )
         )
 

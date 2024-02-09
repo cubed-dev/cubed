@@ -48,7 +48,7 @@ def map_unordered(
     include_modules: List[str] = [],
     timeout: Optional[int] = None,
     retries: int = 2,
-    use_backups: bool = False,
+    use_backups: bool = True,
     return_stats: bool = False,
     **kwargs,
 ) -> Iterator[Any]:
@@ -138,7 +138,7 @@ def map_unordered(
                     future, now, start_times[group_name], end_times[group_name]
                 ):
                     input = future.input
-                    logger.info("Running backup task for %s", input)
+                    logger.warn("Running backup task for %s", input)
                     futures = lithops_function_executor.map(
                         group_name_to_function[group_name],
                         [input],
@@ -166,7 +166,7 @@ def execute_dag(
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
-    use_backups = kwargs.pop("use_backups", False)
+    use_backups = kwargs.pop("use_backups", True)
     allowed_mem = spec.allowed_mem if spec is not None else None
     function_executor = FunctionExecutor(**kwargs)
     runtime_memory_mb = function_executor.config[function_executor.backend].get(

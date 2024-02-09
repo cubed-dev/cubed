@@ -26,7 +26,7 @@ from cubed.spec import Spec
 async def map_unordered(
     app_function: Function,
     input: Iterable[Any],
-    use_backups: bool = False,
+    use_backups: bool = True,
     backup_function: Optional[Function] = None,
     batch_size: Optional[int] = None,
     return_stats: bool = False,

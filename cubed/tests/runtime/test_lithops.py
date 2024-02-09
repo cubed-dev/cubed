@@ -44,11 +44,13 @@ def run_test(function, input, retries, timeout=10, use_backups=False):
     ],
 )
 # fmt: on
-def test_success(tmp_path, timing_map, n_tasks, retries):
+@pytest.mark.parametrize("use_backups", [False, True])
+def test_success(tmp_path, timing_map, n_tasks, retries, use_backups):
     outputs = run_test(
         function=partial(deterministic_failure, tmp_path, timing_map),
         input=range(n_tasks),
         retries=retries,
+        use_backups=use_backups,
     )
 
     assert outputs == set(range(n_tasks))
@@ -65,12 +67,14 @@ def test_success(tmp_path, timing_map, n_tasks, retries):
     ],
 )
 # fmt: on
-def test_failure(tmp_path, timing_map, n_tasks, retries):
+@pytest.mark.parametrize("use_backups", [False, True])
+def test_failure(tmp_path, timing_map, n_tasks, retries, use_backups):
     with pytest.raises(RuntimeError):
         run_test(
             function=partial(deterministic_failure, tmp_path, timing_map),
             input=range(n_tasks),
             retries=retries,
+            use_backups=use_backups,
         )
 
     check_invocation_counts(tmp_path, timing_map, n_tasks, retries)
