@@ -152,10 +152,12 @@ def fuse_one_level(arr, *, always_fuse=None):
     )
 
 
-def fuse_multiple_levels(*, max_total_source_arrays=4):
+def fuse_multiple_levels(*, max_total_source_arrays=4, max_total_num_input_blocks=None):
     # use multiple_inputs_optimize_dag to test multiple levels of fusion
     return partial(
-        multiple_inputs_optimize_dag, max_total_source_arrays=max_total_source_arrays
+        multiple_inputs_optimize_dag,
+        max_total_source_arrays=max_total_source_arrays,
+        max_total_num_input_blocks=max_total_num_input_blocks,
     )
 
 
@@ -775,9 +777,8 @@ def test_fuse_merge_chunks_unary(spec):
     b = xp.negative(a)
     c = merge_chunks_new(b, chunks=(3, 2))
 
-    # force c to fuse
-    last_op = sorted(c.plan.dag.nodes())[-1]
-    opt_fn = fuse_one_level(c, always_fuse=[last_op])
+    # specify max_total_num_input_blocks to force c to fuse
+    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=3)
 
     c.visualize(optimize_function=opt_fn)
 
@@ -809,9 +810,8 @@ def test_fuse_merge_chunks_binary(spec):
     c = xp.add(a, b)
     d = merge_chunks_new(c, chunks=(3, 2))
 
-    # force d to fuse
-    last_op = sorted(d.plan.dag.nodes())[-1]
-    opt_fn = fuse_one_level(d, always_fuse=[last_op])
+    # specify max_total_num_input_blocks to force d to fuse
+    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=6)
 
     d.visualize(optimize_function=opt_fn)
 
