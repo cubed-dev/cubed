@@ -52,10 +52,10 @@ These will take longer to run as they operate on more data.
 
 
 The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
-The plots are `png` files and are written in the `plots` directory with a timestamp. Open the latest one with
+The plots are `png` files and are written in the `history` directory in a directory with a timestamp. Open the latest one with
 
 ```shell
-open plots/$(ls plots | tail -1)
+open $(ls -d history/compute-* | tail -1)/timeline.png
 ```
 
 ## Cleaning up
