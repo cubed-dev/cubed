@@ -14,6 +14,7 @@ from cubed.runtime.utils import execute_with_stats, handle_callbacks
 from cubed.spec import Spec
 
 RUNTIME_MEMORY_MIB = 2000
+FORCE_BUILD = os.getenv("CUBED_MODAL_FORCE_BUILD") is not None
 
 stub = modal.Stub("cubed-stub")
 
@@ -35,7 +36,8 @@ else:
             "tenacity",
             "toolz",
             "zarr",
-        ]
+        ],
+        force_build=FORCE_BUILD,
     )
     gcp_image = modal.Image.debian_slim().pip_install(
         [
@@ -48,7 +50,8 @@ else:
             "tenacity",
             "toolz",
             "zarr",
-        ]
+        ],
+        force_build=FORCE_BUILD,
     )
 
 
@@ -70,7 +73,7 @@ def check_runtime_memory(spec):
     cloud="aws",
 )
 def run_remotely(input, func=None, config=None):
-    print(f"running remotely on {input}")
+    print(f"running remotely on {input} in {os.getenv('MODAL_REGION')}")
     # note we can't use the execution_stat decorator since it doesn't work with modal decorators
     result, stats = execute_with_stats(func, input, config=config)
     return result, stats
@@ -94,7 +97,7 @@ class Container:
 
     @modal.method()
     def run_remotely(self, input, func=None, config=None):
-        print(f"running remotely on {input}")
+        print(f"running remotely on {input} in {os.getenv('MODAL_REGION')}")
         # note we can't use the execution_stat decorator since it doesn't work with modal decorators
         result, stats = execute_with_stats(func, input, config=config)
         return result, stats
