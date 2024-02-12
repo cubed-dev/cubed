@@ -5,6 +5,7 @@ import numpy as np
 import zarr
 from zarr.indexing import BasicIndexer, is_slice
 
+from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
@@ -107,7 +108,7 @@ class VirtualInMemoryArray:
 
     def __init__(
         self,
-        array: np.ndarray,  # TODO: generalise
+        array: np.ndarray,  # TODO: generalise to array API type
         chunks: T_RegularChunks,
         max_nbytes: int = 10**6,
     ):
@@ -129,7 +130,7 @@ class VirtualInMemoryArray:
         self.chunks = template.chunks
         self.template = template
         if array.size > 0:
-            template[...] = array
+            template[...] = backend_array_to_numpy_array(array)
 
     def __getitem__(self, key):
         return self.array.__getitem__(key)
