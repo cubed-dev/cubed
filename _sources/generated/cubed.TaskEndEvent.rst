@@ -30,6 +30,6 @@
       ~TaskEndEvent.peak_measured_mem_start
       ~TaskEndEvent.task_create_tstamp
       ~TaskEndEvent.task_result_tstamp
-      ~TaskEndEvent.array_name
+      ~TaskEndEvent.name
    
    
