@@ -352,7 +352,10 @@ def can_fuse_primitive_ops(
 
 
 def can_fuse_multiple_primitive_ops(
-    primitive_op: PrimitiveOperation, *predecessor_primitive_ops: PrimitiveOperation
+    primitive_op: PrimitiveOperation,
+    predecessor_primitive_ops: List[PrimitiveOperation],
+    *,
+    max_total_num_input_blocks: Optional[int] = None,
 ) -> bool:
     if is_fuse_candidate(primitive_op) and all(
         is_fuse_candidate(p) for p in predecessor_primitive_ops
@@ -368,9 +371,18 @@ def can_fuse_multiple_primitive_ops(
         num_input_blocks = primitive_op.pipeline.config.num_input_blocks
         if not all(num_input_blocks[0] == n for n in num_input_blocks):
             return False
-        return all(
-            primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
-        )
+        if max_total_num_input_blocks is None:
+            # If max total input blocks not specified, then only fuse if num
+            # tasks of predecessor ops match.
+            return all(
+                primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
+            )
+        else:
+            total_num_input_blocks = 0
+            for ni, p in zip(num_input_blocks, predecessor_primitive_ops):
+                for nj in p.pipeline.config.num_input_blocks:
+                    total_num_input_blocks += ni * nj
+            return total_num_input_blocks <= max_total_num_input_blocks
     return False
 
 

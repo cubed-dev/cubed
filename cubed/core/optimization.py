@@ -96,7 +96,13 @@ def is_fusable(node_dict):
 
 
 def can_fuse_predecessors(
-    dag, name, *, max_total_source_arrays=4, always_fuse=None, never_fuse=None
+    dag,
+    name,
+    *,
+    max_total_source_arrays=4,
+    max_total_num_input_blocks=None,
+    always_fuse=None,
+    never_fuse=None,
 ):
     nodes = dict(dag.nodes(data=True))
 
@@ -130,12 +136,20 @@ def can_fuse_predecessors(
         if is_fusable(nodes[pre])
     ]
     return can_fuse_multiple_primitive_ops(
-        nodes[name]["primitive_op"], *predecessor_primitive_ops
+        nodes[name]["primitive_op"],
+        predecessor_primitive_ops,
+        max_total_num_input_blocks=max_total_num_input_blocks,
     )
 
 
 def fuse_predecessors(
-    dag, name, *, max_total_source_arrays=4, always_fuse=None, never_fuse=None
+    dag,
+    name,
+    *,
+    max_total_source_arrays=4,
+    max_total_num_input_blocks=None,
+    always_fuse=None,
+    never_fuse=None,
 ):
     """Fuse a node with its immediate predecessors."""
 
@@ -144,6 +158,7 @@ def fuse_predecessors(
         dag,
         name,
         max_total_source_arrays=max_total_source_arrays,
+        max_total_num_input_blocks=max_total_num_input_blocks,
         always_fuse=always_fuse,
         never_fuse=never_fuse,
     ):
@@ -195,7 +210,12 @@ def fuse_predecessors(
 
 
 def multiple_inputs_optimize_dag(
-    dag, *, max_total_source_arrays=4, always_fuse=None, never_fuse=None
+    dag,
+    *,
+    max_total_source_arrays=4,
+    max_total_num_input_blocks=None,
+    always_fuse=None,
+    never_fuse=None,
 ):
     """Fuse multiple inputs."""
     for name in list(nx.topological_sort(dag)):
@@ -203,6 +223,7 @@ def multiple_inputs_optimize_dag(
             dag,
             name,
             max_total_source_arrays=max_total_source_arrays,
+            max_total_num_input_blocks=max_total_num_input_blocks,
             always_fuse=always_fuse,
             never_fuse=never_fuse,
         )
