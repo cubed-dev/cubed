@@ -80,15 +80,17 @@ async def run_test(app_function, input, use_backups=False, batch_size=None, **kw
     ],
 )
 # fmt: on
+@pytest.mark.parametrize("use_backups", [False, True])
 @pytest.mark.cloud
-def test_success(timing_map, n_tasks, retries):
+def test_success(timing_map, n_tasks, retries, use_backups):
     try:
         outputs = asyncio.run(
             run_test(
                 app_function=deterministic_failure_modal,
                 input=range(n_tasks),
+                use_backups=use_backups,
                 path=tmp_path,
-                timing_map=timing_map
+                timing_map=timing_map,
             )
         )
 
@@ -109,14 +111,16 @@ def test_success(timing_map, n_tasks, retries):
     ],
 )
 # fmt: on
+@pytest.mark.parametrize("use_backups", [False, True])
 @pytest.mark.cloud
-def test_failure(timing_map, n_tasks, retries):
+def test_failure(timing_map, n_tasks, retries, use_backups):
     try:
         with pytest.raises(RuntimeError):
             asyncio.run(
                 run_test(
                     app_function=deterministic_failure_modal,
                     input=range(n_tasks),
+                    use_backups=use_backups,
                     path=tmp_path,
                     timing_map=timing_map,
                 )
@@ -137,13 +141,15 @@ def test_failure(timing_map, n_tasks, retries):
     ],
 )
 # fmt: on
+@pytest.mark.parametrize("use_backups", [False, True])
 @pytest.mark.cloud
-def test_large_number_of_tasks(timing_map, n_tasks, retries):
+def test_large_number_of_tasks(timing_map, n_tasks, retries, use_backups):
     try:
         outputs = asyncio.run(
             run_test(
                 app_function=deterministic_failure_modal,
                 input=range(n_tasks),
+                use_backups=use_backups,
                 path=tmp_path,
                 timing_map=timing_map
             )

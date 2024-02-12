@@ -35,7 +35,8 @@ Weak scaling requires more workers than output chunks, so for large problems it 
 With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.
 
 Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
-To handle stragglers, you should consider turning on backups (with ``use_backups=True``), as any failures that are restarted essentially become stragglers.
+Stargglers are handled by running backup tasks for any tasks that are running very slowly. This feature is enabled by default, but
+if you need to turn it off you can do so with ``use_backups=False``.
 Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally.
 
 ### Multi-step Calculation
