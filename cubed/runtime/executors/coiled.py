@@ -35,5 +35,5 @@ class CoiledFunctionsDagExecutor(DagExecutor):
             for _, stats in coiled_function.map(input, config=pipeline.config):
                 if callbacks is not None:
                     if name is not None:
-                        stats["array_name"] = name
+                        stats["name"] = name
                     handle_callbacks(callbacks, stats)

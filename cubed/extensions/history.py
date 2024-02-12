@@ -15,7 +15,7 @@ class HistoryCallback(Callback):
             primitive_op = node["primitive_op"]
             plan.append(
                 dict(
-                    array_name=name,
+                    name=name,
                     op_name=node["op_name"],
                     projected_mem=primitive_op.projected_mem,
                     reserved_mem=primitive_op.reserved_mem,
@@ -50,7 +50,7 @@ def analyze(plan_df, events_df):
     plan_df["reserved_mem_mb"] = plan_df["reserved_mem"] / 1_000_000
     plan_df = plan_df[
         [
-            "array_name",
+            "name",
             "op_name",
             "projected_mem_mb",
             "reserved_mem_mb",
@@ -68,7 +68,7 @@ def analyze(plan_df, events_df):
     )
 
     # find per-array stats
-    df = events_df.groupby("array_name", as_index=False).agg(
+    df = events_df.groupby("name", as_index=False).agg(
         {
             "peak_measured_mem_start_mb": ["min", "mean", "max"],
             "peak_measured_mem_end_mb": ["max"],
@@ -78,7 +78,7 @@ def analyze(plan_df, events_df):
 
     # flatten multi-index
     df.columns = ["_".join(a).rstrip("_") for a in df.columns.to_flat_index()]
-    df = df.merge(plan_df, on="array_name")
+    df = df.merge(plan_df, on="name")
 
     def projected_mem_utilization(row):
         return row["peak_measured_mem_end_mb_max"] / row["projected_mem_mb"]
@@ -88,7 +88,7 @@ def analyze(plan_df, events_df):
     )
     df = df[
         [
-            "array_name",
+            "name",
             "op_name",
             "num_tasks",
             "peak_measured_mem_start_mb_max",
