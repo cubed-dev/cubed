@@ -28,5 +28,5 @@ class PythonDagExecutor(DagExecutor):
             for m in pipeline.mappable:
                 exec_stage_func(pipeline.function, m, config=pipeline.config)
                 if callbacks is not None:
-                    event = TaskEndEvent(array_name=name)
+                    event = TaskEndEvent(name=name)
                     [callback.on_task_end(event) for callback in callbacks]

@@ -221,7 +221,7 @@ def execute_dag(
 def standardise_lithops_stats(future: RetryingFuture) -> Dict[str, Any]:
     stats = future.stats
     return dict(
-        array_name=future.group_name,
+        name=future.group_name,
         task_create_tstamp=stats["host_job_create_tstamp"],
         function_start_tstamp=stats["worker_func_start_tstamp"],
         function_end_tstamp=stats["worker_func_end_tstamp"],

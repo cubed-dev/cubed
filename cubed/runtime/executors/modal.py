@@ -136,7 +136,7 @@ def execute_dag(
                 order_outputs=False,
                 kwargs=dict(func=pipeline.function, config=pipeline.config),
             ):
-                stats["array_name"] = name
+                stats["name"] = name
                 stats["task_create_tstamp"] = task_create_tstamp
                 handle_callbacks(callbacks, stats)
 

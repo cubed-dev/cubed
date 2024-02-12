@@ -47,8 +47,8 @@ class ComputeEndEvent:
 class TaskEndEvent:
     """Callback information about a completed task (or tasks)."""
 
-    array_name: str
-    """Name of the array that the task is for."""
+    name: str
+    """Name of the operation that the task is for."""
 
     num_tasks: int = 1
     """Number of tasks that this event applies to (default 1)."""

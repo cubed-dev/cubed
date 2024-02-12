@@ -31,9 +31,7 @@ class TimelineVisualizationCallback(Callback):
 def create_timeline(stats, start_tstamp, end_tstamp, dst=None):
     stats_df = pd.DataFrame(stats)
 
-    stats_df = stats_df.sort_values(
-        by=["task_create_tstamp", "array_name"], ascending=True
-    )
+    stats_df = stats_df.sort_values(by=["task_create_tstamp", "name"], ascending=True)
 
     total_calls = len(stats_df)
 

@@ -51,7 +51,7 @@ async def map_unordered(
             if return_stats:
                 result, stats = result
                 if name is not None:
-                    stats["array_name"] = name
+                    stats["name"] = name
                 stats["task_create_tstamp"] = task_create_tstamp
                 yield result, stats
             else:
