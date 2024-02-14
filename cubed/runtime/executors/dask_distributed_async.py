@@ -26,7 +26,7 @@ from cubed.spec import Spec
 
 # note we can't call `pipeline_func` just `func` here as it clashes with `dask.distributed.Client.map``
 @execution_stats
-def run_func(input, pipeline_func=None, config=None, name=None):
+def run_func(input, pipeline_func=None, config=None, name=None, compute_id=None):
     result = pipeline_func(input, config=config)
     return result
 
@@ -152,6 +152,7 @@ class AsyncDaskDistributedExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         compute_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> None:
@@ -163,6 +164,7 @@ class AsyncDaskDistributedExecutor(DagExecutor):
                 resume=resume,
                 spec=spec,
                 compute_kwargs=compute_kwargs,
+                compute_id=compute_id,
                 **merged_kwargs,
             )
         )

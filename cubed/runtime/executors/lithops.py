@@ -33,7 +33,7 @@ from cubed.spec import Spec
 logger = logging.getLogger(__name__)
 
 
-def run_func(input, func=None, config=None, name=None):
+def run_func(input, func=None, config=None, name=None, compute_id=None):
     result = func(input, config=config)
     return result
 
@@ -244,6 +244,7 @@ class LithopsDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -252,5 +253,6 @@ class LithopsDagExecutor(DagExecutor):
             callbacks=callbacks,
             resume=resume,
             spec=spec,
+            compute_id=compute_id,
             **merged_kwargs,
         )

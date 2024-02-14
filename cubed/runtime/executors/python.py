@@ -7,7 +7,7 @@ from cubed.runtime.types import Callback, CubedPipeline, DagExecutor, TaskEndEve
 from cubed.spec import Spec
 
 
-def exec_stage_func(input, func=None, config=None, name=None):
+def exec_stage_func(input, func=None, config=None, name=None, compute_id=None):
     return func(input, config=config)
 
 
@@ -20,12 +20,19 @@ class PythonDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
         for name, node in visit_nodes(dag, resume=resume):
             pipeline: CubedPipeline = node["pipeline"]
             for m in pipeline.mappable:
-                exec_stage_func(m, pipeline.function, config=pipeline.config, name=name)
+                exec_stage_func(
+                    m,
+                    pipeline.function,
+                    config=pipeline.config,
+                    name=name,
+                    compute_id=compute_id,
+                )
                 if callbacks is not None:
                     event = TaskEndEvent(name=name)
                     [callback.on_task_end(event) for callback in callbacks]

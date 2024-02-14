@@ -22,6 +22,7 @@ class CoiledFunctionsDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **coiled_kwargs: Mapping[str, Any],
     ) -> None:
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation

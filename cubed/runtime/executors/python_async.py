@@ -16,8 +16,8 @@ from cubed.spec import Spec
 
 
 @execution_stats
-def run_func(input, func=None, config=None, name=None):
-    print(f"{name}: running on {input}")
+def run_func(input, func=None, config=None, name=None, compute_id=None):
+    print(f"{compute_id} {name}: running on {input}")
     result = func(input, config=config)
     return result
 
@@ -126,6 +126,7 @@ class AsyncPythonDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
         asyncio.run(
@@ -134,6 +135,7 @@ class AsyncPythonDagExecutor(DagExecutor):
                 callbacks=callbacks,
                 resume=resume,
                 spec=spec,
+                compute_id=compute_id,
                 **kwargs,
             )
         )
