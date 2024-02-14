@@ -21,8 +21,13 @@ class TqdmProgressBar(Callback):
         i = 0
         for name, node in visit_nodes(event.dag, event.resume):
             num_tasks = node["primitive_op"].num_tasks
+            op_display_name = node["op_display_name"].replace("\n", " ")
             self.pbars[name] = tqdm(
-                *self.args, desc=name, total=num_tasks, position=i, **self.kwargs
+                *self.args,
+                desc=op_display_name,
+                total=num_tasks,
+                position=i,
+                **self.kwargs,
             )
             i = i + 1
 

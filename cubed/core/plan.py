@@ -9,6 +9,7 @@ import networkx as nx
 import zarr
 
 from cubed.core.optimization import simple_optimize_dag
+from cubed.primitive.blockwise import BlockwiseSpec
 from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
@@ -72,6 +73,9 @@ class Plan:
         frame = inspect.currentframe().f_back  # go back one in the stack
         stack_summaries = extract_stack_summaries(frame, limit=10)
 
+        first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
+        first_cubed_summary = stack_summaries[first_cubed_i]
+
         op_name_unique = gensym()
 
         if primitive_op is None:
@@ -82,6 +86,7 @@ class Plan:
                 op_name=op_name,
                 type="op",
                 stack_summaries=stack_summaries,
+                op_display_name=f"{op_name_unique}\n{first_cubed_summary.name}",
                 hidden=hidden,
             )
             # array (when multiple outputs are supported there could be more than one)
@@ -101,6 +106,7 @@ class Plan:
                 op_name=op_name,
                 type="op",
                 stack_summaries=stack_summaries,
+                op_display_name=f"{op_name_unique}\n{first_cubed_summary.name}",
                 hidden=hidden,
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
@@ -160,6 +166,7 @@ class Plan:
                 name=name,
                 op_name=op_name,
                 type="op",
+                op_display_name=name,
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
             )
@@ -307,19 +314,17 @@ class Plan:
             tooltip = f"name: {n}\n"
             node_type = d.get("type", None)
             if node_type == "op":
+                label = d["op_display_name"]
                 op_name = d["op_name"]
                 if op_name == "blockwise":
                     d["style"] = '"rounded,filled"'
                     d["fillcolor"] = "#dcbeff"
-                    op_name_summary = "(bw)"
                 elif op_name == "rechunk":
                     d["style"] = '"rounded,filled"'
                     d["fillcolor"] = "#aaffc3"
-                    op_name_summary = "(rc)"
                 else:
                     # creation function
                     d["style"] = "rounded"
-                    op_name_summary = ""
                 tooltip += f"op: {op_name}"
 
                 num_tasks = None
@@ -337,7 +342,7 @@ class Plan:
                 # remove pipeline attribute since it is a long string that causes graphviz to fail
                 if "pipeline" in d:
                     pipeline = d["pipeline"]
-                    if pipeline.config is not None:
+                    if isinstance(pipeline.config, BlockwiseSpec):
                         tooltip += (
                             f"\nnum input blocks: {pipeline.config.num_input_blocks}"
                         )
@@ -350,10 +355,7 @@ class Plan:
                     first_cubed_i = min(
                         i for i, s in enumerate(stack_summaries) if s.is_cubed()
                     )
-                    first_cubed_summary = stack_summaries[first_cubed_i]
                     caller_summary = stack_summaries[first_cubed_i - 1]
-
-                    label = f"{first_cubed_summary.name} {op_name_summary}"
 
                     calls = " -> ".join(
                         [
@@ -384,7 +386,7 @@ class Plan:
                     nbytes = memory_repr(target.nbytes)
                 if n in array_display_names:
                     var_name = array_display_names[n]
-                    label = f"{n} ({var_name})"
+                    label = f"{n}\n{var_name}"
                     tooltip += f"variable: {var_name}\n"
                 tooltip += f"shape: {target.shape}\n"
                 tooltip += f"chunks: {target.chunks}\n"

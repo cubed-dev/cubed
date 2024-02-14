@@ -457,7 +457,7 @@ def test_visualize(tmp_path):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float64, chunks=(2, 2))
     b = cubed.random.random((3, 3), chunks=(2, 2))
     c = xp.add(a, b)
-    d = c * 2
+    d = c.rechunk((3, 1))
     e = c * 3
 
     f = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
