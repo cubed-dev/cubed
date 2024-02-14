@@ -17,7 +17,7 @@ def write_int_to_file(path, i):
         f.write(str(i))
 
 
-def deterministic_failure(path, timing_map, i):
+def deterministic_failure(path, timing_map, i, *, name=None):
     """A function that can either run normally, run slowly, or raise
     an exception, depending on input and invocation count.
 

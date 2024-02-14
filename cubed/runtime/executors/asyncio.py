@@ -34,7 +34,7 @@ async def async_map_unordered(
         inputs = next(input_batches)
 
     task_create_tstamp = time.time()
-    tasks = {task: i for i, task in create_futures_func(inputs, **kwargs)}
+    tasks = {task: i for i, task in create_futures_func(inputs, name=name, **kwargs)}
     pending = set(tasks.keys())
     t = time.monotonic()
     start_times = {f: t for f in pending}

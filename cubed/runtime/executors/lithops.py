@@ -186,11 +186,12 @@ def execute_dag(
                     [run_func],
                     [pipeline.mappable],
                     [name],
+                    use_backups=use_backups,
+                    return_stats=True,
+                    # kwargs below
                     func=pipeline.function,
                     config=pipeline.config,
                     name=name,
-                    use_backups=use_backups,
-                    return_stats=True,
                 ):
                     handle_callbacks(callbacks, stats)
         else:
@@ -213,6 +214,7 @@ def execute_dag(
                     group_names,
                     use_backups=use_backups,
                     return_stats=True,
+                    # TODO: kwargs
                 ):
                     handle_callbacks(callbacks, stats)
 

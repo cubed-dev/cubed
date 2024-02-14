@@ -72,7 +72,7 @@ def check_runtime_memory(spec):
     retries=2,
     cloud="aws",
 )
-def run_remotely(input, func=None, config=None):
+def run_remotely(input, func=None, config=None, name=None):
     print(f"running remotely on {input} in {os.getenv('MODAL_REGION')}")
     # note we can't use the execution_stat decorator since it doesn't work with modal decorators
     result, stats = execute_with_stats(func, input, config=config)
@@ -96,7 +96,7 @@ class Container:
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
 
     @modal.method()
-    def run_remotely(self, input, func=None, config=None):
+    def run_remotely(self, input, func=None, config=None, name=None):
         print(f"running remotely on {input} in {os.getenv('MODAL_REGION')}")
         # note we can't use the execution_stat decorator since it doesn't work with modal decorators
         result, stats = execute_with_stats(func, input, config=config)

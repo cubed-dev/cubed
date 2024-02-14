@@ -31,7 +31,9 @@ class CoiledFunctionsDagExecutor(DagExecutor):
             input = list(
                 pipeline.mappable
             )  # coiled expects a sequence (it calls `len` on it)
-            for _, stats in coiled_function.map(input, config=pipeline.config):
+            for _, stats in coiled_function.map(
+                input, config=pipeline.config, name=name
+            ):
                 if callbacks is not None:
                     if name is not None:
                         stats["name"] = name
