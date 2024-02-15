@@ -193,7 +193,6 @@ class Plan:
         optimize_function=None,
         resume=None,
         spec=None,
-        array_names=None,
         **kwargs,
     ):
         dag = self._finalize_dag(optimize_graph, optimize_function)
@@ -204,7 +203,6 @@ class Plan:
         executor.execute_dag(
             dag,
             callbacks=callbacks,
-            array_names=array_names,
             resume=resume,
             spec=spec,
             **kwargs,

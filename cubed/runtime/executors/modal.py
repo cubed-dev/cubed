@@ -112,7 +112,6 @@ class Container:
 def execute_dag(
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
-    array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
     spec: Optional[Spec] = None,
     cloud: Optional[str] = None,
@@ -151,7 +150,6 @@ class ModalDagExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         **kwargs,
@@ -160,7 +158,6 @@ class ModalDagExecutor(DagExecutor):
         execute_dag(
             dag,
             callbacks=callbacks,
-            array_names=array_names,
             resume=resume,
             spec=spec,
             **merged_kwargs,

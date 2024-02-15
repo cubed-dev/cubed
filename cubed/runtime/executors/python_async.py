@@ -82,7 +82,6 @@ def pipeline_to_stream(
 async def async_execute_dag(
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
-    array_names: Optional[Sequence[str]] = None,
     resume: Optional[bool] = None,
     spec: Optional[Spec] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
@@ -125,7 +124,6 @@ class AsyncPythonDagExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         **kwargs,
@@ -134,7 +132,6 @@ class AsyncPythonDagExecutor(DagExecutor):
             async_execute_dag(
                 dag,
                 callbacks=callbacks,
-                array_names=array_names,
                 resume=resume,
                 spec=spec,
                 **kwargs,

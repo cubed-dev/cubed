@@ -18,7 +18,6 @@ class PythonDagExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        array_names: Optional[Sequence[str]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         **kwargs,

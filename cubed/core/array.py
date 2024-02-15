@@ -286,7 +286,6 @@ def compute(
         optimize_graph=optimize_graph,
         optimize_function=optimize_function,
         resume=resume,
-        array_names=[a.name for a in arrays],
         spec=spec,
         **kwargs,
     )
