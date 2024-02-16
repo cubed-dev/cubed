@@ -5,7 +5,11 @@ from networkx import MultiDiGraph
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
-from cubed.runtime.utils import execution_stats, handle_callbacks
+from cubed.runtime.utils import (
+    execution_stats,
+    handle_callbacks,
+    handle_operation_start_callbacks,
+)
 from cubed.spec import Spec
 
 
@@ -27,6 +31,7 @@ class CoiledFunctionsDagExecutor(DagExecutor):
     ) -> None:
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
         for name, node in visit_nodes(dag, resume=resume):
+            handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
             coiled_function = make_coiled_function(pipeline.function, coiled_kwargs)
             input = list(

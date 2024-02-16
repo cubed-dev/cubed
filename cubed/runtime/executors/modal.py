@@ -10,7 +10,11 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
-from cubed.runtime.utils import execute_with_stats, handle_callbacks
+from cubed.runtime.utils import (
+    execute_with_stats,
+    handle_callbacks,
+    handle_operation_start_callbacks,
+)
 from cubed.spec import Spec
 
 RUNTIME_MEMORY_MIB = 2000
@@ -128,6 +132,7 @@ def execute_dag(
         else:
             raise ValueError(f"Unrecognized cloud: {cloud}")
         for name, node in visit_nodes(dag, resume=resume):
+            handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
             task_create_tstamp = time.time()
             for _, stats in app_function.map(

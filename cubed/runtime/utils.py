@@ -2,7 +2,7 @@ import time
 from functools import partial
 from itertools import islice
 
-from cubed.runtime.types import TaskEndEvent
+from cubed.runtime.types import OperationStartEvent, TaskEndEvent
 from cubed.utils import peak_measured_mem
 
 sym_counter = 0
@@ -37,6 +37,12 @@ def execution_stats(func):
     """Decorator to measure timing information and peak memory usage of a function call."""
 
     return partial(execute_with_stats, func)
+
+
+def handle_operation_start_callbacks(callbacks, name):
+    if callbacks is not None:
+        event = OperationStartEvent(name)
+        [callback.on_operation_start(event) for callback in callbacks]
 
 
 def handle_callbacks(callbacks, stats):

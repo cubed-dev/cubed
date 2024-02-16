@@ -4,6 +4,7 @@ from networkx import MultiDiGraph
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor, TaskEndEvent
+from cubed.runtime.utils import handle_operation_start_callbacks
 from cubed.spec import Spec
 
 
@@ -24,6 +25,7 @@ class PythonDagExecutor(DagExecutor):
         **kwargs,
     ) -> None:
         for name, node in visit_nodes(dag, resume=resume):
+            handle_operation_start_callbacks(callbacks, name)
             pipeline: CubedPipeline = node["pipeline"]
             for m in pipeline.mappable:
                 exec_stage_func(

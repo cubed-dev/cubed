@@ -11,7 +11,11 @@ from tenacity import Retrying, stop_after_attempt
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
-from cubed.runtime.utils import execution_stats, handle_callbacks
+from cubed.runtime.utils import (
+    execution_stats,
+    handle_callbacks,
+    handle_operation_start_callbacks,
+)
 from cubed.spec import Spec
 
 
@@ -92,6 +96,7 @@ async def async_execute_dag(
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
             for name, node in visit_nodes(dag, resume=resume):
+                handle_operation_start_callbacks(callbacks, name)
                 st = pipeline_to_stream(
                     concurrent_executor, name, node["pipeline"], **kwargs
                 )
