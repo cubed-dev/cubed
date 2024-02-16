@@ -1,6 +1,7 @@
 import os
 import time
 from dataclasses import asdict
+from typing import Optional
 
 import matplotlib.patches as mpatches
 import numpy as np
@@ -15,6 +16,9 @@ pylab.switch_backend("Agg")
 
 
 class TimelineVisualizationCallback(Callback):
+    def __init__(self, format: Optional[str] = None) -> None:
+        self.format = format
+
     def on_compute_start(self, event):
         self.start_tstamp = time.time()
         self.stats = []
@@ -25,11 +29,12 @@ class TimelineVisualizationCallback(Callback):
     def on_compute_end(self, event):
         end_tstamp = time.time()
         dst = f"history/{event.compute_id}"
-        create_timeline(self.stats, self.start_tstamp, end_tstamp, dst)
+        format = self.format
+        create_timeline(self.stats, self.start_tstamp, end_tstamp, dst, format)
 
 
 # copy of lithops function of the same name, and modified for different field names
-def create_timeline(stats, start_tstamp, end_tstamp, dst=None):
+def create_timeline(stats, start_tstamp, end_tstamp, dst=None, format=None):
     stats_df = pd.DataFrame(stats)
 
     stats_df = stats_df.sort_values(by=["task_create_tstamp", "name"], ascending=True)
@@ -81,13 +86,16 @@ def create_timeline(stats, start_tstamp, end_tstamp, dst=None):
     ax.grid(False)
     fig.tight_layout()
 
+    if format is None:
+        format = "svg"
+
     if dst is None:
         os.makedirs("plots", exist_ok=True)
         dst = os.path.join(
-            os.getcwd(), "plots", "{}_{}".format(int(time.time()), "timeline.png")
+            os.getcwd(), "plots", "{}_{}".format(int(time.time()), f"timeline.{format}")
         )
     else:
         dst = os.path.expanduser(dst) if "~" in dst else dst
-        dst = "{}/{}".format(os.path.realpath(dst), "timeline.png")
+        dst = "{}/{}".format(os.path.realpath(dst), f"timeline.{format}")
 
     fig.savefig(dst)
