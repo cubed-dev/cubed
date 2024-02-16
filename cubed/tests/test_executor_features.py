@@ -9,6 +9,7 @@ import cubed
 import cubed.array_api as xp
 import cubed.random
 from cubed.extensions.history import HistoryCallback
+from cubed.extensions.rich import RichProgressBar
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
@@ -95,6 +96,19 @@ def test_callbacks(spec, executor):
 
     num_created_arrays = 1
     assert task_counter.value == num_created_arrays + 4
+
+
+def test_rich_progress_bar(spec, executor):
+    # test indirectly by checking it doesn't cause a failure
+    progress = RichProgressBar()
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor, callbacks=[progress]),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+    )
 
 
 @pytest.mark.cloud
