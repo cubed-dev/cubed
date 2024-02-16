@@ -156,6 +156,7 @@ class AsyncModalDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -165,6 +166,7 @@ class AsyncModalDagExecutor(DagExecutor):
                 callbacks=callbacks,
                 resume=resume,
                 spec=spec,
+                compute_id=compute_id,
                 **merged_kwargs,
             )
         )

@@ -82,7 +82,9 @@ class _SingleArgumentStage(beam.PTransform):
 class BeamDagExecutor(DagExecutor):
     """An execution engine that uses Apache Beam."""
 
-    def execute_dag(self, dag, callbacks=None, resume=None, spec=None, **kwargs):
+    def execute_dag(
+        self, dag, callbacks=None, resume=None, spec=None, compute_id=None, **kwargs
+    ):
         dag = dag.copy()
         pipeline = beam.Pipeline(**kwargs)
 

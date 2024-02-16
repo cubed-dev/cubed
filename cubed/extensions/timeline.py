@@ -24,7 +24,8 @@ class TimelineVisualizationCallback(Callback):
 
     def on_compute_end(self, event):
         end_tstamp = time.time()
-        create_timeline(self.stats, self.start_tstamp, end_tstamp)
+        dst = f"history/{event.compute_id}"
+        create_timeline(self.stats, self.start_tstamp, end_tstamp, dst)
 
 
 # copy of lithops function of the same name, and modified for different field names
@@ -87,6 +88,6 @@ def create_timeline(stats, start_tstamp, end_tstamp, dst=None):
         )
     else:
         dst = os.path.expanduser(dst) if "~" in dst else dst
-        dst = "{}_{}".format(os.path.realpath(dst), "timeline.png")
+        dst = "{}/{}".format(os.path.realpath(dst), "timeline.png")
 
     fig.savefig(dst)

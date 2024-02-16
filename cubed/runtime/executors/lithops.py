@@ -33,7 +33,7 @@ from cubed.spec import Spec
 logger = logging.getLogger(__name__)
 
 
-def run_func(input, func=None, config=None, name=None):
+def run_func(input, func=None, config=None, name=None, compute_id=None):
     result = func(input, config=config)
     return result
 
@@ -186,11 +186,12 @@ def execute_dag(
                     [run_func],
                     [pipeline.mappable],
                     [name],
+                    use_backups=use_backups,
+                    return_stats=True,
+                    # kwargs below
                     func=pipeline.function,
                     config=pipeline.config,
                     name=name,
-                    use_backups=use_backups,
-                    return_stats=True,
                 ):
                     handle_callbacks(callbacks, stats)
         else:
@@ -213,6 +214,7 @@ def execute_dag(
                     group_names,
                     use_backups=use_backups,
                     return_stats=True,
+                    # TODO: kwargs
                 ):
                     handle_callbacks(callbacks, stats)
 
@@ -242,6 +244,7 @@ class LithopsDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -250,5 +253,6 @@ class LithopsDagExecutor(DagExecutor):
             callbacks=callbacks,
             resume=resume,
             spec=spec,
+            compute_id=compute_id,
             **merged_kwargs,
         )

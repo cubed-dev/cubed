@@ -28,6 +28,9 @@ class CubedPipeline:
 class ComputeStartEvent:
     """Callback information about a computation that is about to start."""
 
+    compute_id: str
+    """ID of the computation."""
+
     dag: MultiDiGraph
     """The computation DAG."""
 
@@ -38,6 +41,9 @@ class ComputeStartEvent:
 @dataclass
 class ComputeEndEvent:
     """Callback information about a computation that has finished."""
+
+    compute_id: str
+    """ID of the computation."""
 
     dag: MultiDiGraph
     """The computation DAG."""

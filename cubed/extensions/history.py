@@ -1,4 +1,3 @@
-import time
 from dataclasses import asdict
 from pathlib import Path
 
@@ -32,11 +31,11 @@ class HistoryCallback(Callback):
     def on_compute_end(self, event):
         self.plan_df = pd.DataFrame(self.plan)
         self.events_df = pd.DataFrame(self.events)
-        Path("history").mkdir(exist_ok=True)
-        id = int(time.time())
-        self.plan_df_path = Path(f"history/plan-{id}.csv")
-        self.events_df_path = Path(f"history/events-{id}.csv")
-        self.stats_df_path = Path(f"history/stats-{id}.csv")
+        history_path = Path(f"history/{event.compute_id}")
+        history_path.mkdir(parents=True, exist_ok=True)
+        self.plan_df_path = history_path / "plan.csv"
+        self.events_df_path = history_path / "events.csv"
+        self.stats_df_path = history_path / "stats.csv"
         self.plan_df.to_csv(self.plan_df_path, index=False)
         self.events_df.to_csv(self.events_df_path, index=False)
 

@@ -22,6 +22,7 @@ class CoiledFunctionsDagExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
         **coiled_kwargs: Mapping[str, Any],
     ) -> None:
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
@@ -31,7 +32,9 @@ class CoiledFunctionsDagExecutor(DagExecutor):
             input = list(
                 pipeline.mappable
             )  # coiled expects a sequence (it calls `len` on it)
-            for _, stats in coiled_function.map(input, config=pipeline.config):
+            for _, stats in coiled_function.map(
+                input, config=pipeline.config, name=name
+            ):
                 if callbacks is not None:
                     if name is not None:
                         stats["name"] = name

@@ -197,18 +197,21 @@ class Plan:
     ):
         dag = self._finalize_dag(optimize_graph, optimize_function)
 
+        compute_id = f"compute-{datetime.now().strftime('%Y%m%dT%H%M%S.%f')}"
+
         if callbacks is not None:
-            event = ComputeStartEvent(dag, resume)
+            event = ComputeStartEvent(compute_id, dag, resume)
             [callback.on_compute_start(event) for callback in callbacks]
         executor.execute_dag(
             dag,
+            compute_id=compute_id,
             callbacks=callbacks,
             resume=resume,
             spec=spec,
             **kwargs,
         )
         if callbacks is not None:
-            event = ComputeEndEvent(dag)
+            event = ComputeEndEvent(compute_id, dag)
             [callback.on_compute_end(event) for callback in callbacks]
 
     def num_tasks(self, optimize_graph=True, optimize_function=None, resume=None):
