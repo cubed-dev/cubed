@@ -27,7 +27,7 @@ from cubed.runtime.executors.lithops_retries import (
 )
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
-from cubed.runtime.utils import handle_callbacks
+from cubed.runtime.utils import handle_callbacks, handle_operation_start_callbacks
 from cubed.spec import Spec
 
 logger = logging.getLogger(__name__)
@@ -180,6 +180,7 @@ def execute_dag(
     with RetryingFunctionExecutor(function_executor) as executor:
         if not compute_arrays_in_parallel:
             for name, node in visit_nodes(dag, resume=resume):
+                handle_operation_start_callbacks(callbacks, name)
                 pipeline = node["pipeline"]
                 for _, stats in map_unordered(
                     executor,
@@ -207,6 +208,8 @@ def execute_dag(
                     group_map_functions.append(f)
                     group_map_iterdata.append(pipeline.mappable)
                     group_names.append(name)
+                for name in group_names:
+                    handle_operation_start_callbacks(callbacks, name)
                 for _, stats in map_unordered(
                     executor,
                     group_map_functions,

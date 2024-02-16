@@ -50,6 +50,14 @@ class ComputeEndEvent:
 
 
 @dataclass
+class OperationStartEvent:
+    """Callback information about an operation that is about to start."""
+
+    name: str
+    """Name of the operation."""
+
+
+@dataclass
 class TaskEndEvent:
     """Callback information about a completed task (or tasks)."""
 
@@ -100,6 +108,9 @@ class Callback:
             Information about the computation.
         """
         pass  # pragma: no cover
+
+    def on_operation_start(self, event):
+        pass
 
     def on_task_end(self, event):
         """Called when the a task ends.
