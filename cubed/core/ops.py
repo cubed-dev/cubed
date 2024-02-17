@@ -1130,6 +1130,9 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
 
 def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
     # reduce each array in turn, accumulating in result
+    assert not isinstance(
+        arrays, list
+    ), "partial reduce expects an iterator of array blocks, not a list"
     result = None
     for array in arrays:
         if initial_func is not None:
