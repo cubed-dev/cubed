@@ -1,4 +1,5 @@
 import itertools
+import logging
 import math
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -22,6 +23,9 @@ from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_prod
 from cubed.vendor.dask.core import flatten
 
 from .types import CubedArrayProxy, MemoryModeller, PrimitiveOperation
+
+logger = logging.getLogger(__name__)
+
 
 sym_counter = 0
 
@@ -352,6 +356,7 @@ def can_fuse_primitive_ops(
 
 
 def can_fuse_multiple_primitive_ops(
+    name: str,
     primitive_op: PrimitiveOperation,
     predecessor_primitive_ops: List[PrimitiveOperation],
     *,
@@ -362,7 +367,14 @@ def can_fuse_multiple_primitive_ops(
     ):
         # If the peak projected memory for running all the predecessor ops in
         # order is larger than allowed_mem then we can't fuse.
-        if peak_projected_mem(predecessor_primitive_ops) > primitive_op.allowed_mem:
+        peak_projected = peak_projected_mem(predecessor_primitive_ops)
+        if peak_projected > primitive_op.allowed_mem:
+            logger.debug(
+                "can't fuse %s since peak projected memory for predecessor ops (%s) is greater than allowed (%s)",
+                name,
+                peak_projected,
+                primitive_op.allowed_mem,
+            )
             return False
         # If the number of input blocks for each input is not uniform, then we
         # can't fuse. (This should never happen since all operations are
@@ -370,19 +382,52 @@ def can_fuse_multiple_primitive_ops(
         # topological order.)
         num_input_blocks = primitive_op.pipeline.config.num_input_blocks
         if not all(num_input_blocks[0] == n for n in num_input_blocks):
+            logger.debug(
+                "can't fuse %s since number of input blocks for each input is not uniform: %s",
+                name,
+                num_input_blocks,
+            )
             return False
         if max_total_num_input_blocks is None:
             # If max total input blocks not specified, then only fuse if num
             # tasks of predecessor ops match.
-            return all(
+            ret = all(
                 primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
             )
+            if ret:
+                logger.debug(
+                    "can fuse %s since num tasks of predecessor ops match", name
+                )
+            else:
+                logger.debug(
+                    "can't fuse %s since num tasks of predecessor ops do not match",
+                    name,
+                )
+            return ret
         else:
             total_num_input_blocks = 0
             for ni, p in zip(num_input_blocks, predecessor_primitive_ops):
                 for nj in p.pipeline.config.num_input_blocks:
                     total_num_input_blocks += ni * nj
-            return total_num_input_blocks <= max_total_num_input_blocks
+            ret = total_num_input_blocks <= max_total_num_input_blocks
+            if ret:
+                logger.debug(
+                    "can fuse %s since total number of input blocks (%s) does not exceed max (%s)",
+                    name,
+                    total_num_input_blocks,
+                    max_total_num_input_blocks,
+                )
+            else:
+                logger.debug(
+                    "can't fuse %s since total number of input blocks (%s) exceeds max (%s)",
+                    name,
+                    total_num_input_blocks,
+                    max_total_num_input_blocks,
+                )
+            return ret
+    logger.debug(
+        "can't fuse %s since primitive op and predecessors are not all candidates", name
+    )
     return False
 
 
