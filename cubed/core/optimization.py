@@ -1,3 +1,5 @@
+import logging
+
 import networkx as nx
 
 from cubed.primitive.blockwise import (
@@ -6,6 +8,8 @@ from cubed.primitive.blockwise import (
     fuse,
     fuse_multiple,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def simple_optimize_dag(dag):
@@ -108,16 +112,20 @@ def can_fuse_predecessors(
 
     # if node itself can't be fused then there is nothing to fuse
     if not is_fusable(nodes[name]):
+        logger.debug("can't fuse %s since it is not fusable", name)
         return False
 
     # if no predecessor ops can be fused then there is nothing to fuse
     if all(not is_fusable(nodes[pre]) for pre in predecessor_ops(dag, name)):
+        logger.debug("can't fuse %s since no predecessor ops can be fused", name)
         return False
 
     # if node is in never_fuse or always_fuse list then it overrides logic below
     if never_fuse is not None and name in never_fuse:
+        logger.debug("can't fuse %s since it is in 'never_fuse'", name)
         return False
     if always_fuse is not None and name in always_fuse:
+        logger.debug("can fuse %s since it is in 'always_fuse'", name)
         return True
 
     # if there is more than a single predecessor op, and the total number of source arrays to
@@ -128,6 +136,12 @@ def can_fuse_predecessors(
             for pre in predecessor_ops(dag, name)
         )
         if total_source_arrays > max_total_source_arrays:
+            logger.debug(
+                "can't fuse %s since total number of source arrays (%s) exceeds max (%s)",
+                name,
+                total_source_arrays,
+                max_total_source_arrays,
+            )
             return False
 
     predecessor_primitive_ops = [
@@ -136,6 +150,7 @@ def can_fuse_predecessors(
         if is_fusable(nodes[pre])
     ]
     return can_fuse_multiple_primitive_ops(
+        name,
         nodes[name]["primitive_op"],
         predecessor_primitive_ops,
         max_total_num_input_blocks=max_total_num_input_blocks,
@@ -219,6 +234,8 @@ def multiple_inputs_optimize_dag(
 ):
     """Fuse multiple inputs."""
     for name in list(nx.topological_sort(dag)):
+        if name.startswith("array-"):
+            continue
         dag = fuse_predecessors(
             dag,
             name,
