@@ -1,5 +1,6 @@
 import platform
 import random
+from functools import partial
 
 import dill
 import numpy as np
@@ -578,3 +579,25 @@ def test_quad_means(tmp_path, t_length=50):
     res1 = zarr.open_array(tmp_path / "result1")
 
     assert_array_equal(res0[:], res1[:])
+
+
+def test_quad_means_zarr(tmp_path, t_length=50):
+    # write inputs to Zarr first to test more realistic usage pattern
+    spec = cubed.Spec(tmp_path, allowed_mem="2GB", reserved_mem="100MB")
+    u = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
+    v = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
+
+    arrays = [u, v]
+    paths = [f"{tmp_path}/u_{t_length}.zarr", f"{tmp_path}/v_{t_length}.zarr"]
+    cubed.store(arrays, paths)
+
+    u = cubed.from_zarr(f"{tmp_path}/u_{t_length}.zarr", spec=spec)
+    v = cubed.from_zarr(f"{tmp_path}/v_{t_length}.zarr", spec=spec)
+    uv = u * v
+    m = xp.mean(uv, axis=0, use_new_impl=True, split_every=10)
+
+    opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=40)
+
+    m.visualize(filename=tmp_path / "quad_means", optimize_function=opt_fn)
+
+    cubed.to_zarr(m, store=tmp_path / "result", optimize_function=opt_fn)

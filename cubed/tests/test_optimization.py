@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import elemwise, merge_chunks_new
+from cubed.core.ops import elemwise, merge_chunks_new, partial_reduce
 from cubed.core.optimization import (
     fuse_all_optimize_dag,
     fuse_only_optimize_dag,
@@ -828,6 +828,58 @@ def test_fuse_merge_chunks_binary(spec):
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 2 * np.ones((3, 2)))
+
+
+# like test_fuse_merge_chunks_unary, except uses partial_reduce
+def test_fuse_partial_reduce_unary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.negative(a)
+    c = partial_reduce(b, np.sum, split_every={0: 3})
+
+    # specify max_total_num_input_blocks to force c to fuse
+    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=3)
+
+    c.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (c,))
+    optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(b.plan.dag, b.name) == (1,)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (3,)
+    assert get_num_input_blocks(optimized_dag, c.name) == (3,)
+
+    result = c.compute(optimize_function=opt_fn)
+    assert_array_equal(result, -3 * np.ones((1, 2)))
+
+
+# like test_fuse_merge_chunks_binary, except uses partial_reduce
+def test_fuse_partial_reduce_binary(spec):
+    a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    b = xp.ones((3, 2), chunks=(1, 2), spec=spec)
+    c = xp.add(a, b)
+    d = partial_reduce(c, np.sum, split_every={0: 3})
+
+    # specify max_total_num_input_blocks to force d to fuse
+    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=6)
+
+    d.visualize(optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (), (b,))
+    add_placeholder_op(expected_fused_dag, (a, b), (d,))
+    optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (1, 1)
+    assert get_num_input_blocks(d.plan.dag, d.name) == (3,)
+    assert get_num_input_blocks(optimized_dag, d.name) == (3, 3)
+
+    result = d.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 6 * np.ones((1, 2)))
 
 
 def test_fuse_only_optimize_dag(spec):

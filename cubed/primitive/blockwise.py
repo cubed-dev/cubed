@@ -488,10 +488,18 @@ def fuse_multiple(
         else:
             # more than one input block is being read from arg
             assert isinstance(arg, (list, Iterator))
-            return tuple(
-                list(item)
-                for item in zip(*(pipeline.config.block_function(a) for a in arg))
-            )
+            if isinstance(arg, list):
+                return tuple(
+                    list(item)
+                    for item in zip(*(pipeline.config.block_function(a) for a in arg))
+                )
+            else:
+                # Return iterators to avoid materializing all array blocks at
+                # once.
+                return tuple(
+                    iter(list(item))
+                    for item in zip(*(pipeline.config.block_function(a) for a in arg))
+                )
 
     def fused_blockwise_func(out_key):
         # this will change when multiple outputs are supported
@@ -512,8 +520,10 @@ def fuse_multiple(
         if n_input_blocks == 1:
             ret = pipeline.config.function(*args)
         else:
-            # more than one input block is being read from this group of args to primitive op
-            ret = [pipeline.config.function(*item) for item in list(zip(*args))]
+            # More than one input block is being read from this group of args to primitive op.
+            # Note that it is important that a list is not returned to avoid materializing all
+            # array blocks at once.
+            ret = map(lambda item: pipeline.config.function(*item), zip(*args))
         return ret
 
     def fused_func(*args):
