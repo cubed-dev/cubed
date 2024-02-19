@@ -35,20 +35,22 @@ image = modal.Image.debian_slim().pip_install(
 @stub.function(
     image=image, secret=modal.Secret.from_name("my-aws-secret"), retries=2, timeout=10
 )
-def deterministic_failure_modal(i, path=None, timing_map=None):
-    return deterministic_failure(path, timing_map, i)
+def deterministic_failure_modal(i, path=None, timing_map=None, *, name=None):
+    return deterministic_failure(path, timing_map, i, name=name)
 
 
 @stub.function(image=image, secret=modal.Secret.from_name("my-aws-secret"), timeout=10)
-def deterministic_failure_modal_no_retries(i, path=None, timing_map=None):
-    return deterministic_failure(path, timing_map, i)
+def deterministic_failure_modal_no_retries(i, path=None, timing_map=None, *, name=None):
+    return deterministic_failure(path, timing_map, i, name=name)
 
 
 @stub.function(
     image=image, secret=modal.Secret.from_name("my-aws-secret"), retries=2, timeout=300
 )
-def deterministic_failure_modal_long_timeout(i, path=None, timing_map=None):
-    return deterministic_failure(path, timing_map, i)
+def deterministic_failure_modal_long_timeout(
+    i, path=None, timing_map=None, *, name=None
+):
+    return deterministic_failure(path, timing_map, i, name=name)
 
 
 async def run_test(app_function, input, use_backups=False, batch_size=None, **kwargs):
