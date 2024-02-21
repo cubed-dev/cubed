@@ -1,0 +1,10 @@
+spec:
+  work_dir: "s3://cubed-$USER-temp"
+  allowed_mem: "2GB"
+  executor_name: "coiled"
+  executor_options:
+    minimum_workers: 10  # cluster will adapt to this minimum size
+    memory: ["2 GiB", "8 GiB"]  # memory range, lower value must be at least allowed_mem
+    spot_policy: "spot_with_fallback"  # recommended
+    account: null  # use your default account (or change to use a specific account)
+    keepalive: "5 minutes"  # change this to keep clusters alive longer

@@ -1,0 +1,6 @@
+spec:
+  work_dir: "s3://cubed-$USER-temp"
+  allowed_mem: "2GB"
+  executor_name: "modal"
+  executor_options:
+    cloud: "aws"

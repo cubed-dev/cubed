@@ -12,23 +12,17 @@
 3. Install a Python environment with the coiled package in it by running the following from this directory:
 
 ```shell
-conda create -n cubed-coiled-examples python=3.9 -y
-conda activate cubed-coiled-examples
+conda create --name cubed-coiled-aws-examples -y python=3.10
+conda activate cubed-coiled-aws-examples
 pip install 'cubed[coiled]'
 ```
 
 ## Examples
 
-Start with the simplest example:
+Before running the examples, first change to the top-level examples directory (`cd ../..`) and type
 
 ```shell
-python coiled-add-asarray.py "s3://cubed-$USER-temp"
+export CUBED_CONFIG=$(pwd)/coiled/aws
 ```
 
-If successful it should print a 4x4 matrix.
-
-Run the other example in a similar way
-
-```shell
-python coiled-add-random.py "s3://cubed-modal-$USER-temp"
-```
+Then you can run the examples described [there](../../README.md).

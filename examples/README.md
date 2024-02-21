@@ -1,31 +1,60 @@
 # Examples
 
-## Which cloud service should I use?
+## Which executor should I use?
 
-**Modal** is the easiest to get started with because it handles building a runtime environment for you automatically (note that it requires that you [sign up](https://modal.com/signup) for a free account).
-It has been tested with ~300 workers.
+[**Lithops**](https://lithops-cloud.github.io/) is the executor we recommend for most users, since it has had the most testing so far (~1000 workers).
+If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it's in GCS use Lithops with Google Cloud Functions. You have to build a runtime environment as a part of the setting up process.
 
-**Lithops** requires slightly more work to get started since you have to build a runtime environment first.
-Lithops has support for many serverless services on various cloud providers, but has so far been tested on two:
+[**Modal**](https://modal.com/) is very easy to get started with because it handles building a runtime environment for you automatically (note that it requires that you [sign up](https://modal.com/signup) for a free account). **At the time of writing, Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are likely.**
 
+[**Coiled**](https://www.coiled.io/) is also easy to get started with ([sign up](https://cloud.coiled.io/signup)). It uses [Coiled Functions](https://docs.coiled.io/user_guide/usage/functions/index.html) and has a 1-2 minute overhead to start a cluster.
 
-- **AWS lambda** requires building a docker container first, but has been tested with hundreds of workers.
-- **Google Cloud Functions** only requires building a Lithops runtime, which can be created from a pip-style `requirements.txt` without docker. Large-scale testing is ongoing.
+[**Google Cloud Dataflow**](https://cloud.google.com/dataflow) is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is a mature service and therefore should be reliable for much larger computations.
 
-**Google Cloud Dataflow** is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is the most mature service and therefore should be reliable for much larger computations.
+## Set up
 
-## Lithops (AWS Lambda, S3)
+Follow the instructions for setting up Cubed to run on your chosen cloud and executor runtime:
 
-See [Lithops/aws-lambda](lithops/aws-lambda/README.md)
+| Executor | Cloud  | Set up instructions                                          |
+|----------|--------|--------------------------------------------------------------|
+| Lithops  | AWS    | [lithops/aws-lambda/README.md](lithops/aws-lambda/README.md) |
+|          | Google | [lithops/gcf/README.md](lithops/gcf/README.md)               |
+| Modal    | AWS    | [modal/aws/README.md](modal/aws/README.md)                   |
+|          | Google | [modal/gcp/README.md](modal/gcp/README.md)                   |
+| Coiled   | AWS    | [coiled/aws/README.md](coiled/aws/README.md)                 |
+| Beam     | Google | [dataflow/README.md](dataflow/README.md)                     |
 
-## Lithops (Google Cloud Functions, GCS)
+## Examples
 
-See [Lithops/gcf](lithops/gcf/README.md)
+The `add-asarray.py` script is a small example that adds two small 4x4 arrays together, and is useful for checking that the runtime is working.
+Export `CUBED_CONFIG` as described in the set up instructions, then run the script. This is for Lithops on AWS:
 
-## Modal (AWS, S3)
+```shell
+export CUBED_CONFIG=$(pwd)/lithops/aws-lambda
+python add-asarray.py
+```
 
-See [Modal/aws](modal/aws/README.md)
+If successful it should print a 4x4 array.
 
-## Apache Beam (Google Cloud Dataflow)
+The other examples are run in a similar way:
 
-See [Dataflow](dataflow/README.md)
+```shell
+export CUBED_CONFIG=...
+python add-random.py
+```
+
+and
+
+```shell
+export CUBED_CONFIG=...
+python matmul-random.py
+```
+
+These will take longer to run as they operate on more data.
+
+The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
+The plots are SVG files and are written in the `history` directory in a directory with a timestamp. Open the latest one with
+
+```shell
+open $(ls -d history/compute-* | tail -1)/timeline.svg
+```
