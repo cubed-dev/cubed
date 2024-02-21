@@ -1,5 +1,6 @@
 from typing import Optional, Union
 
+from cubed.runtime.create import create_executor
 from cubed.runtime.types import Executor
 from cubed.utils import convert_to_bytes
 
@@ -13,6 +14,8 @@ class Spec:
         allowed_mem: Union[int, str, None] = None,
         reserved_mem: Union[int, str, None] = 0,
         executor: Union[Executor, None] = None,
+        executor_name: Optional[str] = None,
+        executor_options: Optional[dict] = None,
         storage_options: Union[dict, None] = None,
     ):
         """
@@ -45,7 +48,13 @@ class Spec:
         else:
             self._allowed_mem = convert_to_bytes(allowed_mem)
 
-        self._executor = executor
+        if executor is not None:
+            self._executor = executor
+        elif executor_name is not None:
+            self._executor = create_executor(executor_name, executor_options)
+        else:
+            self._executor = None
+
         self._storage_options = storage_options
 
     @property

@@ -5,60 +5,46 @@ import networkx as nx
 import numpy as np
 import zarr
 
-from cubed.runtime.executors.python import PythonDagExecutor
-from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
 
 LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
 
-ALL_EXECUTORS = [PythonDagExecutor()]
+ALL_EXECUTORS = [create_executor("single-threaded")]
 
 # don't run all tests on every executor as it's too slow, so just have a subset
-MAIN_EXECUTORS = [PythonDagExecutor()]
+MAIN_EXECUTORS = [create_executor("single-threaded")]
 
 
 if platform.system() != "Windows":
     # AsyncPythonDagExecutor calls `peak_measured_mem` which is not supported on Windows
-    ALL_EXECUTORS.append(AsyncPythonDagExecutor())
+    ALL_EXECUTORS.append(create_executor("threads"))
 
 
 try:
-    from cubed.runtime.executors.beam import BeamDagExecutor
-
-    ALL_EXECUTORS.append(BeamDagExecutor())
-
-    MAIN_EXECUTORS.append(BeamDagExecutor())
+    ALL_EXECUTORS.append(create_executor("beam"))
+    MAIN_EXECUTORS.append(create_executor("beam"))
 except ImportError:
     pass
 
 try:
-    from cubed.runtime.executors.dask_distributed_async import (
-        AsyncDaskDistributedExecutor,
-    )
-
-    ALL_EXECUTORS.append(AsyncDaskDistributedExecutor())
-
-    MAIN_EXECUTORS.append(AsyncDaskDistributedExecutor())
+    ALL_EXECUTORS.append(create_executor("dask"))
+    MAIN_EXECUTORS.append(create_executor("dask"))
 except ImportError:
     pass
 
 try:
-    from cubed.runtime.executors.lithops import LithopsDagExecutor
-
-    ALL_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
-
-    MAIN_EXECUTORS.append(LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG))
+    executor_options = dict(config=LITHOPS_LOCAL_CONFIG)
+    ALL_EXECUTORS.append(create_executor("lithops", executor_options))
+    MAIN_EXECUTORS.append(create_executor("lithops", executor_options))
 except ImportError:
     pass
 
 MODAL_EXECUTORS = []
 
 try:
-    from cubed.runtime.executors.modal import ModalDagExecutor
-    from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
-
-    MODAL_EXECUTORS.append(AsyncModalDagExecutor())
-    MODAL_EXECUTORS.append(ModalDagExecutor())
+    MODAL_EXECUTORS.append(create_executor("modal"))
+    MODAL_EXECUTORS.append(create_executor("modal-sync"))
 except ImportError:
     pass
 
