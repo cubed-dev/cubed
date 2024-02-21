@@ -82,7 +82,7 @@ class TaskCounter(Callback):
         self.value += event.num_tasks
 
 
-def create_zarr(a, /, store, *, dtype=None, chunks=None):
+def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):
     # from dask.asarray
     if not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
@@ -91,7 +91,9 @@ def create_zarr(a, /, store, *, dtype=None, chunks=None):
         dtype = a.dtype
 
     # write to zarr
-    za = zarr.open(store, mode="w", shape=a.shape, dtype=dtype, chunks=chunks)
+    za = zarr.open(
+        store, mode="w", shape=a.shape, dtype=dtype, chunks=chunks, path=path
+    )
     za[:] = a
     return za
 

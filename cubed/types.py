@@ -18,4 +18,4 @@ T_Chunks = Union[
     int, T_RegularChunks, T_RectangularChunks, Dict[Any, Any], Literal["auto"]
 ]
 
-T_Store = str  # TODO: expand this
+T_Store = Any  # TODO: improve this

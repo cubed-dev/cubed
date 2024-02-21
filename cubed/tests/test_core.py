@@ -98,14 +98,16 @@ def test_from_array_zarr(tmp_path, spec):
     assert_array_equal(a, za)
 
 
-def test_from_zarr(tmp_path, spec, executor):
+@pytest.mark.parametrize("path", [None, "sub", "sub/group"])
+def test_from_zarr(tmp_path, spec, executor, path):
     store = store = tmp_path / "source.zarr"
     create_zarr(
         [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
         chunks=(2, 2),
         store=store,
+        path=path,
     )
-    a = cubed.from_zarr(store, spec=spec)
+    a = cubed.from_zarr(store, path=path, spec=spec)
     assert_array_equal(
         a.compute(executor=executor), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     )
@@ -150,11 +152,12 @@ def test_store_fails(tmp_path, spec):
         cubed.store([1], [target])
 
 
-def test_to_zarr(tmp_path, spec, executor):
+@pytest.mark.parametrize("path", [None, "sub", "sub/group"])
+def test_to_zarr(tmp_path, spec, executor, path):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-    output = tmp_path / "output.zarr"
-    cubed.to_zarr(a, output, executor=executor)
-    res = zarr.open_array(output)
+    store = zarr.storage.DirectoryStore(tmp_path / "output.zarr")
+    cubed.to_zarr(a, store, path=path, executor=executor)
+    res = zarr.open_array(store, path=path)
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
