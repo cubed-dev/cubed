@@ -23,6 +23,7 @@ requires-python = ">=3.9"
 dependencies = [
     "aiostream",
     "array-api-compat",
+    "donfig",
     "fsspec",
     "mypy_extensions", # for rechunker
     "networkx < 2.8.3",

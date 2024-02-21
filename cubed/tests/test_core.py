@@ -280,9 +280,19 @@ def test_default_spec(executor):
 
 def test_default_spec_allowed_mem_exceeded():
     # default spec fails for large computations
-    a = xp.ones((100000, 100000), chunks=(10000, 10000))
+    a = xp.ones((20000, 1000), chunks=(10000, 1000))
     with pytest.raises(ValueError):
         xp.negative(a)
+
+
+def test_default_spec_config_override():
+    # override default spec to increase allowed_mem
+    from cubed import config
+
+    with config.set({"spec.allowed_mem": "500MB"}):
+        a = xp.ones((20000, 1000), chunks=(10000, 1000))
+        b = xp.negative(a)
+        assert_array_equal(b.compute(), -np.ones((20000, 1000)))
 
 
 def test_different_specs(tmp_path):

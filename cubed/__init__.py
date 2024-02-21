@@ -12,6 +12,14 @@ try:
 except Exception:  # pragma: no cover
     __version__ = "unknown"
 
+from donfig import Config
+
+config = Config(
+    "cubed",
+    # default spec is local temp dir and a modest amount of memory (200MB, of which 100MB is reserved)
+    defaults=[{"spec": {"allowed_mem": 200_000_000, "reserved_mem": 100_000_000}}],
+)
+
 from .array_api import Array
 from .core.array import compute, measure_reserved_mem, visualize
 from .core.gufunc import apply_gufunc
@@ -28,6 +36,7 @@ __all__ = [
     "TaskEndEvent",
     "apply_gufunc",
     "compute",
+    "config",
     "from_array",
     "from_zarr",
     "map_blocks",
