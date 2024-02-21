@@ -20,6 +20,7 @@ stub = modal.Stub("cubed-test-stub")
 image = modal.Image.debian_slim().pip_install(
     [
         "array-api-compat",
+        "donfig",
         "fsspec",
         "mypy_extensions",  # for rechunker
         "networkx",

@@ -1,4 +1,8 @@
+from functools import lru_cache
 from typing import Optional, Union
+
+import donfig
+from donfig.config_obj import expand_environment_variables
 
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Executor
@@ -48,6 +52,7 @@ class Spec:
         else:
             self._allowed_mem = convert_to_bytes(allowed_mem)
 
+        self._executor: Optional[Executor]
         if executor is not None:
             self._executor = executor
         elif executor_name is not None:
@@ -109,3 +114,14 @@ class Spec:
             )
         else:
             return False
+
+
+def spec_from_config(config):
+    return _spec_from_serialized_config(config.serialize())
+
+
+@lru_cache  # ensure arrays have the same Spec object for a given config
+def _spec_from_serialized_config(ser: str):
+    config = donfig.deserialize(ser)
+    spec_dict = expand_environment_variables(config["spec"])
+    return Spec(**spec_dict)

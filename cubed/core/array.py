@@ -4,8 +4,9 @@ from typing import Optional, TypeVar
 import numpy as np
 from toolz import map, reduce
 
+from cubed import config
 from cubed.runtime.types import Callback, Executor
-from cubed.spec import Spec
+from cubed.spec import Spec, spec_from_config
 from cubed.storage.zarr import open_if_lazy_zarr_array
 from cubed.utils import chunk_memory
 from cubed.vendor.dask.array.core import normalize_chunks
@@ -41,11 +42,8 @@ class CoreArray:
         self._chunks = normalize_chunks(
             zarray.chunks, shape=self.shape, dtype=self.dtype
         )
-        # if no spec is supplied, use a default with local temp dir,
-        # and a modest amount of memory (200MB, of which 100MB is reserved)
-        self.spec = spec or Spec(
-            None, allowed_mem=200_000_000, reserved_mem=100_000_000
-        )
+        # get spec from config if not supplied
+        self.spec = spec or spec_from_config(config)
         self.plan = plan
 
     @property
