@@ -18,7 +18,6 @@ from cubed.runtime.utils import (
 from cubed.spec import Spec
 
 RUNTIME_MEMORY_MIB = 2000
-FORCE_BUILD = os.getenv("CUBED_MODAL_FORCE_BUILD") is not None
 
 stub = modal.Stub("cubed-stub")
 
@@ -40,8 +39,7 @@ else:
             "tenacity",
             "toolz",
             "zarr",
-        ],
-        force_build=FORCE_BUILD,
+        ]
     )
     gcp_image = modal.Image.debian_slim().pip_install(
         [
@@ -54,8 +52,7 @@ else:
             "tenacity",
             "toolz",
             "zarr",
-        ],
-        force_build=FORCE_BUILD,
+        ]
     )
 
 
