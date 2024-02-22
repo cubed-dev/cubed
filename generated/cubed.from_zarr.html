@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=872b26a7"></script>
+    <script src="../_static/documentation_options.js?v=38310326"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -361,12 +361,13 @@ document.write(`
 <h1>cubed.from_zarr<a class="headerlink" href="#cubed-from-zarr" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cubed.from_zarr">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">from_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.from_zarr" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">from_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.from_zarr" title="Link to this definition">#</a></dt>
 <dd><p>Load an array from Zarr storage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> (<em>string</em>) – Path to input Zarr store</p></li>
+<li><p><strong>store</strong> (<em>string</em><em> or </em><em>Zarr Store</em>) – Input Zarr store</p></li>
+<li><p><strong>path</strong> (<em>string</em><em>, </em><em>optional</em>) – Group path</p></li>
 <li><p><strong>spec</strong> (<a class="reference internal" href="cubed.Spec.html#cubed.Spec" title="cubed.Spec"><em>cubed.Spec</em></a><em>, </em><em>optional</em>) – The spec to use for the computation.</p></li>
 </ul>
 </dd>
