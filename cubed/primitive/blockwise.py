@@ -118,6 +118,7 @@ def blockwise(
     allowed_mem: int,
     reserved_mem: int,
     target_store: T_Store,
+    target_path: Optional[str] = None,
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -203,6 +204,7 @@ def blockwise(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         target_store=target_store,
+        target_path=target_path,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
@@ -222,6 +224,7 @@ def general_blockwise(
     allowed_mem: int,
     reserved_mem: int,
     target_store: T_Store,
+    target_path: Optional[str] = None,
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -277,7 +280,7 @@ def general_blockwise(
         target_array = target_store
     else:
         target_array = lazy_empty(
-            shape, dtype=dtype, chunks=chunksize, store=target_store
+            shape, dtype=dtype, chunks=chunksize, store=target_store, path=target_path
         )
 
     func_kwargs = extra_func_kwargs or {}

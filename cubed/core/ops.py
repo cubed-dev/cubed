@@ -91,13 +91,15 @@ def _from_array(block, input_array, outchunks=None, asarray=None, block_id=None)
     return out
 
 
-def from_zarr(store, spec=None) -> "Array":
+def from_zarr(store, path=None, spec=None) -> "Array":
     """Load an array from Zarr storage.
 
     Parameters
     ----------
-    store : string
-        Path to input Zarr store
+    store : string or Zarr Store
+        Input Zarr store
+    path : string, optional
+        Group path
     spec : cubed.Spec, optional
         The spec to use for the computation.
 
@@ -107,7 +109,7 @@ def from_zarr(store, spec=None) -> "Array":
         The array loaded from Zarr storage.
     """
     name = gensym()
-    target = zarr.open(store, mode="r")
+    target = zarr.open(store, path=path, mode="r")
 
     from cubed.array_api import Array
 
@@ -162,7 +164,7 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
     compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
 
 
-def to_zarr(x: "Array", store, executor=None, **kwargs):
+def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
     """Save an array to Zarr storage.
 
     Note that this operation is eager, and will run the computation
@@ -172,8 +174,10 @@ def to_zarr(x: "Array", store, executor=None, **kwargs):
     ----------
     x : cubed.Array
         Array to save
-    store : string
-        Path to output Zarr store
+    store : string or Zarr Store
+        Output Zarr store
+    path : string, optional
+        Group path
     executor : cubed.runtime.types.Executor, optional
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
@@ -183,7 +187,14 @@ def to_zarr(x: "Array", store, executor=None, **kwargs):
     identity = lambda a: a
     ind = tuple(range(x.ndim))
     out = blockwise(
-        identity, ind, x, ind, dtype=x.dtype, align_arrays=False, target_store=store
+        identity,
+        ind,
+        x,
+        ind,
+        dtype=x.dtype,
+        align_arrays=False,
+        target_store=store,
+        target_path=path,
     )
     out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
 
@@ -197,6 +208,7 @@ def blockwise(
     new_axes=None,
     align_arrays=True,
     target_store=None,
+    target_path=None,
     extra_func_kwargs=None,
     **kwargs,
 ) -> "Array":
@@ -286,6 +298,7 @@ def blockwise(
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
+        target_path=target_path,
         shape=shape,
         dtype=dtype,
         chunks=_chunks,
@@ -318,6 +331,7 @@ def general_blockwise(
     dtype,
     chunks,
     target_store=None,
+    target_path=None,
     extra_func_kwargs=None,
     **kwargs,
 ) -> "Array":
@@ -346,6 +360,7 @@ def general_blockwise(
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
+        target_path=target_path,
         shape=shape,
         dtype=dtype,
         chunks=chunks,

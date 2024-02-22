@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import zarr
 
@@ -19,6 +19,7 @@ class LazyZarrArray:
         dtype: T_DType,
         chunks: T_RegularChunks,
         store: T_Store,
+        path: Optional[str] = None,
         fill_value: Any = None,
         **kwargs,
     ):
@@ -33,6 +34,7 @@ class LazyZarrArray:
         self.nbytes = template.nbytes
 
         self.store = store
+        self.path = path
         self.fill_value = fill_value
         self.kwargs = kwargs
 
@@ -54,6 +56,7 @@ class LazyZarrArray:
             shape=self.shape,
             dtype=self.dtype,
             chunks=self.chunks,
+            path=self.path,
             fill_value=self.fill_value,
             **self.kwargs,
         )
@@ -71,6 +74,7 @@ class LazyZarrArray:
             shape=self.shape,
             dtype=self.dtype,
             chunks=self.chunks,
+            path=self.path,
         )
 
     def __repr__(self) -> str:
@@ -81,9 +85,15 @@ T_ZarrArray = Union[zarr.Array, LazyZarrArray]
 
 
 def lazy_empty(
-    shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, store: T_Store, **kwargs
+    shape: T_Shape,
+    *,
+    dtype: T_DType,
+    chunks: T_RegularChunks,
+    store: T_Store,
+    path: Optional[str] = None,
+    **kwargs,
 ) -> LazyZarrArray:
-    return LazyZarrArray(shape, dtype, chunks, store, **kwargs)
+    return LazyZarrArray(shape, dtype, chunks, store, path=path, **kwargs)
 
 
 def lazy_full(
@@ -93,9 +103,12 @@ def lazy_full(
     dtype: T_DType,
     chunks: T_RegularChunks,
     store: T_Store,
+    path: Optional[str] = None,
     **kwargs,
 ) -> LazyZarrArray:
-    return LazyZarrArray(shape, dtype, chunks, store, fill_value=fill_value, **kwargs)
+    return LazyZarrArray(
+        shape, dtype, chunks, store, path=path, fill_value=fill_value, **kwargs
+    )
 
 
 def open_if_lazy_zarr_array(array: T_ZarrArray) -> zarr.Array:
