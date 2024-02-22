@@ -26,6 +26,12 @@ lithops runtime build -b aws_lambda -f docker/Dockerfile_aws_lambda cubed-runtim
 lithops runtime deploy -b aws_lambda --memory 2000 --timeout 180 cubed-runtime # optional, will be done automatically on first use
 ```
 
+5. Set file descriptor limit. Different systems have different limits, so this step may be needed to run the larger examples. You can check what the limit is on your system with `ulimit -n`. The following command will set the limit to 1024 for the current session.
+
+```shell
+ulimit -n 1024
+```
+
 ## Running
 
 Start with the simplest example:
