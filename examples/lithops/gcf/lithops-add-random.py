@@ -11,7 +11,6 @@ from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.runtime.executors.lithops import LithopsDagExecutor
 
-logging.basicConfig(level=logging.INFO)
 # suppress harmless connection pool warnings
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
