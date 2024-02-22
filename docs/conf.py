@@ -119,4 +119,4 @@ html_title = "Cubed"
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ["_static"]
 
-html_extra_path = ["../examples/cubed.slides.html"]
+html_extra_path = ["slides/intro/cubed-intro.slides.html"]
