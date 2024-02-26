@@ -21,7 +21,7 @@ if __name__ == "__main__":
     c = xp.add(a, b)
     res = c.compute(
         executor=executor,
-        memory=["1 GiB", "8 GiB"] # memory range
+        memory=["1 GiB", "8 GiB"], # memory range, lower value must be at least allowed_mem
         spot_policy="spot_with_fallback",  # recommended
         account=None,  # use your default account (or change to use a specific account)
         keepalive="30 seconds",  # change this to keep clusters alive longer
