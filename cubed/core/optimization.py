@@ -112,7 +112,10 @@ def can_fuse_predecessors(
 
     # if node itself can't be fused then there is nothing to fuse
     if not is_fusable(nodes[name]):
-        logger.debug("can't fuse %s since it is not fusable", name)
+        logger.debug(
+            "can't fuse %s since it is not a primitive operation, or it uses map_direct",
+            name,
+        )
         return False
 
     # if no predecessor ops can be fused then there is nothing to fuse
