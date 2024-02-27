@@ -20,6 +20,9 @@ def make_coiled_function(func, coiled_kwargs):
 class CoiledFunctionsDagExecutor(DagExecutor):
     """An execution engine that uses Coiled Functions."""
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     def execute_dag(
         self,
         dag: MultiDiGraph,
@@ -29,17 +32,18 @@ class CoiledFunctionsDagExecutor(DagExecutor):
         compute_id: Optional[str] = None,
         **coiled_kwargs: Mapping[str, Any],
     ) -> None:
+        merged_kwargs = {**self.kwargs, **coiled_kwargs}
+        minimum_workers = merged_kwargs.pop("minimum_workers", None)
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
         for name, node in visit_nodes(dag, resume=resume):
             handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
-            coiled_function = make_coiled_function(pipeline.function, coiled_kwargs)
-            input = list(
-                pipeline.mappable
-            )  # coiled expects a sequence (it calls `len` on it)
-            for _, stats in coiled_function.map(
-                input, config=pipeline.config, name=name
-            ):
+            coiled_function = make_coiled_function(pipeline.function, merged_kwargs)
+            if minimum_workers is not None:
+                coiled_function.cluster.adapt(minimum=minimum_workers)
+            # coiled expects a sequence (it calls `len` on it)
+            input = list(pipeline.mappable)
+            for _, stats in coiled_function.map(input, config=pipeline.config):
                 if callbacks is not None:
                     if name is not None:
                         stats["name"] = name
