@@ -35,35 +35,13 @@ ulimit -n 1024
 
 ## Running
 
-Start with the simplest example:
+Before running the examples, first change to the top-level examples directory (`cd ../..`) and type
 
 ```shell
-python lithops-add-asarray.py "s3://cubed-$USER-temp" cubed-runtime
+export CUBED_CONFIG=$(pwd)/lithops/aws-lambda
 ```
 
-If successful it should print a 4x4 matrix.
-
-Run the other examples in a similar way
-
-```shell
-python lithops-add-random.py "s3://cubed-$USER-temp" cubed-runtime
-```
-
-and
-
-```shell
-python lithops-matmul-random.py "s3://cubed-$USER-temp" cubed-runtime
-```
-
-These will take longer to run as they operate on more data.
-
-
-The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
-The plots are `png` files and are written in the `history` directory in a directory with a timestamp. Open the latest one with
-
-```shell
-open $(ls -d history/compute-* | tail -1)/timeline.png
-```
+Then you can run the examples described [there](../../README.md).
 
 ## Cleaning up
 

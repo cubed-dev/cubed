@@ -1,6 +1,6 @@
 # Examples running Cubed on Modal
 
-**Warning: Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are possible.**
+**Warning: Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are likely.**
 
 ## Pre-requisites
 
@@ -22,31 +22,10 @@ export CUBED_MODAL_REQUIREMENTS_FILE=$(pwd)/requirements.txt
 
 ## Examples
 
-Start with the simplest example:
+Before running the examples, first change to the top-level examples directory (`cd ../..`) and type
 
 ```shell
-python modal-add-asarray.py "gs://cubed-modal-$USER-temp"
+export CUBED_CONFIG=$(pwd)/modal/gcp
 ```
 
-If successful it should print a 4x4 matrix.
-
-Run the other examples in a similar way
-
-```shell
-python modal-add-random.py "gs://cubed-modal-$USER-temp"
-```
-
-and
-
-```shell
-python modal-matmul-random.py "gs://cubed-modal-$USER-temp"
-```
-
-These will take longer to run as they operate on more data.
-
-The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
-The plots are `png` files and are written in the `history` directory in a directory with a timestamp. Open the latest one with
-
-```shell
-open $(ls -d history/compute-* | tail -1)/timeline.png
-```
+Then you can run the examples described [there](../../README.md).
