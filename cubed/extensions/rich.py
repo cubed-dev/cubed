@@ -41,7 +41,10 @@ class RichProgressBar(Callback):
         progress_tasks = {}
         for name, node in visit_nodes(event.dag, event.resume):
             num_tasks = node["primitive_op"].num_tasks
-            progress_task = progress.add_task(f"{name}", start=False, total=num_tasks)
+            op_display_name = node["op_display_name"].replace("\n", " ")
+            progress_task = progress.add_task(
+                f"{op_display_name}", start=False, total=num_tasks
+            )
             progress_tasks[name] = progress_task
 
         self.logger_aware_progress = logger_aware_progress
