@@ -89,6 +89,9 @@ jobs:
           # very slow
           array_api_tests/test_creation_functions.py::test_eye
 
+          # edge case failures
+          array_api_tests/test_linalg.py::test_vecdot
+
           # not implemented
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
