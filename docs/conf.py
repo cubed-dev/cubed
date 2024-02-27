@@ -105,7 +105,7 @@ html_theme = "sphinx_book_theme"
 # documentation.
 
 html_theme_options = {
-    "repository_url": "https://github.com/tomwhite/cubed",
+    "repository_url": "https://github.com/cubed-dev/cubed",
     "use_repository_button": True,
     "use_issues_button": True,
     "use_edit_page_button": True,

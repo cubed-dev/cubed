@@ -40,7 +40,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | _others_            | :white_check_mark: |            |                              |
 | Indexing                 | Single-axis         | :white_check_mark: |            |                              |
 |                          | Multi-axis          | :white_check_mark: |            |                              |
-|                          | Boolean array       | :x:                | 3          | Shape is data dependent, [#73](https://github.com/tomwhite/cubed/issues/73) |
+|                          | Boolean array       | :x:                | 3          | Shape is data dependent, [#73](https://github.com/cubed-dev/cubed/issues/73) |
 | Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                              |
 |                          | `matrix_transpose`  | :white_check_mark: |            |                              |
 |                          | `tensordot`         | :white_check_mark: |            |                              |
@@ -49,10 +49,10 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `broadcast_to`      | :white_check_mark: |            |                              |
 |                          | `concat`            | :white_check_mark: |            |                              |
 |                          | `expand_dims`       | :white_check_mark: |            |                              |
-|                          | `flip`              | :x:                | 2          | Needs indexing with step=-1, [#114](https://github.com/tomwhite/cubed/issues/114) |
+|                          | `flip`              | :x:                | 2          | Needs indexing with step=-1, [#114](https://github.com/cubed-dev/cubed/issues/114) |
 |                          | `permute_dims`      | :white_check_mark: |            |                              |
 |                          | `reshape`           | :white_check_mark: |            | Partial implementation       |
-|                          | `roll`              | :x:                | 2          | Use `concat` and `reshape`, [#115](https://github.com/tomwhite/cubed/issues/115) |
+|                          | `roll`              | :x:                | 2          | Use `concat` and `reshape`, [#115](https://github.com/cubed-dev/cubed/issues/115) |
 |                          | `squeeze`           | :white_check_mark: |            |                              |
 |                          | `stack`             | :white_check_mark: |            |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
@@ -69,8 +69,8 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `mean`              | :white_check_mark: |            |                              |
 |                          | `min`               | :white_check_mark: |            |                              |
 |                          | `prod`              | :white_check_mark: |            |                              |
-|                          | `std`               | :x:                | 2          | Like `mean`, [#29](https://github.com/tomwhite/cubed/issues/29) |
+|                          | `std`               | :x:                | 2          | Like `mean`, [#29](https://github.com/cubed-dev/cubed/issues/29) |
 |                          | `sum`               | :white_check_mark: |            |                              |
-|                          | `var`               | :x:                | 2          | Like `mean`, [#29](https://github.com/tomwhite/cubed/issues/29) |
+|                          | `var`               | :x:                | 2          | Like `mean`, [#29](https://github.com/cubed-dev/cubed/issues/29) |
 | Utility Functions        | `all`               | :white_check_mark: |            |                              |
 |                          | `any`               | :white_check_mark: |            |                              |

@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-artifacts:
-    if: github.repository == 'tomwhite/cubed'
+    if: github.repository == 'cubed-dev/cubed'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source

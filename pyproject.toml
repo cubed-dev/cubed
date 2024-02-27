@@ -95,6 +95,6 @@ test-modal = [
 ]
 
 [project.urls]
-homepage = "https://github.com/tomwhite/cubed"
+homepage = "https://github.com/cubed-dev/cubed"
 documentation = "https://tomwhite.github.io/cubed"
-repository = "https://github.com/tomwhite/cubed"
+repository = "https://github.com/cubed-dev/cubed"

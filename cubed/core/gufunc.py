@@ -48,7 +48,7 @@ def apply_gufunc(
 
     if nout is not None:
         raise NotImplementedError(
-            "Multiple outputs are not yet supported, see https://github.com/tomwhite/cubed/issues/69"
+            "Multiple outputs are not yet supported, see https://github.com/cubed-dev/cubed/issues/69"
         )
 
     # Vectorize function, if required

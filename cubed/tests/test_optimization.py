@@ -394,7 +394,7 @@ def test_fuse_diamond(spec):
 
 
 # mixed levels and diamond
-# from https://github.com/tomwhite/cubed/issues/126
+# from https://github.com/cubed-dev/cubed/issues/126
 #
 #   a    ->    a
 #   |         /|
@@ -429,7 +429,7 @@ def test_fuse_mixed_levels_and_diamond(spec):
 
 
 # repeated argument
-# from https://github.com/tomwhite/cubed/issues/65
+# from https://github.com/cubed-dev/cubed/issues/65
 #
 #  a   ->   a
 #  |        ‖
