@@ -44,6 +44,7 @@ def test_block_id_to_offset():
 
 def test_to_chunksize():
     assert to_chunksize(((3, 3, 3, 1),)) == (3,)
+    assert to_chunksize(((0,),)) == (1,)  # Zarr doesn't support zero-length chunks
     with pytest.raises(ValueError):
         to_chunksize(((3, 2, 3, 3, 1),))
 

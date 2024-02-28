@@ -122,7 +122,7 @@ def to_chunksize(chunkset: T_RectangularChunks) -> T_RegularChunks:
     if not _check_regular_chunks(chunkset):
         raise ValueError(f"Array must have regular chunks, but found chunks={chunkset}")
 
-    return tuple(c[0] for c in chunkset)
+    return tuple(max(c[0], 1) for c in chunkset)
 
 
 @dataclass
