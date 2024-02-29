@@ -194,6 +194,7 @@ def test_negative(spec, executor):
         slice(None),
         slice(10),
         slice(3, None),
+        slice(3, 3),
         slice(3, 10),
         (slice(10), None),  # add a new dimension
     ],
@@ -208,11 +209,12 @@ def test_index_1d(spec, ind):
     [
         (2, 3),
         (None, 2, 3),  # add a new dimension
+        (slice(None), slice(2, 2)),
         (slice(None), slice(2, 4)),
         (slice(3), slice(2, None)),
         (slice(1, None), slice(4)),
+        (slice(1, 1), slice(None)),
         (slice(1, 3), slice(None)),
-        (slice(None), slice(2, 4)),
         (None, slice(None), slice(2, 4)),  # add a new dimension
         (slice(None), None, slice(2, 4)),  # add a new dimension
         (slice(None), slice(2, 4), None),  # add a new dimension
