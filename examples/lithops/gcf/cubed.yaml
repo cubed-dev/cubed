@@ -3,5 +3,5 @@ spec:
   allowed_mem: "2GB"
   executor_name: "lithops"
   executor_options:
-    runtime: "cubed-runtime-dev"
+    runtime: "cubed-runtime"
     runtime_memory: 2048
