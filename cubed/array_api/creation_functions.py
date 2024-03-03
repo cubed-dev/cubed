@@ -1,7 +1,6 @@
 import math
 from typing import TYPE_CHECKING, Iterable, List
 
-import numpy as np
 from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
@@ -93,7 +92,7 @@ def empty_virtual_array(
     shape, *, dtype=None, device=None, chunks="auto", spec=None, hidden=True
 ) -> "Array":
     if dtype is None:
-        dtype = np.float64
+        dtype = nxp.float64
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
@@ -111,7 +110,7 @@ def eye(
     if n_cols is None:
         n_cols = n_rows
     if dtype is None:
-        dtype = np.float64
+        dtype = nxp.float64
 
     shape = (n_rows, n_cols)
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
@@ -143,11 +142,11 @@ def full(
     if dtype is None:
         # check bool first since True/False are instances of int and float
         if isinstance(fill_value, bool):
-            dtype = np.bool_
+            dtype = nxp.bool
         elif isinstance(fill_value, int):
-            dtype = np.int64
+            dtype = nxp.int64
         elif isinstance(fill_value, float):
-            dtype = np.float64
+            dtype = nxp.float64
         else:
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
@@ -194,7 +193,7 @@ def linspace(
         div = 1
     step = float(range_) / div
     if dtype is None:
-        dtype = np.float64
+        dtype = nxp.float64
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
@@ -258,7 +257,7 @@ def meshgrid(*arrays, indexing="xy") -> List["Array"]:
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
-        dtype = np.float64
+        dtype = nxp.float64
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -304,7 +303,7 @@ def _tri_mask(N, M, k, chunks, spec):
 
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
-        dtype = np.float64
+        dtype = nxp.float64
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 

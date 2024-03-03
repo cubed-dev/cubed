@@ -1,10 +1,3 @@
-# Suppress numpy.array_api experimental warning
-import sys
-import warnings
-
-if not sys.warnoptions:
-    warnings.filterwarnings("ignore", category=UserWarning)
-
 from importlib.metadata import version as _version
 
 try:

@@ -6,6 +6,7 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed.backend_array_api import namespace as nxp
 from cubed.tests.utils import MAIN_EXECUTORS
 
 
@@ -25,7 +26,7 @@ def test_random(spec, executor):
     assert a.shape == (10, 10)
     assert a.chunks == ((4, 4, 2), (5, 5))
 
-    x = set(a.compute(executor=executor).flat)
+    x = nxp.unique_values(a.compute(executor=executor))
     assert len(x) > 90
 
 
@@ -35,7 +36,7 @@ def test_random_add(spec, executor):
 
     c = xp.add(a, b)
 
-    x = set(c.compute(executor=executor).flat)
+    x = nxp.unique_values(c.compute(executor=executor))
     assert len(x) > 90
 
 

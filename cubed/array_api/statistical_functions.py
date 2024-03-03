@@ -1,7 +1,5 @@
 import math
 
-import numpy as np
-
 from cubed.array_api.dtypes import (
     _numeric_dtypes,
     _real_floating_dtypes,
@@ -35,7 +33,7 @@ def mean(x, /, *, axis=None, keepdims=False, use_new_impl=False, split_every=Non
     # this is usually OK. An alternative would be to add support for multiple
     # outputs.
     dtype = x.dtype
-    intermediate_dtype = [("n", np.int64), ("total", np.float64)]
+    intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype)
     return reduction(
         x,
@@ -78,10 +76,10 @@ def _numel(x, **kwargs):
     shape = x.shape
     keepdims = kwargs.get("keepdims", False)
     axis = kwargs.get("axis", None)
-    dtype = kwargs.get("dtype", np.float64)
+    dtype = kwargs.get("dtype", nxp.float64)
 
     if axis is None:
-        prod = np.prod(shape, dtype=dtype)
+        prod = nxp.prod(shape, dtype=dtype)
         if keepdims is False:
             return prod
 

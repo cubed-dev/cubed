@@ -84,7 +84,7 @@ class VirtualOffsetsArray:
     """An array that is never materialized (in memory or on disk) and contains sequentially incrementing integers."""
 
     def __init__(self, shape: T_Shape):
-        dtype = np.int32
+        dtype = nxp.int32
         chunks = (1,) * len(shape)
         # use an empty in-memory Zarr array as a template since it normalizes its properties
         template = zarr.empty(

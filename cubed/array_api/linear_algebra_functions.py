@@ -1,8 +1,6 @@
 from numbers import Integral
 from typing import Iterable
 
-import numpy as np
-
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import _numeric_dtypes
 from cubed.array_api.manipulation_functions import expand_dims
@@ -61,7 +59,7 @@ def matmul(x1, x2, /):
 
 def _matmul(a, b):
     chunk = nxp.matmul(a, b)
-    return chunk[..., np.newaxis, :]
+    return chunk[..., nxp.newaxis, :]
 
 
 def _sum_wo_cat(a, axis=None, dtype=None):

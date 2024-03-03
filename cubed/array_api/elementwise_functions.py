@@ -1,5 +1,3 @@
-import numpy as np
-
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import (
     _boolean_dtypes,
@@ -170,7 +168,7 @@ def expm1(x, /):
 
 
 def equal(x1, x2, /):
-    return elemwise(nxp.equal, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.equal, x1, x2, dtype=nxp.bool)
 
 
 def floor(x, /):
@@ -189,11 +187,11 @@ def floor_divide(x1, x2, /):
 
 
 def greater(x1, x2, /):
-    return elemwise(nxp.greater, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.greater, x1, x2, dtype=nxp.bool)
 
 
 def greater_equal(x1, x2, /):
-    return elemwise(nxp.greater_equal, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.greater_equal, x1, x2, dtype=nxp.bool)
 
 
 def imag(x, /):
@@ -209,27 +207,27 @@ def imag(x, /):
 def isfinite(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in isfinite")
-    return elemwise(nxp.isfinite, x, dtype=np.bool_)
+    return elemwise(nxp.isfinite, x, dtype=nxp.bool)
 
 
 def isinf(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in isinf")
-    return elemwise(nxp.isinf, x, dtype=np.bool_)
+    return elemwise(nxp.isinf, x, dtype=nxp.bool)
 
 
 def isnan(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in isnan")
-    return elemwise(nxp.isnan, x, dtype=np.bool_)
+    return elemwise(nxp.isnan, x, dtype=nxp.bool)
 
 
 def less(x1, x2, /):
-    return elemwise(nxp.less, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.less, x1, x2, dtype=nxp.bool)
 
 
 def less_equal(x1, x2, /):
-    return elemwise(nxp.less_equal, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.less_equal, x1, x2, dtype=nxp.bool)
 
 
 def log(x, /):
@@ -265,25 +263,25 @@ def logaddexp(x1, x2, /):
 def logical_and(x1, x2, /):
     if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_and")
-    return elemwise(nxp.logical_and, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.logical_and, x1, x2, dtype=nxp.bool)
 
 
 def logical_not(x, /):
     if x.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_not")
-    return elemwise(nxp.logical_not, x, dtype=np.bool_)
+    return elemwise(nxp.logical_not, x, dtype=nxp.bool)
 
 
 def logical_or(x1, x2, /):
     if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_or")
-    return elemwise(nxp.logical_or, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.logical_or, x1, x2, dtype=nxp.bool)
 
 
 def logical_xor(x1, x2, /):
     if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_xor")
-    return elemwise(nxp.logical_xor, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.logical_xor, x1, x2, dtype=nxp.bool)
 
 
 def multiply(x1, x2, /):
@@ -299,7 +297,7 @@ def negative(x, /):
 
 
 def not_equal(x1, x2, /):
-    return elemwise(nxp.not_equal, x1, x2, dtype=np.bool_)
+    return elemwise(nxp.not_equal, x1, x2, dtype=nxp.bool)
 
 
 def positive(x, /):

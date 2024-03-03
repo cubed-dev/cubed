@@ -1,10 +1,11 @@
 from operator import mul
 from typing import Optional, TypeVar
 
-import numpy as np
 from toolz import map, reduce
 
 from cubed import config
+from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.runtime.types import Callback, Executor
 from cubed.spec import Spec, spec_from_config
 from cubed.storage.zarr import open_if_lazy_zarr_array
@@ -115,10 +116,10 @@ class CoreArray:
         # Only works if the array has been computed
         if self.size > 0:
             # read back from zarr
-            return self.zarray[...]
+            return numpy_array_to_backend_array(self.zarray[...])
         else:
             # this case fails for zarr, so just return an empty array of the correct shape
-            return np.empty(self.shape, dtype=self.dtype)
+            return nxp.empty(self.shape, dtype=self.dtype)
 
     def compute(
         self,

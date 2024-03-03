@@ -1,7 +1,7 @@
-import numpy as np
+from cubed.backend_array_api import namespace as nxp
 
-e = np.e
-inf = np.inf
-nan = np.nan
-newaxis = None
-pi = np.pi
+e = nxp.e
+inf = nxp.inf
+nan = nxp.nan
+newaxis = nxp.newaxis
+pi = nxp.pi

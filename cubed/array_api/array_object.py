@@ -225,37 +225,37 @@ class Array(CoreArray):
         other = self._check_allowed_dtypes(other, "all", "__eq__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.equal, self, other, dtype=np.bool_)
+        return elemwise(nxp.equal, self, other, dtype=nxp.bool)
 
     def __ge__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__ge__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.greater_equal, self, other, dtype=np.bool_)
+        return elemwise(nxp.greater_equal, self, other, dtype=nxp.bool)
 
     def __gt__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__gt__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.greater, self, other, dtype=np.bool_)
+        return elemwise(nxp.greater, self, other, dtype=nxp.bool)
 
     def __le__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__le__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.less_equal, self, other, dtype=np.bool_)
+        return elemwise(nxp.less_equal, self, other, dtype=nxp.bool)
 
     def __lt__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__lt__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.less, self, other, dtype=np.bool_)
+        return elemwise(nxp.less, self, other, dtype=nxp.bool)
 
     def __ne__(self, other, /):
         other = self._check_allowed_dtypes(other, "all", "__ne__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.not_equal, self, other, dtype=np.bool_)
+        return elemwise(nxp.not_equal, self, other, dtype=nxp.bool)
 
     # Reflected Operators
 
@@ -425,7 +425,7 @@ class Array(CoreArray):
                     "Python int scalars cannot be promoted with bool arrays"
                 )
             if self.dtype in _integer_dtypes:
-                info = np.iinfo(self.dtype)
+                info = nxp.iinfo(self.dtype)
                 if not (info.min <= scalar <= info.max):
                     raise OverflowError(
                         "Python int scalars must be within the bounds of the dtype for integer arrays"
