@@ -14,8 +14,8 @@
 3. Install a Python environment by running the following from this directory:
 
 ```shell
-conda create --name cubed-modal-examples -y python=3.9
-conda activate cubed-modal-examples
+conda create --name cubed-modal-aws-examples -y python=3.11
+conda activate cubed-modal-aws-examples
 pip install 'cubed[modal]'
 export CUBED_MODAL_REQUIREMENTS_FILE=$(pwd)/requirements.txt
 ```

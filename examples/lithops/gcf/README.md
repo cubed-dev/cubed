@@ -10,7 +10,7 @@
 
 ```shell
 # from this directory
-conda create --name cubed-lithops-gcf-examples -y python=3.9
+conda create --name cubed-lithops-gcf-examples -y python=3.11
 conda activate cubed-lithops-gcf-examples
 pip install -r requirements.txt  # use requirements file from same directory as this readme
 ```
