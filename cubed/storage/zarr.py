@@ -96,21 +96,6 @@ def lazy_empty(
     return LazyZarrArray(shape, dtype, chunks, store, path=path, **kwargs)
 
 
-def lazy_full(
-    shape: T_Shape,
-    fill_value: Any,
-    *,
-    dtype: T_DType,
-    chunks: T_RegularChunks,
-    store: T_Store,
-    path: Optional[str] = None,
-    **kwargs,
-) -> LazyZarrArray:
-    return LazyZarrArray(
-        shape, dtype, chunks, store, path=path, fill_value=fill_value, **kwargs
-    )
-
-
 def open_if_lazy_zarr_array(array: T_ZarrArray) -> zarr.Array:
     """If array is a LazyZarrArray then open it, leaving other arrays unchanged."""
     return array.open() if isinstance(array, LazyZarrArray) else array
