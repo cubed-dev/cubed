@@ -15,7 +15,7 @@ from cubed.backend_array_api import (
     numpy_array_to_backend_array,
 )
 from cubed.runtime.types import CubedPipeline
-from cubed.storage.zarr import T_ZarrArray, lazy_empty
+from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
 from cubed.utils import chunk_memory, get_item, map_nested, split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
@@ -279,8 +279,8 @@ def general_blockwise(
     if isinstance(target_store, zarr.Array):
         target_array = target_store
     else:
-        target_array = lazy_empty(
-            shape, dtype=dtype, chunks=chunksize, store=target_store, path=target_path
+        target_array = lazy_zarr_array(
+            target_store, shape, dtype, chunks=chunksize, path=target_path
         )
 
     func_kwargs = extra_func_kwargs or {}

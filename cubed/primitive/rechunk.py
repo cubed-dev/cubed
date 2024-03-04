@@ -7,7 +7,7 @@ import numpy as np
 
 from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
-from cubed.storage.zarr import T_ZarrArray, lazy_empty
+from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
 from cubed.types import T_RegularChunks, T_Shape, T_Store
 from cubed.vendor.rechunker.algorithm import rechunking_plan
 
@@ -125,12 +125,7 @@ def _setup_array_rechunk(
     int_chunks = tuple(int(x) for x in int_chunks)
     write_chunks = tuple(int(x) for x in write_chunks)
 
-    target_array = lazy_empty(
-        shape,
-        dtype=dtype,
-        chunks=target_chunks,
-        store=target_store,
-    )
+    target_array = lazy_zarr_array(target_store, shape, dtype, chunks=target_chunks)
 
     if read_chunks == write_chunks:
         int_array = None
@@ -138,12 +133,7 @@ def _setup_array_rechunk(
         # do intermediate store
         if temp_store is None:
             raise ValueError("A temporary store location must be provided.")
-        int_array = lazy_empty(
-            shape,
-            dtype=dtype,
-            chunks=int_chunks,
-            store=temp_store,
-        )
+        int_array = lazy_zarr_array(temp_store, shape, dtype, chunks=int_chunks)
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
     int_proxy = CubedArrayProxy(int_array, int_chunks)
