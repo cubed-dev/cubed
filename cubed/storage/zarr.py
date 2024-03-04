@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 import zarr
 
@@ -15,12 +15,11 @@ class LazyZarrArray:
 
     def __init__(
         self,
+        store: T_Store,
         shape: T_Shape,
         dtype: T_DType,
         chunks: T_RegularChunks,
-        store: T_Store,
         path: Optional[str] = None,
-        fill_value: Any = None,
         **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
@@ -35,7 +34,6 @@ class LazyZarrArray:
 
         self.store = store
         self.path = path
-        self.fill_value = fill_value
         self.kwargs = kwargs
 
     def create(self, mode: str = "w-") -> zarr.Array:
@@ -57,7 +55,6 @@ class LazyZarrArray:
             dtype=self.dtype,
             chunks=self.chunks,
             path=self.path,
-            fill_value=self.fill_value,
             **self.kwargs,
         )
         return target
@@ -84,16 +81,15 @@ class LazyZarrArray:
 T_ZarrArray = Union[zarr.Array, LazyZarrArray]
 
 
-def lazy_empty(
+def lazy_zarr_array(
+    store: T_Store,
     shape: T_Shape,
-    *,
     dtype: T_DType,
     chunks: T_RegularChunks,
-    store: T_Store,
     path: Optional[str] = None,
     **kwargs,
 ) -> LazyZarrArray:
-    return LazyZarrArray(shape, dtype, chunks, store, path=path, **kwargs)
+    return LazyZarrArray(store, shape, dtype, chunks, path=path, **kwargs)
 
 
 def open_if_lazy_zarr_array(array: T_ZarrArray) -> zarr.Array:
