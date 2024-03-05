@@ -1159,13 +1159,13 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
             assert result.keys() == reduced_chunk.keys()
             result = {
                 # only need to concatenate along first axis
-                k: np.concatenate([result[k], reduced_chunk[k]], axis=axis[0])
+                k: nxp.concat([result[k], reduced_chunk[k]], axis=axis[0])
                 for k in result.keys()
             }
             result = reduce_func(result, axis=axis, keepdims=True)
         else:
             # only need to concatenate along first axis
-            result = np.concatenate([result, reduced_chunk], axis=axis[0])
+            result = nxp.concat([result, reduced_chunk], axis=axis[0])
             result = reduce_func(result, axis=axis, keepdims=True)
 
     return result
@@ -1173,7 +1173,7 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
 
 def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False):
     """A reduction that returns the array indexes, not the values."""
-    dtype = np.int64  # index data type
+    dtype = nxp.int64  # index data type
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array

@@ -21,7 +21,7 @@ from cubed.core import reduction
 def nanmean(x, /, *, axis=None, keepdims=False):
     """Compute the arithmetic mean along the specified axis, ignoring NaNs."""
     dtype = x.dtype
-    intermediate_dtype = [("n", np.int64), ("total", np.float64)]
+    intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     return reduction(
         x,
         _nanmean_func,

@@ -101,14 +101,13 @@ jobs:
           array_api_tests/test_statistical_functions.py::test_std
           array_api_tests/test_statistical_functions.py::test_var
 
+          # finfo(float32).eps returns float32 but should return float
+          array_api_tests/test_data_type_functions.py::test_finfo[float32]
 
           # From https://github.com/data-apis/array-api-tests/blob/master/.github/workflows/numpy.yml
 
           # https://github.com/numpy/numpy/issues/18881
           array_api_tests/test_creation_functions.py::test_linspace
-
-          # https://github.com/numpy/numpy/issues/20870
-          array_api_tests/test_data_type_functions.py::test_can_cast
 
           EOF
 
