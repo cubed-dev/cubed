@@ -128,6 +128,7 @@ async def async_execute_dag(
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
+    concurrent_executor: Executor
     use_processes = kwargs.pop("use_processes", False)
     if use_processes:
         max_workers = kwargs.pop("max_workers", None)
