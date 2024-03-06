@@ -7,6 +7,7 @@ from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
+import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import elemwise, merge_chunks_new, partial_reduce
 from cubed.core.optimization import (
@@ -907,3 +908,12 @@ def test_fuse_only_optimize_dag(spec):
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, -np.ones((2, 2)))
+
+
+def test_optimize_stack(spec):
+    # This test fails if stack's general_blockwise call doesn't have fusable=False
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    c = xp.stack((a, b), axis=0)
+    # try to fuse all ops into one
+    c.compute(optimize_function=fuse_multiple_levels(max_total_num_input_blocks=10))

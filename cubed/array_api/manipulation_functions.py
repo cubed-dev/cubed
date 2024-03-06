@@ -296,6 +296,10 @@ def stack(arrays, /, *, axis=0):
         in_name = array_names[out_coords[axis]]
         return ((in_name, *(out_coords[:axis] + out_coords[(axis + 1) :])),)
 
+    # We have to mark this as fusable=False since the number of input args to
+    # the _read_stack_chunk function is *not* the same as the number of
+    # predecessor nodes in the DAG, and the fusion functions in blockwise
+    # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
     return general_blockwise(
         _read_stack_chunk,
         block_function,
@@ -304,6 +308,7 @@ def stack(arrays, /, *, axis=0):
         dtype=dtype,
         chunks=chunks,
         axis=axis,
+        fusable=False,
     )
 
 
