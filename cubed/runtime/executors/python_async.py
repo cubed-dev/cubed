@@ -1,8 +1,11 @@
 import asyncio
-from concurrent.futures import Executor, ThreadPoolExecutor
+import multiprocessing
+import os
+from concurrent.futures import Executor, ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
 from typing import Any, AsyncIterator, Callable, Iterable, Optional, Sequence
 
+import cloudpickle
 from aiostream import stream
 from aiostream.core import Stream
 from networkx import MultiDiGraph
@@ -26,6 +29,15 @@ def run_func(input, func=None, config=None, name=None, compute_id=None):
     return result
 
 
+def unpickle_and_call(f, inp, **kwargs):
+    import cloudpickle
+
+    f = cloudpickle.loads(f)
+    inp = cloudpickle.loads(inp)
+    kwargs = {k: cloudpickle.loads(v) for k, v in kwargs.items()}
+    return f(inp, **kwargs)
+
+
 async def map_unordered(
     concurrent_executor: Executor,
     function: Callable[..., Any],
@@ -40,6 +52,8 @@ async def map_unordered(
     if retries == 0:
         retrying_function = function
     else:
+        if isinstance(concurrent_executor, ProcessPoolExecutor):
+            raise NotImplementedError("Retries not supported for ProcessPoolExecutor")
         retryer = Retrying(reraise=True, stop=stop_after_attempt(retries + 1))
         retrying_function = partial(retryer, function)
 
@@ -54,8 +68,31 @@ async def map_unordered(
             for i in input
         ]
 
+    def create_futures_func_multiprocessing(input, **kwargs):
+        # Pickle the function, args, and kwargs using cloudpickle.
+        # They will be unpickled by unpickle_and_call.
+        pickled_kwargs = {k: cloudpickle.dumps(v) for k, v in kwargs.items()}
+        return [
+            (
+                i,
+                asyncio.wrap_future(
+                    concurrent_executor.submit(
+                        unpickle_and_call,
+                        cloudpickle.dumps(retrying_function),
+                        cloudpickle.dumps(i),
+                        **pickled_kwargs,
+                    )
+                ),
+            )
+            for i in input
+        ]
+
+    if isinstance(concurrent_executor, ProcessPoolExecutor):
+        create_futures = create_futures_func_multiprocessing
+    else:
+        create_futures = create_futures_func
     async for result in async_map_unordered(
-        create_futures_func,
+        create_futures,
         input,
         use_backups=use_backups,
         batch_size=batch_size,
@@ -91,7 +128,17 @@ async def async_execute_dag(
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
-    concurrent_executor = ThreadPoolExecutor()
+    concurrent_executor: Executor
+    use_processes = kwargs.pop("use_processes", False)
+    if use_processes:
+        max_workers = kwargs.pop("max_workers", None)
+        context = multiprocessing.get_context("spawn")
+        # max_tasks_per_child is only supported from Python 3.11
+        concurrent_executor = ProcessPoolExecutor(
+            max_workers=max_workers, mp_context=context, max_tasks_per_child=1
+        )
+    else:
+        concurrent_executor = ThreadPoolExecutor()
     try:
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
@@ -125,6 +172,9 @@ async def async_execute_dag(
 class AsyncPythonDagExecutor(DagExecutor):
     """An execution engine that uses Python asyncio."""
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     def execute_dag(
         self,
         dag: MultiDiGraph,
@@ -134,6 +184,14 @@ class AsyncPythonDagExecutor(DagExecutor):
         compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
+        # Tell NumPy to use a single thread
+        # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy
+        os.environ["MKL_NUM_THREADS"] = "1"
+        os.environ["NUMEXPR_NUM_THREADS"] = "1"
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+
+        merged_kwargs = {**self.kwargs, **kwargs}
         asyncio.run(
             async_execute_dag(
                 dag,
@@ -141,6 +199,6 @@ class AsyncPythonDagExecutor(DagExecutor):
                 resume=resume,
                 spec=spec,
                 compute_id=compute_id,
-                **kwargs,
+                **merged_kwargs,
             )
         )

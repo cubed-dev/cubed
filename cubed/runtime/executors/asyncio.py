@@ -53,7 +53,7 @@ async def async_map_unordered(
                 if backup:
                     if not backup.done() or not backup.exception():
                         continue
-                raise task.exception()
+                raise task.exception()  # type: ignore
             end_times[task] = time.monotonic()
             if return_stats:
                 result, stats = task.result()

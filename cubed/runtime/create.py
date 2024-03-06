@@ -32,6 +32,10 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
         from cubed.runtime.executors.modal import ModalDagExecutor
 
         return ModalDagExecutor(**executor_options)
+    elif name == "processes":
+        from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+
+        return AsyncPythonDagExecutor(retries=0, use_processes=True, **executor_options)
     elif name == "single-threaded":
         from cubed.runtime.executors.python import PythonDagExecutor
 
