@@ -365,7 +365,8 @@ def test_reduction_not_enough_memory(tmp_path):
     spec = cubed.Spec(tmp_path, allowed_mem=50)
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     with pytest.raises(ValueError, match=r"Not enough memory for reduction"):
-        xp.sum(a, axis=0, dtype=np.uint8)
+        # only a problem with the old implementation, so set use_new_impl=False
+        xp.sum(a, axis=0, dtype=np.uint8, use_new_impl=False)
 
 
 def test_partial_reduce(spec):

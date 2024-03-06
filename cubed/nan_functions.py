@@ -18,7 +18,7 @@ from cubed.core import reduction
 # https://github.com/data-apis/array-api/issues/621
 
 
-def nanmean(x, /, *, axis=None, keepdims=False):
+def nanmean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
     """Compute the arithmetic mean along the specified axis, ignoring NaNs."""
     dtype = x.dtype
     intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
@@ -31,6 +31,8 @@ def nanmean(x, /, *, axis=None, keepdims=False):
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
         keepdims=keepdims,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
     )
 
 
@@ -59,7 +61,9 @@ def _nannumel(x, **kwargs):
     return nxp.sum(~(nxp.isnan(x)), **kwargs)
 
 
-def nansum(x, /, *, axis=None, dtype=None, keepdims=False):
+def nansum(
+    x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
+):
     """Return the sum of array elements over a given axis treating NaNs as zero."""
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in nansum")
@@ -74,4 +78,12 @@ def nansum(x, /, *, axis=None, dtype=None, keepdims=False):
             dtype = complex128
         else:
             dtype = x.dtype
-    return reduction(x, nxp.nansum, axis=axis, dtype=dtype, keepdims=keepdims)
+    return reduction(
+        x,
+        nxp.nansum,
+        axis=axis,
+        dtype=dtype,
+        keepdims=keepdims,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
+    )
