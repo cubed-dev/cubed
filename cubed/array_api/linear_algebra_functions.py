@@ -3,7 +3,11 @@ from typing import Iterable
 
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import _numeric_dtypes
-from cubed.array_api.manipulation_functions import expand_dims
+from cubed.array_api.manipulation_functions import (
+    broadcast_arrays,
+    expand_dims,
+    moveaxis,
+)
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import blockwise, reduction, squeeze
 
@@ -148,6 +152,18 @@ def _tensordot(a, b, axes):
 
 
 def vecdot(x1, x2, /, *, axis=-1):
+    # based on the implementation in array-api-compat
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in vecdot")
-    return tensordot(x1, x2, axes=((axis,), (axis,)))
+    ndim = max(x1.ndim, x2.ndim)
+    x1_shape = (1,) * (ndim - x1.ndim) + tuple(x1.shape)
+    x2_shape = (1,) * (ndim - x2.ndim) + tuple(x2.shape)
+    if x1_shape[axis] != x2_shape[axis]:
+        raise ValueError("x1 and x2 must have the same size along the given axis")
+
+    x1_, x2_ = broadcast_arrays(x1, x2)
+    x1_ = moveaxis(x1_, axis, -1)
+    x2_ = moveaxis(x2_, axis, -1)
+
+    res = x1_[..., None, :] @ x2_[..., None]
+    return res[..., 0, 0]

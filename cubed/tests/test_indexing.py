@@ -54,4 +54,4 @@ def test_multiple_int_array_indexes(spec):
             chunks=(2, 2),
             spec=spec,
         )
-        a[[1, 2, 1], [2, 1]]
+        a[[1, 2, 1], [2, 1, 0]]

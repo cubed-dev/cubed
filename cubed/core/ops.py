@@ -17,7 +17,6 @@ from zarr.indexing import (
     SliceDimIndexer,
     is_integer_list,
     is_slice,
-    replace_ellipsis,
 )
 
 from cubed.backend_array_api import namespace as nxp
@@ -35,6 +34,7 @@ from cubed.utils import (
     to_chunksize,
 )
 from cubed.vendor.dask.array.core import common_blockdim, normalize_chunks
+from cubed.vendor.dask.array.slicing import replace_ellipsis
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions, lol_product
 from cubed.vendor.dask.utils import has_keyword
@@ -400,25 +400,35 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
 def index(x, key):
     "Subset an array, along one or more axes."
     if not isinstance(key, tuple):
-        key = (key,)
+        selection = (key,)
+    else:
+        selection = key
 
     # No op case
-    if all(is_slice(ind) and ind == slice(None) for ind in key):
+    if all(is_slice(ind) and ind == slice(None) for ind in selection):
         return x
-
-    # Remove None values, to be filled in with expand_dims at end
-    where_none = [i for i, ind in enumerate(key) if ind is None]
-    for i, a in enumerate(where_none):
-        n = sum(isinstance(ind, Integral) for ind in key[:a])
-        if n:
-            where_none[i] -= n
-    key = tuple(ind for ind in key if ind is not None)
 
     # Replace arrays with lists - note that this may trigger a computation!
     selection = tuple(
         dim_sel.compute().tolist() if isinstance(dim_sel, CoreArray) else dim_sel
-        for dim_sel in key
+        for dim_sel in selection
     )
+
+    # Use Dask vendored replace_ellipsis. Note that this handles None (newaxis) correctly, unlike Zarr's replace_ellipsis
+    selection = replace_ellipsis(x.ndim, selection)
+
+    # Ensure selection is same length as array dims
+    if len(selection) < x.ndim:
+        selection += (slice(None),) * (x.ndim - len(selection))
+
+    # Remove None values, to be filled in with expand_dims at end
+    where_none = [i for i, ind in enumerate(selection) if ind is None]
+    for i, a in enumerate(where_none):
+        n = sum(isinstance(ind, Integral) for ind in selection[:a])
+        if n:
+            where_none[i] -= n
+    selection = tuple(ind for ind in selection if ind is not None)
+
     # Replace np.ndarray with lists
     # Note that this shouldn't be needed, instead change xarray to return array API types
     # (Variable.__getitem__ -> _broadcast_indexes creates an OuterIndexer that always uses np.array)
@@ -426,8 +436,6 @@ def index(x, key):
         dim_sel.tolist() if isinstance(dim_sel, np.ndarray) else dim_sel
         for dim_sel in selection
     )
-    # Replace ellipsis with slices
-    selection = replace_ellipsis(selection, x.shape)
 
     # Check selection is supported
     if any(s.step is not None and s.step < 1 for s in selection if is_slice(s)):
