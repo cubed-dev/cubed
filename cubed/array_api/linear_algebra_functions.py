@@ -8,7 +8,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import blockwise, reduction, squeeze
 
 
-def matmul(x1, x2, /):
+def matmul(x1, x2, /, use_new_impl=True, split_every=None):
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in matmul")
 
@@ -47,7 +47,9 @@ def matmul(x1, x2, /):
         dtype=dtype,
     )
 
-    out = _sum_wo_cat(out, axis=-2, dtype=dtype)
+    out = _sum_wo_cat(
+        out, axis=-2, dtype=dtype, use_new_impl=use_new_impl, split_every=split_every
+    )
 
     if x1_is_1d:
         out = squeeze(out, -2)
@@ -62,13 +64,19 @@ def _matmul(a, b):
     return chunk[..., nxp.newaxis, :]
 
 
-def _sum_wo_cat(a, axis=None, dtype=None):
+def _sum_wo_cat(a, axis=None, dtype=None, use_new_impl=True, split_every=None):
     if a.shape[axis] == 1:
         return squeeze(a, axis)
 
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
-        a, _chunk_sum, axis=axis, dtype=dtype, extra_func_kwargs=extra_func_kwargs
+        a,
+        _chunk_sum,
+        axis=axis,
+        dtype=dtype,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
+        extra_func_kwargs=extra_func_kwargs,
     )
 
 
@@ -91,7 +99,7 @@ def outer(x1, x2, /):
     return blockwise(nxp.linalg.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)
 
 
-def tensordot(x1, x2, /, *, axes=2):
+def tensordot(x1, x2, /, *, axes=2, use_new_impl=True, split_every=None):
     from cubed.array_api.statistical_functions import sum
 
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
@@ -135,7 +143,13 @@ def tensordot(x1, x2, /, *, axes=2):
         adjust_chunks=adjust_chunks,
         axes=(x1_axes, x2_axes),
     )
-    return sum(out, axis=x1_axes, dtype=dtype)
+    return sum(
+        out,
+        axis=x1_axes,
+        dtype=dtype,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
+    )
 
 
 def _tensordot(a, b, axes):
@@ -147,7 +161,13 @@ def _tensordot(a, b, axes):
     return x
 
 
-def vecdot(x1, x2, /, *, axis=-1):
+def vecdot(x1, x2, /, *, axis=-1, use_new_impl=True, split_every=None):
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in vecdot")
-    return tensordot(x1, x2, axes=((axis,), (axis,)))
+    return tensordot(
+        x1,
+        x2,
+        axes=((axis,), (axis,)),
+        use_new_impl=use_new_impl,
+        split_every=split_every,
+    )

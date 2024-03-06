@@ -17,13 +17,21 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
 
-def max(x, /, *, axis=None, keepdims=False):
+def max(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in max")
-    return reduction(x, nxp.max, axis=axis, dtype=x.dtype, keepdims=keepdims)
+    return reduction(
+        x,
+        nxp.max,
+        axis=axis,
+        dtype=x.dtype,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
+        keepdims=keepdims,
+    )
 
 
-def mean(x, /, *, axis=None, keepdims=False, use_new_impl=False, split_every=None):
+def mean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
     if x.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in mean")
     # This implementation uses NumPy and Zarr's structured arrays to store a
@@ -99,13 +107,23 @@ def _numel(x, **kwargs):
     return nxp.broadcast_to(nxp.asarray(prod, dtype=dtype), new_shape)
 
 
-def min(x, /, *, axis=None, keepdims=False):
+def min(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in min")
-    return reduction(x, nxp.min, axis=axis, dtype=x.dtype, keepdims=keepdims)
+    return reduction(
+        x,
+        nxp.min,
+        axis=axis,
+        dtype=x.dtype,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
+        keepdims=keepdims,
+    )
 
 
-def prod(x, /, *, axis=None, dtype=None, keepdims=False):
+def prod(
+    x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
+):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in prod")
     if dtype is None:
@@ -126,11 +144,15 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False):
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )
 
 
-def sum(x, /, *, axis=None, dtype=None, keepdims=False):
+def sum(
+    x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
+):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in sum")
     if dtype is None:
@@ -151,5 +173,7 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False):
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )

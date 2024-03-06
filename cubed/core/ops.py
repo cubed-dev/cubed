@@ -875,7 +875,7 @@ def reduction(
     intermediate_dtype=None,
     dtype=None,
     keepdims=False,
-    use_new_impl=False,
+    use_new_impl=True,
     split_every=None,
     extra_func_kwargs=None,
 ) -> "Array":
@@ -1174,7 +1174,9 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
     return result
 
 
-def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False):
+def arg_reduction(
+    x, /, arg_func, axis=None, *, keepdims=False, use_new_impl=True, split_every=None
+):
     """A reduction that returns the array indexes, not the values."""
     dtype = nxp.int64  # index data type
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
@@ -1200,6 +1202,8 @@ def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False):
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
         keepdims=keepdims,
+        use_new_impl=use_new_impl,
+        split_every=split_every,
     )
 
 
