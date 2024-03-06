@@ -1127,8 +1127,9 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
     # Since block_function returns an iterator of input keys, the the array chunks passed to
     # _partial_reduce are retrieved one at a time. However, we need an extra chunk of memory
     # to stay within limits (maybe because the iterator doesn't free the previous object
-    # before getting the next).
-    extra_projected_mem = x.chunkmem
+    # before getting the next). We also need extra memory to hold two reduced chunks, since
+    # they are concatenated two at a time.
+    extra_projected_mem = x.chunkmem + 2 * chunk_memory(dtype, to_chunksize(chunks))
 
     return general_blockwise(
         _partial_reduce,
