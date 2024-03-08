@@ -192,7 +192,8 @@ def add_placeholder_op(dag, inputs, outputs):
 def structurally_equivalent(dag1, dag2):
     # compare structure, and node labels for values but not operators since they are placeholders
 
-    # draw_dag(dag1)  # uncomment for debugging
+    # draw_dag(dag1, "dag1")  # uncomment for debugging
+    # draw_dag(dag2, "dag2")  # uncomment for debugging
 
     labelled_dag1 = nx.convert_node_labels_to_integers(dag1, label_attribute="label")
     labelled_dag2 = nx.convert_node_labels_to_integers(dag2, label_attribute="label")
@@ -209,6 +210,10 @@ def structurally_equivalent(dag1, dag2):
 
 
 def draw_dag(dag, name="dag"):
+    dag = dag.copy()
+    for _, d in dag.nodes(data=True):
+        if "name" in d:  # pydot already has name
+            del d["name"]
     gv = nx.drawing.nx_pydot.to_pydot(dag)
     format = "svg"
     full_filename = f"{name}.{format}"
@@ -427,6 +432,31 @@ def test_fuse_mixed_levels_and_diamond(spec):
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 2 * np.ones((2, 2)))
+
+
+# derived from a bug found by array_api_tests/test_manipulation_functions.py::test_expand_dims
+#  a   b    ->   a   b
+#   \ /          |\ /|
+#    c           | d |
+#   /|           | | |
+#  d |           | e |
+#  | |            \|/
+#  e |             f
+#   \|
+#    f
+def test_fuse_mixed_levels_and_diamond_complex(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    d = xp.positive(c)
+    e = d[1:, :]  # operation can't be fused
+    f = xp.add(e, c)  # this order exposed a bug in argument ordering
+
+    opt_fn = multiple_inputs_optimize_dag
+
+    f.visualize(optimize_function=opt_fn)
+    result = f.compute(optimize_function=opt_fn)
+    assert_array_equal(result, 4 * np.ones((2, 2)))
 
 
 # repeated argument

@@ -65,6 +65,8 @@ def test_rechunk(
 
     ops = rechunk(
         source,
+        source_array_name="source-array",
+        int_array_name="int-array",
         target_chunks=target_chunks,
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
@@ -109,6 +111,8 @@ def test_rechunk_allowed_mem_exceeded(tmp_path):
     ):
         rechunk(
             source,
+            source_array_name="source-array",
+            int_array_name="int-array",
             target_chunks=(4, 1),
             allowed_mem=allowed_mem,
             reserved_mem=0,
