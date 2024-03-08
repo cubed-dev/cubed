@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import zarr
 
@@ -14,6 +14,9 @@ class PrimitiveOperation:
 
     pipeline: CubedPipeline
     """The pipeline that runs this operation."""
+
+    source_array_names: List[str]
+    """The names of the arrays which are inputs to this operation."""
 
     target_array: Any
     """The array being computed by this operation."""

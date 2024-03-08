@@ -22,6 +22,8 @@ def gensym(name: str) -> str:
 
 def rechunk(
     source: T_ZarrArray,
+    source_array_name: str,
+    int_array_name: str,
     target_chunks: T_RegularChunks,
     allowed_mem: int,
     reserved_mem: int,
@@ -72,7 +74,13 @@ def rechunk(
         num_tasks = total_chunks(write_proxy.array.shape, write_proxy.chunks)
         return [
             spec_to_primitive_op(
-                copy_spec, target, projected_mem, allowed_mem, reserved_mem, num_tasks
+                copy_spec,
+                source_array_name,
+                target,
+                projected_mem,
+                allowed_mem,
+                reserved_mem,
+                num_tasks,
             )
         ]
 
@@ -82,6 +90,7 @@ def rechunk(
         num_tasks = total_chunks(copy_spec1.write.array.shape, copy_spec1.write.chunks)
         op1 = spec_to_primitive_op(
             copy_spec1,
+            source_array_name,
             intermediate,
             projected_mem,
             allowed_mem,
@@ -92,7 +101,13 @@ def rechunk(
         copy_spec2 = CubedCopySpec(int_proxy, write_proxy)
         num_tasks = total_chunks(copy_spec2.write.array.shape, copy_spec2.write.chunks)
         op2 = spec_to_primitive_op(
-            copy_spec2, target, projected_mem, allowed_mem, reserved_mem, num_tasks
+            copy_spec2,
+            int_array_name,
+            target,
+            projected_mem,
+            allowed_mem,
+            reserved_mem,
+            num_tasks,
         )
 
         return [op1, op2]
@@ -184,6 +199,7 @@ def copy_read_to_write(chunk_key: Sequence[slice], *, config: CubedCopySpec) -> 
 
 def spec_to_primitive_op(
     spec: CubedCopySpec,
+    source_array_name: str,
     target_array: Any,
     projected_mem: int,
     allowed_mem: int,
@@ -198,8 +214,10 @@ def spec_to_primitive_op(
         ChunkKeys(shape, spec.write.chunks),
         spec,
     )
+    source_array_names = [source_array_name]
     return PrimitiveOperation(
         pipeline=pipeline,
+        source_array_names=source_array_names,
         target_array=target_array,
         projected_mem=projected_mem,
         allowed_mem=allowed_mem,

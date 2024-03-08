@@ -331,6 +331,7 @@ def general_blockwise(
     )
     return PrimitiveOperation(
         pipeline=pipeline,
+        source_array_names=array_names,
         target_array=target_array,
         projected_mem=projected_mem,
         allowed_mem=allowed_mem,
@@ -483,6 +484,7 @@ def fuse(
         write_proxy,
     )
 
+    source_array_names = primitive_op1.source_array_names
     target_array = primitive_op2.target_array
     projected_mem = max(primitive_op1.projected_mem, primitive_op2.projected_mem)
     allowed_mem = primitive_op2.allowed_mem
@@ -497,6 +499,7 @@ def fuse(
     )
     return PrimitiveOperation(
         pipeline=pipeline,
+        source_array_names=source_array_names,
         target_array=target_array,
         projected_mem=projected_mem,
         allowed_mem=allowed_mem,
@@ -607,6 +610,12 @@ def fuse_multiple(
         write_proxy,
     )
 
+    source_array_names = []
+    for i, p in enumerate(predecessor_primitive_ops):
+        if p is None:
+            source_array_names.append(primitive_op.source_array_names[i])
+        else:
+            source_array_names.extend(p.source_array_names)
     target_array = primitive_op.target_array
     projected_mem = max(
         primitive_op.projected_mem,
@@ -624,6 +633,7 @@ def fuse_multiple(
     )
     return PrimitiveOperation(
         pipeline=fused_pipeline,
+        source_array_names=source_array_names,
         target_array=target_array,
         projected_mem=projected_mem,
         allowed_mem=allowed_mem,

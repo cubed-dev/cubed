@@ -739,6 +739,8 @@ def rechunk(x, chunks, target_store=None):
     temp_store = new_temp_path(name=name_int, spec=spec)
     ops = primitive_rechunk(
         x.zarray_maybe_lazy,
+        source_array_name=name,
+        int_array_name=name_int,
         target_chunks=target_chunks,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,

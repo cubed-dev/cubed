@@ -81,17 +81,22 @@ def gensym(name="op"):
     return f"{name}-{sym_counter:03}"
 
 
-def predecessors(dag, name):
-    """Return a node's predecessors, with repeats for multiple edges."""
+def predecessors_unordered(dag, name):
+    """Return a node's predecessors in no particular order, with repeats for multiple edges."""
     for pre, _ in dag.in_edges(name):
         yield pre
 
 
 def predecessor_ops(dag, name):
-    """Return an op node's op predecessors"""
-    for input in predecessors(dag, name):
-        for pre in predecessors(dag, input):
-            yield pre
+    """Return an op node's op predecessors in the same order as the input source arrays for the op.
+
+    Note that each input source array is produced by a single predecessor op.
+    """
+    nodes = dict(dag.nodes(data=True))
+    for input in nodes[name]["primitive_op"].source_array_names:
+        pre_list = list(predecessors_unordered(dag, input))
+        assert len(pre_list) == 1  # each array is produced by a single op
+        yield pre_list[0]
 
 
 def is_fusable(node_dict):
@@ -135,7 +140,7 @@ def can_fuse_predecessors(
     # the fused function would be more than an allowed maximum, then don't fuse
     if len(list(predecessor_ops(dag, name))) > 1:
         total_source_arrays = sum(
-            len(list(predecessors(dag, pre))) if is_fusable(nodes[pre]) else 1
+            len(list(predecessors_unordered(dag, pre))) if is_fusable(nodes[pre]) else 1
             for pre in predecessor_ops(dag, name)
         )
         if total_source_arrays > max_total_source_arrays:
@@ -203,8 +208,8 @@ def fuse_predecessors(
     # re-wire dag to remove predecessor nodes that have been fused
 
     # 1. update edges to change inputs
-    for input in predecessors(dag, name):
-        pre = next(predecessors(dag, input))
+    for input in predecessors_unordered(dag, name):
+        pre = next(predecessors_unordered(dag, input))
         if not is_fusable(fused_nodes[pre]):
             # if a predecessor is not fusable then don't change the edge
             continue
@@ -213,14 +218,14 @@ def fuse_predecessors(
         if not is_fusable(fused_nodes[pre]):
             # if a predecessor is not fusable then don't change the edge
             continue
-        for input in predecessors(dag, pre):
+        for input in predecessors_unordered(dag, pre):
             fused_dag.add_edge(input, name)
 
     # 2. remove predecessor nodes with no successors
     # (ones with successors are needed by other nodes)
-    for input in predecessors(dag, name):
+    for input in predecessors_unordered(dag, name):
         if fused_dag.out_degree(input) == 0:
-            for pre in list(predecessors(fused_dag, input)):
+            for pre in list(predecessors_unordered(fused_dag, input)):
                 fused_dag.remove_node(pre)
             fused_dag.remove_node(input)
 

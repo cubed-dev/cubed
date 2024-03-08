@@ -462,6 +462,7 @@ def create_zarr_arrays(lazy_zarr_arrays, allowed_mem, reserved_mem):
     )
     return PrimitiveOperation(
         pipeline=pipeline,
+        source_array_names=[],
         target_array=None,
         projected_mem=projected_mem,
         allowed_mem=allowed_mem,
