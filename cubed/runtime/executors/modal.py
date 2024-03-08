@@ -70,7 +70,7 @@ def check_runtime_memory(spec):
 
 @stub.function(
     image=aws_image,
-    secret=modal.Secret.from_name("my-aws-secret"),
+    secrets=[modal.Secret.from_name("my-aws-secret")],
     memory=RUNTIME_MEMORY_MIB,
     retries=2,
     cloud="aws",
@@ -85,13 +85,14 @@ def run_remotely(input, func=None, config=None, name=None, compute_id=None):
 # For GCP we need to use a class so we can set up credentials by hooking into the container lifecycle
 @stub.cls(
     image=gcp_image,
-    secret=modal.Secret.from_name("my-googlecloud-secret"),
+    secrets=[modal.Secret.from_name("my-googlecloud-secret")],
     memory=RUNTIME_MEMORY_MIB,
     retries=2,
     cloud="gcp",
 )
 class Container:
-    def __enter__(self):
+    @modal.enter()
+    def set_up_credentials(self):
         json = os.environ["SERVICE_ACCOUNT_JSON"]
         path = os.path.abspath("application_credentials.json")
         with open(path, "w") as f:
