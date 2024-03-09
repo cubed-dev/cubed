@@ -19,6 +19,7 @@ from cubed.core.optimization import (
     simple_optimize_dag,
 )
 from cubed.core.plan import arrays_to_plan
+from cubed.tests.test_core import sqrts
 from cubed.tests.utils import TaskCounter
 
 
@@ -979,6 +980,132 @@ def test_fuse_partial_reduce_binary(spec):
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 6 * np.ones((1, 2)))
+
+
+# unary op followed by multiple outputs
+#
+#   a    ->    a
+#   |         / \
+#   b        c   d
+#  / \
+# c   d
+#
+def test_fuse_unary_op_and_multiple_outputs(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.positive(a)
+    c, d = sqrts(b)
+
+    opt_fn = fuse_multiple_levels()
+
+    cubed.visualize(c, d, optimize_function=opt_fn)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (a,))
+    add_placeholder_op(expected_fused_dag, (a,), (c, d))
+    plan = arrays_to_plan(c, d)
+    optimized_dag = plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    c_result, d_result = cubed.compute(c, d, optimize_function=opt_fn)
+    assert_array_equal(c_result, np.ones((2, 2)))
+    assert_array_equal(d_result, -np.ones((2, 2)))
+
+
+# multiple outputs followed by unary ops
+# note: this is not yet implemented
+#
+#   a    ->    a
+#  / \        / \
+# b   c      d   e
+# |   |
+# d   e
+#
+def test_fuse_multiple_outputs_and_unary_op(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b, c = sqrts(a)
+    d = xp.negative(b)
+    e = xp.negative(c)
+
+    opt_fn = fuse_multiple_levels()
+
+    cubed.visualize(d, e, optimize_function=opt_fn)
+
+    # # check structure of optimized dag
+    # expected_fused_dag = create_dag()
+    # add_placeholder_op(expected_fused_dag, (), (a,))
+    # add_placeholder_op(expected_fused_dag, (a,), (d, e))
+    # plan = arrays_to_plan(d, e)
+    # optimized_dag = plan.optimize(optimize_function=opt_fn).dag
+    # assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    d_result, e_result = cubed.compute(d, e, optimize_function=opt_fn)
+    assert_array_equal(d_result, -np.ones((2, 2)))
+    assert_array_equal(e_result, np.ones((2, 2)))
+
+
+# multiple outputs diamond
+# note: this is not yet implemented
+#
+#   a    ->    a
+#  / \         |
+# b   c        d
+#  \ /
+#   d
+#
+def test_fuse_multiple_outputs_diamond(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b, c = sqrts(a)
+    d = xp.add(b, c)
+
+    opt_fn = fuse_multiple_levels()
+
+    d.visualize(optimize_function=opt_fn)
+
+    # # check structure of optimized dag
+    # expected_fused_dag = create_dag()
+    # add_placeholder_op(expected_fused_dag, (), (a,))
+    # add_placeholder_op(expected_fused_dag, (a,), (d,))
+    # optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+    # assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    result = d.compute(optimize_function=opt_fn)
+    assert_array_equal(result, np.zeros((2, 2)))
+
+
+# sibling fusion
+# note: this is not yet implemented
+#
+# (notation is more explicit here - 'o' is an op)
+#
+#   o    ->    o
+#   |          |
+#   a          a
+#  / \         |
+# o   o        o
+# |   |       / \
+# b   c      b   c
+#
+def test_fuse_siblings(spec):
+    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+    b = xp.positive(a)
+    c = xp.negative(a)
+
+    opt_fn = fuse_multiple_levels()
+
+    cubed.visualize(b, c, optimize_function=opt_fn)
+
+    # # check structure of optimized dag
+    # expected_fused_dag = create_dag()
+    # add_placeholder_op(expected_fused_dag, (), (a,))
+    # add_placeholder_op(expected_fused_dag, (a,), (b, c))
+    # plan = arrays_to_plan(b, c)
+    # optimized_dag = plan.optimize(optimize_function=opt_fn).dag
+    # assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    b_result, c_result = cubed.compute(b, c, optimize_function=opt_fn)
+    assert_array_equal(b_result, np.ones((2, 2)))
+    assert_array_equal(c_result, -np.ones((2, 2)))
 
 
 def test_fuse_only_optimize_dag(spec):
