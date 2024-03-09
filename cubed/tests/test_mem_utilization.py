@@ -19,6 +19,7 @@ from cubed.diagnostics.history import HistoryCallback
 from cubed.diagnostics.mem_warn import MemoryWarningCallback
 from cubed.diagnostics.memray import MemrayCallback
 from cubed.runtime.create import create_executor
+from cubed.tests.test_core import sqrts
 from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
 
 pd.set_option("display.max_columns", None)
@@ -320,6 +321,19 @@ def test_sum_partial_reduce(tmp_path, spec, executor):
     run_operation(tmp_path, executor, "sum_partial_reduce", b)
 
 
+# Multiple outputs
+
+
+@pytest.mark.slow
+def test_sqrts(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b, c = sqrts(a)
+    # don't optimize graph so we use as much memory as possible (reading from Zarr)
+    run_operation(tmp_path, executor, "sqrts", b, c, optimize_graph=False)
+
+
 # Internal functions
 
 
@@ -327,20 +341,23 @@ def run_operation(
     tmp_path,
     executor,
     name,
-    result_array,
-    *,
+    *results,
     optimize_graph=True,
     optimize_function=None,
 ):
-    # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False, show_hidden=True)
-    # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
+    # cubed.visualize(
+    #     *results, filename=f"cubed-{name}-unoptimized", optimize_graph=False, show_hidden=True
+    # )
+    # cubed.visualize(
+    #     *results, filename=f"cubed-{name}", optimize_function=optimize_function
+    # )
     hist = HistoryCallback()
     mem_warn = MemoryWarningCallback()
     memray = MemrayCallback()
-    # use store=None to write to temporary zarr
-    cubed.to_zarr(
-        result_array,
-        store=None,
+    # use None for each store to write to temporary zarr
+    cubed.store(
+        results,
+        (None,) * len(results),
         executor=executor,
         callbacks=[hist, mem_warn, memray],
         optimize_graph=optimize_graph,
