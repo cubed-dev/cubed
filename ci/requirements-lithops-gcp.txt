@@ -1,0 +1,4 @@
+git+https://github.com/cubed-dev/cubed.git#egg=cubed
+lithops[gcp]
+gcsfs
+rich
