@@ -89,7 +89,8 @@ jobs:
           # very slow
           array_api_tests/test_creation_functions.py::test_eye
 
-          # edge case failures
+          # edge case failures (https://github.com/cubed-dev/cubed/issues/420)
+          array_api_tests/test_linalg.py::test_tensordot
           array_api_tests/test_linalg.py::test_vecdot
 
           # not implemented
