@@ -23,6 +23,7 @@ requires-python = ">=3.9"
 dependencies = [
     "aiostream",
     "array-api-compat",
+    "cloudpickle",
     "donfig",
     "fsspec",
     "mypy_extensions", # for rechunker
