@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=94ba9f06"></script>
+    <script src="../_static/documentation_options.js?v=e1bc3832"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -347,7 +347,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-python-executor">Local Python executor</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-cloud-service-should-i-use">Which cloud service should I use?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-cloud-service-executor-should-i-use">Which cloud service executor should I use?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specifying-an-executor">Specifying an executor</a></li>
 </ul>
             </nav>
@@ -368,17 +368,13 @@ document.write(`
 <h2>Local Python executor<a class="headerlink" href="#local-python-executor" title="Link to this heading">#</a></h2>
 <p>If you don’t specify an executor then the local in-process Python executor is used. This is a very simple, single-threaded executor (called <a class="reference internal" href="../generated/cubed.runtime.executors.python.PythonDagExecutor.html#cubed.runtime.executors.python.PythonDagExecutor" title="cubed.runtime.executors.python.PythonDagExecutor"><code class="xref py py-class docutils literal notranslate"><span class="pre">PythonDagExecutor</span></code></a>) that is intended for testing on small amounts of data before running larger computations using a cloud service.</p>
 </section>
-<section id="which-cloud-service-should-i-use">
-<h2>Which cloud service should I use?<a class="headerlink" href="#which-cloud-service-should-i-use" title="Link to this heading">#</a></h2>
-<p><a class="reference external" href="https://modal.com/"><strong>Modal</strong></a> is the easiest to get started with because it handles building a runtime environment for you automatically (note that it requires that you <a class="reference external" href="https://modal.com/signup">sign up</a> for a free account).
-It has been tested with ~300 workers and works with AWS and GCP.</p>
-<p><a class="reference external" href="https://lithops-cloud.github.io/"><strong>Lithops</strong></a> requires slightly more work to get started since you have to build a runtime environment first.
-Lithops has support for many serverless services on various cloud providers, but has so far been tested on two:</p>
-<ul class="simple">
-<li><p><strong>AWS Lambda</strong> requires building a Docker container first, and has been tested with ~1000 workers.</p></li>
-<li><p><strong>Google Cloud Functions</strong> only requires building a Lithops runtime, which can be created from a pip-style <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> without Docker. It has been tested with ~1000 workers.</p></li>
-</ul>
-<p><a class="reference external" href="https://cloud.google.com/dataflow"><strong>Google Cloud Dataflow</strong></a> is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is the most mature service and therefore should be reliable for much larger computations.</p>
+<section id="which-cloud-service-executor-should-i-use">
+<h2>Which cloud service executor should I use?<a class="headerlink" href="#which-cloud-service-executor-should-i-use" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://lithops-cloud.github.io/"><strong>Lithops</strong></a> is the executor we recommend for most users, since it has had the most testing so far (~1000 workers).
+If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it’s in GCS use Lithops with Google Cloud Functions. You have to build a runtime environment as a part of the setting up process.</p>
+<p><a class="reference external" href="https://modal.com/"><strong>Modal</strong></a> is very easy to get started with because it handles building a runtime environment for you automatically (note that it requires that you <a class="reference external" href="https://modal.com/signup">sign up</a> for a free account). <strong>At the time of writing, Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are likely.</strong></p>
+<p><a class="reference external" href="https://www.coiled.io/"><strong>Coiled</strong></a> is also easy to get started with (<a class="reference external" href="https://cloud.coiled.io/signup">sign up</a>). It uses <a class="reference external" href="https://docs.coiled.io/user_guide/usage/functions/index.html">Coiled Functions</a> and has a 1-2 minute overhead to start a cluster.</p>
+<p><a class="reference external" href="https://cloud.google.com/dataflow"><strong>Google Cloud Dataflow</strong></a> is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is a mature service and therefore should be reliable for much larger computations.</p>
 </section>
 <section id="specifying-an-executor">
 <h2>Specifying an executor<a class="headerlink" href="#specifying-an-executor" title="Link to this heading">#</a></h2>
@@ -393,7 +389,7 @@ Lithops has support for many serverless services on various cloud providers, but
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Alternatively an executor may be specified when <a class="reference internal" href="../generated/cubed.compute.html#cubed.compute" title="cubed.compute"><code class="xref py py-func docutils literal notranslate"><span class="pre">compute()</span></code></a> is called. The <a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">examples</a> show this in more detail for all of the cloud services described above.</p>
+<p>A default spec may also be configured using a YAML file. The <a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">examples</a> show this in more detail for all of the cloud services described above.</p>
 </section>
 </section>
 
@@ -443,7 +439,7 @@ Lithops has support for many serverless services on various cloud providers, but
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-python-executor">Local Python executor</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-cloud-service-should-i-use">Which cloud service should I use?</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-cloud-service-executor-should-i-use">Which cloud service executor should I use?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specifying-an-executor">Specifying an executor</a></li>
 </ul>
   </nav></div>
@@ -469,7 +465,7 @@ By Tom White
 
   <p class="copyright">
     
-      © Copyright 2022-2023, Tom White.
+      © Copyright 2022-2024, Tom White.
       <br/>
     
   </p>

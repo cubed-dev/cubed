@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="_static/documentation_options.js?v=94ba9f06"></script>
+    <script src="_static/documentation_options.js?v=e1bc3832"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -434,9 +434,10 @@ document.write(`
 <li><p>No input array attributes are preserved in general</p></li>
 <li><p><strong>Single</strong> input, <strong>single</strong> output</p></li>
 </ul>
-<p>It is a core operation that is implemented using repeated calls to <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> and <code class="docutils literal notranslate"><span class="pre">rechunk</span></code>.</p>
-<p>Here is an example of reducing over the first axis, with a single round of <code class="docutils literal notranslate"><span class="pre">rechunk</span></code> and <code class="docutils literal notranslate"><span class="pre">combine</span></code> - in general there would be multiple rounds until there’s a single block in each reduction axis.</p>
-<p><img alt="The reduction core operation" src="_images/reduction.svg" /></p>
+<p>It is a core operation that is implemented using a <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation called <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> that reads multiple blocks and performs the reduction operation on them.
+The <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> operations are arranged in a tree (<code class="docutils literal notranslate"><span class="pre">tree_reduce</span></code>) with multiple rounds until there’s a single block in each reduction axis. Finally an aggregrate <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation is applied to the results.</p>
+<p>Here is an example of reducing over the first axis, with two rounds of <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> operations:</p>
+<p><img alt="The reduction core operation" src="_images/reduction_new.svg" /></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code> works similarly, but uses different functions to return indexes rather than values.</p>
 </section>
 </section>
@@ -517,7 +518,7 @@ By Tom White
 
   <p class="copyright">
     
-      © Copyright 2022-2023, Tom White.
+      © Copyright 2022-2024, Tom White.
       <br/>
     
   </p>

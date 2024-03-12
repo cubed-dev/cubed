@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=94ba9f06"></script>
+    <script src="../_static/documentation_options.js?v=e1bc3832"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -404,7 +404,7 @@ You also need enough parallelism to match the scale of your problem.
 Weak scaling requires more workers than output chunks, so for large problems it might be necessary to adjust the executor’s configuration to not restrict the <code class="docutils literal notranslate"><span class="pre">max_workers</span></code>.
 With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.</p>
 <p>Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
-Stargglers are handled by running backup tasks for any tasks that are running very slowly. This feature is enabled by default, but
+Stragglers are handled by running backup tasks for any tasks that are running very slowly. This feature is enabled by default, but
 if you need to turn it off you can do so with <code class="docutils literal notranslate"><span class="pre">use_backups=False</span></code>.
 Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally.</p>
 </section>
@@ -416,10 +416,6 @@ One important example in Cubed is the <a class="reference internal" href="../ope
 Hence, reducing the number of steps in the plan can lead to significant performance improvements.
 Reductions can be carried out in fewer iterative steps if <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> is larger.
 Cubed automatically fuses some steps to enhance performance, but others (especially rechunk) cannot be fused without requiring a shuffle, which can potentially violate memory constraints.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>In theory multiple blockwise operations can be fused together, enhancing the performance further. However this has not yet been implemented in Cubed.</p>
-</div>
 <p>In practical scenarios, stragglers can hold up the completion of each step separately, thereby cumulatively affecting the overall performance of the calculation.</p>
 </section>
 <section id="multi-pipeline-calculation">
@@ -429,7 +425,7 @@ For example, if you have two separate arrays to compute simultaneously, full par
 The same logic applies if you have two arrays feeding into a single array or vice versa.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently Cubed will not necessarily execute independent pipelines in parallel on all executors.</p>
+<p>Currently Cubed will only execute independent pipelines in parallel if <code class="docutils literal notranslate"><span class="pre">compute_arrays_in_parallel=True</span></code> is passed to the executor function.</p>
 </div>
 </section>
 </section>
@@ -563,7 +559,7 @@ By Tom White
 
   <p class="copyright">
     
-      © Copyright 2022-2023, Tom White.
+      © Copyright 2022-2024, Tom White.
       <br/>
     
   </p>
