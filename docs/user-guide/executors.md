@@ -8,17 +8,16 @@ Cubed provides a variety of executors for running the tasks in a computation, wh
 
 If you don't specify an executor then the local in-process Python executor is used. This is a very simple, single-threaded executor (called {py:class}`PythonDagExecutor <cubed.runtime.executors.python.PythonDagExecutor>`) that is intended for testing on small amounts of data before running larger computations using a cloud service.
 
-## Which cloud service should I use?
+## Which cloud service executor should I use?
 
-[**Modal**](https://modal.com/) is the easiest to get started with because it handles building a runtime environment for you automatically (note that it requires that you [sign up](https://modal.com/signup) for a free account).
-It has been tested with ~300 workers and works with AWS and GCP.
+[**Lithops**](https://lithops-cloud.github.io/) is the executor we recommend for most users, since it has had the most testing so far (~1000 workers).
+If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it's in GCS use Lithops with Google Cloud Functions. You have to build a runtime environment as a part of the setting up process.
 
-[**Lithops**](https://lithops-cloud.github.io/) requires slightly more work to get started since you have to build a runtime environment first.
-Lithops has support for many serverless services on various cloud providers, but has so far been tested on two:
-- **AWS Lambda** requires building a Docker container first, and has been tested with ~1000 workers.
-- **Google Cloud Functions** only requires building a Lithops runtime, which can be created from a pip-style `requirements.txt` without Docker. It has been tested with ~1000 workers.
+[**Modal**](https://modal.com/) is very easy to get started with because it handles building a runtime environment for you automatically (note that it requires that you [sign up](https://modal.com/signup) for a free account). **At the time of writing, Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are likely.**
 
-[**Google Cloud Dataflow**](https://cloud.google.com/dataflow) is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is the most mature service and therefore should be reliable for much larger computations.
+[**Coiled**](https://www.coiled.io/) is also easy to get started with ([sign up](https://cloud.coiled.io/signup)). It uses [Coiled Functions](https://docs.coiled.io/user_guide/usage/functions/index.html) and has a 1-2 minute overhead to start a cluster.
+
+[**Google Cloud Dataflow**](https://cloud.google.com/dataflow) is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is a mature service and therefore should be reliable for much larger computations.
 
 ## Specifying an executor
 
@@ -35,4 +34,4 @@ spec = cubed.Spec(
 )
 ```
 
-Alternatively an executor may be specified when {py:func}`compute() <cubed.compute>` is called. The [examples](https://github.com/tomwhite/cubed/tree/main/examples/README.md) show this in more detail for all of the cloud services described above.
+A default spec may also be configured using a YAML file. The [examples](https://github.com/tomwhite/cubed/tree/main/examples/README.md) show this in more detail for all of the cloud services described above.

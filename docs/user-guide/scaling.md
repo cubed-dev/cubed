@@ -35,7 +35,7 @@ Weak scaling requires more workers than output chunks, so for large problems it 
 With fewer workers than chunks we would expect linear strong scaling, as every new worker added has nothing to wait for.
 
 Stragglers are tasks that take much longer than average, who disproportionately hold up the next step of the computation.
-Stargglers are handled by running backup tasks for any tasks that are running very slowly. This feature is enabled by default, but
+Stragglers are handled by running backup tasks for any tasks that are running very slowly. This feature is enabled by default, but
 if you need to turn it off you can do so with ``use_backups=False``.
 Worker start-up time is another practical speed consideration, though it would delay computations of all scales equally.
 
@@ -49,9 +49,6 @@ Hence, reducing the number of steps in the plan can lead to significant performa
 Reductions can be carried out in fewer iterative steps if ``allowed_mem`` is larger.
 Cubed automatically fuses some steps to enhance performance, but others (especially rechunk) cannot be fused without requiring a shuffle, which can potentially violate memory constraints.
 
-```{note} In theory multiple blockwise operations can be fused together, enhancing the performance further. However this has not yet been implemented in Cubed.
-```
-
 In practical scenarios, stragglers can hold up the completion of each step separately, thereby cumulatively affecting the overall performance of the calculation.
 
 ### Multi-pipeline Calculation
@@ -60,8 +57,8 @@ A "pipeline" refers to an independent branch of the calculation.
 For example, if you have two separate arrays to compute simultaneously, full parallelism requires sufficient workers for both tasks.
 The same logic applies if you have two arrays feeding into a single array or vice versa.
 
-
-```{note} Currently Cubed will not necessarily execute independent pipelines in parallel on all executors.
+```{note}
+Currently Cubed will only execute independent pipelines in parallel if `compute_arrays_in_parallel=True` is passed to the executor function.
 ```
 
 
