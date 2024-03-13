@@ -684,7 +684,7 @@ def test_fuse_large_fan_in_override(spec):
 
     p = xp.add(n, o)
 
-    # max_total_source_arrays is overriden so multiple levels are fused
+    # max_total_source_arrays is overridden so multiple levels are fused
     opt_fn = fuse_multiple_levels(max_total_source_arrays=8)
 
     p.visualize(optimize_function=opt_fn)

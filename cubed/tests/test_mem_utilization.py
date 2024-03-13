@@ -128,7 +128,7 @@ def test_add_reduce_right(tmp_path, spec):
     #
     # Note that fusing fold right operations will result in unbounded memory usage unless care
     # is taken to limit fusion - which `multiple_inputs_optimize_dag` will do, with the result
-    # that there is more than one fused operation (not a single fused oepration).
+    # that there is more than one fused operation (not a single fused operation).
     n_arrays = 10
     arrs = [
         cubed.random.random((10000, 10000), chunks=(5000, 5000), spec=spec)
