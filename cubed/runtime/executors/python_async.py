@@ -175,6 +175,17 @@ class AsyncPythonDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+        # Tell NumPy to use a single thread
+        # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy
+        os.environ["MKL_NUM_THREADS"] = "1"
+        os.environ["NUMEXPR_NUM_THREADS"] = "1"
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+
+    @property
+    def name(self) -> str:
+        return "processes" if self.kwargs.get("use_processes", False) else "threads"
+
     def execute_dag(
         self,
         dag: MultiDiGraph,
@@ -184,13 +195,6 @@ class AsyncPythonDagExecutor(DagExecutor):
         compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
-        # Tell NumPy to use a single thread
-        # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy
-        os.environ["MKL_NUM_THREADS"] = "1"
-        os.environ["NUMEXPR_NUM_THREADS"] = "1"
-        os.environ["OMP_NUM_THREADS"] = "1"
-        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
-
         merged_kwargs = {**self.kwargs, **kwargs}
         asyncio.run(
             async_execute_dag(

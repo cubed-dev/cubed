@@ -151,6 +151,10 @@ class AsyncModalDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+    @property
+    def name(self) -> str:
+        return "modal"
+
     def execute_dag(
         self,
         dag: MultiDiGraph,

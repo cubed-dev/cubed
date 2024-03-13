@@ -241,6 +241,10 @@ class LithopsDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+    @property
+    def name(self) -> str:
+        return "lithops"
+
     def execute_dag(
         self,
         dag: MultiDiGraph,

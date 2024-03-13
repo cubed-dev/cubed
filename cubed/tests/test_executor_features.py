@@ -27,17 +27,29 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
-@pytest.fixture(scope="module", params=MAIN_EXECUTORS)
+@pytest.fixture(
+    scope="module",
+    params=MAIN_EXECUTORS,
+    ids=[executor.name for executor in MAIN_EXECUTORS],
+)
 def executor(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=ALL_EXECUTORS)
+@pytest.fixture(
+    scope="module",
+    params=ALL_EXECUTORS,
+    ids=[executor.name for executor in ALL_EXECUTORS],
+)
 def any_executor(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=MODAL_EXECUTORS)
+@pytest.fixture(
+    scope="module",
+    params=MODAL_EXECUTORS,
+    ids=[executor.name for executor in MODAL_EXECUTORS],
+)
 def modal_executor(request):
     return request.param
 
