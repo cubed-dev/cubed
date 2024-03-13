@@ -250,7 +250,7 @@ def reshape_chunks(x, shape, chunks):
     # use an empty template (handles smaller end chunks)
     template = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
 
-    def block_function(out_key):
+    def key_function(out_key):
         out_coords = out_key[1:]
         offset = block_id_to_offset(out_coords, template.numblocks)
         in_coords = offset_to_block_id(offset, x.numblocks)
@@ -261,7 +261,7 @@ def reshape_chunks(x, shape, chunks):
 
     return general_blockwise(
         _reshape_chunk,
-        block_function,
+        key_function,
         x,
         template,
         shape=shape,
@@ -291,7 +291,7 @@ def stack(arrays, /, *, axis=0):
 
     array_names = [a.name for a in arrays]
 
-    def block_function(out_key):
+    def key_function(out_key):
         out_coords = out_key[1:]
         in_name = array_names[out_coords[axis]]
         return ((in_name, *(out_coords[:axis] + out_coords[(axis + 1) :])),)
@@ -302,7 +302,7 @@ def stack(arrays, /, *, axis=0):
     # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
     return general_blockwise(
         _read_stack_chunk,
-        block_function,
+        key_function,
         *arrays,
         shape=shape,
         dtype=dtype,

@@ -7,7 +7,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.primitive.blockwise import (
     blockwise,
     general_blockwise,
-    make_blockwise_function,
+    make_blockwise_key_function,
 )
 from cubed.runtime.executors.python import PythonDagExecutor
 from cubed.tests.utils import create_zarr, execute_pipeline
@@ -183,7 +183,7 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def block_function(out_key):
+    def key_function(out_key):
         out_coords = out_key[1:]
 
         k = merge_factor
@@ -199,7 +199,7 @@ def test_general_blockwise(tmp_path, executor):
 
     op = general_blockwise(
         merge_chunks,
-        block_function,
+        key_function,
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
@@ -224,78 +224,78 @@ def test_general_blockwise(tmp_path, executor):
     assert_array_equal(res[:], np.arange(20))
 
 
-def test_make_blockwise_function_map():
+def test_make_blockwise_key_function_map():
     func = lambda x: 0
 
-    block_fn = make_blockwise_function(
+    key_fn = make_blockwise_key_function(
         func, "z", "ij", "x", "ij", numblocks={"x": (2, 2)}
     )
 
     graph = make_blockwise_graph(func, "z", "ij", "x", "ij", numblocks={"x": (2, 2)})
-    check_consistent_with_graph(block_fn, graph)
+    check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_function_elemwise():
+def test_make_blockwise_key_function_elemwise():
     func = lambda x: 0
 
-    block_fn = make_blockwise_function(
+    key_fn = make_blockwise_key_function(
         func, "z", "ij", "x", "ij", "y", "ij", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
     graph = make_blockwise_graph(
         func, "z", "ij", "x", "ij", "y", "ij", numblocks={"x": (2, 2), "y": (2, 2)}
     )
-    check_consistent_with_graph(block_fn, graph)
+    check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_function_flip():
+def test_make_blockwise_key_function_flip():
     func = lambda x: 0
 
-    block_fn = make_blockwise_function(
+    key_fn = make_blockwise_key_function(
         func, "z", "ij", "x", "ij", "y", "ji", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
     graph = make_blockwise_graph(
         func, "z", "ij", "x", "ij", "y", "ji", numblocks={"x": (2, 2), "y": (2, 2)}
     )
-    check_consistent_with_graph(block_fn, graph)
+    check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_function_contract():
+def test_make_blockwise_key_function_contract():
     func = lambda x: 0
 
-    block_fn = make_blockwise_function(
+    key_fn = make_blockwise_key_function(
         func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
     graph = make_blockwise_graph(
         func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 2), "y": (2, 2)}
     )
-    check_consistent_with_graph(block_fn, graph)
+    check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_function_contract_1d():
+def test_make_blockwise_key_function_contract_1d():
     func = lambda x: 0
 
-    block_fn = make_blockwise_function(
+    key_fn = make_blockwise_key_function(
         func, "z", "j", "x", "ij", numblocks={"x": (1, 2)}
     )
 
     graph = make_blockwise_graph(func, "z", "j", "x", "ij", numblocks={"x": (1, 2)})
-    check_consistent_with_graph(block_fn, graph)
+    check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_function_contract_0d():
+def test_make_blockwise_key_function_contract_0d():
     func = lambda x: 0
 
-    block_fn = make_blockwise_function(
+    key_fn = make_blockwise_key_function(
         func, "z", "", "x", "ij", numblocks={"x": (2, 2)}
     )
 
     graph = make_blockwise_graph(func, "z", "", "x", "ij", numblocks={"x": (2, 2)})
-    check_consistent_with_graph(block_fn, graph)
+    check_consistent_with_graph(key_fn, graph)
 
 
-def check_consistent_with_graph(block_fn, graph):
+def check_consistent_with_graph(key_fn, graph):
     for k, v in graph.items():
-        assert block_fn(k) == v
+        assert key_fn(k) == v

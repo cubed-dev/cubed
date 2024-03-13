@@ -325,7 +325,7 @@ def blockwise(
 
 def general_blockwise(
     func,
-    block_function,
+    key_function,
     *arrays,
     shape,
     dtype,
@@ -354,7 +354,7 @@ def general_blockwise(
         target_store = new_temp_path(name=name, spec=spec)
     op = primitive_general_blockwise(
         func,
-        block_function,
+        key_function,
         *zargs,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
@@ -833,7 +833,7 @@ def merge_chunks_new(x, chunks):
         i for (i, (c0, c1)) in enumerate(zip(x.chunksize, target_chunksize)) if c0 != c1
     ]
 
-    def block_function(out_key):
+    def key_function(out_key):
         out_coords = out_key[1:]
 
         in_keys = []
@@ -855,7 +855,7 @@ def merge_chunks_new(x, chunks):
 
     return general_blockwise(
         _concatenate2,
-        block_function,
+        key_function,
         x,
         shape=x.shape,
         dtype=x.dtype,
@@ -1109,7 +1109,7 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
     shape = tuple(map(sum, chunks))
     axis = tuple(ax for ax in split_every.keys())
 
-    def block_function(out_key):
+    def key_function(out_key):
         out_coords = out_key[1:]
 
         # return a tuple with a single item that is an iterator of input keys to be merged
@@ -1124,7 +1124,7 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
         ]
         return (iter([(x.name,) + tuple(p) for p in product(*in_keys)]),)
 
-    # Since block_function returns an iterator of input keys, the the array chunks passed to
+    # Since key_function returns an iterator of input keys, the the array chunks passed to
     # _partial_reduce are retrieved one at a time. However, we need an extra chunk of memory
     # to stay within limits (maybe because the iterator doesn't free the previous object
     # before getting the next). We also need extra memory to hold two reduced chunks, since
@@ -1133,7 +1133,7 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
 
     return general_blockwise(
         _partial_reduce,
-        block_function,
+        key_function,
         x,
         shape=shape,
         dtype=dtype,
