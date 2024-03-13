@@ -7,6 +7,10 @@ from cubed.vendor.rechunker.types import Config, StageFunction
 
 
 class DagExecutor:
+    @property
+    def name(self) -> str:
+        raise NotImplementedError  # pragma: no cover
+
     def execute_dag(self, dag: MultiDiGraph, **kwargs) -> None:
         raise NotImplementedError  # pragma: no cover
 

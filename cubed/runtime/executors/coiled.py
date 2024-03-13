@@ -23,6 +23,10 @@ class CoiledFunctionsDagExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+    @property
+    def name(self) -> str:
+        return "coiled"
+
     def execute_dag(
         self,
         dag: MultiDiGraph,

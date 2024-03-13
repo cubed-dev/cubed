@@ -15,6 +15,10 @@ def exec_stage_func(input, func=None, config=None, name=None, compute_id=None):
 class PythonDagExecutor(DagExecutor):
     """The default execution engine that runs tasks sequentially uses Python loops."""
 
+    @property
+    def name(self) -> str:
+        return "single-threaded"
+
     def execute_dag(
         self,
         dag: MultiDiGraph,

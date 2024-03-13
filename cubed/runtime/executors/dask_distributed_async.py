@@ -152,6 +152,10 @@ class AsyncDaskDistributedExecutor(DagExecutor):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+    @property
+    def name(self) -> str:
+        return "dask"
+
     def execute_dag(
         self,
         dag: MultiDiGraph,

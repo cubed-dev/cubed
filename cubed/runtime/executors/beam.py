@@ -82,6 +82,10 @@ class _SingleArgumentStage(beam.PTransform):
 class BeamDagExecutor(DagExecutor):
     """An execution engine that uses Apache Beam."""
 
+    @property
+    def name(self) -> str:
+        return "beam"
+
     def execute_dag(
         self, dag, callbacks=None, resume=None, spec=None, compute_id=None, **kwargs
     ):
