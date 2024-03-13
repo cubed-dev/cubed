@@ -38,7 +38,7 @@ ulimit -n 1024
 Before running the examples, first change to the top-level examples directory (`cd ../..`) and type
 
 ```shell
-export CUBED_CONFIG=$(pwd)/lithops/aws-lambda
+export CUBED_CONFIG=$(pwd)/lithops/aws
 ```
 
 Then you can run the examples described [there](../../README.md).
