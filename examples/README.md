@@ -18,7 +18,7 @@ Follow the instructions for setting up Cubed to run on your chosen cloud and exe
 | Executor | Cloud  | Set up instructions                                          |
 |----------|--------|--------------------------------------------------------------|
 | Lithops  | AWS    | [lithops/aws/README.md](lithops/aws/README.md) |
-|          | Google | [lithops/gcf/README.md](lithops/gcf/README.md)               |
+|          | Google | [lithops/gcp/README.md](lithops/gcp/README.md)               |
 | Modal    | AWS    | [modal/aws/README.md](modal/aws/README.md)                   |
 |          | Google | [modal/gcp/README.md](modal/gcp/README.md)                   |
 | Coiled   | AWS    | [coiled/aws/README.md](coiled/aws/README.md)                 |

@@ -10,13 +10,13 @@
 
 ```shell
 # from this directory
-conda create --name cubed-lithops-gcf-examples -y python=3.11
-conda activate cubed-lithops-gcf-examples
+conda create --name cubed-lithops-gcp-examples -y python=3.11
+conda activate cubed-lithops-gcp-examples
 pip install -r requirements.txt  # use requirements file from same directory as this readme
 ```
 
 2. Configure Lithops with a [Google Cloud Functions compute backend](https://lithops-cloud.github.io/docs/source/compute_config/gcp_functions.html#configuration), and a [Google Cloud Storage backend](https://lithops-cloud.github.io/docs/source/storage_config/gcp_storage.html#configuration).
-   - Note: it may be useful to put the configuration in a different place to the default (e.g. `~/.lithops/config.gcf`), and then call `export LITHOPS_CONFIG_FILE=~/.lithops/config.gcf`
+   - Note: it may be useful to put the configuration in a different place to the default (e.g. `~/.lithops/config.gcp`), and then call `export LITHOPS_CONFIG_FILE=~/.lithops/config.gcp`
    - Although optional, it is convenient to [configure Lithops logging](https://lithops-cloud.github.io/docs/source/configuration.html) by setting `log_filename` (to `lithops.log`, for example), so that messages are sent to a file, rather than the console.
 3. Give permissions to access your GCP buckets by calling `export GOOGLE_APPLICATION_CREDENTIALS=<path-to-json>`, where `<path-to-json>` is the full path to the `.json` key file you downloaded when configuring GCP storage for Lithops in the previous step.
 4. Create a new GCP bucket (called `cubed-<username>-temp`, for example) in the same region you chose when configuring Google Cloud Functions and Storage for Lithops. This will be used for intermediate zarr data. Note that this is different to the bucket created when configuring Lithops, which just stores configuration data.
@@ -38,7 +38,7 @@ ulimit -n 1024
 Before running the examples, first change to the top-level examples directory (`cd ../..`) and type
 
 ```shell
-export CUBED_CONFIG=$(pwd)/lithops/gcf
+export CUBED_CONFIG=$(pwd)/lithops/gcp
 ```
 
 Then you can run the examples described [there](../../README.md).
