@@ -1,0 +1,12 @@
+lithops:
+  backend: gcp_functions
+  storage: gcp_storage
+  log_level: WARN
+
+gcp:
+  region: europe-west2
+  credentials_path:
+
+gcp_storage:
+  region: europe-west2
+  storage_bucket: tom-lithops-data

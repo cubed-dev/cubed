@@ -1,0 +1,4 @@
+git+https://github.com/cubed-dev/cubed.git#egg=cubed
+lithops[aws]
+s3fs
+rich

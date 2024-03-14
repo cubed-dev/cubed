@@ -1,0 +1,17 @@
+lithops:
+  backend: aws_lambda
+  storage: aws_s3
+  storage_bucket: lithops-tom-data
+  log_level: WARN
+
+aws:
+  access_key_id:
+  secret_access_key:
+
+aws_lambda:
+  region_name: eu-west-1
+  execution_role: arn:aws:iam::111560892610:role/lithops-execution-role
+
+aws_s3:
+  region_name: eu-west-1
+  storage_bucket: lithops-tom-data
