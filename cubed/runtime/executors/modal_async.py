@@ -145,7 +145,7 @@ async def async_execute_dag(
                         handle_callbacks(callbacks, stats)
 
 
-class AsyncModalDagExecutor(DagExecutor):
+class ModalExecutor(DagExecutor):
     """An execution engine that uses Modal's async API."""
 
     def __init__(self, **kwargs):

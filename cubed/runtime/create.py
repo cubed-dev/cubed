@@ -25,9 +25,9 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return LithopsDagExecutor(**executor_options)
     elif name == "modal":
-        from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
+        from cubed.runtime.executors.modal_async import ModalExecutor
 
-        return AsyncModalDagExecutor(**executor_options)
+        return ModalExecutor(**executor_options)
     elif name == "processes":
         from cubed.runtime.executors.python_async import ProcessesExecutor
 
