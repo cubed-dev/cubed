@@ -264,9 +264,9 @@ def reshape_chunks(x, shape, chunks):
         block_function,
         x,
         template,
-        shape=shape,
-        dtype=x.dtype,
-        chunks=outchunks,
+        shapes=[shape],
+        dtypes=[x.dtype],
+        chunkss=[outchunks],
     )
 
 
@@ -304,9 +304,9 @@ def stack(arrays, /, *, axis=0):
         _read_stack_chunk,
         block_function,
         *arrays,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
         axis=axis,
         fusable=False,
     )

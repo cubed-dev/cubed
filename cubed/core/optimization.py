@@ -31,9 +31,9 @@ def simple_optimize_dag(dag):
         if "primitive_op" not in nodes[op2]:
             return False
 
-        # if node (op2) does not have exactly one input then don't fuse
+        # if node (op2) does not have exactly one input and output then don't fuse
         # (it could have no inputs or multiple inputs)
-        if dag.in_degree(op2) != 1:
+        if dag.in_degree(op2) != 1 or dag.out_degree(op2) != 1:
             return False
 
         # if input is used by another node then don't fuse
@@ -87,6 +87,12 @@ def predecessors_unordered(dag, name):
         yield pre
 
 
+def successors_unordered(dag, name):
+    """Return a node's successors in no particular order, with repeats for multiple edges."""
+    for pre, _ in dag.out_edges(name):
+        yield pre
+
+
 def predecessor_ops(dag, name):
     """Return an op node's op predecessors in the same order as the input source arrays for the op.
 
@@ -126,6 +132,17 @@ def can_fuse_predecessors(
     # if no predecessor ops can be fused then there is nothing to fuse
     if all(not is_fusable(nodes[pre]) for pre in predecessor_ops(dag, name)):
         logger.debug("can't fuse %s since no predecessor ops can be fused", name)
+        return False
+
+    # if any predecessor ops have multiple outputs then don't fuse
+    # TODO: implement "child fusion" (where a multiple output op fuses its children)
+    if any(
+        len(list(successors_unordered(dag, pre))) > 1
+        for pre in predecessor_ops(dag, name)
+    ):
+        logger.debug(
+            "can't fuse %s since at least one predecessor has multiple outputs", name
+        )
         return False
 
     # if node is in never_fuse or always_fuse list then it overrides logic below

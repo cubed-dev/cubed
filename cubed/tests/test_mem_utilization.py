@@ -6,6 +6,7 @@ import pytest
 
 from cubed.core.ops import partial_reduce
 from cubed.core.optimization import multiple_inputs_optimize_dag
+from cubed.tests.test_core import sqrts
 
 pytest.importorskip("lithops")
 
@@ -269,20 +270,40 @@ def test_sum_partial_reduce(tmp_path, spec):
     run_operation(tmp_path, "sum_partial_reduce", b)
 
 
+# Multiple outputs
+
+
+@pytest.mark.slow
+def test_sqrts(tmp_path, spec):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b, c = sqrts(a)
+    # don't optimize graph so we use as much memory as possible (reading from Zarr)
+    run_operation(tmp_path, "sqrts", b, c, optimize_graph=False)
+
+
 # Internal functions
 
 
-def run_operation(tmp_path, name, result_array, *, optimize_function=None):
-    # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
-    # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
+def run_operation(
+    tmp_path, name, *results, optimize_graph=True, optimize_function=None
+):
+    # cubed.visualize(
+    #     *results, filename=f"cubed-{name}-unoptimized", optimize_graph=False
+    # )
+    # cubed.visualize(
+    #     *results, filename=f"cubed-{name}", optimize_function=optimize_function
+    # )
     executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
     hist = HistoryCallback()
-    # use store=None to write to temporary zarr
-    cubed.to_zarr(
-        result_array,
-        store=None,
+    # use None for each store to write to temporary zarr
+    cubed.store(
+        results,
+        (None,) * len(results),
         executor=executor,
         callbacks=[hist],
+        optimize_graph=optimize_graph,
         optimize_function=optimize_function,
     )
 
