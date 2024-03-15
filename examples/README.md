@@ -17,8 +17,8 @@ Follow the instructions for setting up Cubed to run on your chosen cloud and exe
 
 | Executor | Cloud  | Set up instructions                                          |
 |----------|--------|--------------------------------------------------------------|
-| Lithops  | AWS    | [lithops/aws-lambda/README.md](lithops/aws-lambda/README.md) |
-|          | Google | [lithops/gcf/README.md](lithops/gcf/README.md)               |
+| Lithops  | AWS    | [lithops/aws/README.md](lithops/aws/README.md) |
+|          | Google | [lithops/gcp/README.md](lithops/gcp/README.md)               |
 | Modal    | AWS    | [modal/aws/README.md](modal/aws/README.md)                   |
 |          | Google | [modal/gcp/README.md](modal/gcp/README.md)                   |
 | Coiled   | AWS    | [coiled/aws/README.md](coiled/aws/README.md)                 |
@@ -30,7 +30,7 @@ The `add-asarray.py` script is a small example that adds two small 4x4 arrays to
 Export `CUBED_CONFIG` as described in the set up instructions, then run the script. This is for Lithops on AWS:
 
 ```shell
-export CUBED_CONFIG=$(pwd)/lithops/aws-lambda
+export CUBED_CONFIG=$(pwd)/lithops/aws
 python add-asarray.py
 ```
 
