@@ -44,8 +44,8 @@ class BlockwiseSpec:
 
     Attributes
     ----------
-    block_function : Callable
-        A function that maps an output chunk index to one or more input chunk indexes.
+    key_function : Callable
+        A function that maps an output chunk key to one or more input chunk keys.
     function : Callable
         A function that maps input chunks to an output chunk.
     function_nargs: int
@@ -58,7 +58,7 @@ class BlockwiseSpec:
         Write proxy with an ``array`` attribute that supports ``__setitem__``.
     """
 
-    block_function: Callable[..., Any]
+    key_function: Callable[..., Any]
     function: Callable[..., Any]
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
@@ -66,20 +66,21 @@ class BlockwiseSpec:
     write: CubedArrayProxy
 
 
-def apply_blockwise(out_key: List[int], *, config: BlockwiseSpec) -> None:
+def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
     """Stage function for blockwise."""
     # lithops needs params to be lists not tuples, so convert back
-    out_key_tuple = tuple(out_key)
+    out_coords_tuple = tuple(out_coords)
     out_chunk_key = key_to_slices(
-        out_key_tuple, config.write.array, config.write.chunks
+        out_coords_tuple, config.write.array, config.write.chunks
     )
 
     # get array chunks for input keys, preserving any nested list structure
     args = []
     get_chunk_config = partial(get_chunk, config=config)
-    name_chunk_inds = config.block_function(("out",) + out_key_tuple)
-    for name_chunk_ind in name_chunk_inds:
-        arg = map_nested(get_chunk_config, name_chunk_ind)
+    out_key = ("out",) + out_coords_tuple  # array name is ignored by key_function
+    in_keys = config.key_function(out_key)
+    for in_key in in_keys:
+        arg = map_nested(get_chunk_config, in_key)
         args.append(arg)
 
     result = config.function(*args)
@@ -100,13 +101,13 @@ def key_to_slices(
     return get_item(chunks, key)
 
 
-def get_chunk(name_chunk_ind, config):
+def get_chunk(in_key, config):
     """Read a chunk from the named array"""
-    name = name_chunk_ind[0]
-    chunk_ind = name_chunk_ind[1:]
+    name = in_key[0]
+    in_coords = in_key[1:]
     arr = config.reads_map[name].open()
-    chunk_key = key_to_slices(chunk_ind, arr)
-    arg = arr[chunk_key]
+    selection = key_to_slices(in_coords, arr)
+    arg = arr[selection]
     arg = numpy_array_to_backend_array(arg)
     return arg
 
@@ -188,7 +189,7 @@ def blockwise(
     for name, ind in zip(array_names, inds):
         argindsstr.extend((name, ind))
 
-    block_function = make_blockwise_function_flattened(
+    key_function = make_blockwise_key_function_flattened(
         func,
         out_name or "out",
         out_ind,
@@ -199,7 +200,7 @@ def blockwise(
 
     return general_blockwise(
         func,
-        block_function,
+        key_function,
         *arrays,
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
@@ -219,7 +220,7 @@ def blockwise(
 
 def general_blockwise(
     func: Callable[..., Any],
-    block_function: Callable[..., Any],
+    key_function: Callable[..., Any],
     *arrays: Any,
     allowed_mem: int,
     reserved_mem: int,
@@ -242,8 +243,8 @@ def general_blockwise(
     ----------
     func : callable
         Function to apply to individual tuples of blocks
-    block_function : callable
-        A function that maps an output chunk index to one or more input chunk indexes.
+    key_function : callable
+        A function that maps an output chunk key to one or more input chunk keys.
     *arrays : sequence of Array
         The input arrays.
     allowed_mem : int
@@ -291,7 +292,7 @@ def general_blockwise(
     }
     write_proxy = CubedArrayProxy(target_array, chunksize)
     spec = BlockwiseSpec(
-        block_function,
+        key_function,
         func_with_kwargs,
         len(arrays),
         num_input_blocks,
@@ -460,10 +461,8 @@ def fuse(
 
     mappable = pipeline2.mappable
 
-    def fused_blockwise_func(out_key):
-        return pipeline1.config.block_function(
-            *pipeline2.config.block_function(out_key)
-        )
+    def fused_key_func(out_key):
+        return pipeline1.config.key_function(*pipeline2.config.key_function(out_key))
 
     def fused_func(*args):
         return pipeline2.config.function(pipeline1.config.function(*args))
@@ -476,7 +475,7 @@ def fuse(
         for n in pipeline1.config.num_input_blocks
     )
     spec = BlockwiseSpec(
-        fused_blockwise_func,
+        fused_key_func,
         fused_func,
         function_nargs,
         num_input_blocks,
@@ -530,36 +529,36 @@ def fuse_multiple(
 
     mappable = pipeline.mappable
 
-    def apply_pipeline_block_func(pipeline, n_input_blocks, arg):
+    def apply_pipeline_key_func(pipeline, n_input_blocks, arg):
         if pipeline is None:
             return (arg,)
         if n_input_blocks == 1:
             assert isinstance(arg, tuple)
-            return pipeline.config.block_function(arg)
+            return pipeline.config.key_function(arg)
         else:
             # more than one input block is being read from arg
             assert isinstance(arg, (list, Iterator))
             if isinstance(arg, list):
                 return tuple(
                     list(item)
-                    for item in zip(*(pipeline.config.block_function(a) for a in arg))
+                    for item in zip(*(pipeline.config.key_function(a) for a in arg))
                 )
             else:
                 # Return iterators to avoid materializing all array blocks at
                 # once.
                 return tuple(
                     iter(list(item))
-                    for item in zip(*(pipeline.config.block_function(a) for a in arg))
+                    for item in zip(*(pipeline.config.key_function(a) for a in arg))
                 )
 
-    def fused_blockwise_func(out_key):
+    def fused_key_func(out_key):
         # this will change when multiple outputs are supported
-        args = pipeline.config.block_function(out_key)
+        args = pipeline.config.key_function(out_key)
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
             item
             for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
-            for item in apply_pipeline_block_func(
+            for item in apply_pipeline_key_func(
                 p, pipeline.config.num_input_blocks[i], a
             )
         )
@@ -602,7 +601,7 @@ def fuse_multiple(
             read_proxies.update(p.config.reads_map)
     write_proxy = pipeline.config.write
     spec = BlockwiseSpec(
-        fused_blockwise_func,
+        fused_key_func,
         fused_func,
         fused_function_nargs,
         fused_num_input_blocks,
@@ -643,10 +642,10 @@ def fuse_multiple(
     )
 
 
-# blockwise functions
+# blockwise key functions
 
 
-def make_blockwise_function(
+def make_blockwise_key_function(
     func: Callable[..., Any],
     output: str,
     out_indices: Sequence[Union[str, int]],
@@ -675,7 +674,7 @@ def make_blockwise_function(
         False,
     )
 
-    def blockwise_fn(out_key):
+    def key_function(out_key):
         out_coords = out_key[1:]
 
         # from Dask make_blockwise_graph
@@ -701,10 +700,10 @@ def make_blockwise_function(
 
         return val
 
-    return blockwise_fn
+    return key_function
 
 
-def make_blockwise_function_flattened(
+def make_blockwise_key_function_flattened(
     func: Callable[..., Any],
     output: str,
     out_indices: Sequence[Union[str, int]],
@@ -712,16 +711,16 @@ def make_blockwise_function_flattened(
     numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
     new_axes: Optional[Dict[int, int]] = None,
 ) -> Callable[[List[int]], Any]:
-    # TODO: make this a part of make_blockwise_function?
-    blockwise_fn = make_blockwise_function(
+    # TODO: make this a part of make_blockwise_key_function?
+    key_function = make_blockwise_key_function(
         func, output, out_indices, *arrind_pairs, numblocks=numblocks, new_axes=new_axes
     )
 
     def blockwise_fn_flattened(out_key):
-        name_chunk_inds = blockwise_fn(out_key)[1:]  # drop function in position 0
+        in_keys = key_function(out_key)[1:]  # drop function in position 0
         # flatten (nested) lists indicating contraction
-        if isinstance(name_chunk_inds[0], list):
-            name_chunk_inds = list(flatten(name_chunk_inds))
-        return name_chunk_inds
+        if isinstance(in_keys[0], list):
+            in_keys = list(flatten(in_keys))
+        return in_keys
 
     return blockwise_fn_flattened
