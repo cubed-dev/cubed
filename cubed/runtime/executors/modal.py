@@ -1,21 +1,8 @@
 import os
-import time
-from asyncio.exceptions import TimeoutError
-from typing import Optional, Sequence
 
 import modal
-from modal.exception import ConnectionError
-from networkx import MultiDiGraph
-from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
-from cubed.runtime.pipeline import visit_nodes
-from cubed.runtime.types import Callback, DagExecutor
-from cubed.runtime.utils import (
-    execute_with_stats,
-    handle_callbacks,
-    handle_operation_start_callbacks,
-)
-from cubed.spec import Spec
+from cubed.runtime.utils import execute_with_stats
 
 RUNTIME_MEMORY_MIB = 2000
 
@@ -105,71 +92,3 @@ class Container:
         # note we can't use the execution_stat decorator since it doesn't work with modal decorators
         result, stats = execute_with_stats(func, input, config=config)
         return result, stats
-
-
-# This just retries the initial connection attempt, not the function calls
-@retry(
-    reraise=True,
-    retry=retry_if_exception_type((TimeoutError, ConnectionError)),
-    stop=stop_after_attempt(3),
-)
-def execute_dag(
-    dag: MultiDiGraph,
-    callbacks: Optional[Sequence[Callback]] = None,
-    resume: Optional[bool] = None,
-    spec: Optional[Spec] = None,
-    cloud: Optional[str] = None,
-    **kwargs,
-) -> None:
-    if spec is not None:
-        check_runtime_memory(spec)
-    with stub.run():
-        cloud = cloud or "aws"
-        if cloud == "aws":
-            app_function = run_remotely
-        elif cloud == "gcp":
-            app_function = Container().run_remotely
-        else:
-            raise ValueError(f"Unrecognized cloud: {cloud}")
-        for name, node in visit_nodes(dag, resume=resume):
-            handle_operation_start_callbacks(callbacks, name)
-            pipeline = node["pipeline"]
-            task_create_tstamp = time.time()
-            for _, stats in app_function.map(
-                pipeline.mappable,
-                order_outputs=False,
-                kwargs=dict(func=pipeline.function, config=pipeline.config),
-            ):
-                stats["name"] = name
-                stats["task_create_tstamp"] = task_create_tstamp
-                handle_callbacks(callbacks, stats)
-
-
-class ModalDagExecutor(DagExecutor):
-    """An execution engine that uses Modal."""
-
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-
-    @property
-    def name(self) -> str:
-        return "modal-sync"
-
-    def execute_dag(
-        self,
-        dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
-        **kwargs,
-    ) -> None:
-        merged_kwargs = {**self.kwargs, **kwargs}
-        execute_dag(
-            dag,
-            callbacks=callbacks,
-            resume=resume,
-            spec=spec,
-            compute_id=compute_id,
-            **merged_kwargs,
-        )

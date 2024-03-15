@@ -28,10 +28,6 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
         from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
 
         return AsyncModalDagExecutor(**executor_options)
-    elif name == "modal-sync":
-        from cubed.runtime.executors.modal import ModalDagExecutor
-
-        return ModalDagExecutor(**executor_options)
     elif name == "processes":
         from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
 

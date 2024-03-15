@@ -191,13 +191,6 @@ def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parall
 @pytest.mark.cloud
 @pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
 def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_parallel):
-    from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
-
-    if not isinstance(modal_executor, AsyncModalDagExecutor):
-        pytest.skip(
-            f"{type(modal_executor)} does not support compute_arrays_in_parallel"
-        )
-
     tmp_path = "s3://cubed-unittest/parallel_pipelines"
     spec = cubed.Spec(tmp_path, allowed_mem=100000)
     try:
