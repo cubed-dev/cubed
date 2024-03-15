@@ -1,7 +1,6 @@
 name: Lithops images
 
 on:
-  pull_request:
   push:
     branches:
       - main
@@ -82,5 +81,6 @@ jobs:
         env:
           LITHOPS_CONFIG_FILE: ${{ github.workspace }}/${{ matrix.lithops-config }}
         run: |
+          lithops runtime delete -b ${{ matrix.lithops-backend }} -d cubed-runtime-main
           lithops runtime build -b ${{ matrix.lithops-backend }} -f ${{ matrix.lithops-build-file }} cubed-runtime-main
           lithops runtime deploy -b ${{ matrix.lithops-backend }} --memory ${{ matrix.lithops-memory }} cubed-runtime-main
