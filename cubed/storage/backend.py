@@ -15,7 +15,7 @@ def open_backend_array(
     **kwargs,
 ):
     if storage_name is None:
-        storage_name = "zarr"
+        storage_name = "tensorstore"
 
     if storage_name == "tensorstore":
         from cubed.storage.backends.tensorstore import open_tensorstore_array

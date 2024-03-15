@@ -45,8 +45,27 @@ class TensorstoreArray:
 
 
 class TensorstoreStructuredArrays(dict):
-    def __init__(self, *args):
-        dict.__init__(self, args)
+    def __init__(
+        self,
+        shape: Optional[T_Shape] = None,
+        dtype: Optional[T_DType] = None,
+        chunks: Optional[T_RegularChunks] = None,
+    ):
+        dict.__init__(self)
+        self.shape = shape
+        self.dtype = dtype
+        self.chunks = chunks
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return super().__getitem__(key)
+        # create a numpy structured array from the tensorstore fields
+        arrays = {field: ts_array[key] for field, ts_array in self.items()}
+        array0 = next(iter(arrays.values()))  # TODO: not safe
+        ret = np.empty(array0.shape, dtype=self.dtype)
+        for field, arr in arrays.items():
+            ret[field] = arr
+        return ret
 
     def set_basic_selection(self, selection, value, fields=None):
         # TODO: multiple fields? disallow
@@ -112,7 +131,7 @@ def open_tensorstore_array(
             ).result()
         )
     else:
-        ret = TensorstoreStructuredArrays()
+        ret = TensorstoreStructuredArrays(shape=shape, dtype=dtype, chunks=chunks)
         for field in dtype.fields:
             field_dtype, _ = dtype.fields[field]
             spec["field"] = field
