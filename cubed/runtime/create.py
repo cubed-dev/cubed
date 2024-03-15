@@ -29,16 +29,16 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return AsyncModalDagExecutor(**executor_options)
     elif name == "processes":
-        from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+        from cubed.runtime.executors.python_async import ProcessesExecutor
 
-        return AsyncPythonDagExecutor(retries=0, use_processes=True, **executor_options)
+        return ProcessesExecutor(**executor_options)
     elif name == "single-threaded":
         from cubed.runtime.executors.python import PythonDagExecutor
 
         return PythonDagExecutor(**executor_options)
     elif name == "threads":
-        from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+        from cubed.runtime.executors.python_async import ThreadsExecutor
 
-        return AsyncPythonDagExecutor(**executor_options)
+        return ThreadsExecutor(**executor_options)
     else:
         raise ValueError(f"Unrecognized executor name: {name}")
