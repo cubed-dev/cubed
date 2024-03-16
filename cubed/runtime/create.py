@@ -27,7 +27,7 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return ModalExecutor(**executor_options)
     elif name == "processes":
-        from cubed.runtime.executors.python_async import ProcessesExecutor
+        from cubed.runtime.executors.python import ProcessesExecutor
 
         return ProcessesExecutor(**executor_options)
     elif name == "single-threaded":
@@ -35,7 +35,7 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return SingleThreadedExecutor(**executor_options)
     elif name == "threads":
-        from cubed.runtime.executors.python_async import ThreadsExecutor
+        from cubed.runtime.executors.python import ThreadsExecutor
 
         return ThreadsExecutor(**executor_options)
     else:
