@@ -10,7 +10,7 @@ pytest.importorskip("dask.distributed")
 
 from dask.distributed import Client
 
-from cubed.runtime.executors.dask_distributed_async import map_unordered
+from cubed.runtime.executors.dask import map_unordered
 
 
 async def run_test(function, input, retries, use_backups=False, batch_size=None):

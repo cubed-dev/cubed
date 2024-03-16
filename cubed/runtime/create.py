@@ -15,11 +15,9 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return CoiledFunctionsDagExecutor(**executor_options)
     elif name == "dask":
-        from cubed.runtime.executors.dask_distributed_async import (
-            AsyncDaskDistributedExecutor,
-        )
+        from cubed.runtime.executors.dask import DaskExecutor
 
-        return AsyncDaskDistributedExecutor(**executor_options)
+        return DaskExecutor(**executor_options)
     elif name == "lithops":
         from cubed.runtime.executors.lithops import LithopsDagExecutor
 
