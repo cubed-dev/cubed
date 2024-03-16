@@ -19,9 +19,9 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return DaskExecutor(**executor_options)
     elif name == "lithops":
-        from cubed.runtime.executors.lithops import LithopsDagExecutor
+        from cubed.runtime.executors.lithops import LithopsExecutor
 
-        return LithopsDagExecutor(**executor_options)
+        return LithopsExecutor(**executor_options)
     elif name == "modal":
         from cubed.runtime.executors.modal import ModalExecutor
 
