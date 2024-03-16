@@ -11,9 +11,9 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return BeamExecutor(**executor_options)
     elif name == "coiled":
-        from cubed.runtime.executors.coiled import CoiledFunctionsDagExecutor
+        from cubed.runtime.executors.coiled import CoiledExecutor
 
-        return CoiledFunctionsDagExecutor(**executor_options)
+        return CoiledExecutor(**executor_options)
     elif name == "dask":
         from cubed.runtime.executors.dask import DaskExecutor
 

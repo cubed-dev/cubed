@@ -17,7 +17,7 @@ def make_coiled_function(func, coiled_kwargs):
     return coiled.function(**coiled_kwargs)(execution_stats(func))
 
 
-class CoiledFunctionsDagExecutor(DagExecutor):
+class CoiledExecutor(DagExecutor):
     """An execution engine that uses Coiled Functions."""
 
     def __init__(self, **kwargs):
