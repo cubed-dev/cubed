@@ -31,9 +31,9 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
 
         return ProcessesExecutor(**executor_options)
     elif name == "single-threaded":
-        from cubed.runtime.executors.python import PythonDagExecutor
+        from cubed.runtime.executors.python import SingleThreadedExecutor
 
-        return PythonDagExecutor(**executor_options)
+        return SingleThreadedExecutor(**executor_options)
     elif name == "threads":
         from cubed.runtime.executors.python_async import ThreadsExecutor
 

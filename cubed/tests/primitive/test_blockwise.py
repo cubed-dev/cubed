@@ -9,12 +9,12 @@ from cubed.primitive.blockwise import (
     general_blockwise,
     make_blockwise_key_function,
 )
-from cubed.runtime.executors.python import PythonDagExecutor
+from cubed.runtime.executors.python import SingleThreadedExecutor
 from cubed.tests.utils import create_zarr, execute_pipeline
 from cubed.vendor.dask.blockwise import make_blockwise_graph
 
 
-@pytest.fixture(scope="module", params=[PythonDagExecutor()])
+@pytest.fixture(scope="module", params=[SingleThreadedExecutor()])
 def executor(request):
     return request.param
 

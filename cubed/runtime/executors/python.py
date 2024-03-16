@@ -12,7 +12,7 @@ def exec_stage_func(input, func=None, config=None, name=None, compute_id=None):
     return func(input, config=config)
 
 
-class PythonDagExecutor(DagExecutor):
+class SingleThreadedExecutor(DagExecutor):
     """The default execution engine that runs tasks sequentially uses Python loops."""
 
     @property
