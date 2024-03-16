@@ -6,7 +6,7 @@ from apache_beam.options.pipeline_options import PipelineOptions
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.runtime.executors.beam import BeamDagExecutor
+from cubed.runtime.executors.beam import BeamExecutor
 
 
 def run(argv=None):
@@ -20,7 +20,7 @@ def run(argv=None):
     beam_options = PipelineOptions(pipeline_args)
 
     spec = cubed.Spec(known_args.tmp_path, allowed_mem=2_000_000_000)
-    executor = BeamDagExecutor()
+    executor = BeamExecutor()
 
     a = cubed.random.random(
         (50000, 50000), chunks=(5000, 5000), spec=spec
