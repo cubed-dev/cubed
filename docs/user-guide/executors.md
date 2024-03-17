@@ -25,12 +25,11 @@ An executor may be specified as a part of the {py:class}`Spec <cubed.Spec>`:
 
 ```python
 import cubed
-from cubed.runtime.executors.modal_async import AsyncModalDagExecutor
 
 spec = cubed.Spec(
     work_dir="s3://cubed-tomwhite-temp",
     allowed_mem="2GB",
-    executor=AsyncModalDagExecutor()
+    executor_name="modal"
 )
 ```
 
