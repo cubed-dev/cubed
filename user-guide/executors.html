@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=dd8df48b"></script>
+    <script src="../_static/documentation_options.js?v=516c98ee"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -380,12 +380,11 @@ If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it’s in 
 <h2>Specifying an executor<a class="headerlink" href="#specifying-an-executor" title="Link to this heading">#</a></h2>
 <p>An executor may be specified as a part of the <a class="reference internal" href="../generated/cubed.Spec.html#cubed.Spec" title="cubed.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spec</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed</span>
-<span class="kn">from</span> <span class="nn">cubed.runtime.executors.modal_async</span> <span class="kn">import</span> <span class="n">AsyncModalDagExecutor</span>
 
 <span class="n">spec</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">Spec</span><span class="p">(</span>
     <span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;s3://cubed-tomwhite-temp&quot;</span><span class="p">,</span>
     <span class="n">allowed_mem</span><span class="o">=</span><span class="s2">&quot;2GB&quot;</span><span class="p">,</span>
-    <span class="n">executor</span><span class="o">=</span><span class="n">AsyncModalDagExecutor</span><span class="p">()</span>
+    <span class="n">executor_name</span><span class="o">=</span><span class="s2">&quot;modal&quot;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
