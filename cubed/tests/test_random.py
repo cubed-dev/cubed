@@ -15,7 +15,11 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
-@pytest.fixture(scope="module", params=MAIN_EXECUTORS)
+@pytest.fixture(
+    scope="module",
+    params=MAIN_EXECUTORS,
+    ids=[executor.name for executor in MAIN_EXECUTORS],
+)
 def executor(request):
     return request.param
 

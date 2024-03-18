@@ -13,7 +13,7 @@ from cubed.extensions.rich import RichProgressBar
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
-from cubed.runtime.executors.python_async import AsyncPythonDagExecutor
+from cubed.runtime.create import create_executor
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -71,8 +71,8 @@ def mock_apply_blockwise(*args, **kwargs):
     platform.system() == "Windows", reason="measuring memory does not run on windows"
 )
 def test_retries(mocker, spec):
-    # Use AsyncPythonDagExecutor since PythonDagExecutor doesn't support retries
-    executor = AsyncPythonDagExecutor()
+    # Use threads executor since single-threaded executor doesn't support retries
+    executor = create_executor("threads")
     # Inject faults into the primitive layer
     mocker.patch(
         "cubed.primitive.blockwise.apply_blockwise", side_effect=mock_apply_blockwise
@@ -145,13 +145,8 @@ def test_callbacks_modal(spec, modal_executor):
 
 
 def test_resume(spec, executor):
-    try:
-        from cubed.runtime.executors.beam import BeamDagExecutor
-
-        if isinstance(executor, BeamDagExecutor):
-            pytest.skip(f"{type(executor)} does not support resume")
-    except ImportError:
-        pass
+    if executor.name == "beam":
+        pytest.skip(f"{executor.name} executor does not support resume")
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
@@ -178,15 +173,10 @@ def test_resume(spec, executor):
 
 @pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
 def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parallel):
-    try:
-        from cubed.runtime.executors.beam import BeamDagExecutor
-
-        if isinstance(any_executor, BeamDagExecutor):
-            pytest.skip(
-                f"{type(any_executor)} does not support compute_arrays_in_parallel"
-            )
-    except ImportError:
-        pass
+    if any_executor.name == "beam":
+        pytest.skip(
+            f"{any_executor.name} executor does not support compute_arrays_in_parallel"
+        )
 
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
@@ -227,15 +217,8 @@ def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_para
 
 def test_check_runtime_memory_dask(spec, executor):
     pytest.importorskip("dask.distributed")
-    try:
-        from cubed.runtime.executors.dask_distributed_async import (
-            AsyncDaskDistributedExecutor,
-        )
-
-        if not isinstance(executor, AsyncDaskDistributedExecutor):
-            pytest.skip(f"{type(executor)} does not support check_runtime_memory")
-    except ImportError:
-        pass
+    if executor.name != "dask":
+        pytest.skip(f"{executor.name} executor does not support check_runtime_memory")
 
     spec = cubed.Spec(spec.work_dir, allowed_mem="4GB")  # larger than runtime memory
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
@@ -253,15 +236,8 @@ def test_check_runtime_memory_dask(spec, executor):
 
 def test_check_runtime_memory_dask_no_workers(spec, executor):
     pytest.importorskip("dask.distributed")
-    try:
-        from cubed.runtime.executors.dask_distributed_async import (
-            AsyncDaskDistributedExecutor,
-        )
-
-        if not isinstance(executor, AsyncDaskDistributedExecutor):
-            pytest.skip(f"{type(executor)} does not support check_runtime_memory")
-    except ImportError:
-        pass
+    if executor.name != "dask":
+        pytest.skip(f"{executor.name} executor does not support check_runtime_memory")
 
     spec = cubed.Spec(spec.work_dir, allowed_mem=100000)
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)

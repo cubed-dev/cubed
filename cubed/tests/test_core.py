@@ -525,10 +525,8 @@ def test_array_pickle(spec, executor):
 def test_measure_reserved_mem(executor):
     pytest.importorskip("lithops")
 
-    from cubed.runtime.executors.lithops import LithopsDagExecutor
-
-    if not isinstance(executor, LithopsDagExecutor):
-        pytest.skip(f"{type(executor)} does not support measure_reserved_mem")
+    if executor.name != "lithops":
+        pytest.skip(f"{executor.name} executor does not support measure_reserved_mem")
 
     reserved_memory = cubed.measure_reserved_mem(executor=executor)
     assert reserved_memory > 1_000_000  # over 1MB
