@@ -274,7 +274,7 @@ def compute(
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
-            from cubed.runtime.executors.python import SingleThreadedExecutor
+            from cubed.runtime.executors.local import SingleThreadedExecutor
 
             executor = SingleThreadedExecutor()
 

@@ -9,7 +9,7 @@ from cubed.primitive.blockwise import (
     general_blockwise,
     make_blockwise_key_function,
 )
-from cubed.runtime.executors.python import SingleThreadedExecutor
+from cubed.runtime.executors.local import SingleThreadedExecutor
 from cubed.tests.utils import create_zarr, execute_pipeline
 from cubed.vendor.dask.blockwise import make_blockwise_graph
 

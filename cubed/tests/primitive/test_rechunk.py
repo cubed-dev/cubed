@@ -4,7 +4,7 @@ import zarr
 from numpy.testing import assert_array_equal
 
 from cubed.primitive.rechunk import rechunk
-from cubed.runtime.executors.python import SingleThreadedExecutor
+from cubed.runtime.executors.local import SingleThreadedExecutor
 from cubed.tests.utils import execute_pipeline
 
 
