@@ -49,7 +49,6 @@ MODAL_EXECUTORS = []
 
 try:
     MODAL_EXECUTORS.append(create_executor("modal"))
-    MODAL_EXECUTORS.append(create_executor("modal-sync"))
 except ImportError:
     pass
 
