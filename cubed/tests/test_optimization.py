@@ -37,12 +37,15 @@ def test_fusion(spec):
     num_created_arrays = 3  # b, c, d (a is not created on disk)
     assert d.plan.num_arrays(optimize_graph=False) == num_arrays
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 12
-    assert d.plan.total_nbytes(optimize_graph=False) == b.nbytes + c.nbytes + d.nbytes
+    assert (
+        d.plan.total_nbytes_written(optimize_graph=False)
+        == b.nbytes + c.nbytes + d.nbytes
+    )
     num_arrays = 2  # a, d
     num_created_arrays = 1  # d (a is not created on disk)
     assert d.plan.num_arrays(optimize_graph=True) == num_arrays
     assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
-    assert d.plan.total_nbytes(optimize_graph=True) == d.nbytes
+    assert d.plan.total_nbytes_written(optimize_graph=True) == d.nbytes
 
     task_counter = TaskCounter()
     result = d.compute(callbacks=[task_counter])

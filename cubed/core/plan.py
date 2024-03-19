@@ -245,14 +245,16 @@ class Plan:
         ]
         return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
-    def total_nbytes(self, optimize_graph: bool = True, optimize_function=None) -> int:
-        """Return the total number of bytes for all materialized arrays in this plan."""
+    def total_nbytes_written(
+        self, optimize_graph: bool = True, optimize_function=None
+    ) -> int:
+        """Return the total number of bytes written for all materialized arrays in this plan."""
         dag = self._finalize_dag(optimize_graph, optimize_function)
         nbytes = 0
         for _, d in dag.nodes(data=True):
             if d.get("type") == "array":
                 target = d["target"]
-                if isinstance(target, (LazyZarrArray, zarr.Array)):
+                if isinstance(target, LazyZarrArray):
                     nbytes += target.nbytes
         return nbytes
 
@@ -282,7 +284,7 @@ class Plan:
                 # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
                 rf"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\l"
                 rf"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}\l"
-                rf"total nbytes: {memory_repr(self.total_nbytes(optimize_graph, optimize_function))}\l"
+                rf"total nbytes written: {memory_repr(self.total_nbytes_written(optimize_graph, optimize_function))}\l"
                 rf"optimized: {optimize_graph}\l"
             ),
             "labelloc": "bottom",
