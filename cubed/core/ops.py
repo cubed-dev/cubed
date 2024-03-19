@@ -299,6 +299,7 @@ def blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=spec.storage_options,
         shape=shape,
         dtype=dtype,
         chunks=_chunks,
@@ -361,6 +362,7 @@ def general_blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=spec.storage_options,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
@@ -746,6 +748,7 @@ def rechunk(x, chunks, target_store=None):
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
         temp_store=temp_store,
+        storage_options=spec.storage_options,
     )
 
     from cubed.array_api import Array
