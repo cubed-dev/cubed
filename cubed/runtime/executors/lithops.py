@@ -138,7 +138,7 @@ def map_unordered(
                     future, now, start_times[group_name], end_times[group_name]
                 ):
                     input = future.input
-                    logger.warn(f"Running backup task for {group_name} on {input}")
+                    logger.warning(f"Running backup task for {group_name} on {input}")
                     futures = lithops_function_executor.map(
                         group_name_to_function[group_name],
                         [input],
