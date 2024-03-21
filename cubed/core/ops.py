@@ -290,7 +290,6 @@ def blockwise(
     spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
-    
     op = primitive_blockwise(
         func,
         out_ind,

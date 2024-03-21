@@ -39,7 +39,6 @@ class LazyZarrArray:
         self.store = store
         self.path = path
         self.kwargs = kwargs
-        print(f'self.store: {self.store}')
 
     def create(self, mode: str = "w-") -> zarr.Array:
         """Create the Zarr array in storage.
