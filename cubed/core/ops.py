@@ -290,6 +290,7 @@ def blockwise(
     spec = check_array_specs(arrays)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
+    
     op = primitive_blockwise(
         func,
         out_ind,
@@ -308,6 +309,7 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
+        storage_options=spec.storage_options,
         **kwargs,
     )
     plan = Plan._new(
@@ -367,6 +369,7 @@ def general_blockwise(
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
+        storage_options=spec.storage_options,
         **kwargs,
     )
     plan = Plan._new(
@@ -746,6 +749,7 @@ def rechunk(x, chunks, target_store=None):
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
         temp_store=temp_store,
+        storage_options=spec.storage_options,
     )
 
     from cubed.array_api import Array

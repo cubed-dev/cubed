@@ -130,6 +130,7 @@ def blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
+    storage_options: Optional[Dict[str, Any]]=None,
     **kwargs,
 ):
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -214,6 +215,7 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
+        storage_options=storage_options,        
         **kwargs,
     )
 
@@ -234,6 +236,7 @@ def general_blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
+    storage_options: Optional[Dict[str, Any]]=None,
     **kwargs,
 ):
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -281,7 +284,7 @@ def general_blockwise(
         target_array = target_store
     else:
         target_array = lazy_zarr_array(
-            target_store, shape, dtype, chunks=chunksize, path=target_path
+            target_store, shape, dtype, chunks=chunksize, path=target_path, storage_options=storage_options
         )
 
     func_kwargs = extra_func_kwargs or {}

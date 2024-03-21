@@ -1,6 +1,7 @@
 from typing import Optional, Union
 
 import zarr
+import s3fs
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
@@ -27,14 +28,18 @@ class LazyZarrArray:
         template = zarr.empty(
             shape, dtype=dtype, chunks=chunks, store=zarr.storage.MemoryStore()
         )
+        if "storage_options" in kwargs and kwargs["storage_options"]:
+            s3 = s3fs.S3FileSystem(**kwargs["storage_options"])
+            store = s3fs.S3Map(root=store, s3=s3, check=False)
+
         self.shape = template.shape
         self.dtype = template.dtype
         self.chunks = template.chunks
         self.nbytes = template.nbytes
-
         self.store = store
         self.path = path
         self.kwargs = kwargs
+        print(f'self.store: {self.store}')
 
     def create(self, mode: str = "w-") -> zarr.Array:
         """Create the Zarr array in storage.
