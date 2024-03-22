@@ -122,7 +122,7 @@ def _setup_array_rechunk(
     max_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
-    storage_options: Optional[Dict] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
 ) -> Tuple[CubedArrayProxy, CubedArrayProxy, CubedArrayProxy]:
     shape = source_array.shape
     source_chunks = source_array.chunks
