@@ -1,7 +1,7 @@
-from typing import Optional, Union, Dict, Any
+from typing import Any, Dict, Optional, Union
 
-import zarr
 import s3fs
+import zarr
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
@@ -91,10 +91,18 @@ def lazy_zarr_array(
     dtype: T_DType,
     chunks: T_RegularChunks,
     path: Optional[str] = None,
-    storage_options: Optional[Dict[str, Any]]=None,
+    storage_options: Optional[Dict[str, Any]] = None,
     **kwargs,
 ) -> LazyZarrArray:
-    return LazyZarrArray(store, shape, dtype, chunks, path=path, storage_options=storage_options, **kwargs)
+    return LazyZarrArray(
+        store,
+        shape,
+        dtype,
+        chunks,
+        path=path,
+        storage_options=storage_options,
+        **kwargs,
+    )
 
 
 def open_if_lazy_zarr_array(array: T_ZarrArray) -> zarr.Array:

@@ -1,7 +1,7 @@
 import itertools
 import math
 from math import ceil, prod
-from typing import Any, Iterable, Iterator, List, Optional, Sequence, Tuple, Dict
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -143,7 +143,13 @@ def _setup_array_rechunk(
     int_chunks = tuple(int(x) for x in int_chunks)
     write_chunks = tuple(int(x) for x in write_chunks)
 
-    target_array = lazy_zarr_array(target_store, shape, dtype, chunks=target_chunks, storage_options=storage_options)
+    target_array = lazy_zarr_array(
+        target_store,
+        shape,
+        dtype,
+        chunks=target_chunks,
+        storage_options=storage_options,
+    )
 
     if read_chunks == write_chunks:
         int_array = None
@@ -151,7 +157,9 @@ def _setup_array_rechunk(
         # do intermediate store
         if temp_store is None:
             raise ValueError("A temporary store location must be provided.")
-        int_array = lazy_zarr_array(temp_store, shape, dtype, chunks=int_chunks, storage_options=storage_options)
+        int_array = lazy_zarr_array(
+            temp_store, shape, dtype, chunks=int_chunks, storage_options=storage_options
+        )
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
     int_proxy = CubedArrayProxy(int_array, int_chunks)

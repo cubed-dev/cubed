@@ -299,6 +299,7 @@ def blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=spec.storage_options,
         shape=shape,
         dtype=dtype,
         chunks=_chunks,
@@ -308,7 +309,6 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
-        storage_options=spec.storage_options,
         **kwargs,
     )
     plan = Plan._new(
@@ -362,13 +362,13 @@ def general_blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=spec.storage_options,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
-        storage_options=spec.storage_options,
         **kwargs,
     )
     plan = Plan._new(

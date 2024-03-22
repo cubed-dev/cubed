@@ -120,6 +120,7 @@ def blockwise(
     reserved_mem: int,
     target_store: T_Store,
     target_path: Optional[str] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -130,7 +131,6 @@ def blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
-    storage_options: Optional[Dict[str, Any]]=None,
     **kwargs,
 ):
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -207,6 +207,7 @@ def blockwise(
         reserved_mem=reserved_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=storage_options,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
@@ -215,7 +216,6 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
-        storage_options=storage_options,        
         **kwargs,
     )
 
@@ -228,6 +228,7 @@ def general_blockwise(
     reserved_mem: int,
     target_store: T_Store,
     target_path: Optional[str] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -236,7 +237,6 @@ def general_blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
-    storage_options: Optional[Dict[str, Any]]=None,
     **kwargs,
 ):
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -284,7 +284,12 @@ def general_blockwise(
         target_array = target_store
     else:
         target_array = lazy_zarr_array(
-            target_store, shape, dtype, chunks=chunksize, path=target_path, storage_options=storage_options
+            target_store,
+            shape,
+            dtype,
+            chunks=chunksize,
+            path=target_path,
+            storage_options=storage_options,
         )
 
     func_kwargs = extra_func_kwargs or {}
