@@ -1,6 +1,5 @@
 import platform
 import random
-from functools import partial
 
 import dill
 import numpy as np
@@ -607,6 +606,7 @@ def test_quad_means(tmp_path, t_length=50):
 
 def test_quad_means_zarr(tmp_path, t_length=50):
     # write inputs to Zarr first to test more realistic usage pattern
+    tmp_path = "memory://" + str(tmp_path)
     spec = cubed.Spec(tmp_path, allowed_mem="2GB", reserved_mem="100MB")
     u = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
     v = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
@@ -620,8 +620,5 @@ def test_quad_means_zarr(tmp_path, t_length=50):
     uv = u * v
     m = xp.mean(uv, axis=0, use_new_impl=True, split_every=10)
 
-    opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=40)
-
-    m.visualize(filename=tmp_path / "quad_means", optimize_function=opt_fn)
-
-    cubed.to_zarr(m, store=tmp_path / "result", optimize_function=opt_fn)
+    # don't optimize so we get some intermediate output (should be in special zarr store with random hashes)
+    cubed.to_zarr(m, store=f"{tmp_path}/result", optimize_graph=False)
