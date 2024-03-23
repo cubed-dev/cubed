@@ -1,6 +1,5 @@
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 
-import s3fs
 import zarr
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
@@ -21,7 +20,6 @@ class LazyZarrArray:
         dtype: T_DType,
         chunks: T_RegularChunks,
         path: Optional[str] = None,
-        storage_options: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
@@ -29,9 +27,6 @@ class LazyZarrArray:
         template = zarr.empty(
             shape, dtype=dtype, chunks=chunks, store=zarr.storage.MemoryStore()
         )
-        if storage_options:
-            s3 = s3fs.S3FileSystem(**storage_options)
-            store = s3fs.S3Map(root=store, s3=s3, check=False)
         self.shape = template.shape
         self.dtype = template.dtype
         self.chunks = template.chunks
@@ -76,6 +71,7 @@ class LazyZarrArray:
             dtype=self.dtype,
             chunks=self.chunks,
             path=self.path,
+            **self.kwargs,
         )
 
     def __repr__(self) -> str:
@@ -91,7 +87,6 @@ def lazy_zarr_array(
     dtype: T_DType,
     chunks: T_RegularChunks,
     path: Optional[str] = None,
-    storage_options: Optional[Dict[str, Any]] = None,
     **kwargs,
 ) -> LazyZarrArray:
     return LazyZarrArray(
@@ -100,7 +95,6 @@ def lazy_zarr_array(
         dtype,
         chunks,
         path=path,
-        storage_options=storage_options,
         **kwargs,
     )
 
