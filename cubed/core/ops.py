@@ -20,6 +20,7 @@ from zarr.indexing import (
     replace_ellipsis,
 )
 
+from cubed import config
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
@@ -27,6 +28,7 @@ from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
+from cubed.spec import spec_from_config
 from cubed.utils import (
     _concatenate2,
     chunk_memory,
@@ -108,8 +110,12 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     cubed.Array
         The array loaded from Zarr storage.
     """
+    spec or spec_from_config(config)
+
     name = gensym()
-    target = zarr.open(store, path=path, mode="r")
+    target = zarr.open_array(
+        store, path=path, mode="r", storage_options=spec.storage_options
+    )
 
     from cubed.array_api import Array
 
