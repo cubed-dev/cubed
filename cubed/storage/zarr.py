@@ -128,6 +128,7 @@ class RandomHashPrefixFSStore(zarr.storage.FSStore):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, normalize_keys=True, **kwargs)
+        print(kwargs)
 
     def _normalize_key(self, key):
         # e.g. 3.0.0.0 -> 78-3.0.0.0
