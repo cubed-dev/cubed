@@ -52,7 +52,7 @@ def set_up_logging():
         "loggers": {
             "": {  # root logger
                 "handlers": ["console_handler"],
-                "level": "INFO",
+                "level": "DEBUG",
                 "propagate": False,
             },
             "gcsfs": {
