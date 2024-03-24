@@ -68,6 +68,7 @@ class BlockwiseSpec:
 
 def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
     """Stage function for blockwise."""
+    logging.info("apply_blockwise info")
     # lithops needs params to be lists not tuples, so convert back
     out_coords_tuple = tuple(out_coords)
     out_chunk_key = key_to_slices(

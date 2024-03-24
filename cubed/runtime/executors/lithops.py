@@ -33,7 +33,41 @@ from cubed.spec import Spec
 logger = logging.getLogger(__name__)
 
 
+def set_up_logging():
+    LOGGING_CONFIG = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)s -- %(message)s"
+            },
+        },
+        "handlers": {
+            "console_handler": {
+                "level": "DEBUG",
+                "formatter": "standard",
+                "class": "logging.StreamHandler",
+            },
+        },
+        "loggers": {
+            "": {  # root logger
+                "handlers": ["console_handler"],
+                "level": "INFO",
+                "propagate": False,
+            },
+            "gcsfs": {
+                "handlers": ["console_handler"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+        },
+    }
+    logging.config.dictConfig(LOGGING_CONFIG)
+
+
 def run_func(input, func=None, config=None, name=None, compute_id=None):
+    print("Setting up logging")
+    set_up_logging()
     result = func(input, config=config)
     return result
 
