@@ -50,7 +50,7 @@ class LazyZarrArray:
             Default is 'w-', which means create, fail it already exists.
         """
         if isinstance(self.store, str) and ("://" in self.store or "::" in self.store):
-            store = RandomHashPrefixFSStore(self.store, mode=mode)
+            store = RandomHashPrefixFSStore(self.store, mode=mode, requests_timeout=15)
         else:
             store = RandomHashPrefixDirectoryStore(self.store)
         target = zarr.open_array(
@@ -71,7 +71,7 @@ class LazyZarrArray:
         """
         # r+ means read/write, fail if it doesn't exist
         if isinstance(self.store, str) and ("://" in self.store or "::" in self.store):
-            store = RandomHashPrefixFSStore(self.store, mode="r+")
+            store = RandomHashPrefixFSStore(self.store, mode="r+", requests_timeout=15)
         else:
             store = RandomHashPrefixDirectoryStore(self.store)
         return zarr.open_array(
