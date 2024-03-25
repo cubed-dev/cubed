@@ -5,3 +5,5 @@ spec:
   executor_options:
     runtime: "cubed-runtime"
     runtime_memory: 2048
+  storage_options:
+    requests_timeout: 15
