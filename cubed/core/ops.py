@@ -109,7 +109,7 @@ def from_zarr(store, path=None, spec=None) -> "Array":
         The array loaded from Zarr storage.
     """
     name = gensym()
-    target = zarr.open(store, path=path, mode="r")
+    target = zarr.open(store, path=path, mode="r", storage_options=spec.storage_options)
 
     from cubed.array_api import Array
 
