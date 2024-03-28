@@ -20,6 +20,7 @@ from zarr.indexing import (
     replace_ellipsis,
 )
 
+from cubed import config
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
@@ -27,6 +28,7 @@ from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
+from cubed.spec import spec_from_config
 from cubed.utils import (
     _concatenate2,
     chunk_memory,
@@ -109,7 +111,8 @@ def from_zarr(store, path=None, spec=None) -> "Array":
         The array loaded from Zarr storage.
     """
     name = gensym()
-    target = zarr.open(store, path=path, mode="r")
+    spec = spec or spec_from_config(config)
+    target = zarr.open(store, path=path, mode="r", storage_options=spec.storage_options)
 
     from cubed.array_api import Array
 
@@ -299,6 +302,7 @@ def blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=spec.storage_options,
         shape=shape,
         dtype=dtype,
         chunks=_chunks,
@@ -361,6 +365,7 @@ def general_blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=spec.storage_options,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
@@ -746,6 +751,7 @@ def rechunk(x, chunks, target_store=None):
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
         temp_store=temp_store,
+        storage_options=spec.storage_options,
     )
 
     from cubed.array_api import Array

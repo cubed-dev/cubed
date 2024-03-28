@@ -31,7 +31,6 @@ class LazyZarrArray:
         self.dtype = template.dtype
         self.chunks = template.chunks
         self.nbytes = template.nbytes
-
         self.store = store
         self.path = path
         self.kwargs = kwargs
@@ -72,6 +71,7 @@ class LazyZarrArray:
             dtype=self.dtype,
             chunks=self.chunks,
             path=self.path,
+            **self.kwargs,
         )
 
     def __repr__(self) -> str:
@@ -89,7 +89,14 @@ def lazy_zarr_array(
     path: Optional[str] = None,
     **kwargs,
 ) -> LazyZarrArray:
-    return LazyZarrArray(store, shape, dtype, chunks, path=path, **kwargs)
+    return LazyZarrArray(
+        store,
+        shape,
+        dtype,
+        chunks,
+        path=path,
+        **kwargs,
+    )
 
 
 def open_if_lazy_zarr_array(array: T_ZarrArray) -> zarr.Array:
