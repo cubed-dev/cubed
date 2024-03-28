@@ -17,14 +17,11 @@ from typing import (
 )
 
 from lithops.executors import FunctionExecutor
+from lithops.retries import RetryingFunctionExecutor, RetryingFuture
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from networkx import MultiDiGraph
 
 from cubed.runtime.backup import should_launch_backup, use_backups_default
-from cubed.runtime.executors.lithops_retries import (
-    RetryingFunctionExecutor,
-    RetryingFuture,
-)
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import (
@@ -79,6 +76,7 @@ def map_unordered(
     return_when = ALWAYS if use_backups else ANY_COMPLETED
     wait_dur_sec = wait_dur_sec or 1
 
+    future_to_group_name: Dict[str, str] = {}
     group_name_to_function: Dict[str, Callable[..., Any]] = {}
     # backups are launched based on task start and end times for the group
     start_times: Dict[str, Dict[RetryingFuture, float]] = {}
@@ -97,13 +95,13 @@ def map_unordered(
 
         futures = lithops_function_executor.map(
             partial_map_function,
-            map_iterdata,
+            list(map_iterdata),  # lithops requires a list
             timeout=timeout,
             include_modules=include_modules,
             retries=retries,
-            group_name=group_name,
         )
         start_times[group_name] = {k: time.monotonic() for k in futures}
+        future_to_group_name.update({k: group_name for k in futures})
         pending.extend(futures)
 
     while pending:
@@ -122,10 +120,10 @@ def map_unordered(
                     if not backup.done or not backup.error:
                         continue
                 future.status(throw_except=True)
-            group_name = future.group_name  # type: ignore[assignment]
+            group_name = future_to_group_name[future]  # type: ignore[assignment]
             end_times[group_name][future] = time.monotonic()
             if return_stats:
-                yield future.result(), standardise_lithops_stats(future)
+                yield future.result(), standardise_lithops_stats(group_name, future)
             else:
                 yield future.result()
 
@@ -142,7 +140,7 @@ def map_unordered(
         if use_backups:
             now = time.monotonic()
             for future in copy.copy(pending):
-                group_name = future.group_name  # type: ignore[assignment]
+                group_name = future_to_group_name[future]  # type: ignore[assignment]
                 if future not in backups and should_launch_backup(
                     future, now, start_times[group_name], end_times[group_name]
                 ):
@@ -154,11 +152,11 @@ def map_unordered(
                         timeout=timeout,
                         include_modules=include_modules,
                         retries=0,  # don't retry backup tasks
-                        group_name=group_name,
                     )
                     start_times[group_name].update(
                         {k: time.monotonic() for k in futures}
                     )
+                    future_to_group_name.update({k: group_name for k in futures})
                     pending.extend(futures)
                     backup = futures[0]
                     backups[future] = backup
@@ -237,10 +235,10 @@ def execute_dag(
                     handle_callbacks(callbacks, result, stats)
 
 
-def standardise_lithops_stats(future: RetryingFuture) -> Dict[str, Any]:
+def standardise_lithops_stats(name: str, future: RetryingFuture) -> Dict[str, Any]:
     stats = future.stats
     return dict(
-        name=future.group_name,
+        name=name,
         task_create_tstamp=stats["host_job_create_tstamp"],
         function_start_tstamp=stats["worker_func_start_tstamp"],
         function_end_tstamp=stats["worker_func_end_tstamp"],
