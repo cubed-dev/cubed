@@ -120,6 +120,7 @@ def blockwise(
     reserved_mem: int,
     target_store: T_Store,
     target_path: Optional[str] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -206,6 +207,7 @@ def blockwise(
         reserved_mem=reserved_mem,
         target_store=target_store,
         target_path=target_path,
+        storage_options=storage_options,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
@@ -226,6 +228,7 @@ def general_blockwise(
     reserved_mem: int,
     target_store: T_Store,
     target_path: Optional[str] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -281,7 +284,12 @@ def general_blockwise(
         target_array = target_store
     else:
         target_array = lazy_zarr_array(
-            target_store, shape, dtype, chunks=chunksize, path=target_path
+            target_store,
+            shape,
+            dtype,
+            chunks=chunksize,
+            path=target_path,
+            storage_options=storage_options,
         )
 
     func_kwargs = extra_func_kwargs or {}

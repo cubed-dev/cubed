@@ -1,7 +1,7 @@
 import itertools
 import math
 from math import ceil, prod
-from typing import Any, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -29,6 +29,7 @@ def rechunk(
     reserved_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
 ) -> List[PrimitiveOperation]:
     """Change the chunking of an array, without changing its shape or dtype.
 
@@ -64,6 +65,7 @@ def rechunk(
         max_mem=rechunker_max_mem,
         target_store=target_store,
         temp_store=temp_store,
+        storage_options=storage_options,
     )
 
     intermediate = int_proxy.array
@@ -120,6 +122,7 @@ def _setup_array_rechunk(
     max_mem: int,
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
+    storage_options: Optional[Dict[str, Any]] = None,
 ) -> Tuple[CubedArrayProxy, CubedArrayProxy, CubedArrayProxy]:
     shape = source_array.shape
     source_chunks = source_array.chunks
@@ -140,7 +143,13 @@ def _setup_array_rechunk(
     int_chunks = tuple(int(x) for x in int_chunks)
     write_chunks = tuple(int(x) for x in write_chunks)
 
-    target_array = lazy_zarr_array(target_store, shape, dtype, chunks=target_chunks)
+    target_array = lazy_zarr_array(
+        target_store,
+        shape,
+        dtype,
+        chunks=target_chunks,
+        storage_options=storage_options,
+    )
 
     if read_chunks == write_chunks:
         int_array = None
@@ -148,7 +157,9 @@ def _setup_array_rechunk(
         # do intermediate store
         if temp_store is None:
             raise ValueError("A temporary store location must be provided.")
-        int_array = lazy_zarr_array(temp_store, shape, dtype, chunks=int_chunks)
+        int_array = lazy_zarr_array(
+            temp_store, shape, dtype, chunks=int_chunks, storage_options=storage_options
+        )
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
     int_proxy = CubedArrayProxy(int_array, int_chunks)
