@@ -489,6 +489,7 @@ def index(x, key):
         extra_projected_mem=extra_projected_mem,
         target_chunks=target_chunks,
         selection=selection,
+        advanced_indexing=len(where_list) > 0,
     )
 
     # merge chunks for any dims with step > 1 so they are
@@ -509,10 +510,19 @@ def index(x, key):
     return out
 
 
-def _read_index_chunk(x, *arrays, target_chunks=None, selection=None, block_id=None):
-    array = arrays[0]
+def _read_index_chunk(
+    x,
+    *arrays,
+    target_chunks=None,
+    selection=None,
+    advanced_indexing=None,
+    block_id=None,
+):
+    array = arrays[0].zarray
+    if advanced_indexing:
+        array = array.oindex
     idx = block_id
-    out = array.zarray.oindex[_target_chunk_selection(target_chunks, idx, selection)]
+    out = array[_target_chunk_selection(target_chunks, idx, selection)]
     out = numpy_array_to_backend_array(out)
     return out
 
