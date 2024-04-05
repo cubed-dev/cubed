@@ -17,7 +17,6 @@ from zarr.indexing import (
     OrthogonalIndexer,
     SliceDimIndexer,
     is_integer_list,
-    is_slice,
     replace_ellipsis,
 )
 
@@ -409,7 +408,7 @@ def index(x, key):
         key = (key,)
 
     # No op case
-    if all(is_slice(ind) and ind == slice(None) for ind in key):
+    if all(isinstance(ind, slice) and ind == slice(None) for ind in key):
         return x
 
     # Remove None values, to be filled in with expand_dims at end
@@ -436,7 +435,9 @@ def index(x, key):
     selection = replace_ellipsis(selection, x.shape)
 
     # Check selection is supported
-    if any(s.step is not None and s.step < 1 for s in selection if is_slice(s)):
+    if any(
+        s.step is not None and s.step < 1 for s in selection if isinstance(s, slice)
+    ):
         raise NotImplementedError(f"Slice step must be >= 1: {key}")
     assert all(isinstance(s, (slice, list, Integral)) for s in selection)
     where_list = [i for i, ind in enumerate(selection) if is_integer_list(ind)]
@@ -490,7 +491,6 @@ def index(x, key):
         extra_projected_mem=extra_projected_mem,
         target_chunks=target_chunks,
         selection=selection,
-        advanced_indexing=len(where_list) > 0,
     )
 
     # merge chunks for any dims with step > 1 so they are
@@ -516,13 +516,14 @@ def _read_index_chunk(
     *arrays,
     target_chunks=None,
     selection=None,
-    advanced_indexing=None,
     block_id=None,
 ):
     array = arrays[0].zarray
-    if advanced_indexing:
-        array = array.oindex
     idx = block_id
+    # Note that since we only have a maximum of one integer array index
+    # we don't need to use Zarr orthogonal indexing, since it is
+    # "available directly on the array" according to
+    # https://zarr.readthedocs.io/en/stable/tutorial.html#orthogonal-indexing
     out = array[_target_chunk_selection(target_chunks, idx, selection)]
     out = numpy_array_to_backend_array(out)
     return out
@@ -535,7 +536,7 @@ def _target_chunk_selection(target_chunks, idx, selection):
     sel = []
     i = 0  # index into target_chunks and idx
     for s in selection:
-        if is_slice(s):
+        if isinstance(s, slice):
             offset = s.start or 0
             step = s.step if s.step is not None else 1
             start = tuple(

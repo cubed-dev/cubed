@@ -23,8 +23,9 @@ def spec(tmp_path):
     ],
 )
 def test_int_array_index_1d(spec, ind):
-    a = xp.arange(12, chunks=(4,), spec=spec)
-    assert_array_equal(a[ind].compute(), np.arange(12)[ind])
+    a = xp.arange(12, chunks=(3,), spec=spec)
+    b = a.rechunk((4,))  # force materialization to test indexing against zarr
+    assert_array_equal(b[ind].compute(), np.arange(12)[ind])
 
 
 @pytest.mark.parametrize(
@@ -40,11 +41,12 @@ def test_int_array_index_1d(spec, ind):
 def test_int_array_index_2d(spec, ind):
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-        chunks=(2, 2),
+        chunks=(3, 3),
         spec=spec,
     )
+    b = a.rechunk((2, 2))  # force materialization to test indexing against zarr
     x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-    assert_array_equal(a[ind].compute(), x[ind])
+    assert_array_equal(b[ind].compute(), x[ind])
 
 
 def test_multiple_int_array_indexes(spec):
