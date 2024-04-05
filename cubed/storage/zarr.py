@@ -5,6 +5,7 @@ import numpy as np
 import zarr
 from toolz import reduce
 
+from cubed.storage.backend import open_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
@@ -55,7 +56,7 @@ class LazyZarrArray:
             The mode to open the Zarr array with using ``zarr.open``.
             Default is 'w-', which means create, fail it already exists.
         """
-        target = zarr.open_array(
+        target = open_backend_array(
             self.store,
             mode=mode,
             shape=self.shape,
@@ -72,7 +73,7 @@ class LazyZarrArray:
         Note that the Zarr array must have been created or this method will raise an exception.
         """
         # r+ means read/write, fail if it doesn't exist
-        return zarr.open_array(
+        return open_backend_array(
             self.store,
             mode="r+",
             shape=self.shape,

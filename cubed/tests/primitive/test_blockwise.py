@@ -10,6 +10,7 @@ from cubed.primitive.blockwise import (
     make_blockwise_key_function,
 )
 from cubed.runtime.executors.local import SingleThreadedExecutor
+from cubed.storage.backend import open_backend_array
 from cubed.tests.utils import create_zarr, execute_pipeline
 from cubed.vendor.dask.blockwise import make_blockwise_graph
 
@@ -66,7 +67,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
 
     execute_pipeline(op.pipeline, executor=executor)
 
-    res = zarr.open_array(target_store)
+    res = open_backend_array(target_store, mode="r")
     assert_array_equal(res[:], np.outer([0, 1, 2], [10, 50, 100]))
 
 
@@ -129,7 +130,7 @@ def test_blockwise_with_args(tmp_path, executor):
 
     execute_pipeline(op.pipeline, executor=executor)
 
-    res = zarr.open_array(target_store)
+    res = open_backend_array(target_store, mode="r")
     assert_array_equal(
         res[:], np.transpose(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), axes=(1, 0))
     )
@@ -220,7 +221,7 @@ def test_general_blockwise(tmp_path, executor):
 
     execute_pipeline(op.pipeline, executor=executor)
 
-    res = zarr.open_array(target_store)
+    res = open_backend_array(target_store, mode="r")
     assert_array_equal(res[:], np.arange(20))
 
 

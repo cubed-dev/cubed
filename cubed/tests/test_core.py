@@ -14,6 +14,7 @@ import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import merge_chunks, partial_reduce, tree_reduce
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
+from cubed.storage.backend import open_backend_array
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -107,7 +108,7 @@ def test_from_array_zarr(tmp_path, spec):
         store=store,
     )
     a = cubed.from_array(za, spec=spec)
-    assert_array_equal(a, za)
+    assert_array_equal(a, za[:])
 
 
 @pytest.mark.parametrize("path", [None, "sub", "sub/group"])
@@ -167,9 +168,9 @@ def test_store_fails(tmp_path, spec):
 @pytest.mark.parametrize("path", [None, "sub", "sub/group"])
 def test_to_zarr(tmp_path, spec, executor, path):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-    store = zarr.storage.DirectoryStore(tmp_path / "output.zarr")
+    store = tmp_path / "output.zarr"
     cubed.to_zarr(a, store, path=path, executor=executor)
-    res = zarr.open_array(store, path=path)
+    res = open_backend_array(store, mode="r", path=path)
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
@@ -599,8 +600,8 @@ def test_quad_means(tmp_path, t_length=50):
         m1, store=tmp_path / "result1", optimize_function=fuse_all_optimize_dag
     )
 
-    res0 = zarr.open_array(tmp_path / "result0")
-    res1 = zarr.open_array(tmp_path / "result1")
+    res0 = open_backend_array(tmp_path / "result0", mode="r")
+    res1 = open_backend_array(tmp_path / "result1", mode="r")
 
     assert_array_equal(res0[:], res1[:])
 
