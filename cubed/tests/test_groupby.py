@@ -13,14 +13,14 @@ from cubed.core.groupby import (
 
 
 def test_groupby_reduction_axis0():
-    a = xp.full((4 * 6, 5), 7, dtype=nxp.int32, chunks=(4, 2))
+    a = xp.full((4 * 6, 5), 7.0, chunks=(4, 2))
     b = xp.asarray([0, 1, 0, 1] * 6, chunks=(4,))
     c = mean_groupby_reduction(a, b, axis=0, num_groups=2)
     assert_array_equal(c.compute(), np.full((2, 5), 7))
 
 
 def test_groupby_reduction_axis1():
-    a = xp.full((5, 4 * 6), 7, dtype=nxp.int32, chunks=(2, 4))
+    a = xp.full((5, 4 * 6), 7.0, chunks=(2, 4))
     b = xp.asarray([0, 1, 0, 1] * 6, chunks=(4,))
     c = mean_groupby_reduction(a, b, axis=1, num_groups=2)
     assert_array_equal(c.compute(), np.full((5, 2), 7))
