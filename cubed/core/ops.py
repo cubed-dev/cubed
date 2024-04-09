@@ -909,14 +909,14 @@ def reduction(
         return reduction_new(
             x,
             func,
-            combine_func,
-            aggregate_func,
-            axis,
-            intermediate_dtype,
-            dtype,
-            keepdims,
-            split_every,
-            extra_func_kwargs,
+            combine_func=combine_func,
+            aggegrate_func=aggegrate_func,
+            axis=axis,
+            intermediate_dtype=intermediate_dtype,
+            dtype=dtype,
+            keepdims=keepdims,
+            split_every=split_every,
+            extra_func_kwargs=extra_func_kwargs,
         )
     if combine_func is None:
         combine_func = func
@@ -1017,6 +1017,7 @@ def reduction_new(
     dtype=None,
     keepdims=False,
     split_every=None,
+    combine_sizes=None,
     extra_func_kwargs=None,
 ) -> "Array":
     """Apply a function to reduce an array along one or more axes."""
@@ -1040,6 +1041,7 @@ def reduction_new(
         ),
         split_every=split_every,
         dtype=intermediate_dtype,
+        combine_sizes=combine_sizes,
     )
 
     # combine intermediates
@@ -1049,6 +1051,7 @@ def reduction_new(
         axis=axis,
         dtype=intermediate_dtype,
         split_every=split_every,
+        combine_sizes=combine_sizes,
     )
 
     # aggregate final chunks
@@ -1085,6 +1088,7 @@ def tree_reduce(
     axis,
     dtype,
     split_every=None,
+    combine_sizes=None,
 ):
     """Apply a reduction function repeatedly across multiple axes."""
     if axis is None:
@@ -1105,11 +1109,19 @@ def tree_reduce(
             func,
             split_every=split_every,
             dtype=dtype,
+            combine_sizes=combine_sizes,
         )
     return x
 
 
-def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
+def partial_reduce(
+    x,
+    func,
+    initial_func=None,
+    split_every=None,
+    dtype=None,
+    combine_sizes=None,
+):
     """Apply a reduction function to multiple blocks across multiple axes.
 
     Parameters
@@ -1127,12 +1139,16 @@ def partial_reduce(x, func, initial_func=None, split_every=None, dtype=None):
         Output data type.
     """
     # map over output chunks
+    axis = tuple(ax for ax in split_every.keys())
+    combine_sizes = combine_sizes or {}
+    combine_sizes = {k: combine_sizes.get(k, 1) for k in axis}
     chunks = [
-        (1,) * math.ceil(len(c) / split_every[i]) if i in split_every else c
+        (combine_sizes[i],) * math.ceil(len(c) / split_every[i])
+        if i in split_every
+        else c
         for (i, c) in enumerate(x.chunks)
     ]
     shape = tuple(map(sum, chunks))
-    axis = tuple(ax for ax in split_every.keys())
 
     def key_function(out_key):
         out_coords = out_key[1:]
