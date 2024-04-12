@@ -910,7 +910,7 @@ def reduction(
             x,
             func,
             combine_func=combine_func,
-            aggegrate_func=aggegrate_func,
+            aggregate_func=aggregate_func,
             axis=axis,
             intermediate_dtype=intermediate_dtype,
             dtype=dtype,

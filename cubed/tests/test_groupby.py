@@ -30,7 +30,7 @@ def mean_groupby_reduction(x, by, axis, num_groups):
         by,
         func=_mean_groupby_func,
         combine_func=_mean_groupby_combine,
-        aggegrate_func=_mean_groupby_aggregate,
+        aggregate_func=_mean_groupby_aggregate,
         axis=axis,
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,

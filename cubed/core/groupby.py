@@ -13,7 +13,7 @@ def groupby_reduction(
     by: "Array",
     func,
     combine_func=None,
-    aggegrate_func=None,
+    aggregate_func=None,
     axis=None,
     intermediate_dtype=None,
     dtype=None,
@@ -73,7 +73,7 @@ def groupby_reduction(
         out,
         func=_identity_func,
         combine_func=combine_func,
-        aggegrate_func=aggegrate_func,
+        aggregate_func=aggregate_func,
         axis=(dummy_axis, axis),  # dummy and group axis
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
