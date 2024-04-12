@@ -6,6 +6,7 @@ from itertools import product
 from numbers import Integral, Number
 from operator import add
 from typing import TYPE_CHECKING, Any, Sequence, Union
+from warnings import warn
 
 import numpy as np
 import zarr
@@ -886,7 +887,8 @@ def reduction(
     x: "Array",
     func,
     combine_func=None,
-    aggegrate_func=None,
+    aggegrate_func=None,  # typo, will removed in next release
+    aggregate_func=None,
     axis=None,
     intermediate_dtype=None,
     dtype=None,
@@ -896,12 +898,19 @@ def reduction(
     extra_func_kwargs=None,
 ) -> "Array":
     """Apply a function to reduce an array along one or more axes."""
+    if aggegrate_func is not None and aggregate_func is None:
+        warn(
+            "`aggegrate_func` is deprecated, please use `aggregate_func` instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        aggregate_func = aggegrate_func
     if use_new_impl:
         return reduction_new(
             x,
             func,
             combine_func,
-            aggegrate_func,
+            aggregate_func,
             axis,
             intermediate_dtype,
             dtype,
@@ -983,8 +992,8 @@ def reduction(
                 extra_func_kwargs=extra_func_kwargs,
             )
 
-    if aggegrate_func is not None:
-        result = map_blocks(aggegrate_func, result, dtype=dtype)
+    if aggregate_func is not None:
+        result = map_blocks(aggregate_func, result, dtype=dtype)
 
     if not keepdims:
         axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)
@@ -1002,7 +1011,7 @@ def reduction_new(
     x: "Array",
     func,
     combine_func=None,
-    aggegrate_func=None,
+    aggregate_func=None,
     axis=None,
     intermediate_dtype=None,
     dtype=None,
@@ -1043,8 +1052,8 @@ def reduction_new(
     )
 
     # aggregate final chunks
-    if aggegrate_func is not None:
-        result = map_blocks(aggegrate_func, result, dtype=dtype)
+    if aggregate_func is not None:
+        result = map_blocks(aggregate_func, result, dtype=dtype)
 
     if not keepdims:
         axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)
@@ -1213,7 +1222,7 @@ def arg_reduction(
         out,
         _arg_func,
         combine_func=partial(_arg_combine, arg_func=arg_func),
-        aggegrate_func=_arg_aggregate,
+        aggregate_func=_arg_aggregate,
         axis=axis,
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,

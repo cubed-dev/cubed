@@ -26,7 +26,7 @@ def nanmean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=N
         x,
         _nanmean_func,
         combine_func=_nanmean_combine,
-        aggegrate_func=_nanmean_aggregate,
+        aggregate_func=_nanmean_aggregate,
         axis=axis,
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,

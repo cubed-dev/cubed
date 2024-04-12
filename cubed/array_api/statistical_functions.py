@@ -47,7 +47,7 @@ def mean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None
         x,
         _mean_func,
         combine_func=_mean_combine,
-        aggegrate_func=_mean_aggregate,
+        aggregate_func=_mean_aggregate,
         axis=axis,
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
