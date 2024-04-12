@@ -1022,6 +1022,10 @@ def reduction_new(
 ) -> "Array":
     """Apply a function to reduce an array along one or more axes."""
     if combine_func is None:
+        if func is None:
+            raise ValueError(
+                "At least one of `func` and `combine_func` must be specified in reduction"
+            )
         combine_func = func
     if axis is None:
         axis = tuple(range(x.ndim))
@@ -1033,12 +1037,16 @@ def reduction_new(
 
     split_every = _normalize_split_every(split_every, axis)
 
+    if func is None:
+        initial_func = None
+    else:
+        initial_func = partial(
+            func, axis=axis, keepdims=True, **(extra_func_kwargs or {})
+        )
     result = partial_reduce(
         x,
         partial(combine_func, **(extra_func_kwargs or {})),
-        initial_func=partial(
-            func, axis=axis, keepdims=True, **(extra_func_kwargs or {})
-        ),
+        initial_func=initial_func,
         split_every=split_every,
         dtype=intermediate_dtype,
         combine_sizes=combine_sizes,

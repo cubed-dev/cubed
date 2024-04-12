@@ -71,7 +71,7 @@ def groupby_reduction(
     # then reduce across blocks
     return reduction_new(
         out,
-        func=_identity_func,
+        func=None,
         combine_func=combine_func,
         aggregate_func=aggregate_func,
         axis=(dummy_axis, axis),  # dummy and group axis
@@ -82,8 +82,3 @@ def groupby_reduction(
         combine_sizes={axis: num_groups},  # group axis doesn't have size 1
         extra_func_kwargs=dict(dtype=intermediate_dtype, dummy_axis=dummy_axis),
     )
-
-
-def _identity_func(a, **kwargs):
-    # pass through
-    return a
