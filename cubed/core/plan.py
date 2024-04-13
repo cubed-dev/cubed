@@ -399,8 +399,9 @@ class Plan:
 
                 del d["target"]
 
-            d["label"] = label.strip()
-            d["tooltip"] = tooltip.strip()
+            # quote strings with colons in them (https://github.com/pydot/pydot/issues/258)
+            d["label"] = '"' + label.strip() + '"'
+            d["tooltip"] = '"' + tooltip.strip() + '"'
 
             if "name" in d:  # pydot already has name
                 del d["name"]

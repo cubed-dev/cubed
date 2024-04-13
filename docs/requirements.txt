@@ -4,7 +4,7 @@ fsspec
 lithops[aws] >= 2.7.0
 modal-client
 mypy_extensions # for rechunker
-networkx < 2.8.3 # https://github.com/networkx/networkx/pull/5667
+networkx != 2.8.3, != 2.8.4, != 2.8.5, != 2.8.6, != 2.8.7, != 2.8.8, != 3.0.*, != 3.1.*, != 3.2.*
 numpy >= 1.22
 pydot
 pytest
