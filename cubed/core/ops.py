@@ -1020,7 +1020,41 @@ def reduction_new(
     combine_sizes=None,
     extra_func_kwargs=None,
 ) -> "Array":
-    """Apply a function to reduce an array along one or more axes."""
+    """Apply a function to reduce an array along one or more axes.
+
+    Parameters
+    ----------
+    x: Array
+        Array being reduced along one or more axes.
+    func: callable
+        Function to apply to each chunk of data before reduction.
+    combine_func: callable, optional
+        Function which may be applied recursively to intermediate chunks of
+        data. The number of chunks that are combined in each round is
+        determined by the ``split_every`` parameter. The output of the
+        function is a chunk with size one (or the size specified in
+        ``combine_sizes``) in each of the reduction axes. If omitted,
+        it defaults to ``func``.
+    aggregate_func: callable, optional
+        Function to apply to each of the final chunks to produce the final output.
+    axis: int or sequence of ints, optional
+        Axis or axes to aggregate upon. If omitted, aggregate along all axes.
+    intermediate_dtype: dtype
+        Data type of intermediate output.
+    dtype: dtype
+        Data type of output.
+    keepdims: boolean, optional
+        Whether the reduction function should preserve the reduced axes,
+        or remove them.
+    split_every: int >= 2 or dict(axis: int), optional
+        The number of chunks to combine in one round along each axis in the
+        recursive aggregation.
+    combine_sizes: dict(axis: int), optional
+        The resulting size of each axis after reduction. Each reduction axis
+        defaults to size one if not specified.
+    extra_func_kwargs: dict, optional
+        Extra keyword arguments to pass to ``func`` and ``combine_func``.
+    """
     if combine_func is None:
         if func is None:
             raise ValueError(
@@ -1138,13 +1172,18 @@ def partial_reduce(
         Array being reduced along one or more axes
     func: callable
         Reduction function to apply to each chunk of data, resulting in a chunk
-        with size one in each of the reduction axes.
+        with size one (or the size specified in ``combine_sizes``) in each of
+        the reduction axes.
     initial_func: callable, optional
         Function to apply to each chunk of data before reduction.
     split_every: int >= 2 or dict(axis: int), optional
-        The depth of the recursive aggregation.
-    dtype: DType
+        The number of chunks to combine in one round along each axis in the
+        recursive aggregation.
+    dtype: dtype
         Output data type.
+    combine_sizes: dict(axis: int), optional
+        The resulting size of each axis after reduction. Each reduction axis
+        defaults to size one if not specified.
     """
     # map over output chunks
     axis = tuple(ax for ax in split_every.keys())

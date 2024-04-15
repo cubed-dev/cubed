@@ -22,7 +22,41 @@ def groupby_reduction(
     num_groups=None,
     extra_func_kwargs=None,
 ) -> "Array":
-    """A reduction that performs groupby aggregations."""
+    """A reduction that performs groupby aggregations.
+
+    Parameters
+    ----------
+    x: Array
+        Array being grouped along one axis.
+    by: Array
+        Array of non-negative integers to be used as labels with which to group
+        the values in ``x`` along the reduction axis. Must be a 1D array.
+    func: callable
+        Function to apply to each chunk of data before reduction.
+    combine_func: callable
+        Function which may be applied recursively to intermediate chunks of
+        data. The number of chunks that are combined in each round is
+        determined by the ``split_every`` parameter. The output of the
+        function is a chunk with size ``num_groups`` along the reduction axis.
+    aggregate_func: callable, optional
+        Function to apply to each of the final chunks to produce the final output.
+    axis: int or sequence of ints, optional
+        Axis to aggregate along. Only supports a single axis.
+    intermediate_dtype: dtype
+        Data type of intermediate output.
+    dtype: dtype
+        Data type of output.
+    keepdims: boolean, optional
+        Whether the reduction function should preserve the reduced axes,
+        or remove them.
+    split_every: int >= 2 or dict(axis: int), optional
+        The number of chunks to combine in one round along each axis in the
+        recursive aggregation.
+    num_groups: int
+        The number of groups in the grouping array ``by``.
+    extra_func_kwargs: dict, optional
+        Extra keyword arguments to pass to ``func`` and ``combine_func``.
+    """
 
     if isinstance(axis, tuple):
         if len(axis) != 1:
