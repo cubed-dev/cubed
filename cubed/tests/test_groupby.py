@@ -39,7 +39,7 @@ def mean_groupby_reduction(x, by, axis, num_groups):
 
 
 def _mean_groupby_func(a, by, axis, intermediate_dtype, num_groups):
-    dtype = dict(intermediate_dtype)  # TODO: shouldn't have to do this
+    dtype = dict(intermediate_dtype)
     n = npg.aggregate(by, a, func="len", dtype=dtype["n"], axis=axis, size=num_groups)
     total = npg.aggregate(
         by, a, func="sum", dtype=dtype["total"], axis=axis, size=num_groups
@@ -49,7 +49,7 @@ def _mean_groupby_func(a, by, axis, intermediate_dtype, num_groups):
 
 def _mean_groupby_combine(a, axis, dummy_axis, dtype, keepdims):
     # only combine over the dummy axis, to preserve grouping along 'axis'
-    dtype = dict(dtype)  # TODO: shouldn't have to do this
+    dtype = dict(dtype)
     n = nxp.sum(a["n"], dtype=dtype["n"], axis=dummy_axis, keepdims=keepdims)
     total = nxp.sum(
         a["total"], dtype=dtype["total"], axis=dummy_axis, keepdims=keepdims
