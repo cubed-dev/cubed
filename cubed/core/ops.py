@@ -564,12 +564,15 @@ def map_blocks(
     *args: "Array",
     dtype=None,
     chunks=None,
-    drop_axis=[],
+    drop_axis=None,
     new_axis=None,
     spec=None,
     **kwargs,
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
+
+    if drop_axis is None:
+        drop_axis = []
 
     # Handle the case where an array is created by calling `map_blocks` with no input arrays
     if len(args) == 0:
@@ -618,9 +621,18 @@ def map_blocks(
 
 
 def _map_blocks(
-    func, *args: "Array", dtype=None, chunks=None, drop_axis=[], new_axis=None, **kwargs
+    func,
+    *args: "Array",
+    dtype=None,
+    chunks=None,
+    drop_axis=None,
+    new_axis=None,
+    **kwargs,
 ) -> "Array":
     # based on dask
+
+    if drop_axis is None:
+        drop_axis = []
 
     new_axes = {}
 
