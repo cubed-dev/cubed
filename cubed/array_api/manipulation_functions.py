@@ -151,8 +151,14 @@ def expand_dims(x, /, *, axis):
     chunks = tuple(1 if i in axis else next(chunks_it) for i in range(ndim_new))
 
     return map_blocks(
-        nxp.expand_dims, x, dtype=x.dtype, chunks=chunks, new_axis=axis, axis=axis
+        _expand_dims, x, dtype=x.dtype, chunks=chunks, new_axis=axis, axis=axis
     )
+
+
+def _expand_dims(a, *args, **kwargs):
+    if isinstance(a, dict):
+        return {k: nxp.expand_dims(v, *args, **kwargs) for k, v in a.items()}
+    return nxp.expand_dims(a, *args, **kwargs)
 
 
 def flatten(x):
