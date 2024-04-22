@@ -8,9 +8,9 @@ from numpy.testing import assert_array_equal
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.utils import (
+    array_memory,
     block_id_to_offset,
     broadcast_trick,
-    chunk_memory,
     extract_stack_summaries,
     join_path,
     map_nested,
@@ -22,11 +22,11 @@ from cubed.utils import (
 )
 
 
-def test_chunk_memory():
-    assert chunk_memory(np.int64, (3,)) == 24
-    assert chunk_memory(np.int32, (3,)) == 12
-    assert chunk_memory(np.int32, (3, 5)) == 60
-    assert chunk_memory(np.int32, (0,)) == 0
+def test_array_memory():
+    assert array_memory(np.int64, (3,)) == 24
+    assert array_memory(np.int32, (3,)) == 12
+    assert array_memory(np.int32, (3, 5)) == 60
+    assert array_memory(np.int32, (0,)) == 0
 
 
 def test_block_id_to_offset():

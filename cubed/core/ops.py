@@ -32,7 +32,7 @@ from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.utils import (
     _concatenate2,
-    chunk_memory,
+    array_memory,
     get_item,
     offset_to_block_id,
     to_chunksize,
@@ -966,7 +966,7 @@ def reduction(
     while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
         # merge along axis
         target_chunks = list(result.chunksize)
-        chunk_mem = chunk_memory(intermediate_dtype, result.chunksize)
+        chunk_mem = array_memory(intermediate_dtype, result.chunksize)
         for i, s in enumerate(result.shape):
             if i in axis:
                 assert result.chunksize[i] == 1  # result of reduction
@@ -1229,7 +1229,7 @@ def partial_reduce(
     # to stay within limits (maybe because the iterator doesn't free the previous object
     # before getting the next). We also need extra memory to hold two reduced chunks, since
     # they are concatenated two at a time.
-    extra_projected_mem = x.chunkmem + 2 * chunk_memory(dtype, to_chunksize(chunks))
+    extra_projected_mem = x.chunkmem + 2 * array_memory(dtype, to_chunksize(chunks))
 
     return general_blockwise(
         _partial_reduce,

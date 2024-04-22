@@ -9,7 +9,7 @@ from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.runtime.types import Callback, Executor
 from cubed.spec import Spec, spec_from_config
 from cubed.storage.zarr import open_if_lazy_zarr_array
-from cubed.utils import chunk_memory
+from cubed.utils import array_memory
 from cubed.vendor.dask.array.core import normalize_chunks
 
 from .plan import arrays_to_plan
@@ -60,7 +60,7 @@ class CoreArray:
     @property
     def chunkmem(self):
         """Amount of memory in bytes that a single chunk uses."""
-        return chunk_memory(self.dtype, self.chunksize)
+        return array_memory(self.dtype, self.chunksize)
 
     @property
     def chunksize(self):

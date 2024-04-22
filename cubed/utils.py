@@ -19,15 +19,25 @@ import numpy as np
 import tlz as toolz
 
 from cubed.backend_array_api import namespace as nxp
-from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks
-from cubed.vendor.dask.array.core import _check_regular_chunks
+from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
+from cubed.vendor.dask.array.core import _check_regular_chunks, normalize_chunks
 
 PathType = Union[str, Path]
 
 
-def chunk_memory(dtype: T_DType, chunksize: T_RegularChunks) -> int:
+def array_memory(dtype: T_DType, shape: T_Shape) -> int:
+    """Calculate the amount of memory in bytes that an array uses."""
+    return np.dtype(dtype).itemsize * prod(shape)
+
+
+def chunk_memory(arr) -> int:
     """Calculate the amount of memory in bytes that a single chunk uses."""
-    return np.dtype(dtype).itemsize * prod(chunksize)
+    if hasattr(arr, "chunkmem"):
+        return arr.chunkmem
+    return array_memory(
+        arr.dtype,
+        to_chunksize(normalize_chunks(arr.chunks, shape=arr.shape, dtype=arr.dtype)),
+    )
 
 
 def offset_to_block_id(offset: int, numblocks: Tuple[int, ...]) -> Tuple[int, ...]:

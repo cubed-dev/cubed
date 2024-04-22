@@ -9,7 +9,7 @@ from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
-from cubed.utils import broadcast_trick, memory_repr
+from cubed.utils import array_memory, broadcast_trick, memory_repr
 
 
 class VirtualEmptyArray:
@@ -36,6 +36,11 @@ class VirtualEmptyArray:
         indexer = BasicIndexer(key, self.template)
         # use broadcast trick so array chunks only occupy a single value in memory
         return broadcast_trick(nxp.empty)(indexer.shape, dtype=self.dtype)
+
+    @property
+    def chunkmem(self):
+        # take broadcast trick into account
+        return array_memory(self.dtype, (1,))
 
     @property
     def oindex(self):
@@ -74,6 +79,11 @@ class VirtualFullArray:
         return broadcast_trick(nxp.full)(
             indexer.shape, fill_value=self.fill_value, dtype=self.dtype
         )
+
+    @property
+    def chunkmem(self):
+        # take broadcast trick into account
+        return array_memory(self.dtype, (1,))
 
     @property
     def oindex(self):
