@@ -13,7 +13,7 @@ Cubed is a distributed N-dimensional array library implemented in Python using b
 - Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Modal](https://modal.com/), [Apache Beam](https://beam.apache.org/)
 - Integration with [Xarray](https://xarray.dev/) via [cubed-xarray](https://github.com/xarray-contrib/cubed-xarray)
 
-[Documentation](https://tomwhite.github.io/cubed)
+[Documentation](https://cubed-dev.github.io/cubed/)
 
 ### Articles
 
