@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=5740025b"></script>
+    <script src="../_static/documentation_options.js?v=b4eb3ca5"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -418,8 +418,15 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
 <span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
 <span class="na">]</span>
 <span class="na">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;apache-beam&quot;,  # beam but not gcsfs as tests use local beam runner</span>
 <span class="w">    </span><span class="na">&quot;cubed[diagnostics,lithops]&quot;,  # modal tests separate due to conflicting package reqs</span>
+<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
+<span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
+<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
+<span class="na">]</span>
+<span class="na">test-beam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
+<span class="w">    </span><span class="na">&quot;cubed[beam,diagnostics]&quot;,</span>
 <span class="w">    </span><span class="na">&quot;dill&quot;,</span>
 <span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
 <span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
