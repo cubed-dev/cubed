@@ -21,7 +21,7 @@ jobs:
         python-version: ["3.9"]
         include:
           - os: "ubuntu-latest"
-            python-version: "3.11"
+            python-version: "3.12"
 
     steps:
       - name: Checkout source
