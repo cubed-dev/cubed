@@ -66,8 +66,15 @@ coiled = [
     "s3fs",
 ]
 test = [
-    "apache-beam",  # beam but not gcsfs as tests use local beam runner
     "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
+    "dill",
+    "numpy_groupies",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+test-beam = [
+    "cubed[beam,diagnostics]",
     "dill",
     "numpy_groupies",
     "pytest",
