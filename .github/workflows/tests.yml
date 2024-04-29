@@ -50,4 +50,9 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v --cov=cubed --cov-report=term-missing --cov-fail-under=90
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            pytest -v
+          else
+            pytest -v --cov=cubed --cov-report=term-missing --cov-fail-under=90
+          fi
+        shell: bash
