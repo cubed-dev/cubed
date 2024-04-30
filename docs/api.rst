@@ -88,7 +88,11 @@ Executors
     :nosignatures:
     :toctree: generated/
 
-    beam.BeamDagExecutor
-    lithops.LithopsDagExecutor
+    local.SingleThreadedExecutor
+    local.ThreadsExecutor
+    local.ProcessesExecutor
+    beam.BeamExecutor
+    coiled.CoiledExecutor
+    dask.DaskExecutor
+    lithops.LithopsExecutor
     modal.ModalExecutor
-    python.PythonDagExecutor
