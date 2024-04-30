@@ -19,9 +19,13 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macos-12", "windows-latest"]
         python-version: ["3.9"]
+        PIP_FLAGS: [""]
         include:
           - os: "ubuntu-latest"
             python-version: "3.12"
+          - os: "ubuntu-latest"
+            python-version: "3.12"
+            PIP_FLAGS: "--pre"
 
     steps:
       - name: Checkout source
@@ -46,7 +50,9 @@ jobs:
 
       - name: Install
         run: |
-          python -m pip install -e .[test]
+          python -m pip install ${PIP_FLAGS} -e .[test]
+        env:
+          PIP_FLAGS: ${{ matrix.PIP_FLAGS }}
 
       - name: Run tests
         run: |
