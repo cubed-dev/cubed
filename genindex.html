@@ -35,7 +35,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="_static/documentation_options.js?v=da58ae72"></script>
+    <script src="_static/documentation_options.js?v=4d896dc3"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -182,10 +182,12 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html">cubed.runtime.executors.local.SingleThreadedExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.ThreadsExecutor.html">cubed.runtime.executors.local.ThreadsExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.ProcessesExecutor.html">cubed.runtime.executors.local.ProcessesExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamExecutor.html">cubed.runtime.executors.beam.BeamExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html">cubed.runtime.executors.lithops.LithopsExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal.ModalExecutor.html">cubed.runtime.executors.modal.ModalExecutor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a></li>
@@ -360,13 +362,17 @@ document.write(`
       <ul>
         <li><a href="generated/cubed.Callback.html#cubed.Callback.__init__">(cubed.Callback method)</a>
 </li>
-        <li><a href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html#cubed.runtime.executors.beam.BeamDagExecutor.__init__">(cubed.runtime.executors.beam.BeamDagExecutor method)</a>
+        <li><a href="generated/cubed.runtime.executors.beam.BeamExecutor.html#cubed.runtime.executors.beam.BeamExecutor.__init__">(cubed.runtime.executors.beam.BeamExecutor method)</a>
 </li>
-        <li><a href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html#cubed.runtime.executors.lithops.LithopsDagExecutor.__init__">(cubed.runtime.executors.lithops.LithopsDagExecutor method)</a>
+        <li><a href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html#cubed.runtime.executors.lithops.LithopsExecutor.__init__">(cubed.runtime.executors.lithops.LithopsExecutor method)</a>
 </li>
-        <li><a href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html#cubed.runtime.executors.modal_async.AsyncModalDagExecutor.__init__">(cubed.runtime.executors.modal_async.AsyncModalDagExecutor method)</a>
+        <li><a href="generated/cubed.runtime.executors.local.ProcessesExecutor.html#cubed.runtime.executors.local.ProcessesExecutor.__init__">(cubed.runtime.executors.local.ProcessesExecutor method)</a>
 </li>
-        <li><a href="generated/cubed.runtime.executors.python.PythonDagExecutor.html#cubed.runtime.executors.python.PythonDagExecutor.__init__">(cubed.runtime.executors.python.PythonDagExecutor method)</a>
+        <li><a href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html#cubed.runtime.executors.local.SingleThreadedExecutor.__init__">(cubed.runtime.executors.local.SingleThreadedExecutor method)</a>
+</li>
+        <li><a href="generated/cubed.runtime.executors.local.ThreadsExecutor.html#cubed.runtime.executors.local.ThreadsExecutor.__init__">(cubed.runtime.executors.local.ThreadsExecutor method)</a>
+</li>
+        <li><a href="generated/cubed.runtime.executors.modal.ModalExecutor.html#cubed.runtime.executors.modal.ModalExecutor.__init__">(cubed.runtime.executors.modal.ModalExecutor method)</a>
 </li>
         <li><a href="generated/cubed.Spec.html#cubed.Spec.__init__">(cubed.Spec method)</a>
 </li>
@@ -389,15 +395,13 @@ document.write(`
 </li>
       <li><a href="array-api.html#cubed.array_api.asarray">asarray() (in module cubed.array_api)</a>
 </li>
-      <li><a href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html#cubed.runtime.executors.modal_async.AsyncModalDagExecutor">AsyncModalDagExecutor (class in cubed.runtime.executors.modal_async)</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html#cubed.runtime.executors.beam.BeamDagExecutor">BeamDagExecutor (class in cubed.runtime.executors.beam)</a>
+      <li><a href="generated/cubed.runtime.executors.beam.BeamExecutor.html#cubed.runtime.executors.beam.BeamExecutor">BeamExecutor (class in cubed.runtime.executors.beam)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -459,7 +463,7 @@ document.write(`
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html#cubed.runtime.executors.lithops.LithopsDagExecutor">LithopsDagExecutor (class in cubed.runtime.executors.lithops)</a>
+      <li><a href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html#cubed.runtime.executors.lithops.LithopsExecutor">LithopsExecutor (class in cubed.runtime.executors.lithops)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -472,6 +476,8 @@ document.write(`
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem">measure_reserved_mem() (in module cubed)</a>
+</li>
+      <li><a href="generated/cubed.runtime.executors.modal.ModalExecutor.html#cubed.runtime.executors.modal.ModalExecutor">ModalExecutor (class in cubed.runtime.executors.modal)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -503,7 +509,7 @@ document.write(`
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.python.PythonDagExecutor.html#cubed.runtime.executors.python.PythonDagExecutor">PythonDagExecutor (class in cubed.runtime.executors.python)</a>
+      <li><a href="generated/cubed.runtime.executors.local.ProcessesExecutor.html#cubed.runtime.executors.local.ProcessesExecutor">ProcessesExecutor (class in cubed.runtime.executors.local)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -523,10 +529,12 @@ document.write(`
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.Spec.html#cubed.Spec">Spec (class in cubed)</a>
+      <li><a href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html#cubed.runtime.executors.local.SingleThreadedExecutor">SingleThreadedExecutor (class in cubed.runtime.executors.local)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/cubed.Spec.html#cubed.Spec">Spec (class in cubed)</a>
+</li>
       <li><a href="generated/cubed.store.html#cubed.store">store() (in module cubed)</a>
 </li>
   </ul></td>
@@ -539,6 +547,8 @@ document.write(`
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/cubed.runtime.executors.local.ThreadsExecutor.html#cubed.runtime.executors.local.ThreadsExecutor">ThreadsExecutor (class in cubed.runtime.executors.local)</a>
+</li>
       <li><a href="generated/cubed.to_zarr.html#cubed.to_zarr">to_zarr() (in module cubed)</a>
 </li>
   </ul></td>

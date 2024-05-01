@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="_static/documentation_options.js?v=da58ae72"></script>
+    <script src="_static/documentation_options.js?v=4d896dc3"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -183,10 +183,12 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html">cubed.runtime.executors.local.SingleThreadedExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.ThreadsExecutor.html">cubed.runtime.executors.local.ThreadsExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.ProcessesExecutor.html">cubed.runtime.executors.local.ProcessesExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamExecutor.html">cubed.runtime.executors.beam.BeamExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html">cubed.runtime.executors.lithops.LithopsExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal.ModalExecutor.html">cubed.runtime.executors.modal.ModalExecutor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a></li>
@@ -471,17 +473,23 @@ Creation Functions.</p>
 <h2>Executors<a class="headerlink" href="#executors" title="Link to this heading">#</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamDagExecutor.html#cubed.runtime.executors.beam.BeamDagExecutor" title="cubed.runtime.executors.beam.BeamDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beam.BeamDagExecutor</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html#cubed.runtime.executors.local.SingleThreadedExecutor" title="cubed.runtime.executors.local.SingleThreadedExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local.SingleThreadedExecutor</span></code></a></p></td>
+<td><p>The default execution engine that runs tasks sequentially uses Python loops.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.local.ThreadsExecutor.html#cubed.runtime.executors.local.ThreadsExecutor" title="cubed.runtime.executors.local.ThreadsExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local.ThreadsExecutor</span></code></a></p></td>
+<td><p>An execution engine that uses Python asyncio.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.local.ProcessesExecutor.html#cubed.runtime.executors.local.ProcessesExecutor" title="cubed.runtime.executors.local.ProcessesExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local.ProcessesExecutor</span></code></a></p></td>
+<td><p>An execution engine that uses local processes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamExecutor.html#cubed.runtime.executors.beam.BeamExecutor" title="cubed.runtime.executors.beam.BeamExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beam.BeamExecutor</span></code></a></p></td>
 <td><p>An execution engine that uses Apache Beam.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsDagExecutor.html#cubed.runtime.executors.lithops.LithopsDagExecutor" title="cubed.runtime.executors.lithops.LithopsDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lithops.LithopsDagExecutor</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html#cubed.runtime.executors.lithops.LithopsExecutor" title="cubed.runtime.executors.lithops.LithopsExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lithops.LithopsExecutor</span></code></a></p></td>
 <td><p>An execution engine that uses Lithops.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html#cubed.runtime.executors.modal_async.AsyncModalDagExecutor" title="cubed.runtime.executors.modal_async.AsyncModalDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modal_async.AsyncModalDagExecutor</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.modal.ModalExecutor.html#cubed.runtime.executors.modal.ModalExecutor" title="cubed.runtime.executors.modal.ModalExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modal.ModalExecutor</span></code></a></p></td>
 <td><p>An execution engine that uses Modal's async API.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cubed.runtime.executors.python.PythonDagExecutor.html#cubed.runtime.executors.python.PythonDagExecutor" title="cubed.runtime.executors.python.PythonDagExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">python.PythonDagExecutor</span></code></a></p></td>
-<td><p>The default execution engine that runs tasks sequentially uses Python loops.</p></td>
 </tr>
 </tbody>
 </table>

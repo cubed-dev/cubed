@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cubed.runtime.executors.beam.BeamDagExecutor &#8212; Cubed</title>
+    <title>cubed.runtime.executors.local.SingleThreadedExecutor &#8212; Cubed</title>
   
   
   
@@ -36,14 +36,14 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../_static/documentation_options.js?v=da58ae72"></script>
+    <script src="../_static/documentation_options.js?v=4d896dc3"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.runtime.executors.beam.BeamDagExecutor';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.runtime.executors.local.SingleThreadedExecutor';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.runtime.executors.lithops.LithopsDagExecutor" href="cubed.runtime.executors.lithops.LithopsDagExecutor.html" />
+    <link rel="next" title="cubed.runtime.executors.local.ThreadsExecutor" href="cubed.runtime.executors.local.ThreadsExecutor.html" />
     <link rel="prev" title="cubed.measure_reserved_mem" href="cubed.measure_reserved_mem.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -183,10 +183,12 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.runtime.executors.beam.BeamDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.lithops.LithopsDagExecutor.html">cubed.runtime.executors.lithops.LithopsDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.modal_async.AsyncModalDagExecutor.html">cubed.runtime.executors.modal_async.AsyncModalDagExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.python.PythonDagExecutor.html">cubed.runtime.executors.python.PythonDagExecutor</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.runtime.executors.local.SingleThreadedExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.local.ThreadsExecutor.html">cubed.runtime.executors.local.ThreadsExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.local.ProcessesExecutor.html">cubed.runtime.executors.local.ProcessesExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.beam.BeamExecutor.html">cubed.runtime.executors.beam.BeamExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.lithops.LithopsExecutor.html">cubed.runtime.executors.lithops.LithopsExecutor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.modal.ModalExecutor.html">cubed.runtime.executors.modal.ModalExecutor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../array-api.html">Python Array API</a></li>
@@ -269,7 +271,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.runtime.executors.beam.BeamDagExecutor.rst" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.runtime.executors.local.SingleThreadedExecutor.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -286,7 +288,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.runtime.executors.beam.BeamDagExecutor.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.runtime.executors.local.SingleThreadedExecutor.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -336,7 +338,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.runtime.executors.beam.BeamDagExecutor</h1>
+    <h1>cubed.runtime.executors.local.SingleThreadedExecutor</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -346,8 +348,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.beam.BeamDagExecutor"><code class="docutils literal notranslate"><span class="pre">BeamDagExecutor</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.beam.BeamDagExecutor.__init__"><code class="docutils literal notranslate"><span class="pre">BeamDagExecutor.__init__()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.local.SingleThreadedExecutor"><code class="docutils literal notranslate"><span class="pre">SingleThreadedExecutor</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.local.SingleThreadedExecutor.__init__"><code class="docutils literal notranslate"><span class="pre">SingleThreadedExecutor.__init__()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -361,21 +363,21 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="cubed-runtime-executors-beam-beamdagexecutor">
-<h1>cubed.runtime.executors.beam.BeamDagExecutor<a class="headerlink" href="#cubed-runtime-executors-beam-beamdagexecutor" title="Link to this heading">#</a></h1>
+  <section id="cubed-runtime-executors-local-singlethreadedexecutor">
+<h1>cubed.runtime.executors.local.SingleThreadedExecutor<a class="headerlink" href="#cubed-runtime-executors-local-singlethreadedexecutor" title="Link to this heading">#</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="cubed.runtime.executors.beam.BeamDagExecutor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cubed.runtime.executors.beam.</span></span><span class="sig-name descname"><span class="pre">BeamDagExecutor</span></span><a class="headerlink" href="#cubed.runtime.executors.beam.BeamDagExecutor" title="Link to this definition">#</a></dt>
-<dd><p>An execution engine that uses Apache Beam.</p>
+<dt class="sig sig-object py" id="cubed.runtime.executors.local.SingleThreadedExecutor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cubed.runtime.executors.local.</span></span><span class="sig-name descname"><span class="pre">SingleThreadedExecutor</span></span><a class="headerlink" href="#cubed.runtime.executors.local.SingleThreadedExecutor" title="Link to this definition">#</a></dt>
+<dd><p>The default execution engine that runs tasks sequentially uses Python loops.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="cubed.runtime.executors.beam.BeamDagExecutor.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cubed.runtime.executors.beam.BeamDagExecutor.__init__" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="cubed.runtime.executors.local.SingleThreadedExecutor.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cubed.runtime.executors.local.SingleThreadedExecutor.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cubed.runtime.executors.beam.BeamDagExecutor.__init__" title="cubed.runtime.executors.beam.BeamDagExecutor.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cubed.runtime.executors.local.SingleThreadedExecutor.__init__" title="cubed.runtime.executors.local.SingleThreadedExecutor.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_dag</span></code>(dag[, callbacks, resume, spec, ...])</p></td>
@@ -416,11 +418,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="cubed.runtime.executors.lithops.LithopsDagExecutor.html"
+       href="cubed.runtime.executors.local.ThreadsExecutor.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.runtime.executors.lithops.LithopsDagExecutor</p>
+        <p class="prev-next-title">cubed.runtime.executors.local.ThreadsExecutor</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -440,8 +442,8 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.beam.BeamDagExecutor"><code class="docutils literal notranslate"><span class="pre">BeamDagExecutor</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.beam.BeamDagExecutor.__init__"><code class="docutils literal notranslate"><span class="pre">BeamDagExecutor.__init__()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.local.SingleThreadedExecutor"><code class="docutils literal notranslate"><span class="pre">SingleThreadedExecutor</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.runtime.executors.local.SingleThreadedExecutor.__init__"><code class="docutils literal notranslate"><span class="pre">SingleThreadedExecutor.__init__()</span></code></a></li>
 </ul>
 </li>
 </ul>

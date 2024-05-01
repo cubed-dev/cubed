@@ -88,7 +88,9 @@ Executors
     :nosignatures:
     :toctree: generated/
 
-    beam.BeamDagExecutor
-    lithops.LithopsDagExecutor
-    modal_async.AsyncModalDagExecutor
-    python.PythonDagExecutor
+    local.SingleThreadedExecutor
+    local.ThreadsExecutor
+    local.ProcessesExecutor
+    beam.BeamExecutor
+    lithops.LithopsExecutor
+    modal.ModalExecutor
