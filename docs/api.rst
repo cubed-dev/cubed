@@ -92,7 +92,5 @@ Executors
     local.ThreadsExecutor
     local.ProcessesExecutor
     beam.BeamExecutor
-    coiled.CoiledExecutor
-    dask.DaskExecutor
     lithops.LithopsExecutor
     modal.ModalExecutor
