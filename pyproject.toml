@@ -110,3 +110,8 @@ test-modal = [
 homepage = "https://github.com/cubed-dev/cubed"
 documentation = "https://tomwhite.github.io/cubed"
 repository = "https://github.com/cubed-dev/cubed"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error::UserWarning",
+]
