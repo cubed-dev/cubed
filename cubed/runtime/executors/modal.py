@@ -23,7 +23,7 @@ from cubed.spec import Spec
 
 RUNTIME_MEMORY_MIB = 2000
 
-stub = modal.Stub("cubed-stub")
+app = modal.App("cubed-app")
 
 requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 
@@ -72,7 +72,7 @@ def check_runtime_memory(spec):
             )
 
 
-@stub.function(
+@app.function(
     image=aws_image,
     secrets=[modal.Secret.from_name("my-aws-secret")],
     memory=RUNTIME_MEMORY_MIB,
@@ -87,7 +87,7 @@ def run_remotely(input, func=None, config=None, name=None, compute_id=None):
 
 
 # For GCP we need to use a class so we can set up credentials by hooking into the container lifecycle
-@stub.cls(
+@app.cls(
     image=gcp_image,
     secrets=[modal.Secret.from_name("my-googlecloud-secret")],
     memory=RUNTIME_MEMORY_MIB,
@@ -205,7 +205,7 @@ async def async_execute_dag(
 ) -> None:
     if spec is not None:
         check_runtime_memory(spec)
-    async with stub.run():
+    async with app.run():
         cloud = cloud or "aws"
         if cloud == "aws":
             app_function = run_remotely
