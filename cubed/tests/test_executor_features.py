@@ -209,7 +209,6 @@ def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_para
 
 
 def test_check_runtime_memory_dask(spec, executor):
-    pytest.importorskip("dask.distributed")
     if executor.name != "dask":
         pytest.skip(f"{executor.name} executor does not support check_runtime_memory")
 
@@ -228,7 +227,6 @@ def test_check_runtime_memory_dask(spec, executor):
 
 
 def test_check_runtime_memory_dask_no_workers(spec, executor):
-    pytest.importorskip("dask.distributed")
     if executor.name != "dask":
         pytest.skip(f"{executor.name} executor does not support check_runtime_memory")
 
