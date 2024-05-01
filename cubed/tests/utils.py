@@ -9,7 +9,13 @@ import zarr
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
 
-LITHOPS_LOCAL_CONFIG = {"lithops": {"backend": "localhost", "storage": "localhost"}}
+LITHOPS_LOCAL_CONFIG = {
+    "lithops": {
+        "backend": "localhost",
+        "storage": "localhost",
+        "monitoring_interval": 0.1,
+    }
+}
 
 ALL_EXECUTORS = [create_executor("single-threaded")]
 
@@ -39,7 +45,7 @@ except ImportError:
     pass
 
 try:
-    executor_options = dict(config=LITHOPS_LOCAL_CONFIG)
+    executor_options = dict(config=LITHOPS_LOCAL_CONFIG, wait_dur_sec=0.1)
     ALL_EXECUTORS.append(create_executor("lithops", executor_options))
     MAIN_EXECUTORS.append(create_executor("lithops", executor_options))
 except ImportError:
