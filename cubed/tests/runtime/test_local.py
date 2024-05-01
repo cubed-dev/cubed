@@ -5,7 +5,7 @@ from functools import partial
 
 import pytest
 
-from cubed.runtime.executors.python_async import map_unordered
+from cubed.runtime.executors.local import map_unordered
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 

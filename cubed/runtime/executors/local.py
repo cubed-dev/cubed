@@ -13,13 +13,49 @@ from tenacity import Retrying, stop_after_attempt
 
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
-from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
+from cubed.runtime.types import Callback, CubedPipeline, DagExecutor, TaskEndEvent
 from cubed.runtime.utils import (
     execution_stats,
     handle_callbacks,
     handle_operation_start_callbacks,
 )
 from cubed.spec import Spec
+
+
+def exec_stage_func(input, func=None, config=None, name=None, compute_id=None):
+    return func(input, config=config)
+
+
+class SingleThreadedExecutor(DagExecutor):
+    """The default execution engine that runs tasks sequentially uses Python loops."""
+
+    @property
+    def name(self) -> str:
+        return "single-threaded"
+
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        for name, node in visit_nodes(dag, resume=resume):
+            handle_operation_start_callbacks(callbacks, name)
+            pipeline: CubedPipeline = node["pipeline"]
+            for m in pipeline.mappable:
+                exec_stage_func(
+                    m,
+                    pipeline.function,
+                    config=pipeline.config,
+                    name=name,
+                    compute_id=compute_id,
+                )
+                if callbacks is not None:
+                    event = TaskEndEvent(name=name)
+                    [callback.on_task_end(event) for callback in callbacks]
 
 
 @execution_stats
@@ -169,11 +205,11 @@ async def async_execute_dag(
         concurrent_executor.shutdown(wait=False)
 
 
-class AsyncPythonDagExecutor(DagExecutor):
+class ThreadsExecutor(DagExecutor):
     """An execution engine that uses Python asyncio."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        self.kwargs = {**kwargs, **dict(use_processes=False)}
 
         # Tell NumPy to use a single thread
         # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy
@@ -184,7 +220,46 @@ class AsyncPythonDagExecutor(DagExecutor):
 
     @property
     def name(self) -> str:
-        return "processes" if self.kwargs.get("use_processes", False) else "threads"
+        return "threads"
+
+    def execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
+        compute_id: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        merged_kwargs = {**self.kwargs, **kwargs}
+        asyncio.run(
+            async_execute_dag(
+                dag,
+                callbacks=callbacks,
+                resume=resume,
+                spec=spec,
+                compute_id=compute_id,
+                **merged_kwargs,
+            )
+        )
+
+
+class ProcessesExecutor(DagExecutor):
+    """An execution engine that uses local processes."""
+
+    def __init__(self, **kwargs):
+        self.kwargs = {**kwargs, **dict(retries=0, use_processes=True)}
+
+        # Tell NumPy to use a single thread
+        # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy
+        os.environ["MKL_NUM_THREADS"] = "1"
+        os.environ["NUMEXPR_NUM_THREADS"] = "1"
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+
+    @property
+    def name(self) -> str:
+        return "processes"
 
     def execute_dag(
         self,

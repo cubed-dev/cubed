@@ -4,11 +4,11 @@ import zarr
 from numpy.testing import assert_array_equal
 
 from cubed.primitive.rechunk import rechunk
-from cubed.runtime.executors.python import PythonDagExecutor
+from cubed.runtime.executors.local import SingleThreadedExecutor
 from cubed.tests.utils import execute_pipeline
 
 
-@pytest.fixture(scope="module", params=[PythonDagExecutor()])
+@pytest.fixture(scope="module", params=[SingleThreadedExecutor()])
 def executor(request):
     return request.param
 

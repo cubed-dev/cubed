@@ -14,7 +14,7 @@ import cubed.array_api as xp
 import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.extensions.history import HistoryCallback
-from cubed.runtime.executors.lithops import LithopsDagExecutor
+from cubed.runtime.executors.lithops import LithopsExecutor
 from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
 
 
@@ -25,7 +25,7 @@ def spec(tmp_path, reserved_mem):
 
 @pytest.fixture(scope="module")
 def reserved_mem():
-    executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
+    executor = LithopsExecutor(config=LITHOPS_LOCAL_CONFIG)
     res = cubed.measure_reserved_mem(executor) * 1.1  # add some wiggle room
     return round_up_to_multiple(res, 10_000_000)  # round up to nearest multiple of 10MB
 
@@ -275,7 +275,7 @@ def test_sum_partial_reduce(tmp_path, spec):
 def run_operation(tmp_path, name, result_array, *, optimize_function=None):
     # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
     # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
-    executor = LithopsDagExecutor(config=LITHOPS_LOCAL_CONFIG)
+    executor = LithopsExecutor(config=LITHOPS_LOCAL_CONFIG)
     hist = HistoryCallback()
     # use store=None to write to temporary zarr
     cubed.to_zarr(

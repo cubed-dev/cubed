@@ -9,7 +9,7 @@ import asyncio
 import fsspec
 import modal
 
-from cubed.runtime.executors.modal_async import map_unordered
+from cubed.runtime.executors.modal import map_unordered
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 tmp_path = "s3://cubed-unittest/map_unordered"

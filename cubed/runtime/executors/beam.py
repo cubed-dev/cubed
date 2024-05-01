@@ -79,7 +79,7 @@ class _SingleArgumentStage(beam.PTransform):
         )
 
 
-class BeamDagExecutor(DagExecutor):
+class BeamExecutor(DagExecutor):
     """An execution engine that uses Apache Beam."""
 
     @property

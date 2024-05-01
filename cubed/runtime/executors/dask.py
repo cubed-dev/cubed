@@ -146,7 +146,7 @@ async def async_execute_dag(
                         handle_callbacks(callbacks, stats)
 
 
-class AsyncDaskDistributedExecutor(DagExecutor):
+class DaskExecutor(DagExecutor):
     """An execution engine that uses Dask Distributed's async API."""
 
     def __init__(self, **kwargs):
