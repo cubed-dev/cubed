@@ -99,6 +99,23 @@ def predecessor_ops(dag, name):
         yield pre_list[0]
 
 
+def predecessor_ops_and_arrays(dag, name):
+    # returns op predecessors, the arrays that they produce (only one since we don't support multiple outputs yet),
+    # and a flag indicating if the op can be fused with each predecessor, taking into account the number of dependents for the array
+    nodes = dict(dag.nodes(data=True))
+    for input in nodes[name]["primitive_op"].source_array_names:
+        pre_list = list(predecessors_unordered(dag, input))
+        assert len(pre_list) == 1  # each array is produced by a single op
+        pre = pre_list[0]
+        can_fuse = is_primitive_op(nodes[pre]) and out_degree_unique(dag, input) == 1
+        yield pre, input, can_fuse
+
+
+def out_degree_unique(dag, name):
+    """Returns number of unique out edges"""
+    return len(set(post for _, post in dag.out_edges(name)))
+
+
 def is_primitive_op(node_dict):
     """Return True if a node is a primitive op"""
     return "primitive_op" in node_dict
@@ -142,7 +159,8 @@ def can_fuse_predecessors(
         return False
 
     # if no predecessor ops can be fused then there is nothing to fuse
-    if all(not is_primitive_op(nodes[pre]) for pre in predecessor_ops(dag, name)):
+    # (this may be because predecessor ops produce arrays with multiple dependents)
+    if all(not can_fuse for _, _, can_fuse in predecessor_ops_and_arrays(dag, name)):
         logger.debug("can't fuse %s since no predecessor ops can be fused", name)
         return False
 
@@ -158,8 +176,8 @@ def can_fuse_predecessors(
     # the fused function would be more than an allowed maximum, then don't fuse
     if len(list(predecessor_ops(dag, name))) > 1:
         total_source_arrays = sum(
-            num_source_arrays(dag, pre) if is_primitive_op(nodes[pre]) else 1
-            for pre in predecessor_ops(dag, name)
+            num_source_arrays(dag, pre) if can_fuse else 1
+            for pre, _, can_fuse in predecessor_ops_and_arrays(dag, name)
         )
         if total_source_arrays > max_total_source_arrays:
             logger.debug(
@@ -172,8 +190,8 @@ def can_fuse_predecessors(
 
     predecessor_primitive_ops = [
         nodes[pre]["primitive_op"]
-        for pre in predecessor_ops(dag, name)
-        if is_primitive_op(nodes[pre])
+        for pre, _, can_fuse in predecessor_ops_and_arrays(dag, name)
+        if can_fuse
     ]
     return can_fuse_multiple_primitive_ops(
         name,
@@ -211,8 +229,8 @@ def fuse_predecessors(
 
     # if a predecessor has no primitive op then just use None
     predecessor_primitive_ops = [
-        nodes[pre]["primitive_op"] if is_primitive_op(nodes[pre]) else None
-        for pre in predecessor_ops(dag, name)
+        nodes[pre]["primitive_op"] if can_fuse else None
+        for pre, _, can_fuse in predecessor_ops_and_arrays(dag, name)
     ]
 
     fused_primitive_op = fuse_multiple(primitive_op, *predecessor_primitive_ops)
@@ -224,28 +242,15 @@ def fuse_predecessors(
     fused_nodes[name]["pipeline"] = fused_primitive_op.pipeline
 
     # re-wire dag to remove predecessor nodes that have been fused
-
-    # 1. update edges to change inputs
-    for input in predecessors_unordered(dag, name):
-        pre = next(predecessors_unordered(dag, input))
-        if not is_primitive_op(fused_nodes[pre]):
-            # if a predecessor is not fusable then don't change the edge
-            continue
-        fused_dag.remove_edge(input, name)
-    for pre in predecessor_ops(dag, name):
-        if not is_primitive_op(fused_nodes[pre]):
-            # if a predecessor is not fusable then don't change the edge
-            continue
-        for input in predecessors_unordered(dag, pre):
-            fused_dag.add_edge(input, name)
-
-    # 2. remove predecessor nodes with no successors
-    # (ones with successors are needed by other nodes)
-    for input in predecessors_unordered(dag, name):
-        if fused_dag.out_degree(input) == 0:
-            for pre in list(predecessors_unordered(fused_dag, input)):
+    for pre, input, can_fuse in predecessor_ops_and_arrays(dag, name):
+        if can_fuse:
+            # check if already removed for repeated arguments
+            if input in fused_dag:
+                fused_dag.remove_node(input)
+            if pre in fused_dag:
                 fused_dag.remove_node(pre)
-            fused_dag.remove_node(input)
+            for pre_input in predecessors_unordered(dag, pre):
+                fused_dag.add_edge(pre_input, name)
 
     return fused_dag
 
