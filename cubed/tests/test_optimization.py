@@ -448,9 +448,9 @@ def test_fuse_diamond(spec):
 # from https://github.com/cubed-dev/cubed/issues/126
 #
 #   a    ->    a
-#   |         /|
-#   b        b |
-#  /|         \|
+#   |          |
+#   b          b
+#  /|          ‖
 # c |          d
 #  \|
 #   d
@@ -469,7 +469,7 @@ def test_fuse_mixed_levels_and_diamond(spec):
     expected_fused_dag = create_dag()
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a,), (b,))
-    add_placeholder_op(expected_fused_dag, (a, b), (d,))
+    add_placeholder_op(expected_fused_dag, (b, b), (d,))
     optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
     assert structurally_equivalent(optimized_dag, expected_fused_dag)
     assert get_num_input_blocks(d.plan.dag, d.name) == (1, 1)
@@ -535,13 +535,13 @@ def test_fuse_repeated_argument(spec):
     assert_array_equal(result, -2 * np.ones((2, 2)))
 
 
-# other dependents
+# other dependents - no optimization is made in this case (cf previously)
 #
-#   a    ->    a
-#   |         / \
-#   b        c   b
-#  / \           |
-# c   d          d
+#   a
+#   |
+#   b
+#  / \
+# c   d
 #
 def test_fuse_other_dependents(spec):
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
@@ -549,21 +549,16 @@ def test_fuse_other_dependents(spec):
     c = xp.negative(b)
     d = xp.negative(b)
 
-    # only fuse c; leave d unfused
+    # try to fuse c; leave d unfused
     opt_fn = fuse_one_level(c)
 
     # note multi-arg forms of visualize and compute below
     cubed.visualize(c, d, optimize_function=opt_fn)
 
-    # check structure of optimized dag
-    expected_fused_dag = create_dag()
-    add_placeholder_op(expected_fused_dag, (), (a,))
-    add_placeholder_op(expected_fused_dag, (a,), (b,))
-    add_placeholder_op(expected_fused_dag, (a,), (c,))
-    add_placeholder_op(expected_fused_dag, (b,), (d,))
+    # optimization does nothing
     plan = arrays_to_plan(c, d)
     optimized_dag = plan.optimize(optimize_function=opt_fn).dag
-    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+    assert structurally_equivalent(optimized_dag, plan.dag)
     assert get_num_input_blocks(c.plan.dag, c.name) == (1,)
     assert get_num_input_blocks(optimized_dag, c.name) == (1,)
 
