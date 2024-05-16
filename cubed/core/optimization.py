@@ -99,9 +99,14 @@ def predecessor_ops(dag, name):
         yield pre_list[0]
 
 
+def is_primitive_op(node_dict):
+    """Return True if a node is a primitive op"""
+    return "primitive_op" in node_dict
+
+
 def is_fusable(node_dict):
-    "Return True if a node can be fused."
-    return "primitive_op" in node_dict and node_dict["primitive_op"].fusable
+    """Return True if a node is a primitive op and can be fused with its predecessors."""
+    return is_primitive_op(node_dict) and node_dict["primitive_op"].fusable
 
 
 def can_fuse_predecessors(
@@ -124,7 +129,7 @@ def can_fuse_predecessors(
         return False
 
     # if no predecessor ops can be fused then there is nothing to fuse
-    if all(not is_fusable(nodes[pre]) for pre in predecessor_ops(dag, name)):
+    if all(not is_primitive_op(nodes[pre]) for pre in predecessor_ops(dag, name)):
         logger.debug("can't fuse %s since no predecessor ops can be fused", name)
         return False
 
@@ -140,7 +145,9 @@ def can_fuse_predecessors(
     # the fused function would be more than an allowed maximum, then don't fuse
     if len(list(predecessor_ops(dag, name))) > 1:
         total_source_arrays = sum(
-            len(list(predecessors_unordered(dag, pre))) if is_fusable(nodes[pre]) else 1
+            len(list(predecessors_unordered(dag, pre)))
+            if is_primitive_op(nodes[pre])
+            else 1
             for pre in predecessor_ops(dag, name)
         )
         if total_source_arrays > max_total_source_arrays:
@@ -155,7 +162,7 @@ def can_fuse_predecessors(
     predecessor_primitive_ops = [
         nodes[pre]["primitive_op"]
         for pre in predecessor_ops(dag, name)
-        if is_fusable(nodes[pre])
+        if is_primitive_op(nodes[pre])
     ]
     return can_fuse_multiple_primitive_ops(
         name,
@@ -193,7 +200,7 @@ def fuse_predecessors(
 
     # if a predecessor has no primitive op then just use None
     predecessor_primitive_ops = [
-        nodes[pre]["primitive_op"] if is_fusable(nodes[pre]) else None
+        nodes[pre]["primitive_op"] if is_primitive_op(nodes[pre]) else None
         for pre in predecessor_ops(dag, name)
     ]
 
@@ -210,12 +217,12 @@ def fuse_predecessors(
     # 1. update edges to change inputs
     for input in predecessors_unordered(dag, name):
         pre = next(predecessors_unordered(dag, input))
-        if not is_fusable(fused_nodes[pre]):
+        if not is_primitive_op(fused_nodes[pre]):
             # if a predecessor is not fusable then don't change the edge
             continue
         fused_dag.remove_edge(input, name)
     for pre in predecessor_ops(dag, name):
-        if not is_fusable(fused_nodes[pre]):
+        if not is_primitive_op(fused_nodes[pre]):
             # if a predecessor is not fusable then don't change the edge
             continue
         for input in predecessors_unordered(dag, pre):

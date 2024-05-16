@@ -78,6 +78,28 @@ def test_fusion_transpose(spec):
     )
 
 
+def test_fusion_map_direct(spec):
+    # test that operations after a map_direct operation (indexing) can be fused
+    # with the map_direct operation
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = a[1:, :]
+    c = xp.negative(b)  # should be fused with b
+
+    num_created_arrays = 2  # b, c
+    assert c.plan.num_tasks(optimize_graph=False) == num_created_arrays + 4
+    num_created_arrays = 1  # c
+    assert c.plan.num_tasks(optimize_graph=True) == num_created_arrays + 2
+
+    task_counter = TaskCounter()
+    result = c.compute(callbacks=[task_counter])
+    assert task_counter.value == num_created_arrays + 2
+
+    assert_array_equal(
+        result,
+        np.array([[-4, -5, -6], [-7, -8, -9]]),
+    )
+
+
 def test_no_fusion(spec):
     # b can't be fused with c because d also depends on b
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)

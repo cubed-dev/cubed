@@ -748,7 +748,7 @@ def map_direct(
         chunks=chunks,
         extra_source_arrays=args,
         extra_projected_mem=extra_projected_mem,
-        fusable=False,  # don't allow fusion since side inputs are not accounted for
+        fusable=False,  # don't allow fusion with predecessors since side inputs are not accounted for
         **kwargs,
     )
 
