@@ -133,7 +133,7 @@ def _pad_boundaries(x, depth, boundary, numblocks, block_id):
         pad_shape = tuple(pad_shape)
         p = nxp.full_like(x, fill_value=boundary[i], shape=pad_shape)
         if block_id[i] == 0:  # first block on axis i
-            x = nxp.concatenate([p, x], axis=i)
+            x = nxp.concat([p, x], axis=i)
         elif block_id[i] == numblocks[i] - 1:  # last block on axis i
-            x = nxp.concatenate([x, p], axis=i)
+            x = nxp.concat([x, p], axis=i)
     return x
