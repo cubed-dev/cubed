@@ -224,6 +224,7 @@ from .manipulation_functions import (
     moveaxis,
     permute_dims,
     reshape,
+    roll,
     squeeze,
     stack,
 )
@@ -236,6 +237,7 @@ __all__ += [
     "moveaxis",
     "permute_dims",
     "reshape",
+    "roll",
     "squeeze",
     "stack",
 ]

@@ -287,6 +287,47 @@ def _reshape_chunk(x, template):
     return nxp.reshape(x, template.shape)
 
 
+def roll(x, /, shift, *, axis=None):
+    # based on dask roll
+    result = x
+
+    if axis is None:
+        result = flatten(result)
+
+        if not isinstance(shift, int):
+            raise TypeError("Expect `shift` to be an int when `axis` is None.")
+
+        shift = (shift,)
+        axis = (0,)
+    else:
+        if not isinstance(shift, tuple):
+            shift = (shift,)
+        if not isinstance(axis, tuple):
+            axis = (axis,)
+
+    if len(shift) != len(axis):
+        raise ValueError("Must have the same number of shifts as axes.")
+
+    for i, s in zip(axis, shift):
+        shape = result.shape[i]
+        s = 0 if shape == 0 else -s % shape
+
+        sl1 = result.ndim * [slice(None)]
+        sl2 = result.ndim * [slice(None)]
+
+        sl1[i] = slice(s, None)
+        sl2[i] = slice(None, s)
+
+        sl1 = tuple(sl1)
+        sl2 = tuple(sl2)
+
+        # note we want the concatenated array to have the same chunking as input,
+        # not the chunking of result[sl1], which may be different
+        result = concat([result[sl1], result[sl2]], axis=i, chunks=result.chunks)
+
+    return reshape(result, x.shape)
+
+
 def stack(arrays, /, *, axis=0):
     if not arrays:
         raise ValueError("Need array(s) to stack")
