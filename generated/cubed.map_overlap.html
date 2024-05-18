@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cubed.TaskEndEvent &#8212; Cubed</title>
+    <title>cubed.map_overlap &#8212; Cubed</title>
   
   
   
@@ -40,11 +40,11 @@
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.TaskEndEvent';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.map_overlap';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.measure_reserved_mem" href="cubed.measure_reserved_mem.html" />
-    <link rel="prev" title="cubed.Spec" href="cubed.Spec.html" />
+    <link rel="next" title="cubed.nanmean" href="cubed.nanmean.html" />
+    <link rel="prev" title="cubed.map_blocks" href="cubed.map_blocks.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -176,13 +176,13 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.to_zarr.html">cubed.to_zarr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.map_blocks.html">cubed.map_blocks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.map_overlap.html">cubed.map_overlap</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.map_overlap</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nanmean.html">cubed.nanmean</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nansum.html">cubed.nansum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.random.random.html">cubed.random.random</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.TaskEndEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.local.SingleThreadedExecutor.html">cubed.runtime.executors.local.SingleThreadedExecutor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.runtime.executors.local.ThreadsExecutor.html">cubed.runtime.executors.local.ThreadsExecutor</a></li>
@@ -272,7 +272,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.TaskEndEvent.rst" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.map_overlap.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -289,7 +289,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.TaskEndEvent.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.map_overlap.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -339,7 +339,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.TaskEndEvent</h1>
+    <h1>cubed.map_overlap</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -349,10 +349,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.TaskEndEvent"><code class="docutils literal notranslate"><span class="pre">TaskEndEvent</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.TaskEndEvent.__init__"><code class="docutils literal notranslate"><span class="pre">TaskEndEvent.__init__()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.map_overlap"><code class="docutils literal notranslate"><span class="pre">map_overlap()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -364,54 +361,27 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="cubed-taskendevent">
-<h1>cubed.TaskEndEvent<a class="headerlink" href="#cubed-taskendevent" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="cubed.TaskEndEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">TaskEndEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_tasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_create_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_start_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_end_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_result_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_measured_mem_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_measured_mem_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.TaskEndEvent" title="Link to this definition">#</a></dt>
-<dd><p>Callback information about a completed task (or tasks).</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="cubed.TaskEndEvent.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_tasks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_create_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_start_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_end_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_result_tstamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_measured_mem_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peak_measured_mem_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.TaskEndEvent.__init__" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<p class="rubric">Methods</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cubed.TaskEndEvent.__init__" title="cubed.TaskEndEvent.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(name[, num_tasks, ...])</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Attributes</p>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">function_end_tstamp</span></code></p></td>
-<td><p>Timestamp of when the function finished executing on the remote worker.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">function_start_tstamp</span></code></p></td>
-<td><p>Timestamp of when the function started executing on the remote worker.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_tasks</span></code></p></td>
-<td><p>Number of tasks that this event applies to (default 1).</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">peak_measured_mem_end</span></code></p></td>
-<td><p>Peak memory usage measured on the remote worker after the function finishes executing.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">peak_measured_mem_start</span></code></p></td>
-<td><p>Peak memory usage measured on the remote worker before the function starts executing.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">task_create_tstamp</span></code></p></td>
-<td><p>Timestamp of when the task was created by the client.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">task_result_tstamp</span></code></p></td>
-<td><p>Timestamp of when the result of the task was received by the client.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
-<td><p>Name of the operation that the task is for.</p></td>
-</tr>
-</tbody>
-</table>
+  <section id="cubed-map-overlap">
+<h1>cubed.map_overlap<a class="headerlink" href="#cubed-map-overlap" title="Link to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cubed.map_overlap">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">map_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.map_overlap" title="Link to this definition">#</a></dt>
+<dd><p>Apply a function to corresponding blocks from multiple input arrays with some overlap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>callable</em>) – Function to apply to every block (with overlap) to produce the output array.</p></li>
+<li><p><strong>args</strong> (<em>arrays</em>) – The Cubed arrays to map over. Note that currently only one array may be specified.</p></li>
+<li><p><strong>dtype</strong> (<em>np.dtype</em>) – The <code class="docutils literal notranslate"><span class="pre">dtype</span></code> of the output array.</p></li>
+<li><p><strong>chunks</strong> (<em>tuple</em>) – Chunk shape of blocks in the output array.</p></li>
+<li><p><strong>depth</strong> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>dict</em><em> or </em><em>list</em>) – The number of elements that each block should share with its neighbors.</p></li>
+<li><p><strong>boundary</strong> (<em>value type</em><em>, </em><em>tuple</em><em>, </em><em>dict</em><em> or </em><em>list</em>) – How to handle the boundaries. Note that this currently only supports constant values.</p></li>
+<li><p><strong>trim</strong> (<em>bool</em>) – Whether or not to trim <code class="docutils literal notranslate"><span class="pre">depth</span></code> elements from each block after calling the map function.
+Currently only <code class="docutils literal notranslate"><span class="pre">False</span></code> is supported.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Extra keyword arguments to pass to function.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -428,20 +398,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.Spec.html"
+       href="cubed.map_blocks.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.Spec</p>
+        <p class="prev-next-title">cubed.map_blocks</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.measure_reserved_mem.html"
+       href="cubed.nanmean.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.measure_reserved_mem</p>
+        <p class="prev-next-title">cubed.nanmean</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -461,10 +431,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.TaskEndEvent"><code class="docutils literal notranslate"><span class="pre">TaskEndEvent</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.TaskEndEvent.__init__"><code class="docutils literal notranslate"><span class="pre">TaskEndEvent.__init__()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.map_overlap"><code class="docutils literal notranslate"><span class="pre">map_overlap()</span></code></a></li>
 </ul>
   </nav></div>
 
