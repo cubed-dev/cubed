@@ -73,7 +73,7 @@ def _broadcast_like(x, template):
     return nxp.broadcast_to(x, template.shape)
 
 
-def concat(arrays, /, *, axis=0):
+def concat(arrays, /, *, axis=0, chunks=None):
     if not arrays:
         raise ValueError("Need array(s) to concat")
 
@@ -93,7 +93,10 @@ def concat(arrays, /, *, axis=0):
     axis = validate_axis(axis, a.ndim)
     shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
     dtype = a.dtype
-    chunks = normalize_chunks(to_chunksize(a.chunks), shape=shape, dtype=dtype)
+    if chunks is None:
+        chunks = normalize_chunks(to_chunksize(a.chunks), shape=shape, dtype=dtype)
+    else:
+        chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
     # memory allocated by reading one chunk from input array
     # note that although the output chunk will overlap multiple input chunks,
@@ -107,20 +110,24 @@ def concat(arrays, /, *, axis=0):
         dtype=dtype,
         chunks=chunks,
         extra_projected_mem=extra_projected_mem,
+        target_chunks=chunks,
         axis=axis,
         offsets=offsets,
     )
 
 
-def _read_concat_chunk(x, *arrays, axis=None, offsets=None, block_id=None):
+def _read_concat_chunk(
+    x, *arrays, target_chunks=None, axis=None, offsets=None, block_id=None
+):
     # determine the start and stop indexes for this block along the axis dimension
-    chunks = arrays[0].zarray.chunks
-    start = block_id[axis] * chunks[axis]
+    chunks = target_chunks
+    chunksize = to_chunksize(chunks)
+    start = block_id[axis] * chunksize[axis]
     stop = start + x.shape[axis]
 
     # produce a key that has slices (except for axis dimension, which is replaced below)
     idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
-    key = get_item(arrays[0].chunks, idx)
+    key = get_item(chunks, idx)
 
     # concatenate slices of the arrays
     parts = []

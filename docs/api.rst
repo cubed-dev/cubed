@@ -57,6 +57,7 @@ Non-standardised functions
 
     nanmean
     nansum
+    pad
 
 Random number generation
 ========================

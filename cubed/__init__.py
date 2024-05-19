@@ -19,6 +19,7 @@ from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
 from .nan_functions import nanmean, nansum
 from .overlap import map_overlap
+from .pad import pad
 from .runtime.types import Callback, TaskEndEvent
 from .spec import Spec
 
@@ -38,6 +39,7 @@ __all__ = [
     "measure_reserved_mem",
     "nanmean",
     "nansum",
+    "pad",
     "store",
     "to_zarr",
     "visualize",
