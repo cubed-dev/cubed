@@ -30,10 +30,10 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `zeros`             | :white_check_mark: |            |                              |
 |                          | `zeros_like`        | :white_check_mark: |            |                              |
 | Data Type Functions      | `astype`            | :white_check_mark: |            |                              |
-|                          | `can_cast`          | :white_check_mark: |            | Same as `numpy.array_api`    |
-|                          | `finfo`             | :white_check_mark: |            | Same as `numpy.array_api`    |
-|                          | `iinfo`             | :white_check_mark: |            | Same as `numpy.array_api`    |
-|                          | `result_type`       | :white_check_mark: |            | Same as `numpy.array_api`    |
+|                          | `can_cast`          | :white_check_mark: |            |                              |
+|                          | `finfo`             | :white_check_mark: |            |                              |
+|                          | `iinfo`             | :white_check_mark: |            |                              |
+|                          | `result_type`       | :white_check_mark: |            |                              |
 | Data Types               | `bool`, `int8`, ... | :white_check_mark: |            |                              |
 | Elementwise Functions    | `add`               | :white_check_mark: |            | Example of a binary function |
 |                          | `negative`          | :white_check_mark: |            | Example of a unary function  |
@@ -52,7 +52,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `flip`              | :x:                | 2          | Needs indexing with step=-1, [#114](https://github.com/cubed-dev/cubed/issues/114) |
 |                          | `permute_dims`      | :white_check_mark: |            |                              |
 |                          | `reshape`           | :white_check_mark: |            | Partial implementation       |
-|                          | `roll`              | :x:                | 2          | Use `concat` and `reshape`, [#115](https://github.com/cubed-dev/cubed/issues/115) |
+|                          | `roll`              | :white_check_mark: |            |                              |
 |                          | `squeeze`           | :white_check_mark: |            |                              |
 |                          | `stack`             | :white_check_mark: |            |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |

@@ -507,6 +507,37 @@ def test_reshape_chunks_with_smaller_end_chunk(spec, executor):
     )
 
 
+def _maybe_len(a):
+    try:
+        return len(a)
+    except TypeError:
+        return 0
+
+
+@pytest.mark.parametrize(
+    "chunks, shift, axis",
+    [
+        ((2, 6), 3, None),
+        ((2, 6), 3, 0),
+        ((2, 6), (3, 9), (0, 1)),
+        ((2, 6), (3, 9), None),
+        ((2, 6), (3, 9), 1),
+    ],
+)
+def test_roll(spec, executor, chunks, shift, axis):
+    x = np.arange(4 * 6).reshape((4, 6))
+    a = cubed.from_array(x, chunks=chunks, spec=spec)
+
+    if _maybe_len(shift) != _maybe_len(axis):
+        with pytest.raises(TypeError if axis is None else ValueError):
+            xp.roll(a, shift, axis=axis)
+    else:
+        assert_array_equal(
+            xp.roll(a, shift, axis=axis).compute(executor=executor),
+            np.roll(x, shift, axis),
+        )
+
+
 def test_squeeze_1d(spec, executor):
     a = xp.asarray([[1, 2, 3]], chunks=(1, 2), spec=spec)
     b = xp.squeeze(a, 0)
