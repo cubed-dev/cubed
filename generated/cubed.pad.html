@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cubed.apply_gufunc &#8212; Cubed</title>
+    <title>cubed.pad &#8212; Cubed</title>
   
   
   
@@ -40,11 +40,11 @@
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.apply_gufunc';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.pad';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.map_blocks" href="cubed.map_blocks.html" />
-    <link rel="prev" title="cubed.to_zarr" href="cubed.to_zarr.html" />
+    <link rel="next" title="cubed.random.random" href="cubed.random.random.html" />
+    <link rel="prev" title="cubed.nansum" href="cubed.nansum.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -174,12 +174,12 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.from_zarr.html">cubed.from_zarr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.store.html">cubed.store</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.to_zarr.html">cubed.to_zarr</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.apply_gufunc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.map_blocks.html">cubed.map_blocks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.map_overlap.html">cubed.map_overlap</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nanmean.html">cubed.nanmean</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nansum.html">cubed.nansum</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.pad.html">cubed.pad</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.pad</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.random.random.html">cubed.random.random</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
@@ -273,7 +273,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.apply_gufunc.rst" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.pad.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -290,7 +290,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.apply_gufunc.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.pad.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -340,7 +340,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.apply_gufunc</h1>
+    <h1>cubed.pad</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -350,7 +350,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.apply_gufunc"><code class="docutils literal notranslate"><span class="pre">apply_gufunc()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.pad"><code class="docutils literal notranslate"><span class="pre">pad()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -362,20 +362,12 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="cubed-apply-gufunc">
-<h1>cubed.apply_gufunc<a class="headerlink" href="#cubed-apply-gufunc" title="Link to this heading">#</a></h1>
+  <section id="cubed-pad">
+<h1>cubed.pad<a class="headerlink" href="#cubed-pad" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="cubed.apply_gufunc">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">apply_gufunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.apply_gufunc" title="Link to this definition">#</a></dt>
-<dd><p>Apply a generalized ufunc or similar python function to arrays.</p>
-<p>This is a cutdown version of the
-<a class="reference external" href="https://docs.dask.org/en/stable/generated/dask.array.gufunc.apply_gufunc.html">equivalent function</a>
-in Dask. Refer there for usage information.</p>
-<p>Current limitations: <code class="docutils literal notranslate"><span class="pre">keepdims</span></code>, and <code class="docutils literal notranslate"><span class="pre">allow_rechunk</span></code> are not supported;
-and multiple outputs are not supported.</p>
-<p>Cubed assumes that <code class="docutils literal notranslate"><span class="pre">func</span></code> will allocate a new output array. However, if it allocates more memory
-than than, then you need to tell Cubed about it by setting the <code class="docutils literal notranslate"><span class="pre">extra_projected_mem</span></code> parameter
-to the amount needed in bytes (per task).</p>
+<dt class="sig sig-object py" id="cubed.pad">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">pad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.pad" title="Link to this definition">#</a></dt>
+<dd><p>Pad an array.</p>
 </dd></dl>
 
 </section>
@@ -392,20 +384,20 @@ to the amount needed in bytes (per task).</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.to_zarr.html"
+       href="cubed.nansum.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.to_zarr</p>
+        <p class="prev-next-title">cubed.nansum</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.map_blocks.html"
+       href="cubed.random.random.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.map_blocks</p>
+        <p class="prev-next-title">cubed.random.random</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -425,7 +417,7 @@ to the amount needed in bytes (per task).</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.apply_gufunc"><code class="docutils literal notranslate"><span class="pre">apply_gufunc()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.pad"><code class="docutils literal notranslate"><span class="pre">pad()</span></code></a></li>
 </ul>
   </nav></div>
 
