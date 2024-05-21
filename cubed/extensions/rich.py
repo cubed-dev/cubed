@@ -58,7 +58,9 @@ class RichProgressBar(Callback):
         self.progress.start_task(self.progress_tasks[event.name])
 
     def on_task_end(self, event):
-        self.progress.update(self.progress_tasks[event.name], advance=event.num_tasks)
+        self.progress.update(
+            self.progress_tasks[event.name], advance=event.num_tasks, refresh=True
+        )
 
 
 class SpinnerWhenRunningColumn(SpinnerColumn):
