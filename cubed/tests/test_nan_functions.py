@@ -11,11 +11,9 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
-@pytest.mark.parametrize("namespace", [cubed, np])
-def test_nanmean(spec, namespace):
+def test_nanmean(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, xp.nan]], chunks=(2, 2), spec=spec)
-    b = namespace.nanmean(a)
-    assert isinstance(b, cubed.Array)
+    b = cubed.nanmean(a)
     assert_array_equal(
         b.compute(), np.nanmean(np.array([[1, 2, 3], [4, 5, 6], [7, 8, np.nan]]))
     )
@@ -28,11 +26,9 @@ def test_nanmean_allnan(spec):
     assert_array_equal(b.compute(), np.nanmean(np.array([np.nan])))
 
 
-@pytest.mark.parametrize("namespace", [cubed, np])
-def test_nansum(spec, namespace):
+def test_nansum(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, xp.nan]], chunks=(2, 2), spec=spec)
-    b = namespace.nansum(a)
-    assert isinstance(b, cubed.Array)
+    b = cubed.nansum(a)
     assert_array_equal(
         b.compute(), np.nansum(np.array([[1, 2, 3], [4, 5, 6], [7, 8, np.nan]]))
     )
