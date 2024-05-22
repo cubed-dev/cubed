@@ -10,7 +10,7 @@ from warnings import warn
 
 import numpy as np
 import zarr
-from tlz import concat, partition
+from tlz import concat, first, partition
 from toolz import accumulate, map
 from zarr.indexing import (
     IntDimIndexer,
@@ -37,7 +37,7 @@ from cubed.utils import (
     offset_to_block_id,
     to_chunksize,
 )
-from cubed.vendor.dask.array.core import common_blockdim, normalize_chunks
+from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions, lol_product
 from cubed.vendor.dask.utils import has_keyword
@@ -1383,7 +1383,9 @@ def unify_chunks(*args: "Array", **kwargs):
         else:
             nameinds.append((a, ind))
 
-    chunkss = broadcast_dimensions(nameinds, blockdim_dict, consolidate=common_blockdim)
+    chunkss = broadcast_dimensions(
+        nameinds, blockdim_dict, consolidate=smallest_blockdim
+    )
 
     arrays = []
     for a, i in arginds:
@@ -1400,8 +1402,36 @@ def unify_chunks(*args: "Array", **kwargs):
             )
             if chunks != a.chunks and all(a.chunks):
                 # this will raise if chunks are not regular
+                # but this should never happen with smallest_blockdim
                 chunksize = to_chunksize(chunks)
                 arrays.append(rechunk(a, chunksize))
             else:
                 arrays.append(a)
     return chunkss, arrays
+
+
+def smallest_blockdim(blockdims):
+    """Find the smallest block dimensions from the list of block dimensions
+
+    Unlike Dask's common_blockdim, this returns regular chunks (assuming
+    regular chunks are passed in).
+    """
+    if not any(blockdims):
+        return ()
+    non_trivial_dims = {d for d in blockdims if len(d) > 1}
+    if len(non_trivial_dims) == 1:
+        return first(non_trivial_dims)
+    if len(non_trivial_dims) == 0:
+        return max(blockdims, key=first)
+
+    if len(set(map(sum, non_trivial_dims))) > 1:
+        raise ValueError("Chunks do not add up to same value", blockdims)
+
+    # find dims with the smallest first chunk
+    m = -1
+    out = None
+    for ntd in non_trivial_dims:
+        if m == -1 or ntd[0] < m:
+            m = ntd[0]
+            out = ntd
+    return out
