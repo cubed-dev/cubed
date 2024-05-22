@@ -1,5 +1,6 @@
 import numpy as np
 
+from cubed.array_api.array_object import implements
 from cubed.array_api.dtypes import (
     _numeric_dtypes,
     _signed_integer_dtypes,
@@ -18,9 +19,12 @@ from cubed.core import reduction
 # https://github.com/data-apis/array-api/issues/621
 
 
-def nanmean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+@implements(np.nanmean)
+def nanmean(
+    x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
+):
     """Compute the arithmetic mean along the specified axis, ignoring NaNs."""
-    dtype = x.dtype
+    dtype = dtype or x.dtype
     intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     return reduction(
         x,
@@ -61,6 +65,7 @@ def _nannumel(x, **kwargs):
     return nxp.sum(~(nxp.isnan(x)), **kwargs)
 
 
+@implements(np.nansum)
 def nansum(
     x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
 ):
