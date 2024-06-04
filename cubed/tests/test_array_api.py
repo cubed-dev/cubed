@@ -169,6 +169,15 @@ def test_add(spec, any_executor):
     )
 
 
+def test_add_top_level_namespace(spec, executor):
+    a = cubed.ones((10, 10), chunks=(10, 2), spec=spec)
+    b = cubed.ones((10, 10), chunks=(2, 10), spec=spec)
+    c = cubed.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor), np.ones((10, 10)) + np.ones((10, 10))
+    )
+
+
 def test_add_different_chunks(spec, executor):
     a = xp.ones((10, 10), chunks=(10, 2), spec=spec)
     b = xp.ones((10, 10), chunks=(2, 10), spec=spec)
