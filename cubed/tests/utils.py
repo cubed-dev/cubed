@@ -14,7 +14,8 @@ LITHOPS_LOCAL_CONFIG = {
         "backend": "localhost",
         "storage": "localhost",
         "monitoring_interval": 0.1,
-    }
+    },
+    "localhost": {"version": 1},
 }
 
 ALL_EXECUTORS = [create_executor("single-threaded")]
