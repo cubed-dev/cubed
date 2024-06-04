@@ -27,7 +27,10 @@ def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
 
-def test_fusion(spec):
+@pytest.mark.parametrize(
+    "opt_fn", [None, simple_optimize_dag, multiple_inputs_optimize_dag]
+)
+def test_fusion(spec, opt_fn):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
     c = xp.astype(b, np.float32)
@@ -43,12 +46,20 @@ def test_fusion(spec):
     )
     num_arrays = 2  # a, d
     num_created_arrays = 1  # d (a is not created on disk)
-    assert d.plan.num_arrays(optimize_graph=True) == num_arrays
-    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
-    assert d.plan.total_nbytes_written(optimize_graph=True) == d.nbytes
+    assert (
+        d.plan.num_arrays(optimize_graph=True, optimize_function=opt_fn) == num_arrays
+    )
+    assert (
+        d.plan.num_tasks(optimize_graph=True, optimize_function=opt_fn)
+        == num_created_arrays + 4
+    )
+    assert (
+        d.plan.total_nbytes_written(optimize_graph=True, optimize_function=opt_fn)
+        == d.nbytes
+    )
 
     task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
+    result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
     assert task_counter.value == num_created_arrays + 4
 
     assert_array_equal(
@@ -57,7 +68,10 @@ def test_fusion(spec):
     )
 
 
-def test_fusion_transpose(spec):
+@pytest.mark.parametrize(
+    "opt_fn", [None, simple_optimize_dag, multiple_inputs_optimize_dag]
+)
+def test_fusion_transpose(spec, opt_fn):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
     c = xp.astype(b, np.float32)
@@ -66,10 +80,13 @@ def test_fusion_transpose(spec):
     num_created_arrays = 3  # b, c, d
     assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 12
     num_created_arrays = 1  # d
-    assert d.plan.num_tasks(optimize_graph=True) == num_created_arrays + 4
+    assert (
+        d.plan.num_tasks(optimize_graph=True, optimize_function=opt_fn)
+        == num_created_arrays + 4
+    )
 
     task_counter = TaskCounter()
-    result = d.compute(callbacks=[task_counter])
+    result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
     assert task_counter.value == num_created_arrays + 4
 
     assert_array_equal(
@@ -81,6 +98,7 @@ def test_fusion_transpose(spec):
 def test_fusion_map_direct(spec):
     # test that operations after a map_direct operation (indexing) can be fused
     # with the map_direct operation
+    # this is only true for the (default) multiple_inputs_optimize_dag optimize function
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = a[1:, :]
     c = xp.negative(b)  # should be fused with b
@@ -102,6 +120,7 @@ def test_fusion_map_direct(spec):
 
 def test_no_fusion(spec):
     # b can't be fused with c because d also depends on b
+    # this is only true for the simple_optimize_dag optimize function
     a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
     b = xp.positive(a)
     c = xp.positive(b)
@@ -126,7 +145,7 @@ def test_no_fusion_multiple_edges(spec):
     c = xp.asarray(b)
     # b and c are the same array, so d has a single dependency
     # with multiple edges
-    # this should not be fused under the current logic
+    # this should not be fused under the current logic in simple_optimize_dag
     d = xp.equal(b, c)
 
     opt_fn = simple_optimize_dag
