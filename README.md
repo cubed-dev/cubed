@@ -1,7 +1,5 @@
 # Cubed
 
-**_Note: this is a proof-of-concept, and many things are incomplete or don't work._**
-
 ## Bounded-memory serverless distributed N-dimensional array processing
 
 Cubed is a distributed N-dimensional array library implemented in Python using bounded-memory serverless processing and Zarr for storage.
