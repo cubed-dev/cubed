@@ -83,11 +83,10 @@ def test_failure(tmp_path, timing_map, n_tasks, retries, use_backups):
 @pytest.mark.parametrize(
     "timing_map, n_tasks, retries",
     [
-        ({0: [60]}, 10, 2),
+        ({0: [10]}, 10, 2),
     ],
 )
 # fmt: on
-@pytest.mark.skip(reason="This passes, but Python will not exit until the slow task is done.")
 def test_stragglers(tmp_path, timing_map, n_tasks, retries):
     outputs = asyncio.run(
         run_test(

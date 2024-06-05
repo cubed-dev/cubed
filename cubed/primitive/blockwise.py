@@ -665,13 +665,11 @@ def make_blockwise_key_function(
     output: str,
     out_indices: Sequence[Union[str, int]],
     *arrind_pairs: Any,
-    numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
+    numblocks: Dict[str, Tuple[int, ...]],
     new_axes: Optional[Dict[int, int]] = None,
 ) -> Callable[[List[int]], Any]:
     """Make a function that is the equivalent of make_blockwise_graph."""
 
-    if numblocks is None:
-        raise ValueError("Missing required numblocks argument.")
     new_axes = new_axes or {}
     argpairs = list(toolz.partition(2, arrind_pairs))
 
@@ -723,7 +721,7 @@ def make_blockwise_key_function_flattened(
     output: str,
     out_indices: Sequence[Union[str, int]],
     *arrind_pairs: Any,
-    numblocks: Optional[Dict[str, Tuple[int, ...]]] = None,
+    numblocks: Dict[str, Tuple[int, ...]],
     new_axes: Optional[Dict[int, int]] = None,
 ) -> Callable[[List[int]], Any]:
     # TODO: make this a part of make_blockwise_key_function?

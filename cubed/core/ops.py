@@ -571,9 +571,6 @@ def map_blocks(
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
 
-    if drop_axis is None:
-        drop_axis = []
-
     # Handle the case where an array is created by calling `map_blocks` with no input arrays
     if len(args) == 0:
         from cubed.array_api.creation_functions import empty_virtual_array
