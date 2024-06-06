@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cubed"
-version = "0.14.3"
+version = "0.15.0"
 authors = [
     {name = "Tom White", email = "tom.e.white@gmail.com"},
 ]
