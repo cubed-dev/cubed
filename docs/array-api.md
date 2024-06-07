@@ -1,7 +1,10 @@
 # Python Array API
 
-Cubed implements the [Python Array API standard](https://data-apis.org/array-api/latest/) in `cubed.array_api`. Refer
-to its [API specification](https://data-apis.org/array-api/latest/API_specification/index.html) for API documentation.
+Cubed implements version 2022.12 of the [Python Array API standard](https://data-apis.org/array-api/2022.12/index.html) in `cubed.array_api`, with a few exceptions noted below. Refer to its [API specification](https://data-apis.org/array-api/2022.12/API_specification/index.html) for API documentation.
+
+The [linear algebra extensions](https://data-apis.org/array-api/2022.12/extensions/linear_algebra_functions.html) and [Fourier transform functions¶](https://data-apis.org/array-api/2022.12/extensions/fourier_transform_functions.html) are *not* supported.
+
+Support for version [2023.12](https://data-apis.org/array-api/2023.12/index.html) is tracked in Cubed issue [#438](https://github.com/cubed-dev/cubed/issues/438).
 
 ## Missing from Cubed
 
@@ -13,7 +16,6 @@ The following parts of the standard are not implemented:
 | Creation Functions     | `from_dlpack`    |
 | Indexing               | Boolean array    |
 | Manipulation Functions | `flip`           |
-|                        | `roll`           |
 | Searching Functions    | `nonzero`        |
 | Set Functions          | `unique_all`     |
 |                        | `unique_counts`  |
@@ -47,4 +49,5 @@ The following [Manipulation Functions](https://data-apis.org/array-api/latest/AP
 
 ```{eval-rst}
 .. autofunction:: cubed.array_api.broadcast_to
+.. autofunction:: cubed.array_api.concat
 ```

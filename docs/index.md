@@ -6,7 +6,7 @@ Cubed is a distributed N-dimensional array library implemented in Python using b
 
 - Implements the [Python Array API standard](https://data-apis.org/array-api/latest/)
 - Guaranteed maximum memory usage for standard array functions
-- Follows [Dask Array](https://docs.dask.org/en/stable/array.html)'s chunked array API (`map_blocks`, `rechunk`, etc)
+- Follows [Dask Array](https://docs.dask.org/en/stable/array.html)'s chunked array API (`map_blocks`, `map_overlap`, `rechunk`, `apply_gufunc`, etc)
 - [Zarr](https://zarr.readthedocs.io/en/stable/) for storage
 - Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Modal](https://modal.com/), [Apache Beam](https://beam.apache.org/)
 - Integration with [Xarray](https://xarray.dev/) via [cubed-xarray](https://github.com/xarray-contrib/cubed-xarray)
