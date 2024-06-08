@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="_static/documentation_options.js?v=5fa7bc50"></script>
+    <script src="_static/documentation_options.js?v=8a74cddc"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
@@ -366,6 +366,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.zeros"><code class="docutils literal notranslate"><span class="pre">zeros()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.zeros_like"><code class="docutils literal notranslate"><span class="pre">zeros_like()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.broadcast_to"><code class="docutils literal notranslate"><span class="pre">broadcast_to()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.concat"><code class="docutils literal notranslate"><span class="pre">concat()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -381,8 +382,9 @@ document.write(`
                   
   <section id="python-array-api">
 <h1>Python Array API<a class="headerlink" href="#python-array-api" title="Link to this heading">#</a></h1>
-<p>Cubed implements the <a class="reference external" href="https://data-apis.org/array-api/latest/">Python Array API standard</a> in <code class="docutils literal notranslate"><span class="pre">cubed.array_api</span></code>. Refer
-to its <a class="reference external" href="https://data-apis.org/array-api/latest/API_specification/index.html">API specification</a> for API documentation.</p>
+<p>Cubed implements version 2022.12 of the <a class="reference external" href="https://data-apis.org/array-api/2022.12/index.html">Python Array API standard</a> in <code class="docutils literal notranslate"><span class="pre">cubed.array_api</span></code>, with a few exceptions noted below. Refer to its <a class="reference external" href="https://data-apis.org/array-api/2022.12/API_specification/index.html">API specification</a> for API documentation.</p>
+<p>The <a class="reference external" href="https://data-apis.org/array-api/2022.12/extensions/linear_algebra_functions.html">linear algebra extensions</a> and <a class="reference external" href="https://data-apis.org/array-api/2022.12/extensions/fourier_transform_functions.html">Fourier transform functions¶</a> are <em>not</em> supported.</p>
+<p>Support for version <a class="reference external" href="https://data-apis.org/array-api/2023.12/index.html">2023.12</a> is tracked in Cubed issue <a class="reference external" href="https://github.com/cubed-dev/cubed/issues/438">#438</a>.</p>
 <section id="missing-from-cubed">
 <h2>Missing from Cubed<a class="headerlink" href="#missing-from-cubed" title="Link to this heading">#</a></h2>
 <p>The following parts of the standard are not implemented:</p>
@@ -405,34 +407,31 @@ to its <a class="reference external" href="https://data-apis.org/array-api/lates
 <tr class="row-odd"><td><p>Manipulation Functions</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">flip</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">roll</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>Searching Functions</p></td>
+<tr class="row-even"><td><p>Searching Functions</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">nonzero</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Set Functions</p></td>
+<tr class="row-odd"><td><p>Set Functions</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">unique_all</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p></p></td>
+<tr class="row-even"><td><p></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">unique_counts</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p></p></td>
+<tr class="row-odd"><td><p></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">unique_inverse</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p></p></td>
+<tr class="row-even"><td><p></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">unique_values</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Sorting Functions</p></td>
+<tr class="row-odd"><td><p>Sorting Functions</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">argsort</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p></p></td>
+<tr class="row-even"><td><p></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">sort</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>Statistical Functions</p></td>
+<tr class="row-odd"><td><p>Statistical Functions</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">std</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p></p></td>
+<tr class="row-even"><td><p></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">var</span></code></p></td>
 </tr>
 </tbody>
@@ -508,6 +507,11 @@ to its <a class="reference external" href="https://data-apis.org/array-api/lates
 <span class="sig-prename descclassname"><span class="pre">cubed.array_api.</span></span><span class="sig-name descname"><span class="pre">broadcast_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.array_api.broadcast_to" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="cubed.array_api.concat">
+<span class="sig-prename descclassname"><span class="pre">cubed.array_api.</span></span><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arrays</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.array_api.concat" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 </section>
 </section>
 
@@ -571,6 +575,7 @@ to its <a class="reference external" href="https://data-apis.org/array-api/lates
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.zeros"><code class="docutils literal notranslate"><span class="pre">zeros()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.zeros_like"><code class="docutils literal notranslate"><span class="pre">zeros_like()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.broadcast_to"><code class="docutils literal notranslate"><span class="pre">broadcast_to()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.array_api.concat"><code class="docutils literal notranslate"><span class="pre">concat()</span></code></a></li>
 </ul>
 </li>
 </ul>
