@@ -50,6 +50,8 @@ Chunk-specific functions
 Non-standardised functions
 ==========================
 
+These are functions that have not (yet) been included in the Python Array API Standard.
+
 .. currentmodule:: cubed
 .. autosummary::
     :nosignatures:
