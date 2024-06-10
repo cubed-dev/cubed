@@ -14,6 +14,7 @@ LITHOPS_LOCAL_CONFIG = {
         "backend": "localhost",
         "storage": "localhost",
         "monitoring_interval": 0.1,
+        "include_modules": None
     },
     "localhost": {"version": 1},
 }
