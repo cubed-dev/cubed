@@ -55,6 +55,8 @@ jobs:
           PIP_FLAGS: ${{ matrix.PIP_FLAGS }}
 
       - name: Run tests
+        env:
+          COVERAGE_CORE: sysmon
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
             pytest -v
