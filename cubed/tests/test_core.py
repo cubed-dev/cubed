@@ -133,7 +133,7 @@ def test_store(tmp_path, spec):
     target = zarr.empty(a.shape, store=store)
 
     cubed.store(a, target)
-    assert_array_equal(target, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+    assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
 def test_store_multiple(tmp_path, spec):
@@ -146,8 +146,8 @@ def test_store_multiple(tmp_path, spec):
     target2 = zarr.empty(b.shape, store=store2)
 
     cubed.store([a, b], [target1, target2])
-    assert_array_equal(target1, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
-    assert_array_equal(target2, np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]))
+    assert_array_equal(target1[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+    assert_array_equal(target2[:], np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]))
 
 
 def test_store_fails(tmp_path, spec):
