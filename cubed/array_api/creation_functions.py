@@ -1,8 +1,6 @@
 import math
 from typing import TYPE_CHECKING, Iterable, List
 
-from zarr.util import normalize_shape
-
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import Plan, gensym
 from cubed.core.ops import map_blocks
@@ -12,7 +10,7 @@ from cubed.storage.virtual import (
     virtual_in_memory,
     virtual_offsets,
 )
-from cubed.utils import to_chunksize
+from cubed.utils import normalize_shape, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 
 if TYPE_CHECKING:

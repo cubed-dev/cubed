@@ -15,6 +15,7 @@ from cubed.utils import (
     join_path,
     map_nested,
     memory_repr,
+    normalize_shape,
     offset_to_block_id,
     peak_measured_mem,
     split_into,
@@ -170,3 +171,13 @@ def test_broadcast_trick():
     a = nxp.ones((), dtype=nxp.int8)
     b = broadcast_trick(nxp.ones)((), dtype=nxp.int8)
     assert_array_equal(a, b)
+
+
+def test_normalize_shape():
+    assert normalize_shape(2) == (2,)
+    assert normalize_shape((2,)) == (2,)
+    assert normalize_shape((2, 0)) == (2, 0)
+    assert normalize_shape((2, 3)) == (2, 3)
+
+    with pytest.raises(TypeError):
+        normalize_shape(None)

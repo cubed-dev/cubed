@@ -1,12 +1,11 @@
 import random as pyrandom
 
 from numpy.random import Generator, Philox
-from zarr.util import normalize_shape
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.ops import map_blocks
-from cubed.utils import block_id_to_offset
+from cubed.utils import block_id_to_offset, normalize_shape
 from cubed.vendor.dask.array.core import normalize_chunks
 
 

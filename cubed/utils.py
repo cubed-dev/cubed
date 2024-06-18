@@ -1,5 +1,6 @@
 import collections
 import itertools
+import numbers
 import platform
 import sys
 import sysconfig
@@ -12,7 +13,7 @@ from math import prod
 from operator import add
 from pathlib import Path
 from posixpath import join
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
@@ -385,3 +386,17 @@ def _concatenate2(arrays, axes=None):
         return ret
     else:
         return concatenate(arrays, axis=axes[0])
+
+
+def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> Tuple[int, ...]:
+    """Normalize a `shape` argument to a tuple of ints."""
+
+    if shape is None:
+        raise TypeError("shape is None")
+
+    if isinstance(shape, numbers.Integral):
+        shape = (int(shape),)
+
+    shape = cast(Tuple[int, ...], shape)
+    shape = tuple(int(s) for s in shape)
+    return shape
