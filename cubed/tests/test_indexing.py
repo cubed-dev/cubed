@@ -18,8 +18,8 @@ def spec(tmp_path):
     "ind",
     [
         [6, 7, 2, 9, 10],
-        ([6, 7, 2, 9, 10], None),  # add a new dimension
-        (None, [6, 7, 2, 9, 10]),  # add a new dimension
+        ([6, 7, 2, 9, 10], xp.newaxis),
+        (xp.newaxis, [6, 7, 2, 9, 10]),
     ],
 )
 def test_int_array_index_1d(spec, ind):
@@ -33,9 +33,9 @@ def test_int_array_index_1d(spec, ind):
     [
         (slice(None), [2, 1]),
         ([1, 2, 1], slice(None)),
-        (None, slice(None), [2, 1]),
-        (slice(None), None, [2, 1]),
-        (slice(None), [2, 1], None),
+        (xp.newaxis, slice(None), [2, 1]),
+        (slice(None), xp.newaxis, [2, 1]),
+        (slice(None), [2, 1], xp.newaxis),
     ],
 )
 def test_int_array_index_2d(spec, ind):
@@ -49,6 +49,22 @@ def test_int_array_index_2d(spec, ind):
     assert_array_equal(b[ind].compute(), x[ind])
 
 
+@pytest.mark.parametrize(
+    "ind",
+    [
+        (slice(None), [0, 1, 2, 3]),
+        ([0, 1, 2, 3], slice(None)),
+    ],
+)
+def test_int_array_index_2d_no_op(spec, ind):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(3, 3),
+        spec=spec,
+    )
+    assert a is a[ind]
+
+
 def test_multiple_int_array_indexes(spec):
     with pytest.raises(NotImplementedError):
         a = xp.asarray(
@@ -56,4 +72,4 @@ def test_multiple_int_array_indexes(spec):
             chunks=(2, 2),
             spec=spec,
         )
-        a[[1, 2, 1], [2, 1]]
+        a[[1, 2, 1], [2, 1, 0]]

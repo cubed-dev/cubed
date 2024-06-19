@@ -216,15 +216,16 @@ def test_negative(spec, executor):
 @pytest.mark.parametrize(
     "ind",
     [
+        Ellipsis,
         6,
-        (6, None),  # add a new dimension
-        (None, 6),  # add a new dimension
+        (6, xp.newaxis),
+        (xp.newaxis, 6),
         slice(None),
         slice(10),
         slice(3, None),
         slice(3, 3),
         slice(3, 10),
-        (slice(10), None),  # add a new dimension
+        (slice(10), xp.newaxis),
     ],
 )
 def test_index_1d(spec, ind):
@@ -235,17 +236,20 @@ def test_index_1d(spec, ind):
 @pytest.mark.parametrize(
     "ind",
     [
+        Ellipsis,
         (2, 3),
-        (None, 2, 3),  # add a new dimension
+        (xp.newaxis, 2, 3),
+        (Ellipsis, slice(2, 4)),
         (slice(None), slice(2, 2)),
         (slice(None), slice(2, 4)),
         (slice(3), slice(2, None)),
         (slice(1, None), slice(4)),
+        (slice(1, 3), Ellipsis),
         (slice(1, 1), slice(None)),
         (slice(1, 3), slice(None)),
-        (None, slice(None), slice(2, 4)),  # add a new dimension
-        (slice(None), None, slice(2, 4)),  # add a new dimension
-        (slice(None), slice(2, 4), None),  # add a new dimension
+        (xp.newaxis, slice(None), slice(2, 4)),
+        (slice(None), xp.newaxis, slice(2, 4)),
+        (slice(None), slice(2, 4), xp.newaxis),
         (slice(None), 1),
         (1, slice(2, 4)),
     ],
@@ -258,6 +262,25 @@ def test_index_2d(spec, ind):
     )
     x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     assert_array_equal(a[ind].compute(), x[ind])
+
+
+@pytest.mark.parametrize(
+    "ind",
+    [
+        Ellipsis,
+        (slice(None), slice(None)),
+        (slice(0, 4), slice(None)),
+        (slice(None), slice(0, 4)),
+        (slice(0, 4), slice(0, 4)),
+    ],
+)
+def test_index_2d_no_op(spec, ind):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    assert a is a[ind]
 
 
 @pytest.mark.parametrize(
