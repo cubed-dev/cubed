@@ -38,6 +38,7 @@ else:
             "donfig",
             "fsspec",
             "mypy_extensions",  # for rechunker
+            "ndindex",
             "networkx",
             "pytest-mock",  # TODO: only needed for tests
             "s3fs",
@@ -52,6 +53,7 @@ else:
             "donfig",
             "fsspec",
             "mypy_extensions",  # for rechunker
+            "ndindex",
             "networkx",
             "pytest-mock",  # TODO: only needed for tests
             "gcsfs",

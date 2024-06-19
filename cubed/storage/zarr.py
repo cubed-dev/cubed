@@ -1,6 +1,9 @@
+from operator import mul
 from typing import Optional, Union
 
+import numpy as np
 import zarr
+from toolz import reduce
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
@@ -23,17 +26,22 @@ class LazyZarrArray:
         **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
-        # use an empty in-memory Zarr array as a template since it normalizes its properties
-        template = zarr.empty(
-            shape, dtype=dtype, chunks=chunks, store=zarr.storage.MemoryStore()
-        )
-        self.shape = template.shape
-        self.dtype = template.dtype
-        self.chunks = template.chunks
-        self.nbytes = template.nbytes
+        self.shape = shape
+        self.dtype = np.dtype(dtype)
+        self.chunks = chunks
         self.store = store
         self.path = path
         self.kwargs = kwargs
+
+    @property
+    def size(self):
+        """Number of elements in the array."""
+        return reduce(mul, self.shape, 1)
+
+    @property
+    def nbytes(self) -> int:
+        """Number of bytes in array"""
+        return self.size * self.dtype.itemsize
 
     def create(self, mode: str = "w-") -> zarr.Array:
         """Create the Zarr array in storage.

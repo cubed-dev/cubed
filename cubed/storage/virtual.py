@@ -2,10 +2,8 @@ from numbers import Integral
 from typing import Any
 
 import numpy as np
-import zarr
-from zarr.indexing import BasicIndexer, is_slice
+from ndindex import ndindex
 
-from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.types import T_DType, T_RegularChunks, T_Shape
@@ -21,30 +19,20 @@ class VirtualEmptyArray:
         dtype: T_DType,
         chunks: T_RegularChunks,
     ):
-        # use an empty in-memory Zarr array as a template since it normalizes its properties
-        template = zarr.empty(
-            shape, dtype=dtype, chunks=chunks, store=zarr.storage.MemoryStore()
-        )
-        self.shape = template.shape
-        self.dtype = template.dtype
-        self.chunks = template.chunks
-        self.template = template
+        self.shape = shape
+        self.dtype = np.dtype(dtype)
+        self.chunks = chunks
 
     def __getitem__(self, key):
-        if not isinstance(key, tuple):
-            key = (key,)
-        indexer = BasicIndexer(key, self.template)
+        idx = ndindex[key]
+        newshape = idx.newshape(self.shape)
         # use broadcast trick so array chunks only occupy a single value in memory
-        return broadcast_trick(nxp.empty)(indexer.shape, dtype=self.dtype)
+        return broadcast_trick(nxp.empty)(newshape, dtype=self.dtype)
 
     @property
     def chunkmem(self):
         # take broadcast trick into account
         return array_memory(self.dtype, (1,))
-
-    @property
-    def oindex(self):
-        return self.template.oindex
 
 
 class VirtualFullArray:
@@ -57,37 +45,18 @@ class VirtualFullArray:
         chunks: T_RegularChunks,
         fill_value: Any = None,
     ):
-        # use an empty in-memory Zarr array as a template since it normalizes its properties
-        template = zarr.full(
-            shape,
-            fill_value,
-            dtype=dtype,
-            chunks=chunks,
-            store=zarr.storage.MemoryStore(),
-        )
-        self.shape = template.shape
-        self.dtype = template.dtype
-        self.chunks = template.chunks
-        self.template = template
+        self.shape = shape
+        self.dtype = np.dtype(dtype)
+        self.chunks = chunks
         self.fill_value = fill_value
 
     def __getitem__(self, key):
-        if not isinstance(key, tuple):
-            key = (key,)
-        indexer = BasicIndexer(key, self.template)
+        idx = ndindex[key]
+        newshape = idx.newshape(self.shape)
         # use broadcast trick so array chunks only occupy a single value in memory
         return broadcast_trick(nxp.full)(
-            indexer.shape, fill_value=self.fill_value, dtype=self.dtype
+            newshape, fill_value=self.fill_value, dtype=self.dtype
         )
-
-    @property
-    def chunkmem(self):
-        # take broadcast trick into account
-        return array_memory(self.dtype, (1,))
-
-    @property
-    def oindex(self):
-        return self.template.oindex
 
 
 class VirtualOffsetsArray:
@@ -96,14 +65,9 @@ class VirtualOffsetsArray:
     def __init__(self, shape: T_Shape):
         dtype = nxp.int32
         chunks = (1,) * len(shape)
-        # use an empty in-memory Zarr array as a template since it normalizes its properties
-        template = zarr.empty(
-            shape, dtype=dtype, chunks=chunks, store=zarr.storage.MemoryStore()
-        )
-        self.shape = template.shape
-        self.dtype = template.dtype
-        self.chunks = template.chunks
-        self.ndim = template.ndim
+        self.shape = shape
+        self.dtype = np.dtype(dtype)
+        self.chunks = chunks
 
     def __getitem__(self, key):
         if key == () and self.shape == ():
@@ -127,27 +91,12 @@ class VirtualInMemoryArray:
                 f"Size of in memory array is {memory_repr(array.nbytes)} which exceeds maximum of {memory_repr(max_nbytes)}. Consider loading the array from storage using `from_array`."
             )
         self.array = array
-        # use an in-memory Zarr array as a template since it normalizes its properties
-        # and is needed for oindex
-        template = zarr.empty(
-            array.shape,
-            dtype=array.dtype,
-            chunks=chunks,
-            store=zarr.storage.MemoryStore(),
-        )
-        self.shape = template.shape
-        self.dtype = template.dtype
-        self.chunks = template.chunks
-        self.template = template
-        if array.size > 0:
-            template[...] = backend_array_to_numpy_array(array)
+        self.shape = array.shape
+        self.dtype = array.dtype
+        self.chunks = chunks
 
     def __getitem__(self, key):
         return self.array.__getitem__(key)
-
-    @property
-    def oindex(self):
-        return self.template.oindex
 
 
 def _key_to_index_tuple(selection):
@@ -158,7 +107,11 @@ def _key_to_index_tuple(selection):
     for s in selection:
         if isinstance(s, Integral):
             sel.append(s)
-        elif is_slice(s) and s.stop == s.start + 1 and (s.step is None or s.step == 1):
+        elif (
+            isinstance(s, slice)
+            and s.stop == s.start + 1
+            and (s.step is None or s.step == 1)
+        ):
             sel.append(s.start)
         else:
             raise NotImplementedError(f"Offset selection not supported: {selection}")
