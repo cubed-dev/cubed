@@ -23,9 +23,10 @@ jobs:
         include:
           - os: "ubuntu-latest"
             python-version: "3.12"
-          - os: "ubuntu-latest"
-            python-version: "3.12"
-            PIP_FLAGS: "--pre"
+          # Disable until Zarr v3 is working https://github.com/cubed-dev/cubed/issues/295
+          # - os: "ubuntu-latest"
+          #   python-version: "3.12"
+          #   PIP_FLAGS: "--pre"
 
     steps:
       - name: Checkout source
