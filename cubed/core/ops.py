@@ -23,6 +23,7 @@ from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
+from cubed.storage.backend import open_backend_array
 from cubed.utils import (
     _concatenate2,
     array_memory,
@@ -106,7 +107,12 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     """
     name = gensym()
     spec = spec or spec_from_config(config)
-    target = zarr.open(store, path=path, mode="r", storage_options=spec.storage_options)
+    target = open_backend_array(
+        store,
+        mode="r",
+        path=path,
+        storage_options=spec.storage_options,
+    )
 
     from cubed.array_api import Array
 

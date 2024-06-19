@@ -4,17 +4,17 @@ from typing import Iterable
 
 import networkx as nx
 import numpy as np
-import zarr
 
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
+from cubed.storage.backend import open_backend_array
 
 LITHOPS_LOCAL_CONFIG = {
     "lithops": {
         "backend": "localhost",
         "storage": "localhost",
         "monitoring_interval": 0.1,
-        "include_modules": None
+        "include_modules": None,
     },
     "localhost": {"version": 1},
 }
@@ -89,7 +89,7 @@ def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):
         dtype = a.dtype
 
     # write to zarr
-    za = zarr.open(
+    za = open_backend_array(
         store, mode="w", shape=a.shape, dtype=dtype, chunks=chunks, path=path
     )
     za[:] = a
