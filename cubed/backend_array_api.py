@@ -45,4 +45,6 @@ def backend_array_to_numpy_array(arr):
 
 
 def numpy_array_to_backend_array(arr, *, dtype=None):
+    if isinstance(arr, dict):
+        return {k: namespace.asarray(v, dtype=dtype) for k, v in arr.items()}
     return namespace.asarray(arr, dtype=dtype)
