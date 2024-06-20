@@ -842,6 +842,11 @@ def merge_chunks(x, chunks):
 
 
 def _copy_chunk(e, x, target_chunks=None, block_id=None):
+    if isinstance(x.zarray, dict):
+        return {
+            k: numpy_array_to_backend_array(v[get_item(target_chunks, block_id)])
+            for k, v in x.zarray.items()
+        }
     out = x.zarray[get_item(target_chunks, block_id)]
     out = numpy_array_to_backend_array(out)
     return out
