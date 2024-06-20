@@ -15,6 +15,7 @@ from tlz import concat, first, partition
 from toolz import accumulate, map
 
 from cubed import config
+from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
@@ -408,8 +409,11 @@ def index(x, key):
         key = (key,)
 
     # Replace Cubed arrays with NumPy arrays - note that this may trigger a computation!
+    # Note that NumPy arrays are needed for ndindex.
     key = tuple(
-        dim_sel.compute() if isinstance(dim_sel, CoreArray) else dim_sel
+        backend_array_to_numpy_array(dim_sel.compute())
+        if isinstance(dim_sel, CoreArray)
+        else dim_sel
         for dim_sel in key
     )
 
