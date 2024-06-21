@@ -361,7 +361,7 @@ class Array(CoreArray):
         return elemwise(nxp.abs, self, dtype=dtype)
 
     def __array_namespace__(self, /, *, api_version=None):
-        if api_version is not None and not api_version.startswith("2022."):
+        if api_version is not None and api_version not in ("2021.12", "2022.12"):
             raise ValueError(f"Unrecognized array API version: {api_version!r}")
         import cubed.array_api as array_api
 
