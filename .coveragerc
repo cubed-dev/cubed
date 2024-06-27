@@ -8,4 +8,5 @@ omit =
     cubed/runtime/executors/dask*.py
     cubed/runtime/executors/lithops.py
     cubed/runtime/executors/modal*.py
+    cubed/storage/backends/tensorstore.py
     cubed/vendor/*
