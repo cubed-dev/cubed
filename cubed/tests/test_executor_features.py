@@ -1,3 +1,4 @@
+import contextlib
 import platform
 
 import fsspec
@@ -161,14 +162,24 @@ def test_resume(spec, executor):
     num_created_arrays = 1  # c
     assert task_counter.value == num_created_arrays + 4
 
-    # since c has already been computed, when computing d only 4 tasks are run, instead of 8
-    task_counter = TaskCounter()
-    d.compute(
-        executor=executor, callbacks=[task_counter], optimize_graph=False, resume=True
-    )
-    # the create arrays tasks are run again, even though they exist
-    num_created_arrays = 2  # c, d
-    assert task_counter.value == num_created_arrays + 4
+    if not hasattr(c.zarray, "nchunks_initialized"):
+        # We expect resume to fail if there is no 'nchunks_initialized' property on the Zarr array
+        cm = pytest.raises(NotImplementedError)
+    else:
+        cm = contextlib.nullcontext()
+
+    with cm:
+        # since c has already been computed, when computing d only 4 tasks are run, instead of 8
+        task_counter = TaskCounter()
+        d.compute(
+            executor=executor,
+            callbacks=[task_counter],
+            optimize_graph=False,
+            resume=True,
+        )
+        # the create arrays tasks are run again, even though they exist
+        num_created_arrays = 2  # c, d
+        assert task_counter.value == num_created_arrays + 4
 
 
 @pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])

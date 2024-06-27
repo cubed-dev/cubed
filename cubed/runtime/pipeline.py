@@ -27,6 +27,10 @@ def already_computed(
             target = nodes[output].get("target", None)
             if target is not None:
                 target = open_if_lazy_zarr_array(target)
+                if not hasattr(target, "nchunks_initialized"):
+                    raise NotImplementedError(
+                        f"Zarr array type {type(target)} does not support resume since it doesn't have a 'nchunks_initialized' property"
+                    )
                 # this check can be expensive since it has to list the directory to find nchunks_initialized
                 if target.ndim == 0 or target.nchunks_initialized != target.nchunks:
                     return False

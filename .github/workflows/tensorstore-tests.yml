@@ -41,7 +41,6 @@ jobs:
 
       - name: Run tests
         run: |
-          # exclude tests that rely on the nchunks_initialized array attribute
-          pytest -k "not test_resume"
+          pytest -v
         env:
           CUBED_STORAGE_NAME: tensorstore
