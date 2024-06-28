@@ -379,13 +379,11 @@ class Plan:
             elif node_type == "array":
                 target = d["target"]
                 chunkmem = memory_repr(chunk_memory(target))
-                nbytes = None
 
                 # materialized arrays are light orange, virtual arrays are white
                 if isinstance(target, (LazyZarrArray, zarr.Array)):
                     d["style"] = "filled"
                     d["fillcolor"] = "#ffd8b1"
-                    nbytes = memory_repr(target.nbytes)
                 if n in array_display_names:
                     var_name = array_display_names[n]
                     label = f"{n}\n{var_name}"
@@ -394,8 +392,8 @@ class Plan:
                 tooltip += f"chunks: {target.chunks}\n"
                 tooltip += f"dtype: {target.dtype}\n"
                 tooltip += f"chunk memory: {chunkmem}\n"
-                if nbytes is not None:
-                    tooltip += f"nbytes: {nbytes}\n"
+                if hasattr(target, "nbytes"):
+                    tooltip += f"nbytes: {memory_repr(target.nbytes)}\n"
 
                 del d["target"]
 

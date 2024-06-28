@@ -1,0 +1,58 @@
+name: Zarr v3 Tests
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: Tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.10"]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2
+        with:
+          macos-skip-brew-update: 'true'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install
+        run: |
+          python -m pip install -e .[test]
+          python -m pip install -U git+https://github.com/zarr-developers/zarr-python.git@v3
+
+      - name: Run tests
+        env:
+          COVERAGE_CORE: sysmon
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            pytest -v
+          else
+            pytest -v --cov=cubed --cov-report=term-missing --cov-fail-under=90
+          fi
+        shell: bash

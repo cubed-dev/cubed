@@ -18,10 +18,22 @@ def open_backend_array(
     # e.g. set globally with CUBED_STORAGE_NAME=tensorstore
     storage_name = config.get("storage_name", None)
 
-    if storage_name is None or storage_name == "zarr-python":
+    if storage_name is None:
+        import zarr
+
+        if zarr.__version__[0] == "3":
+            storage_name = "zarr-python-v3"
+        else:
+            storage_name = "zarr-python"
+
+    if storage_name == "zarr-python":
         from cubed.storage.backends.zarr_python import open_zarr_array
 
         open_func = open_zarr_array
+    elif storage_name == "zarr-python-v3":
+        from cubed.storage.backends.zarr_python_v3 import open_zarr_v3_array
+
+        open_func = open_zarr_v3_array
     elif storage_name == "tensorstore":
         from cubed.storage.backends.tensorstore import open_tensorstore_array
 
