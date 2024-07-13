@@ -11,9 +11,10 @@ from cubed.extensions.timeline import TimelineVisualizationCallback
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
 if __name__ == "__main__":
+    spec = cubed.Spec(allowed_mem="8GB")
     # 200MB chunks
-    a = cubed.random.random((50000, 50000), chunks=(5000, 5000))
-    b = cubed.random.random((50000, 50000), chunks=(5000, 5000))
+    a = cubed.random.random((50000, 50000), chunks=(5000, 5000), spec=spec)
+    b = cubed.random.random((50000, 50000), chunks=(5000, 5000), spec=spec)
     c = xp.astype(a, xp.float32)
     d = xp.astype(b, xp.float32)
     e = xp.matmul(c, d)
