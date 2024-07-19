@@ -1,8 +1,11 @@
 import contextlib
+import os
 import platform
+import re
 
 import fsspec
 import numpy as np
+import psutil
 import pytest
 from numpy.testing import assert_array_equal
 
@@ -264,3 +267,28 @@ def test_check_runtime_memory_modal(spec, modal_executor):
         match=r"Runtime memory \(2097152000\) is less than allowed_mem \(4000000000\)",
     ):
         c.compute(executor=modal_executor)
+
+
+def test_check_runtime_memory_processes(spec, executor):
+    if executor.name != "processes":
+        pytest.skip(f"{executor.name} executor does not support check_runtime_memory")
+
+    total_mem = psutil.virtual_memory().total
+    max_workers = os.cpu_count()
+    mem_per_worker = total_mem // max_workers
+    allowed_mem = mem_per_worker * 2  # larger than will fit
+
+    spec = cubed.Spec(spec.work_dir, allowed_mem=allowed_mem)
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Total memory on machine ({total_mem}) is less than allowed_mem * max_workers ({allowed_mem} * {max_workers} = {allowed_mem * max_workers})"
+        ),
+    ):
+        c.compute(executor=executor)
+
+    # OK if we use fewer workers
+    c.compute(executor=executor, max_workers=max_workers // 2)

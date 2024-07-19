@@ -40,6 +40,7 @@ else:
             "mypy_extensions",  # for rechunker
             "ndindex",
             "networkx",
+            "psutil",
             "pytest-mock",  # TODO: only needed for tests
             "s3fs",
             "tenacity",
@@ -55,6 +56,7 @@ else:
             "mypy_extensions",  # for rechunker
             "ndindex",
             "networkx",
+            "psutil",
             "pytest-mock",  # TODO: only needed for tests
             "gcsfs",
             "tenacity",
