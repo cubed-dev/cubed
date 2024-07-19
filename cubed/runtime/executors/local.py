@@ -60,9 +60,7 @@ class SingleThreadedExecutor(DagExecutor):
 
 @execution_stats
 def run_func(input, func=None, config=None, name=None, compute_id=None):
-    print(f"{compute_id} {name}: running on {input}")
-    result = func(input, config=config)
-    return result
+    return func(input, config=config)
 
 
 def unpickle_and_call(f, inp, **kwargs):
