@@ -1,6 +1,12 @@
 # Examples
 
-## Which executor should I use?
+## Running on a local machine
+
+The `processes` executor is the recommended executor for running on a single machine, since it can use all the cores on the machine.
+
+## Which cloud service executor should I use?
+
+When it comes to scaling out, there are a number of executors that work in the cloud.
 
 [**Lithops**](https://lithops-cloud.github.io/) is the executor we recommend for most users, since it has had the most testing so far (~1000 workers).
 If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it's in GCS use Lithops with Google Cloud Functions. You have to build a runtime environment as a part of the setting up process.
@@ -13,21 +19,29 @@ If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it's in GC
 
 ## Set up
 
-Follow the instructions for setting up Cubed to run on your chosen cloud and executor runtime:
+Follow the instructions for setting up Cubed to run on your executor runtime:
 
-| Executor | Cloud  | Set up instructions                                          |
-|----------|--------|--------------------------------------------------------------|
-| Lithops  | AWS    | [lithops/aws/README.md](lithops/aws/README.md) |
-|          | Google | [lithops/gcp/README.md](lithops/gcp/README.md)               |
-| Modal    | AWS    | [modal/aws/README.md](modal/aws/README.md)                   |
-|          | Google | [modal/gcp/README.md](modal/gcp/README.md)                   |
-| Coiled   | AWS    | [coiled/aws/README.md](coiled/aws/README.md)                 |
-| Beam     | Google | [dataflow/README.md](dataflow/README.md)                     |
+| Executor  | Cloud  | Set up instructions                            |
+|-----------|--------|------------------------------------------------|
+| Processes | N/A    | N/A                                            |
+| Lithops   | AWS    | [lithops/aws/README.md](lithops/aws/README.md) |
+|           | Google | [lithops/gcp/README.md](lithops/gcp/README.md) |
+| Modal     | AWS    | [modal/aws/README.md](modal/aws/README.md)     |
+|           | Google | [modal/gcp/README.md](modal/gcp/README.md)     |
+| Coiled    | AWS    | [coiled/aws/README.md](coiled/aws/README.md)   |
+| Beam      | Google | [dataflow/README.md](dataflow/README.md)       |
 
 ## Examples
 
 The `add-asarray.py` script is a small example that adds two small 4x4 arrays together, and is useful for checking that the runtime is working.
-Export `CUBED_CONFIG` as described in the set up instructions, then run the script. This is for Lithops on AWS:
+Export `CUBED_CONFIG` as described in the set up instructions, then run the script. This is for running on the local machine using the `processes` executor:
+
+```shell
+export CUBED_CONFIG=$(pwd)/processes
+python add-asarray.py
+```
+
+This is for Lithops on AWS:
 
 ```shell
 export CUBED_CONFIG=$(pwd)/lithops/aws
