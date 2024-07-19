@@ -66,6 +66,6 @@ Before running these notebook examples, you will need to install some additional
 `mamba install rich pydot flox cubed-xarray`
 
 `cubed-xarray` is necessary to wrap Cubed arrays as Xarray DataArrays or Xarray Datasets.
-`flox` is for supporting more efficient Map Reduce.
+`flox` is for supporting efficient groupby operations in Xarray.
 `pydot` allows plotting the Cubed execution plan.
 `rich` is for showing progress of array operations within callbacks applied to Cubed plan operations.
