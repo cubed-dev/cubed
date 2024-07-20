@@ -16,7 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        # How to set up Jax on an ARM Mac: https://developer.apple.com/metal/jax/
+        os: ["ubuntu-latest", "macos-14"]
         python-version: ["3.9"]
 
     steps:
@@ -40,6 +41,11 @@ jobs:
           python -m pip install -e '.[test]' 'jax[cpu]'
           python -m pip uninstall -y lithops  # tests don't run on Lithops
 
+      - name: Install for Mac
+        if: matrix.os == 'macos-14'
+        run: |
+          python -m pip install jax-metal
+
       - name: Run tests
         run: |
           # exclude tests that rely on structured types since JAX doesn't support these
@@ -47,3 +53,4 @@ jobs:
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
           JAX_ENABLE_X64: True
+          ENABLE_PJRT_COMPATIBILITY: True
