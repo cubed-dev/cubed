@@ -69,7 +69,8 @@ def asarray(
         a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
         dtype = a.dtype
-        dtype = f'{dtype.kind}{p}'
+        if dtype.itemsize <= 8 and p != 8:
+            dtype = f'{dtype.kind}{p}'
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()

@@ -614,10 +614,10 @@ def test_plan_scaling(tmp_path, factor):
     spec = cubed.Spec(tmp_path, allowed_mem="2GB")
     chunksize = 5000
     a = cubed.random.random(
-        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec, dtype=xp.float32,
+        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec,
     )
     b = cubed.random.random(
-        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec, dtype=xp.float32,
+        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec,
     )
     c = xp.matmul(a, b)
 
