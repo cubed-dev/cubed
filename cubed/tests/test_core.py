@@ -579,11 +579,13 @@ def test_array_pickle(spec, executor):
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
         spec=spec,
+        dtype=xp.float32,
     )
     b = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
         spec=spec,
+        dtype=xp.float32,
     )
     c = xp.matmul(a, b)
 
@@ -591,8 +593,8 @@ def test_array_pickle(spec, executor):
     # note we have to use dill which can serialize local functions, unlike pickle
     c = dill.loads(dill.dumps(c))
 
-    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=np.float32)
+    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=np.float32)
     expected = np.matmul(x, y)
     assert_array_equal(c.compute(executor=executor), expected)
 
@@ -612,10 +614,10 @@ def test_plan_scaling(tmp_path, factor):
     spec = cubed.Spec(tmp_path, allowed_mem="2GB")
     chunksize = 5000
     a = cubed.random.random(
-        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec
+        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec, dtype=xp.float32,
     )
     b = cubed.random.random(
-        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec
+        (factor * chunksize, factor * chunksize), chunks=chunksize, spec=spec, dtype=xp.float32,
     )
     c = xp.matmul(a, b)
 
