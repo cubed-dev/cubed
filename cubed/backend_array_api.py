@@ -34,6 +34,12 @@ else:
     namespace = array_api_compat.numpy
 
 
+precision = 8
+if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
+    if os.environ['CUBED_DEFAULT_PRECISION_X32']:
+        precision = 4
+
+
 # These functions to convert to/from backend arrays
 # assume that no extra memory is allocated, by using the
 # Python buffer protocol.
