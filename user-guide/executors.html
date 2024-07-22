@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=449a00b8"></script>
+    <script src="../_static/documentation_options.js?v=90667933"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -353,7 +353,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-python-executor">Local Python executor</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-single-machine-executors">Local single-machine executors</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-cloud-service-executor-should-i-use">Which cloud service executor should I use?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specifying-an-executor">Specifying an executor</a></li>
 </ul>
@@ -371,12 +371,14 @@ document.write(`
 <h1>Executors<a class="headerlink" href="#executors" title="Link to this heading">#</a></h1>
 <p>Cubed arrays are backed by Zarr arrays, and every chunk in the Zarr array is computed by a task running on a worker, which may be a local or remote process.</p>
 <p>Cubed provides a variety of executors for running the tasks in a computation, which are discussed below. Executors are also sometimes referred to as runtimes.</p>
-<section id="local-python-executor">
-<h2>Local Python executor<a class="headerlink" href="#local-python-executor" title="Link to this heading">#</a></h2>
-<p>If you don’t specify an executor then the local in-process Python executor is used. This is a very simple, single-threaded executor (called <code class="xref py py-class docutils literal notranslate"><span class="pre">PythonDagExecutor</span></code>) that is intended for testing on small amounts of data before running larger computations using a cloud service.</p>
+<section id="local-single-machine-executors">
+<h2>Local single-machine executors<a class="headerlink" href="#local-single-machine-executors" title="Link to this heading">#</a></h2>
+<p>If you don’t specify an executor then the local in-process single-threaded Python executor is used. This is a very simple executor (called <code class="docutils literal notranslate"><span class="pre">single-threaded</span></code>) that is intended for testing on small amounts of data before running larger computations using the <code class="docutils literal notranslate"><span class="pre">processes</span></code> executor on a single machine, or a distributed executor in the cloud.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">processes</span></code> executor runs on a single machine, and uses all the cores on the machine. It doesn’t require any set up so it is useful for quickly getting started and running on datasets that don’t fit in memory, but can fit on a single machine’s disk.</p>
 </section>
 <section id="which-cloud-service-executor-should-i-use">
 <h2>Which cloud service executor should I use?<a class="headerlink" href="#which-cloud-service-executor-should-i-use" title="Link to this heading">#</a></h2>
+<p>When it comes to scaling out, there are a number of executors that work in the cloud.</p>
 <p><a class="reference external" href="https://lithops-cloud.github.io/"><strong>Lithops</strong></a> is the executor we recommend for most users, since it has had the most testing so far (~1000 workers).
 If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it’s in GCS use Lithops with Google Cloud Functions. You have to build a runtime environment as a part of the setting up process.</p>
 <p><a class="reference external" href="https://modal.com/"><strong>Modal</strong></a> is very easy to get started with because it handles building a runtime environment for you automatically (note that it requires that you <a class="reference external" href="https://modal.com/signup">sign up</a> for a free account). <strong>At the time of writing, Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are likely.</strong></p>
@@ -395,7 +397,7 @@ If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it’s in 
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>A default spec may also be configured using a YAML file. The <a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">examples</a> show this in more detail for all of the cloud services described above.</p>
+<p>A default spec may also be configured using a YAML file. The <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/README.md">examples</a> show this in more detail for all of the executors described above.</p>
 </section>
 </section>
 
@@ -444,7 +446,7 @@ If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it’s in 
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-python-executor">Local Python executor</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-single-machine-executors">Local single-machine executors</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-cloud-service-executor-should-i-use">Which cloud service executor should I use?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specifying-an-executor">Specifying an executor</a></li>
 </ul>
