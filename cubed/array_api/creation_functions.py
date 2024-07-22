@@ -2,7 +2,7 @@ import math
 from typing import TYPE_CHECKING, Iterable, List
 
 from cubed.backend_array_api import namespace as nxp
-from cubed.backend_array_api import precision as p
+from cubed.backend_array_api import default_dtypes
 from cubed.core import Plan, gensym
 from cubed.core.ops import map_blocks
 from cubed.storage.virtual import (
@@ -25,8 +25,11 @@ def arange(
         start, stop = 0, start
     num = int(max(math.ceil((stop - start) / step), 0))
     if dtype is None:
+        # TODO(alxmrs): Use inspect API
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
-        dtype = nxp.dtype(f'{dtype.kind}{p}')
+        for k, dtype_ in default_dtypes().items():
+            if nxp.isdtype(dtype, k):
+                dtype = dtype_
 
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
@@ -69,8 +72,9 @@ def asarray(
         a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
         dtype = a.dtype
-        if dtype.itemsize <= 8 and p != 8:
-            dtype = f'{dtype.kind}{p}'
+        for k, dtype_ in default_dtypes().items():
+            if nxp.isdtype(dtype, k):
+                dtype = dtype_
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
@@ -95,7 +99,7 @@ def empty_virtual_array(
     shape, *, dtype=None, device=None, chunks="auto", spec=None, hidden=True
 ) -> "Array":
     if dtype is None:
-        dtype = f'f{p}'
+        dtype = default_dtypes()['real floating']
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
@@ -113,7 +117,7 @@ def eye(
     if n_cols is None:
         n_cols = n_rows
     if dtype is None:
-        dtype = f'f{p}'
+        dtype = default_dtypes()['real floating']
 
     shape = (n_rows, n_cols)
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
@@ -147,11 +151,11 @@ def full(
         if isinstance(fill_value, bool):
             dtype = nxp.bool
         elif isinstance(fill_value, int):
-            dtype = f'i{p}'
+            dtype = default_dtypes()['integral']
         elif isinstance(fill_value, float):
-            dtype = f'f{p}'
+            dtype = default_dtypes()['real floating']
         elif isinstance(fill_value, complex):
-            dtype = f'D{p}'
+            dtype = default_dtypes()['complex floating']
         else:
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
@@ -198,7 +202,7 @@ def linspace(
         div = 1
     step = float(range_) / div
     if dtype is None:
-        dtype = f'f{p}'
+        dtype = default_dtypes()['real floating']
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
@@ -262,7 +266,7 @@ def meshgrid(*arrays, indexing="xy") -> List["Array"]:
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
-        dtype = f'f{p}'
+        dtype = default_dtypes()['real floating']
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -308,7 +312,7 @@ def _tri_mask(N, M, k, chunks, spec):
 
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
-        dtype = f'f{p}'
+        dtype = default_dtypes()['real floating']
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
