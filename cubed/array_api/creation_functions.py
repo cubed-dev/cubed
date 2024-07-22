@@ -28,7 +28,7 @@ def arange(
         # TODO(alxmrs): Use inspect API
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
         for k, dtype_ in default_dtypes(device=device).items():
-            if k != 'indexing' and nxp.isdtype(dtype, k):
+            if nxp.isdtype(dtype, k):
                 dtype = dtype_
 
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
@@ -73,7 +73,7 @@ def asarray(
     if dtype is None:
         dtype = a.dtype
         for k, dtype_ in default_dtypes(device=device).items():
-            if k != 'indexing' and nxp.isdtype(dtype, k):
+            if nxp.isdtype(dtype, k):
                 dtype = dtype_
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
