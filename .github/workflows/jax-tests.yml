@@ -1,6 +1,7 @@
 name: JAX tests
 
 on:
+  pull_request:
   schedule:
     # Every weekday at 03:53 UTC, see https://crontab.guru/
     - cron: "53 3 * * 1-5"
