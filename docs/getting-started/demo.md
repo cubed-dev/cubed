@@ -32,4 +32,4 @@ array([[ 2,  3,  4],
        [ 8,  9, 10]])
 ```
 
-See the [examples README](https://github.com/tomwhite/cubed/tree/main/examples/README.md) for examples that run on cloud services.
+See the [examples README](https://github.com/cubed-dev/cubed/blob/main/examples/README.md) for more examples that run on a single multi-core machine, or in the cloud.
