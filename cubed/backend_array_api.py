@@ -39,7 +39,6 @@ _DEFAULT_DTYPES = {
     "real floating": namespace.float64,
     "complex floating": namespace.complex128,
     "integral": namespace.int64,
-    "indexing": namespace.int64,
 }
 if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
     if os.environ['CUBED_DEFAULT_PRECISION_X32']:
@@ -48,7 +47,6 @@ if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
             "real floating": namespace.float32,
             "complex floating": namespace.complex64,
             "integral": namespace.int32,
-            "indexing": namespace.int32,
         }
 
 
