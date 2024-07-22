@@ -25,7 +25,7 @@ class MemoryWarningCallback(Callback):
             self.counter.update({event.name: 1})
 
     def on_compute_end(self, event):
-        if self.counter.total() > 0:
+        if sum(self.counter.values()) > 0:
             exceeded = [
                 f"{k} ({v}/{self.ops[k].num_tasks})" for k, v in self.counter.items()
             ]
