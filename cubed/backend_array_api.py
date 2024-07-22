@@ -33,12 +33,27 @@ else:
 
     namespace = array_api_compat.numpy
 
-
-precision = 8
+PRECISION = 8
+# TODO(alxmrs): Look up the numpy defaults
+_DEFAULT_DTYPES = {
+    "real floating": namespace.float64,
+    "complex floating": namespace.complex128,
+    "integral": namespace.int64,
+    "indexing": namespace.int64,
+}
 if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
     if os.environ['CUBED_DEFAULT_PRECISION_X32']:
-        precision = 4
+        PRECISION = 4
+        _DEFAULT_DTYPES = {
+            "real floating": namespace.float32,
+            "complex floating": namespace.complex64,
+            "integral": namespace.int32,
+            "indexing": namespace.int32,
+        }
 
+
+def default_dtypes(*, device=None) -> dict:
+    return _DEFAULT_DTYPES
 
 # These functions to convert to/from backend arrays
 # assume that no extra memory is allocated, by using the

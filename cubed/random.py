@@ -2,8 +2,7 @@ import random as pyrandom
 
 from numpy.random import Generator, Philox
 
-from cubed.backend_array_api import precision as p
-from cubed.backend_array_api import numpy_array_to_backend_array
+from cubed.backend_array_api import numpy_array_to_backend_array, default_dtypes
 from cubed.core.ops import map_blocks
 from cubed.utils import block_id_to_offset, normalize_shape
 from cubed.vendor.dask.array.core import normalize_chunks
@@ -12,7 +11,7 @@ from cubed.vendor.dask.array.core import normalize_chunks
 def random(size, *, chunks=None, spec=None):
     """Return random floats in the half-open interval [0.0, 1.0)."""
     shape = normalize_shape(size)
-    dtype = f'f{p}'
+    dtype = default_dtypes()['real floating']
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
     numblocks = tuple(map(len, chunks))
     root_seed = pyrandom.getrandbits(128)
