@@ -8,10 +8,10 @@ from cubed.utils import block_id_to_offset, normalize_shape
 from cubed.vendor.dask.array.core import normalize_chunks
 
 
-def random(size, *, chunks=None, spec=None):
+def random(size, *, chunks=None, spec=None, device=None):
     """Return random floats in the half-open interval [0.0, 1.0)."""
     shape = normalize_shape(size)
-    dtype = default_dtypes()['real floating']
+    dtype = default_dtypes(device=device)['real floating']
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
     numblocks = tuple(map(len, chunks))
     root_seed = pyrandom.getrandbits(128)

@@ -27,7 +27,7 @@ def arange(
     if dtype is None:
         # TODO(alxmrs): Use inspect API
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
-        for k, dtype_ in default_dtypes().items():
+        for k, dtype_ in default_dtypes(device=device).items():
             if nxp.isdtype(dtype, k):
                 dtype = dtype_
 
@@ -72,7 +72,7 @@ def asarray(
         a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
         dtype = a.dtype
-        for k, dtype_ in default_dtypes().items():
+        for k, dtype_ in default_dtypes(device=device).items():
             if nxp.isdtype(dtype, k):
                 dtype = dtype_
 
@@ -99,7 +99,7 @@ def empty_virtual_array(
     shape, *, dtype=None, device=None, chunks="auto", spec=None, hidden=True
 ) -> "Array":
     if dtype is None:
-        dtype = default_dtypes()['real floating']
+        dtype = default_dtypes(device=device)['real floating']
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
@@ -117,7 +117,7 @@ def eye(
     if n_cols is None:
         n_cols = n_rows
     if dtype is None:
-        dtype = default_dtypes()['real floating']
+        dtype = default_dtypes(device=device)['real floating']
 
     shape = (n_rows, n_cols)
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
@@ -148,12 +148,13 @@ def full(
     shape = normalize_shape(shape)
     if dtype is None:
         # check bool first since True/False are instances of int and float
+        defaults = default_dtypes(device=device)
         if isinstance(fill_value, bool):
             dtype = nxp.bool
         elif isinstance(fill_value, int):
-            dtype = default_dtypes()['integral']
+            dtype = defaults['integral']
         elif isinstance(fill_value, float):
-            dtype = default_dtypes()['real floating']
+            dtype = defaults['real floating']
         elif isinstance(fill_value, complex):
             dtype = default_dtypes()['complex floating']
         else:
@@ -202,7 +203,7 @@ def linspace(
         div = 1
     step = float(range_) / div
     if dtype is None:
-        dtype = default_dtypes()['real floating']
+        dtype = default_dtypes(device=device)['real floating']
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
@@ -266,7 +267,7 @@ def meshgrid(*arrays, indexing="xy") -> List["Array"]:
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
-        dtype = default_dtypes()['real floating']
+        dtype = default_dtypes(device=device)['real floating']
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -312,7 +313,7 @@ def _tri_mask(N, M, k, chunks, spec):
 
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     if dtype is None:
-        dtype = default_dtypes()['real floating']
+        dtype = default_dtypes(device=device)['real floating']
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
