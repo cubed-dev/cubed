@@ -179,11 +179,19 @@ async def async_execute_dag(
     if spec is not None:
         check_runtime_memory(spec, max_workers)
     if use_processes:
+        max_tasks_per_child = kwargs.pop("max_tasks_per_child", None)
         context = multiprocessing.get_context("spawn")
         # max_tasks_per_child is only supported from Python 3.11
-        concurrent_executor = ProcessPoolExecutor(
-            max_workers=max_workers, mp_context=context, max_tasks_per_child=1
-        )
+        if max_tasks_per_child is None:
+            concurrent_executor = ProcessPoolExecutor(
+                max_workers=max_workers, mp_context=context
+            )
+        else:
+            concurrent_executor = ProcessPoolExecutor(
+                max_workers=max_workers,
+                mp_context=context,
+                max_tasks_per_child=max_tasks_per_child,
+            )
     else:
         concurrent_executor = ThreadPoolExecutor(max_workers=max_workers)
     try:

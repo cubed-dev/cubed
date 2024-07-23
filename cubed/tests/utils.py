@@ -1,5 +1,4 @@
 import platform
-import sys
 from typing import Iterable
 
 import networkx as nx
@@ -29,10 +28,8 @@ if platform.system() != "Windows":
     # ThreadsExecutor calls `peak_measured_mem` which is not supported on Windows
     ALL_EXECUTORS.append(create_executor("threads"))
 
-    # ProcessesExecutor uses an API available from 3.11 onwards (max_tasks_per_child)
-    if sys.version_info >= (3, 11):
-        ALL_EXECUTORS.append(create_executor("processes"))
-        MAIN_EXECUTORS.append(create_executor("processes"))
+    ALL_EXECUTORS.append(create_executor("processes"))
+    MAIN_EXECUTORS.append(create_executor("processes"))
 
 try:
     ALL_EXECUTORS.append(create_executor("beam"))
