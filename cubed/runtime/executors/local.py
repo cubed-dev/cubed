@@ -6,6 +6,7 @@ from functools import partial
 from typing import Any, AsyncIterator, Callable, Iterable, Optional, Sequence
 
 import cloudpickle
+import psutil
 from aiostream import stream
 from aiostream.core import Stream
 from networkx import MultiDiGraph
@@ -154,6 +155,16 @@ def pipeline_to_stream(
     )
 
 
+def check_runtime_memory(spec, max_workers):
+    allowed_mem = spec.allowed_mem if spec is not None else None
+    total_mem = psutil.virtual_memory().total
+    if allowed_mem is not None:
+        if total_mem < allowed_mem * max_workers:
+            raise ValueError(
+                f"Total memory on machine ({total_mem}) is less than allowed_mem * max_workers ({allowed_mem} * {max_workers} = {allowed_mem * max_workers})"
+            )
+
+
 async def async_execute_dag(
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
@@ -163,16 +174,18 @@ async def async_execute_dag(
     **kwargs,
 ) -> None:
     concurrent_executor: Executor
+    max_workers = kwargs.pop("max_workers", os.cpu_count())
     use_processes = kwargs.pop("use_processes", False)
+    if spec is not None:
+        check_runtime_memory(spec, max_workers)
     if use_processes:
-        max_workers = kwargs.pop("max_workers", None)
         context = multiprocessing.get_context("spawn")
         # max_tasks_per_child is only supported from Python 3.11
         concurrent_executor = ProcessPoolExecutor(
             max_workers=max_workers, mp_context=context, max_tasks_per_child=1
         )
     else:
-        concurrent_executor = ThreadPoolExecutor()
+        concurrent_executor = ThreadPoolExecutor(max_workers=max_workers)
     try:
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
