@@ -220,18 +220,18 @@ def linspace(
         step=step,
         endpoint=endpoint,
         linspace_dtype=dtype,
+        device=device,
     )
 
 
-def _linspace(x, size, start, step, endpoint, linspace_dtype, block_id=None):
+def _linspace(x, size, start, step, endpoint, linspace_dtype, device=None, block_id=None):
     bs = x.shape[0]
     i = block_id[0]
     adjusted_bs = bs - 1 if endpoint else bs
-    blockstart = start + (i * size * step)
-    blockstop = blockstart + (adjusted_bs * step)
-    return nxp.linspace(
-        blockstart, blockstop, bs, endpoint=endpoint, dtype=linspace_dtype
-    )
+    float_ = default_dtypes(device=device)['real floating']
+    blockstart = float_(start + (i * size * step))
+    blockstop = float_(blockstart + float_(adjusted_bs * step))
+    return nxp.linspace(blockstart, blockstop, bs, endpoint=endpoint, dtype=linspace_dtype)
 
 
 def meshgrid(*arrays, indexing="xy") -> List["Array"]:
