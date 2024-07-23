@@ -14,6 +14,7 @@ import cubed.array_api as xp
 import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.extensions.history import HistoryCallback
+from cubed.extensions.mem_warn import MemoryWarningCallback
 from cubed.runtime.executors.lithops import LithopsExecutor
 from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
 
@@ -277,12 +278,13 @@ def run_operation(tmp_path, name, result_array, *, optimize_function=None):
     # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
     executor = LithopsExecutor(config=LITHOPS_LOCAL_CONFIG)
     hist = HistoryCallback()
+    mem_warn = MemoryWarningCallback()
     # use store=None to write to temporary zarr
     cubed.to_zarr(
         result_array,
         store=None,
         executor=executor,
-        callbacks=[hist],
+        callbacks=[hist, mem_warn],
         optimize_function=optimize_function,
     )
 

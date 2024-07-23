@@ -13,6 +13,7 @@ import cubed
 import cubed.array_api as xp
 import cubed.random
 from cubed.extensions.history import HistoryCallback
+from cubed.extensions.mem_warn import MemoryWarningCallback
 from cubed.extensions.rich import RichProgressBar
 from cubed.extensions.timeline import TimelineVisualizationCallback
 from cubed.extensions.tqdm import TqdmProgressBar
@@ -146,6 +147,28 @@ def test_callbacks_modal(spec, modal_executor):
     finally:
         fs = fsspec.open(tmp_path).fs
         fs.rm(tmp_path, recursive=True)
+
+
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="measuring memory does not run on windows"
+)
+def test_mem_warn(tmp_path, executor):
+    if executor.name not in ("processes", "lithops"):
+        pytest.skip(f"{executor.name} executor does not support MemoryWarningCallback")
+
+    spec = cubed.Spec(tmp_path, allowed_mem=200_000_000, reserved_mem=100_000_000)
+    mem_warn = MemoryWarningCallback()
+
+    def func(a):
+        np.ones(100_000_000)  # blow memory
+        return a
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = cubed.map_blocks(func, a, dtype=a.dtype)
+    with pytest.raises(
+        UserWarning, match="Peak memory usage exceeded allowed_mem when running tasks"
+    ):
+        b.compute(executor=executor, callbacks=[mem_warn])
 
 
 def test_resume(spec, executor):
