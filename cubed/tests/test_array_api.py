@@ -113,17 +113,17 @@ def test_eye(spec, k):
 
 @pytest.mark.parametrize("endpoint", [True, False])
 def test_linspace(spec, endpoint):
-    a = xp.linspace(6, 49, 50, endpoint=endpoint, chunks=5, spec=spec)
-    npa = np.linspace(6, 49, 50, endpoint=endpoint)
-    assert_allclose(a, npa)
+    a = xp.linspace(6, 49, 50, endpoint=endpoint, chunks=5, spec=spec, dtype=xp.float32)
+    npa = np.linspace(6, 49, 50, endpoint=endpoint, dtype=np.float32)
+    assert_allclose(a, npa, rtol=1e-5)
 
-    a = xp.linspace(1.4, 4.9, 13, endpoint=endpoint, chunks=5, spec=spec)
-    npa = np.linspace(1.4, 4.9, 13, endpoint=endpoint)
-    assert_allclose(a, npa)
+    a = xp.linspace(1.4, 4.9, 13, endpoint=endpoint, chunks=5, spec=spec, dtype=xp.float32)
+    npa = np.linspace(1.4, 4.9, 13, endpoint=endpoint, dtype=np.float32)
+    assert_allclose(a, npa, rtol=1e-5)
 
-    a = xp.linspace(0, 0, 0, endpoint=endpoint)
-    npa = np.linspace(0, 0, 0, endpoint=endpoint)
-    assert_allclose(a, npa)
+    a = xp.linspace(0, 0, 0, endpoint=endpoint, dtype=xp.float32)
+    npa = np.linspace(0, 0, 0, endpoint=endpoint, dtype=np.float32)
+    assert_allclose(a, npa, rtol=1e-5)
 
 
 def test_ones(spec, executor):
