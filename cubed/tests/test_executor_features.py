@@ -146,6 +146,9 @@ def test_callbacks_modal(spec, modal_executor):
         fs.rm(tmp_path, recursive=True)
 
 
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="measuring memory does not run on windows"
+)
 def test_mem_warn(tmp_path, executor):
     if executor.name not in ("processes", "lithops"):
         pytest.skip(f"{executor.name} executor does not support MemoryWarningCallback")
