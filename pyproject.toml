@@ -90,6 +90,15 @@ test = [
     "pytest-mock",
 ]
 
+test-jax = [
+    "cubed[diagnostics]",  # modal tests separate due to conflicting package reqs
+    "dill",
+    "numpy_groupies",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "jax",
+]
 [project.urls]
 homepage = "https://github.com/cubed-dev/cubed"
 documentation = "https://tomwhite.github.io/cubed"

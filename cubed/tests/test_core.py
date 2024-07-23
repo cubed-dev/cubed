@@ -458,7 +458,7 @@ def test_reduction_multiple_rounds(tmp_path, executor):
 
 
 def test_partial_reduce(spec):
-    a = xp.asarray(np.arange(242).reshape((11, 22)), chunks=(3, 4), spec=spec)
+    a = xp.asarray(np.arange(242, dtype=np.int32).reshape((11, 22)), chunks=(3, 4), spec=spec, dtype=xp.int32)
     b = partial_reduce(a, np.sum, split_every={0: 2})
     c = partial_reduce(b, np.sum, split_every={0: 2})
     assert_array_equal(
@@ -543,13 +543,13 @@ def test_compute_multiple_different_specs(tmp_path):
 
 
 def test_visualize(tmp_path):
-    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float64, chunks=(2, 2))
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2))
     b = cubed.random.random((3, 3), chunks=(2, 2))
     c = xp.add(a, b)
     d = c.rechunk((3, 1))
     e = c * 3
 
-    f = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    f = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), dtype=xp.float32)
     g = f * 4
 
     assert not (tmp_path / "e.dot").exists()
