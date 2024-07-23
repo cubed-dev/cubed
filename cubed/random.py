@@ -26,9 +26,9 @@ def random(size, *, chunks=None, spec=None, device=None):
     )
 
 
-def _random(x, numblocks=None, root_seed=None, block_id=None):
+def _random(x, numblocks=None, root_seed=None, block_id=None, dtype=None):
     stream_id = block_id_to_offset(block_id, numblocks)
     rg = Generator(Philox(key=root_seed + stream_id))
-    out = rg.random(x.shape)
-    out = numpy_array_to_backend_array(out)
+    out = rg.random(x.shape, dtype=dtype)
+    out = numpy_array_to_backend_array(out, dtype=dtype)
     return out
