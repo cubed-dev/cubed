@@ -91,7 +91,7 @@ test = [
 ]
 
 test-jax = [
-    "cubed[diagnostics]",  # modal tests separate due to conflicting package reqs
+    "cubed[diagnostics]",
     "dill",
     "numpy_groupies",
     "pytest",

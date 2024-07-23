@@ -33,8 +33,6 @@ else:
 
     namespace = array_api_compat.numpy
 
-PRECISION = 8
-# TODO(alxmrs): Look up the numpy defaults
 _DEFAULT_DTYPES = {
     "real floating": namespace.float64,
     "complex floating": namespace.complex128,
@@ -42,7 +40,6 @@ _DEFAULT_DTYPES = {
 }
 if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
     if os.environ['CUBED_DEFAULT_PRECISION_X32']:
-        PRECISION = 4
         _DEFAULT_DTYPES = {
             "real floating": namespace.float32,
             "complex floating": namespace.complex64,

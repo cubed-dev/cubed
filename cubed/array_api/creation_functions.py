@@ -25,7 +25,7 @@ def arange(
         start, stop = 0, start
     num = int(max(math.ceil((stop - start) / step), 0))
     if dtype is None:
-        # TODO(alxmrs): Use inspect API
+        # TODO: Use inspect API
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
         for k, dtype_ in default_dtypes(device=device).items():
             if nxp.isdtype(dtype, k):
