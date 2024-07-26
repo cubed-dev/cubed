@@ -1,4 +1,6 @@
+import atexit
 import inspect
+import shutil
 import tempfile
 import uuid
 from datetime import datetime
@@ -18,6 +20,16 @@ from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
+
+# Delete local context dirs when Python exits
+CONTEXT_DIRS = set()
+
+
+def delete_on_exit(context_dir: str) -> None:
+    if context_dir not in CONTEXT_DIRS and context_dir.startswith("/"):
+        atexit.register(lambda: shutil.rmtree(context_dir, ignore_errors=True))
+        CONTEXT_DIRS.add(context_dir)
+
 
 sym_counter = 0
 
@@ -436,10 +448,16 @@ def arrays_to_plan(*arrays):
 
 
 def new_temp_path(name, suffix=".zarr", spec=None):
+    """Return a string path for a temporary file path, which may be local or remote.
+
+    Note that this function does not create the file or any directories (and they
+    may never be created, if for example the file doesn't need to be materialized).
+    """
     work_dir = spec.work_dir if spec is not None else None
     if work_dir is None:
         work_dir = tempfile.gettempdir()
     context_dir = join_path(work_dir, CONTEXT_ID)
+    delete_on_exit(context_dir)
     return join_path(context_dir, f"{name}{suffix}")
 
 
