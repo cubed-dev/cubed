@@ -128,6 +128,7 @@ test-jax-macos = [
     "pytest-cov",
     "pytest-mock",
     "jax-metal",
+    "jaxlib",
 ]
 [project.urls]
 homepage = "https://github.com/cubed-dev/cubed"
