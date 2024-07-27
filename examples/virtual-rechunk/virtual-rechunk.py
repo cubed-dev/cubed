@@ -42,9 +42,9 @@ def reduce_references(results):
     """
     combined_vds = xr.combine_nested(
         results,
-        concat_dim=['Time'],
-        coords='minimal',
-        compat='override',
+        concat_dim=["Time"],
+        coords="minimal",
+        compat="override",
     )
     # possibly write parquet to s3 here
     return combined_vds
@@ -60,24 +60,25 @@ futures = fexec.map_reduce(
 )
 
 ds = futures.get_result()
-ds.virtualize.to_kerchunk('combined.json', format='json')
+ds.virtualize.to_kerchunk("combined.json", format="json")
 
 # NOTE: In jupyter, open_dataset seems to cache the json, such that changes
 # aren't propogated until the kernel is restarted.
-combined_ds = xr.open_dataset('combined.json',
+combined_ds = xr.open_dataset("combined.json",
                               engine="kerchunk",
                               chunks={},
-                              chunked_array_type='cubed',
+                              chunked_array_type="cubed",
                               )
 
 combined_ds['Time'].attrs = {}  # to_zarr complains about attrs
 
 rechunked_ds = combined_ds.chunk(
-    chunks={'Time': 5, 'south_north': 25, 'west_east': 32}
+    chunks={'Time': 5, 'south_north': 25, 'west_east': 32},
+    chunked_array_type="cubed",
 )
 
-rechunked_ds.to_zarr('rechunked.zarr',
-                     mode='w',
+rechunked_ds.to_zarr("rechunked.zarr",
+                     mode="w",
                      encoding={},  # TODO
                      consolidated=True,
                      safe_chunks=False,
