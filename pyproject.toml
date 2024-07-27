@@ -99,6 +99,15 @@ test-jax = [
     "pytest-mock",
     "jax",
 ]
+test-jax-macos = [
+    "cubed[diagnostics]",
+    "dill",
+    "numpy_groupies",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "jax-metal",
+]
 [project.urls]
 homepage = "https://github.com/cubed-dev/cubed"
 documentation = "https://tomwhite.github.io/cubed"
