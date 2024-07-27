@@ -18,7 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         # How to set up Jax on an ARM Mac: https://developer.apple.com/metal/jax/
-        os: ["ubuntu-latest", "macos-14"]
+        # Only the large macos image supports MPS/GPU on the M1 chip
+        #  https://github.blog/news-insights/product-news/introducing-the-new-apple-silicon-powered-m1-macos-larger-runner-for-github-actions/
+        os: ["ubuntu-latest", "macos-14-xlarge"]
         python-version: ["3.11"]
 
     steps:
