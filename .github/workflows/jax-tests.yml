@@ -42,7 +42,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e '.[test-jax]'
           # Verify jax
-          python -c 'import jax; print(jax.numpy.arange(10))'
+          ENABLE_PJRT_COMPATIBILITY=1 python -c 'import jax; print(jax.numpy.arange(10))'
 
       - name: Install for Mac
         if: matrix.os == 'macos-14'
