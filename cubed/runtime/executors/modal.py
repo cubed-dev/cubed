@@ -209,7 +209,7 @@ async def async_execute_dag(
 ) -> None:
     if spec is not None:
         check_runtime_memory(spec)
-    async with app.run():
+    async with app.run(show_progress=False):
         cloud = cloud or "aws"
         if cloud == "aws":
             app_function = run_remotely
