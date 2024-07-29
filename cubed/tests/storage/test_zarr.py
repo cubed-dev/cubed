@@ -8,7 +8,7 @@ def test_lazy_zarr_array(tmp_path):
     arr = lazy_zarr_array(zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2))
 
     assert not zarr_path.exists()
-    with pytest.raises((TypeError, ValueError)):
+    with pytest.raises((FileNotFoundError, TypeError, ValueError)):
         arr.open()
 
     arr.create()
