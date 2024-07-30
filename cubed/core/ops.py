@@ -23,6 +23,7 @@ from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
+from cubed.runtime.utils import batched
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
 from cubed.utils import (
@@ -914,6 +915,7 @@ def reduction(
     keepdims=False,
     use_new_impl=True,
     split_every=None,
+    combine_sizes=None,
     extra_func_kwargs=None,
 ) -> "Array":
     """Apply a function to reduce an array along one or more axes."""
@@ -935,6 +937,7 @@ def reduction(
             dtype=dtype,
             keepdims=keepdims,
             split_every=split_every,
+            combine_sizes=combine_sizes,
             extra_func_kwargs=extra_func_kwargs,
         )
     if combine_func is None:
@@ -1208,10 +1211,15 @@ def partial_reduce(
     axis = tuple(ax for ax in split_every.keys())
     combine_sizes = combine_sizes or {}
     combine_sizes = {k: combine_sizes.get(k, 1) for k in axis}
+
+    def chunksize_along_axis(i, c):
+        if combine_sizes[i] == -1:  # merge chunks
+            return tuple(sum(batch) for batch in batched(c, split_every[i]))
+        else:
+            return (combine_sizes[i],) * math.ceil(len(c) / split_every[i])
+
     chunks = [
-        (combine_sizes[i],) * math.ceil(len(c) / split_every[i])
-        if i in split_every
-        else c
+        chunksize_along_axis(i, c) if i in split_every else c
         for (i, c) in enumerate(x.chunks)
     ]
     shape = tuple(map(sum, chunks))
