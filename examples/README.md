@@ -66,11 +66,18 @@ python matmul-random.py
 
 These will take longer to run as they operate on more data.
 
-The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle.
+The last two examples use `TimelineVisualizationCallback` which produce a plot showing the timeline of events in the task lifecycle, and `HistoryCallback` to produce stats about memory usage.
 The plots are SVG files and are written in the `history` directory in a directory with a timestamp. Open the latest one with
 
 ```shell
 open $(ls -d history/compute-* | tail -1)/timeline.svg
+```
+
+The memory usage stats are in a CSV file which you can view with
+
+
+```shell
+open $(ls -d history/compute-* | tail -1)/stats.csv
 ```
 
 ## Running the notebook examples
