@@ -231,6 +231,8 @@ def _linspace(x, size, start, step, endpoint, linspace_dtype, device=None, block
     bs = x.shape[0]
     i = block_id[0]
     adjusted_bs = bs - 1 if endpoint else bs
+    # While the Array API supports `nxp.astype(x, dtype)`, using this method causes precision
+    # errors with Jax. For now, let's see how this works with other implementations.
     float_ = default_dtypes(device=device)['real floating']
     blockstart = float_(start + (i * size * step))
     blockstop = float_(blockstart + float_(adjusted_bs * step))
