@@ -12,7 +12,7 @@ import cubed
 import cubed.array_api as xp
 import cubed.random
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import merge_chunks, partial_reduce, reduction, tree_reduce
+from cubed.core.ops import merge_chunks, partial_reduce, tree_merge_chunks, tree_reduce
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.storage.backend import open_backend_array
 from cubed.tests.utils import (
@@ -425,6 +425,13 @@ def test_merge_chunks_fails(spec, target_chunks):
         merge_chunks(a, target_chunks)
 
 
+def test_tree_merge_chunks(spec):
+    a = xp.arange(8, chunks=2, spec=spec)
+    b = tree_merge_chunks(a, axis=0)
+    assert b.chunksize == (8,)
+    assert_array_equal(b.compute(), np.arange(8))
+
+
 def test_compute_multiple():
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2))
@@ -626,28 +633,3 @@ def test_quad_means_zarr(tmp_path, t_length=50):
     m.visualize(filename=tmp_path / "quad_means", optimize_function=opt_fn)
 
     cubed.to_zarr(m, store=tmp_path / "result", optimize_function=opt_fn)
-
-
-def identity(x, **kwargs):
-    return x
-
-
-def tree_merge_chunks(x, axis, split_every=None):
-    return reduction(
-        x,
-        identity,
-        axis=axis,
-        dtype=x.dtype,
-        keepdims=False,
-        split_every=split_every,
-        combine_sizes={axis: -1},
-    )
-
-
-def test_tree_merge_chunks():
-    a = xp.arange(8, chunks=2)
-    b = tree_merge_chunks(a, axis=0)
-
-    assert b.chunks == ((8,),)
-
-    assert_array_equal(b.compute(), np.arange(8))

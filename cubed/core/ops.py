@@ -903,6 +903,29 @@ def merge_chunks_new(x, chunks):
     )
 
 
+def tree_merge_chunks(x, axis=None, split_every=None):
+    """Merge multiple chunks into one, along one or more axes, using a tree-reduce strategy."""
+
+    def identity(a, **kwargs):
+        return a
+
+    if axis is None:
+        axis = tuple(range(x.ndim))
+    if isinstance(axis, Integral):
+        axis = (axis,)
+    axis = validate_axis(axis, x.ndim)
+
+    return reduction(
+        x,
+        identity,
+        axis=axis,
+        dtype=x.dtype,
+        keepdims=False,
+        split_every=split_every,
+        combine_sizes={ax: -1 for ax in axis},
+    )
+
+
 def reduction(
     x: "Array",
     func,
@@ -1073,7 +1096,8 @@ def reduction_new(
         recursive aggregation.
     combine_sizes: dict(axis: int), optional
         The resulting size of each axis after reduction. Each reduction axis
-        defaults to size one if not specified.
+        defaults to size one if not specified. A value of -1 indicates that
+        the array is not changed in size along that axis.
     extra_func_kwargs: dict, optional
         Extra keyword arguments to pass to ``func`` and ``combine_func``.
     """
@@ -1205,7 +1229,8 @@ def partial_reduce(
         Output data type.
     combine_sizes: dict(axis: int), optional
         The resulting size of each axis after reduction. Each reduction axis
-        defaults to size one if not specified.
+        defaults to size one if not specified. A value of -1 indicates that
+        the array is not changed in size along that axis.
     """
     # map over output chunks
     axis = tuple(ax for ax in split_every.keys())
@@ -1213,15 +1238,14 @@ def partial_reduce(
     combine_sizes = {k: combine_sizes.get(k, 1) for k in axis}
 
     def chunksize_along_axis(i, c):
-        if combine_sizes[i] == -1:  # merge chunks
+        if i not in split_every:
+            return c
+        if combine_sizes[i] == -1:  # size is not changed
             return tuple(sum(batch) for batch in batched(c, split_every[i]))
         else:
             return (combine_sizes[i],) * math.ceil(len(c) / split_every[i])
 
-    chunks = [
-        chunksize_along_axis(i, c) if i in split_every else c
-        for (i, c) in enumerate(x.chunks)
-    ]
+    chunks = [chunksize_along_axis(i, c) for (i, c) in enumerate(x.chunks)]
     shape = tuple(map(sum, chunks))
 
     def key_function(out_key):
