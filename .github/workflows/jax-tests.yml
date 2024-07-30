@@ -17,7 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        # How to set up Jax on an ARM Mac: https://developer.apple.com/metal/jax/
+        os: ["ubuntu-latest", "macos-14"]
         python-version: ["3.11"]
 
     steps:
@@ -36,11 +37,22 @@ jobs:
         uses: ts-graphviz/setup-graphviz@v2
 
       - name: Install
+        if: matrix.os != 'macos-14'
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e '.[test-jax]'
           # Verify jax
           python -c 'import jax; print(jax.numpy.arange(10))'
+
+      - name: Install for Mac
+        if: matrix.os == 'macos-14'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[test-jax-macos]'
+          # Verify jax
+          python -c 'import jax; print(jax.numpy.arange(10))'
+        env:
+          ENABLE_PJRT_COMPATIBILITY: True
 
       - name: Run tests
         run: |
@@ -48,6 +60,6 @@ jobs:
           pytest -k "not broadcast_trick and not object_dtype"
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
-          JAX_ENABLE_X64:  False
-          CUBED_DEFAULT_PRECISION_X32: True
+          JAX_ENABLE_X64:  ${{ matrix.os != 'macos-14' }}
+          CUBED_DEFAULT_PRECISION_X32: ${{ matrix.os == 'macos-14' }}
           ENABLE_PJRT_COMPATIBILITY: True
