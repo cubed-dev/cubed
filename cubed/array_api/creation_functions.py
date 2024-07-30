@@ -18,6 +18,13 @@ if TYPE_CHECKING:
     from .array_object import Array
 
 
+def _to_default_precision(dtype, *, device=None):
+    """Returns a dtype of the same kind with the default precision."""
+    for k, dtype_ in default_dtypes(device=device).items():
+        if nxp.isdtype(dtype, k):
+            return dtype_
+
+
 def arange(
     start, /, stop=None, step=1, *, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
@@ -27,9 +34,8 @@ def arange(
     if dtype is None:
         # TODO: Use inspect API
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
-        for k, dtype_ in default_dtypes(device=device).items():
-            if nxp.isdtype(dtype, k):
-                dtype = dtype_
+        # the default nxp call does not adjust the data type to the default precision.
+        dtype = _to_default_precision(dtype, device=device)
 
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
@@ -71,10 +77,7 @@ def asarray(
         # ensure blocks are arrays
         a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
-        dtype = a.dtype
-        for k, dtype_ in default_dtypes(device=device).items():
-            if nxp.isdtype(dtype, k):
-                dtype = dtype_
+        dtype = _to_default_precision(a.dtype, device=device)
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
