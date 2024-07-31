@@ -49,6 +49,6 @@ jobs:
           pytest -k "not broadcast_trick and not object_dtype"
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
-          JAX_ENABLE_X64:  ${{ matrix.os != 'macos-14' }}
+          JAX_ENABLE_X64: True
           CUBED_DEFAULT_PRECISION_X32: ${{ matrix.os == 'macos-14' }}
           ENABLE_PJRT_COMPATIBILITY: True
