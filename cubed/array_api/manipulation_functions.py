@@ -172,6 +172,50 @@ def flatten(x):
     return reshape(x, (-1,))
 
 
+def flip(x, /, *, axis=None):
+    if axis is None:
+        axis = tuple(range(x.ndim))  # all axes
+    if not isinstance(axis, tuple):
+        axis = (axis,)
+    axis = validate_axis(axis, x.ndim)
+    return map_direct(
+        _flip,
+        x,
+        shape=x.shape,
+        dtype=x.dtype,
+        chunks=x.chunks,
+        extra_projected_mem=x.chunkmem,
+        target_chunks=x.chunks,
+        axis=axis,
+    )
+
+
+def _flip(x, *arrays, target_chunks=None, axis=None, block_id=None):
+    array = arrays[0].zarray  # underlying Zarr array (or virtual array)
+    chunks = target_chunks
+
+    # produce a key that has slices (except for axis dimensions, which are replaced below)
+    idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
+    key = list(get_item(chunks, idx))
+
+    for ax in axis:
+        # determine the start and stop indexes for this block along the axis dimension
+        chunksize = to_chunksize(chunks)
+        start = block_id[ax] * chunksize[ax]
+        stop = start + x.shape[ax]
+
+        # flip start and stop
+        axis_len = array.shape[ax]
+        start, stop = axis_len - stop, axis_len - start
+
+        # replace with slice
+        key[ax] = slice(start, stop)
+
+    key = tuple(key)
+
+    return nxp.flip(array[key], axis=axis)
+
+
 def moveaxis(
     x,
     source,

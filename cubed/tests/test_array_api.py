@@ -492,6 +492,31 @@ def test_expand_dims(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.expand_dims([1, 2, 3], 0))
 
 
+@pytest.mark.parametrize(
+    "shape, chunks, axis",
+    [
+        ((10,), (4,), None),
+        ((10,), (4,), 0),
+        ((10, 7), (4, 3), None),
+        ((10, 7), (4, 3), 0),
+        ((10, 7), (4, 3), 1),
+        ((10, 7), (4, 3), (0, 1)),
+        ((10, 7), (4, 3), -1),
+    ],
+)
+def test_flip(executor, shape, chunks, axis):
+    x = np.random.randint(10, size=shape)
+    a = xp.asarray(x, chunks=chunks)
+    b = xp.flip(a, axis=axis)
+
+    assert b.chunks == a.chunks
+
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.flip(x, axis=axis),
+    )
+
+
 def test_moveaxis(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.moveaxis(a, [0, -1], [-1, 0])

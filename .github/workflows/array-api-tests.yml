@@ -96,7 +96,6 @@ jobs:
           # not implemented
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
-          array_api_tests/test_manipulation_functions.py::test_flip
           array_api_tests/test_sorting_functions.py
           array_api_tests/test_statistical_functions.py::test_std
           array_api_tests/test_statistical_functions.py::test_var

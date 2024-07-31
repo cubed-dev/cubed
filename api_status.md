@@ -59,7 +59,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `broadcast_to`      | :white_check_mark: |            |                              |
 |                          | `concat`            | :white_check_mark: |            |                              |
 |                          | `expand_dims`       | :white_check_mark: |            |                              |
-|                          | `flip`              | :x:                |            | Needs indexing with step=-1, [#114](https://github.com/cubed-dev/cubed/issues/114) |
+|                          | `flip`              | :white_check_mark: |            |                              |
 |                          | `permute_dims`      | :white_check_mark: |            |                              |
 |                          | `repeat`            | :x:                | 2023.12    |                              |
 |                          | `reshape`           | :white_check_mark: |            | Partial implementation       |
