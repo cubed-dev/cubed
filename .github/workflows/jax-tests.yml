@@ -37,22 +37,11 @@ jobs:
         uses: ts-graphviz/setup-graphviz@v2
 
       - name: Install
-        if: matrix.os != 'macos-14'
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e '.[test-jax]'
           # Verify jax
           python -c 'import jax; print(jax.numpy.arange(10))'
-
-      - name: Install for Mac
-        if: matrix.os == 'macos-14'
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e '.[test-jax-macos]'
-          # Verify jax
-          python -c 'import jax; print(jax.numpy.arange(10))'
-        env:
-          ENABLE_PJRT_COMPATIBILITY: True
 
       - name: Run tests
         run: |
