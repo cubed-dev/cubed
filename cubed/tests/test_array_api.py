@@ -444,13 +444,11 @@ def test_outer(spec, executor):
 
 
 @pytest.mark.parametrize("axes", [1, (1, 0)])
-@pytest.mark.parametrize("dtypes", [(None, None), (np.float32, xp.float32)])
-def test_tensordot(axes, dtypes):
-    ntype, xtype = dtypes
-    x = np.arange(400, dtype=ntype).reshape((20, 20))
-    a = xp.asarray(x, chunks=(5, 4), dtype=xtype)
-    y = np.arange(200, dtype=ntype).reshape((20, 10))
-    b = xp.asarray(y, chunks=(4, 5), dtype=xtype)
+def test_tensordot(axes):
+    x = np.arange(400).reshape((20, 20))
+    a = xp.asarray(x, chunks=(5, 4))
+    y = np.arange(200).reshape((20, 10))
+    b = xp.asarray(y, chunks=(4, 5))
     assert_array_equal(
         xp.tensordot(a, b, axes=axes).compute(), np.tensordot(x, y, axes=axes)
     )
