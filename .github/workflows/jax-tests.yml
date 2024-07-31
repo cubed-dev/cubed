@@ -51,6 +51,6 @@ jobs:
           pytest -k "not argmax and not argmin and not mean and not apply_reduction and not broadcast_trick and not groupby and not random and not visualization and not plan_scaling and not optimization"
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
-          JAX_ENABLE_X64:  ${{ matrix.os != 'macos-14' }}
+          JAX_ENABLE_X64: True
           CUBED_DEFAULT_PRECISION_X32: ${{ matrix.os == 'macos-14' }}
           ENABLE_PJRT_COMPATIBILITY: True
