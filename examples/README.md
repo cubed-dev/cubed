@@ -37,14 +37,14 @@ The `add-asarray.py` script is a small example that adds two small 4x4 arrays to
 Export `CUBED_CONFIG` as described in the set up instructions, then run the script. This is for running on the local machine using the `processes` executor:
 
 ```shell
-export CUBED_CONFIG=$(pwd)/processes
+export CUBED_CONFIG=$(pwd)/processes/cubed.yaml
 python add-asarray.py
 ```
 
 This is for Lithops on AWS:
 
 ```shell
-export CUBED_CONFIG=$(pwd)/lithops/aws
+export CUBED_CONFIG=$(pwd)/lithops/aws/cubed.yaml
 python add-asarray.py
 ```
 
