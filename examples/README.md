@@ -23,7 +23,7 @@ Follow the instructions for setting up Cubed to run on your executor runtime:
 
 | Executor  | Cloud  | Set up instructions                            |
 |-----------|--------|------------------------------------------------|
-| Processes | N/A    | N/A                                            |
+| Processes | N/A    | `pip install 'cubed[diagnostics]'`             |
 | Lithops   | AWS    | [lithops/aws/README.md](lithops/aws/README.md) |
 |           | Google | [lithops/gcp/README.md](lithops/gcp/README.md) |
 | Modal     | AWS    | [modal/aws/README.md](modal/aws/README.md)     |
