@@ -12,6 +12,7 @@ from cubed.utils import (
     block_id_to_offset,
     broadcast_trick,
     extract_stack_summaries,
+    is_local_path,
     join_path,
     map_nested,
     memory_repr,
@@ -67,6 +68,15 @@ def test_join_path():
         join_path("http://host/a%20path", "subpath") == "http://host/a%20path/subpath"
     )
     assert join_path("http://host/a path", "subpath") == "http://host/a%20path/subpath"
+
+
+def test_is_local_path():
+    assert is_local_path("relative_path/path")
+    assert is_local_path("/absolute_path/path")
+    assert is_local_path("file:relative_path/path")
+    assert is_local_path("file://absolute_path/path")
+    assert is_local_path("file:///absolute_path/path")
+    assert not is_local_path("s3://host/path")
 
 
 def test_memory_repr():

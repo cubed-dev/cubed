@@ -16,7 +16,13 @@ from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
-from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
+from cubed.utils import (
+    chunk_memory,
+    extract_stack_summaries,
+    is_local_path,
+    join_path,
+    memory_repr,
+)
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -26,7 +32,7 @@ CONTEXT_DIRS = set()
 
 
 def delete_on_exit(context_dir: str) -> None:
-    if context_dir not in CONTEXT_DIRS and context_dir.startswith("/"):
+    if context_dir not in CONTEXT_DIRS and is_local_path(context_dir):
         atexit.register(lambda: shutil.rmtree(context_dir, ignore_errors=True))
         CONTEXT_DIRS.add(context_dir)
 
