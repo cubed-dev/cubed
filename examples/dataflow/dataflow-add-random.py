@@ -7,7 +7,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.extensions.tqdm import TqdmProgressBar
+from cubed.diagnostics.tqdm import TqdmProgressBar
 from cubed.runtime.executors.beam import BeamExecutor
 
 
