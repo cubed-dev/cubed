@@ -12,7 +12,7 @@
 # from this directory
 conda create --name cubed-lithops-gcp-examples -y python=3.11
 conda activate cubed-lithops-gcp-examples
-pip install -r requirements.txt  # use requirements file from same directory as this readme
+pip install 'cubed[lithops-gcp]'
 ```
 
 2. Configure Lithops with a [Google Cloud Functions compute backend](https://lithops-cloud.github.io/docs/source/compute_config/gcp_functions.html#configuration), and a [Google Cloud Storage backend](https://lithops-cloud.github.io/docs/source/storage_config/gcp_storage.html#configuration).
