@@ -74,6 +74,11 @@ def join_path(dir_url: PathType, child_path: str) -> str:
     return urlunsplit(split_parts)
 
 
+def is_local_path(path: str):
+    """Determine if a path string is for the local filesystem."""
+    return urlsplit(path).scheme in ("", "file")
+
+
 def memory_repr(num: int) -> str:
     """Convert bytes to a human-readable string in decimal form.
     1 KB is 1,000 bytes, 1 MB is 1,000,000 bytes, and so on.
