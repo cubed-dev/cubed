@@ -12,8 +12,8 @@ import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import partial_reduce
 from cubed.core.optimization import multiple_inputs_optimize_dag
-from cubed.extensions.history import HistoryCallback
-from cubed.extensions.mem_warn import MemoryWarningCallback
+from cubed.diagnostics.history import HistoryCallback
+from cubed.diagnostics.mem_warn import MemoryWarningCallback
 from cubed.runtime.create import create_executor
 from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
 

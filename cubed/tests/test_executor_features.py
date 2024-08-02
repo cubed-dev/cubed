@@ -12,11 +12,11 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.extensions.history import HistoryCallback
-from cubed.extensions.mem_warn import MemoryWarningCallback
-from cubed.extensions.rich import RichProgressBar
-from cubed.extensions.timeline import TimelineVisualizationCallback
-from cubed.extensions.tqdm import TqdmProgressBar
+from cubed.diagnostics.history import HistoryCallback
+from cubed.diagnostics.mem_warn import MemoryWarningCallback
+from cubed.diagnostics.rich import RichProgressBar
+from cubed.diagnostics.timeline import TimelineVisualizationCallback
+from cubed.diagnostics.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.create import create_executor
 from cubed.tests.utils import (

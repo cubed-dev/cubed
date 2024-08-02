@@ -3,9 +3,9 @@ import logging
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.extensions.history import HistoryCallback
-from cubed.extensions.rich import RichProgressBar
-from cubed.extensions.timeline import TimelineVisualizationCallback
+from cubed.diagnostics.history import HistoryCallback
+from cubed.diagnostics.rich import RichProgressBar
+from cubed.diagnostics.timeline import TimelineVisualizationCallback
 
 # suppress harmless connection pool warnings
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
