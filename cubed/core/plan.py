@@ -204,7 +204,7 @@ class Plan:
         return dag
 
     def _compile_blockwise(self, dag, compile_function: Decorator) -> nx.MultiDiGraph:
-        """JIT-compiles the functions from all blockwise ops by mutating the input dag."""
+        """Compiles functions from all blockwise ops by mutating the input dag."""
         # Recommended: make a copy of the dag before calling this function.
 
         compile_with_config = 'config' in inspect.getfullargspec(compile_function).kwonlyargs
