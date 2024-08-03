@@ -341,10 +341,25 @@ except ModuleNotFoundError:
 
 
 @pytest.mark.parametrize("compile_function", COMPILE_FUNCTIONS)
-def test_check_jit_compliation(spec, executor, compile_function):
+def test_check_compilation(spec, executor, compile_function):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
         c.compute(executor=executor, compile_function=compile_function), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
     )
+
+
+def test_compilation_can_fail(spec, executor):
+    def compile_function(func):
+        raise NotImplementedError(f"Cannot compile {func}")
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    try:
+        c.compute(executor=executor, compile_function=compile_function)
+        assert False, "Compile function was not called."
+    except NotImplementedError as e:
+        assert True, "Compile function was applied."
+        assert "add" in str(e), "Compile function was applied to add operation."
