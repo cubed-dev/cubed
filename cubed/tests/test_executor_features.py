@@ -315,3 +315,36 @@ def test_check_runtime_memory_processes(spec, executor):
 
     # OK if we use fewer workers
     c.compute(executor=executor, max_workers=max_workers // 2)
+
+
+COMPILE_FUNCTIONS = [lambda fn: fn]
+
+try:
+    from numba import jit as numba_jit
+    COMPILE_FUNCTIONS.append(numba_jit)
+except ModuleNotFoundError:
+    pass
+
+try:
+    if 'jax' in os.environ.get('CUBED_BACKEND_ARRAY_API_MODULE', ''):
+        from jax import jit as jax_jit
+        COMPILE_FUNCTIONS.append(jax_jit)
+
+        def aot(func, *, config=None):
+            # TODO(alxmrs): implement lowering
+            return jax_jit(func)
+
+        COMPILE_FUNCTIONS.append(aot)
+
+except ModuleNotFoundError:
+    pass
+
+
+@pytest.mark.parametrize("compile_function", COMPILE_FUNCTIONS)
+def test_check_jit_compliation(spec, executor, compile_function):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor, compile_function=compile_function), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+    )

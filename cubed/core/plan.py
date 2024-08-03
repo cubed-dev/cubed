@@ -1,4 +1,5 @@
 import atexit
+import dataclasses
 import inspect
 import shutil
 import tempfile
@@ -29,6 +30,8 @@ CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
 
 # Delete local context dirs when Python exits
 CONTEXT_DIRS = set()
+
+Decorator = Callable[[Callable], Callable]
 
 
 def delete_on_exit(context_dir: str) -> None:
@@ -200,13 +203,45 @@ class Plan:
 
         return dag
 
+    def _compile_blockwise(self, dag, compile_function: Decorator) -> nx.MultiDiGraph:
+        """JIT-compiles the functions from all blockwise ops by mutating the input dag."""
+        # Recommended: make a copy of the dag before calling this function.
+
+        compile_with_config = 'config' in inspect.getfullargspec(compile_function).kwonlyargs
+
+        for n in dag.nodes:
+            node = dag.nodes[n]
+
+            if "primitive_op" not in node:
+                continue
+
+            if not isinstance(node["pipeline"].config, BlockwiseSpec):
+                continue
+
+            if compile_with_config:
+                compiled = compile_function(node["pipeline"].config.function, config=node["pipeline"].config)
+            else:
+                compiled = compile_function(node["pipeline"].config.function)
+
+            # node is a blockwise primitive_op.
+            # maybe we should investigate some sort of optics library for frozen dataclasses...
+            new_pipeline = dataclasses.replace(
+                node["pipeline"],
+                config=dataclasses.replace(node["pipeline"].config, function=compiled)
+            )
+            node["pipeline"] = new_pipeline
+
+        return dag
+
     @lru_cache
     def _finalize_dag(
-        self, optimize_graph: bool = True, optimize_function=None
+        self, optimize_graph: bool = True, optimize_function=None, compile_function: Optional[Decorator] = None,
     ) -> nx.MultiDiGraph:
         dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
         # create a copy since _create_lazy_zarr_arrays mutates the dag
         dag = dag.copy()
+        if callable(compile_function):
+            dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
         return nx.freeze(dag)
 
@@ -216,11 +251,12 @@ class Plan:
         callbacks=None,
         optimize_graph=True,
         optimize_function=None,
+        compile_function=None,
         resume=None,
         spec=None,
         **kwargs,
     ):
-        dag = self._finalize_dag(optimize_graph, optimize_function)
+        dag = self._finalize_dag(optimize_graph, optimize_function, compile_function)
 
         compute_id = f"compute-{datetime.now().strftime('%Y%m%dT%H%M%S.%f')}"
 
