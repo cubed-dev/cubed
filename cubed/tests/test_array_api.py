@@ -371,17 +371,15 @@ def test_matmul(spec, executor):
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
         spec=spec,
-        dtype=xp.float32,
     )
     b = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
         spec=spec,
-        dtype=xp.float32,
     )
     c = xp.matmul(a, b)
-    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=xp.float32)
-    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype=xp.float32)
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     expected = np.matmul(x, y)
     assert_array_equal(c.compute(executor=executor), expected)
 
@@ -437,8 +435,8 @@ def test_matmul_modal(modal_executor):
 
 
 def test_outer(spec, executor):
-    a = xp.asarray([0, 1, 2], chunks=2, spec=spec, dtype=xp.float32)
-    b = xp.asarray([10, 50, 100], chunks=2, spec=spec, dtype=xp.float32)
+    a = xp.asarray([0, 1, 2], chunks=2, spec=spec)
+    b = xp.asarray([10, 50, 100], chunks=2, spec=spec)
     c = xp.linalg.outer(a, b)
     assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
 
