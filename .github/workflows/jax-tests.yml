@@ -20,6 +20,7 @@ jobs:
         # How to set up Jax on an ARM Mac: https://developer.apple.com/metal/jax/
         os: ["ubuntu-latest", "macos-14"]
         python-version: ["3.11"]
+        precision: ["64", "32"]
 
     steps:
       - name: Checkout source
@@ -49,5 +50,6 @@ jobs:
           pytest -k "not broadcast_trick and not object_dtype"
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
-          JAX_ENABLE_X64: True
+          JAX_ENABLE_X64: ${{ matrix.precision == "64" }}
+          CUBED_DEFAULT_PRECISION_X32: ${{ matrix.precision == "32" }}
           ENABLE_PJRT_COMPATIBILITY: True
