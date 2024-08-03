@@ -363,3 +363,18 @@ def test_compilation_can_fail(spec, executor):
     except NotImplementedError as e:
         assert True, "Compile function was applied."
         assert "add" in str(e), "Compile function was applied to add operation."
+
+
+def test_compilation_with_config_can_fail(spec, executor):
+    def compile_function(func, *, config=None):
+        raise NotImplementedError(f"Cannot compile {func} with {config}")
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    try:
+        c.compute(executor=executor, compile_function=compile_function)
+        assert False, "Compile function was not called."
+    except NotImplementedError as e:
+        assert "add" in str(e), "Compile function was applied to add operation."
+        assert "BlockwiseSpec" in str(e), "Compile function was applied with a config argument."
