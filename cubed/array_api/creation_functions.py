@@ -78,6 +78,7 @@ def asarray(
         a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
         dtype = _to_default_precision(a.dtype, device=device)
+        a = a.astype(dtype)
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()
