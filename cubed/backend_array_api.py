@@ -64,3 +64,10 @@ def numpy_array_to_backend_array(arr, *, dtype=None):
     if isinstance(arr, dict):
         return {k: namespace.asarray(v, dtype=dtype) for k, v in arr.items()}
     return namespace.asarray(arr, dtype=dtype)
+
+
+def to_default_precision(dtype, *, device=None):
+    """Returns a dtype of the same kind with the default precision."""
+    for k, dtype_ in default_dtypes(device=device).items():
+        if namespace.isdtype(dtype, k):
+            return dtype_

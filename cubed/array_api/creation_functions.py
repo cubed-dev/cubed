@@ -1,7 +1,7 @@
 import math
 from typing import TYPE_CHECKING, Iterable, List
 
-from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import namespace as nxp, to_default_precision
 from cubed.backend_array_api import default_dtypes
 from cubed.core import Plan, gensym
 from cubed.core.ops import map_blocks
@@ -18,13 +18,6 @@ if TYPE_CHECKING:
     from .array_object import Array
 
 
-def _to_default_precision(dtype, *, device=None):
-    """Returns a dtype of the same kind with the default precision."""
-    for k, dtype_ in default_dtypes(device=device).items():
-        if nxp.isdtype(dtype, k):
-            return dtype_
-
-
 def arange(
     start, /, stop=None, step=1, *, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
@@ -35,7 +28,7 @@ def arange(
         # TODO: Use inspect API
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
         # the default nxp call does not adjust the data type to the default precision.
-        dtype = _to_default_precision(dtype, device=device)
+        dtype = to_default_precision(dtype, device=device)
 
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
@@ -77,7 +70,7 @@ def asarray(
         # ensure blocks are arrays
         a = nxp.asarray(a, dtype=dtype)
     if dtype is None:
-        dtype = _to_default_precision(a.dtype, device=device)
+        dtype = to_default_precision(a.dtype, device=device)
         a = a.astype(dtype)
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
