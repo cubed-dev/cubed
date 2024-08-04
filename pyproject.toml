@@ -54,6 +54,16 @@ beam = ["apache-beam", "gcsfs"]
 dask = ["dask"]
 dask-distributed = ["distributed"]
 lithops = ["lithops[aws] >= 2.7.0"]
+lithops-aws = [
+    "cubed[diagnostics]",
+    "lithops[aws]",
+    "s3fs",
+]
+lithops-gcp = [
+    "cubed[diagnostics]",
+    "lithops[gcp]",
+    "gcsfs",
+]
 modal = [
     "cubed[diagnostics]",
     "modal-client",
