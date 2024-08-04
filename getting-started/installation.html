@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=6bf68fb0"></script>
+    <script src="../_static/documentation_options.js?v=0e1c1d07"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -408,6 +408,16 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
 <span class="na">dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;dask&quot;]</span>
 <span class="na">dask-distributed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;distributed&quot;]</span>
 <span class="na">lithops</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;lithops[aws] &gt;= 2.7.0&quot;]</span>
+<span class="na">lithops-aws</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
+<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;lithops[aws]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
+<span class="na">]</span>
+<span class="na">lithops-gcp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
+<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;lithops[gcp]&quot;,</span>
+<span class="w">    </span><span class="na">&quot;gcsfs&quot;,</span>
+<span class="na">]</span>
 <span class="na">modal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
 <span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
 <span class="w">    </span><span class="na">&quot;modal-client&quot;,</span>
