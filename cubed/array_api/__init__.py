@@ -268,9 +268,9 @@ from .searching_functions import argmax, argmin, searchsorted, where
 
 __all__ += ["argmax", "argmin", "searchsorted", "where"]
 
-from .statistical_functions import max, mean, min, prod, std, sum, var
+from .statistical_functions import cumulative_sum, max, mean, min, prod, std, sum, var
 
-__all__ += ["max", "mean", "min", "prod", "std", "sum", "var"]
+__all__ += ["cumulative_sum", "max", "mean", "min", "prod", "std", "sum", "var"]
 
 from .utility_functions import all, any
 

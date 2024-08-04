@@ -1681,20 +1681,16 @@ def smallest_blockdim(blockdims):
     return out
 
 
-def wrapper_binop(
+def _scan_binop(
     out: np.ndarray,
-    left: Array,
-    right: Array,
+    left: "Array",
+    right: "Array",
     *,
     binop: Callable,
     block_id: tuple[int, ...],
     axis: int,
     identity: Any,
-) -> Array:
-    # print(type(out), out.shape)
-    # print(block_id)
-    # print("left", left)
-    # print("right", right)
+) -> "Array":
     left_slicer = key_to_slices(block_id, left)
     right_slicer = list(left_slicer)
 
@@ -1703,8 +1699,6 @@ def wrapper_binop(
     right_slicer[axis] = slice(block_id[axis] - 1, block_id[axis])
     right_slicer = tuple(right_slicer)
     right_ = right[right_slicer] if block_id[axis] > 0 else identity
-    # print("left", left[left_slicer].shape)
-    # print("right", right_.shape)
     return binop(left[left_slicer], right_)
 
 
@@ -1717,7 +1711,7 @@ def scan(
     identity: Any,
     axis: int,
     dtype=None,
-) -> Array:
+) -> "Array":
     """
     Generic parallel scan.
 
@@ -1749,25 +1743,32 @@ def scan(
     cumsum
     cumprod
     """
+    axis = validate_axis(axis, array.ndim)
+
     # Blelloch (1990) out-of-core algorithm.
     # 1. First, scan blockwise
-    scanned = blockwise(func, "ij", array, "ij", axis=axis)
+    scanned = map_blocks(func, array, axis=axis)
     # If there is only a single chunk, we can be done
-    if array.numblocks[-1] == 1:
+    if array.numblocks[axis] == 1:
         return scanned
 
     # 2. Calculate the blockwise reduction using `preop`
     # TODO: could also merge(1,2) by returning {"scan": np.cumsum(array), "preop": np.sum(array)} in `scanned`
-    reduced = blockwise(
-        preop, "ij", array, "ij", axis=axis, adjust_chunks={"j": 1}, keepdims=True
+    reduced_chunks = tuple(
+        (1,) * array.numblocks[i] if i == axis else c
+        for i, c in enumerate(array.chunks)
     )
+    reduced = map_blocks(preop, array, chunks=reduced_chunks, axis=axis, keepdims=True)
 
     # 3. Now scan `reduced` to generate the increments for each block of `scanned`.
     #    Here we diverge from Blelloch, who runs a balanced tree algorithm to calculate the scan.
     #    Instead we generalize recursively apply the scan to `reduced`.
     # 3a. First we merge to a decent intermediate chunksize since reduced.chunksize[axis] == 1
     new_chunksize = min(reduced.shape[axis], reduced.chunksize[axis] * 5)
-    new_chunks = reduced.chunksize[:-1] + (new_chunksize,)
+    new_chunks = (
+        reduced.chunksize[:axis] + (new_chunksize,) + reduced.chunksize[axis + 1 :]
+    )
+
     merged = merge_chunks(reduced, new_chunks)
 
     # 3b. Recursively scan this merged array to generate the increment for each block of `scanned`
@@ -1780,7 +1781,7 @@ def scan(
     assert increment.shape[axis] == scanned.numblocks[axis]
     # 5. Bada-bing, bada-boom.
     return map_direct(
-        partial(wrapper_binop, binop=binop, axis=axis, identity=identity),
+        partial(_scan_binop, binop=binop, axis=axis, identity=identity),
         scanned,
         increment,
         shape=scanned.shape,
@@ -1788,11 +1789,3 @@ def scan(
         chunks=scanned.chunks,
         extra_projected_mem=scanned.chunkmem * 2,  # arbitrary
     )
-
-
-# result = scan(
-#     array, preop=np.sum, func=np.cumsum, binop=np.add, identity=0, axis=-1
-# )
-# print(result)
-# print(result.compute())
-# np.testing.assert_equal(result, np.cumsum(array.compute(), axis=-1))
