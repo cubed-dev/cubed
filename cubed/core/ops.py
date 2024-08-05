@@ -48,7 +48,10 @@ def from_array(x, chunks="auto", asarray=None, spec=None, device=None) -> "Array
 
     dtype = to_default_precision(x.dtype)
     if x.dtype != dtype:
-        x = x.astype(dtype)
+        if hasattr(x, 'astype'):
+            x = x.astype(dtype)
+        elif hasattr(x, '__array__'):
+            x = x.__array__(dtype)
 
     previous_chunks = getattr(x, "chunks", None)
     outchunks = normalize_chunks(
