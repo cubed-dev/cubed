@@ -1,3 +1,4 @@
+import os
 import platform
 import random
 from functools import partial
@@ -59,9 +60,13 @@ def modal_executor(request):
 
 def test_as_array_fails(spec):
     a = np.ones((1000, 1000))
+    expected_size = "8"
+    if os.environ.get('CUBED_DEFAULT_PRECISION_X32', False):
+        expected_size = "4"
+
     with pytest.raises(
         ValueError,
-        match="Size of in memory array is 8.0 MB which exceeds maximum of 1.0 MB.",
+        match=f"Size of in memory array is {expected_size}.0 MB which exceeds maximum of 1.0 MB.",
     ):
         xp.asarray(a, chunks=(100, 100), spec=spec)
 
@@ -183,55 +188,67 @@ def test_map_blocks_with_kwargs(spec, executor):
 
 
 def test_map_blocks_with_block_id(spec, executor):
+    dtype = "int64"
+    if os.environ.get('CUBED_DEFAULT_PRECISION_X32', False):
+        dtype = "int32"
+
     # based on dask test
     def func(block, block_id=None, c=0):
         return nxp.ones_like(block) * int(sum(block_id)) + c
 
-    a = xp.arange(10, dtype="int64", chunks=(2,))
-    b = cubed.map_blocks(func, a, dtype="int64")
+    a = xp.arange(10, dtype=dtype, chunks=(2,))
+    b = cubed.map_blocks(func, a, dtype=dtype)
 
     assert_array_equal(
         b.compute(executor=executor),
-        np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4], dtype="int64"),
+        np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4], dtype=dtype),
     )
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-    b = cubed.map_blocks(func, a, dtype="int64")
+    b = cubed.map_blocks(func, a, dtype=dtype)
 
     assert_array_equal(
         b.compute(executor=executor),
-        np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype="int64"),
+        np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype=dtype),
     )
 
-    c = cubed.map_blocks(func, a, dtype="int64", c=1)
+    c = cubed.map_blocks(func, a, dtype=dtype, c=1)
 
     assert_array_equal(
         c.compute(executor=executor),
-        np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype="int64") + 1,
+        np.array([[0, 0, 1], [0, 0, 1], [1, 1, 2]], dtype=dtype) + 1,
     )
 
 
 def test_map_blocks_no_array_args(spec, executor):
+    dtype = "int64"
+    if os.environ.get('CUBED_DEFAULT_PRECISION_X32', False):
+        dtype = "int32"
+
     def func(block, block_id=None):
         return nxp.ones_like(block) * int(sum(block_id))
 
-    a = cubed.map_blocks(func, dtype="int64", chunks=((5, 3),), spec=spec)
+    a = cubed.map_blocks(func, dtype=dtype, chunks=((5, 3),), spec=spec)
     assert a.chunks == ((5, 3),)
 
     assert_array_equal(
         a.compute(executor=executor),
-        np.array([0, 0, 0, 0, 0, 1, 1, 1], dtype="int64"),
+        np.array([0, 0, 0, 0, 0, 1, 1, 1], dtype=dtype),
     )
 
 
 def test_map_blocks_with_different_block_shapes(spec):
+    dtype = "int64"
+    if os.environ.get('CUBED_DEFAULT_PRECISION_X32', False):
+        dtype = "int32"
+
     def func(x, y):
         return x
 
     a = xp.asarray([[[12, 13]]], spec=spec)
     b = xp.asarray([14, 15], spec=spec)
     c = cubed.map_blocks(
-        func, a, b, dtype="int64", chunks=(1, 1, 2), drop_axis=2, new_axis=2
+        func, a, b, dtype=dtype, chunks=(1, 1, 2), drop_axis=2, new_axis=2
     )
     assert_array_equal(c.compute(), np.array([[[12, 13]]]))
 

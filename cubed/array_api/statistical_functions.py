@@ -12,6 +12,7 @@ from cubed.array_api.dtypes import (
 )
 from cubed.array_api.elementwise_functions import sqrt
 from cubed.backend_array_api import namespace as nxp
+from cubed.array_api.utility_functions import operator_default_dtype
 from cubed.core import reduction
 
 
@@ -118,14 +119,7 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
         raise TypeError("Only numeric or boolean dtypes are allowed in prod")
     if dtype is None:
-        if x.dtype in _boolean_dtypes:
-            dtype = int64
-        elif x.dtype in _signed_integer_dtypes:
-            dtype = int64
-        elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
-        else:
-            dtype = x.dtype
+        dtype = operator_default_dtype(x)
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
@@ -155,14 +149,7 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
         raise TypeError("Only numeric or boolean dtypes are allowed in sum")
     if dtype is None:
-        if x.dtype in _boolean_dtypes:
-            dtype = int64
-        elif x.dtype in _signed_integer_dtypes:
-            dtype = int64
-        elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
-        else:
-            dtype = x.dtype
+        dtype = operator_default_dtype(x)
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,

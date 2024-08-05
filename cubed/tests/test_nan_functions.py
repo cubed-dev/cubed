@@ -27,10 +27,10 @@ def test_nanmean_allnan(spec):
 
 
 def test_nansum(spec):
-    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, xp.nan]], chunks=(2, 2), spec=spec)
+    a = xp.asarray([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, xp.nan]], chunks=(2, 2), spec=spec)
     b = cubed.nansum(a)
     assert_array_equal(
-        b.compute(), np.nansum(np.array([[1, 2, 3], [4, 5, 6], [7, 8, np.nan]]))
+        b.compute(), np.nansum(np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, np.nan]]))
     )
 
 
