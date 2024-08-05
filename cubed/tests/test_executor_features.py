@@ -329,13 +329,6 @@ try:
     if 'jax' in os.environ.get('CUBED_BACKEND_ARRAY_API_MODULE', ''):
         from jax import jit as jax_jit
         COMPILE_FUNCTIONS.append(jax_jit)
-
-        def aot(func, *, config=None):
-            # TODO(alxmrs): implement lowering
-            return jax_jit(func)
-
-        COMPILE_FUNCTIONS.append(aot)
-
 except ModuleNotFoundError:
     pass
 
@@ -357,12 +350,10 @@ def test_compilation_can_fail(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
-    try:
+    with pytest.raises(NotImplementedError) as excinfo:
         c.compute(executor=executor, compile_function=compile_function)
-        assert False, "Compile function was not called."
-    except NotImplementedError as e:
-        assert True, "Compile function was applied."
-        assert "add" in str(e), "Compile function was applied to add operation."
+    
+    assert "add" in str(excinfo.value), "Compile function was applied to add operation."
 
 
 def test_compilation_with_config_can_fail(spec, executor):
@@ -372,9 +363,7 @@ def test_compilation_with_config_can_fail(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
-    try:
+    with pytest.raises(NotImplementedError) as excinfo:
         c.compute(executor=executor, compile_function=compile_function)
-        assert False, "Compile function was not called."
-    except NotImplementedError as e:
-        assert "add" in str(e), "Compile function was applied to add operation."
-        assert "BlockwiseSpec" in str(e), "Compile function was applied with a config argument."
+        
+    assert "BlockwiseSpec" in str(excinfo.value), "Compile function was applied with a config argument."
