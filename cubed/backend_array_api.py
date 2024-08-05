@@ -38,6 +38,7 @@ _DEFAULT_DTYPES = {
     "complex floating": namespace.complex128,
     "integral": namespace.int64,
 }
+PRECISION=64
 if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
     if os.environ['CUBED_DEFAULT_PRECISION_X32']:
         _DEFAULT_DTYPES = {
@@ -45,6 +46,7 @@ if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
             "complex floating": namespace.complex64,
             "integral": namespace.int32,
         }
+        PRECISION=32
 
 
 def default_dtypes(*, device=None) -> dict:
@@ -71,3 +73,5 @@ def to_default_precision(dtype, *, device=None):
     for k, dtype_ in default_dtypes(device=device).items():
         if namespace.isdtype(dtype, k):
             return dtype_
+
+

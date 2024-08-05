@@ -1,6 +1,8 @@
 import math
 from typing import TYPE_CHECKING, Iterable, List
 
+import numpy as np
+
 from cubed.backend_array_api import namespace as nxp, to_default_precision
 from cubed.backend_array_api import default_dtypes
 from cubed.core import Plan, gensym
@@ -16,6 +18,23 @@ from cubed.vendor.dask.array.core import normalize_chunks
 
 if TYPE_CHECKING:
     from .array_object import Array
+
+
+def _iterable_to_default_dtype(it, device=None):
+    """Determines the default precision dtype of a collection (of collections) of scalars"""
+    w = it
+    while isinstance(w, Iterable):
+        w = next(iter(w))
+
+    defaults = default_dtypes(device=device)
+    if nxp.issubdtype(type(w), np.integer):
+        return defaults["integral"]
+    elif nxp.isreal(w):
+        return defaults["real floating"]
+    elif nxp.iscomplex(w):
+        return defaults["complex floating"]
+    else:
+        raise ValueError(f"there are no default data types supported for {it}.")
 
 
 def arange(
@@ -67,8 +86,9 @@ def asarray(
     ):  # pragma: no cover
         return asarray(a.data)
     elif not isinstance(getattr(a, "shape", None), Iterable):
-        # ensure blocks are arrays
+        dtype = _iterable_to_default_dtype(a, device=device)
         a = nxp.asarray(a, dtype=dtype)
+
     if dtype is None:
         dtype = to_default_precision(a.dtype, device=device)
         a = a.astype(dtype)
