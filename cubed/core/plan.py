@@ -31,7 +31,7 @@ CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
 # Delete local context dirs when Python exits
 CONTEXT_DIRS = set()
 
-Decorator = Callable[[Callable], Callable]
+Decorator = Callable
 
 
 def delete_on_exit(context_dir: str) -> None:
