@@ -24,6 +24,7 @@ Intro slides <https://cubed-dev.github.io/cubed/cubed-intro.slides.html>
 Examples <https://github.com/tomwhite/cubed/tree/main/examples/README.md>
 api
 array-api
+configuration
 related-projects
 ```
 
