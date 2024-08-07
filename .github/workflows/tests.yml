@@ -23,6 +23,8 @@ jobs:
         include:
           - os: "ubuntu-latest"
             python-version: "3.12"
+          - os: "ubuntu-latest"
+            python-version: "3.13"
           # Disable until Zarr v3 is working https://github.com/cubed-dev/cubed/issues/295
           # - os: "ubuntu-latest"
           #   python-version: "3.12"
@@ -35,10 +37,11 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+          allow-prereleases: true
 
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2
