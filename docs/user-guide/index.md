@@ -11,4 +11,5 @@ storage
 memory
 reliability
 scaling
+diagnostics
 ```
