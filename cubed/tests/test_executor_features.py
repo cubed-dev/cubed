@@ -315,3 +315,55 @@ def test_check_runtime_memory_processes(spec, executor):
 
     # OK if we use fewer workers
     c.compute(executor=executor, max_workers=max_workers // 2)
+
+
+COMPILE_FUNCTIONS = [lambda fn: fn]
+
+try:
+    from numba import jit as numba_jit
+    COMPILE_FUNCTIONS.append(numba_jit)
+except ModuleNotFoundError:
+    pass
+
+try:
+    if 'jax' in os.environ.get('CUBED_BACKEND_ARRAY_API_MODULE', ''):
+        from jax import jit as jax_jit
+        COMPILE_FUNCTIONS.append(jax_jit)
+except ModuleNotFoundError:
+    pass
+
+
+@pytest.mark.parametrize("compile_function", COMPILE_FUNCTIONS)
+def test_check_compilation(spec, executor, compile_function):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor, compile_function=compile_function), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+    )
+
+
+def test_compilation_can_fail(spec, executor):
+    def compile_function(func):
+        raise NotImplementedError(f"Cannot compile {func}")
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(NotImplementedError) as excinfo:
+        c.compute(executor=executor, compile_function=compile_function)
+    
+    assert "add" in str(excinfo.value), "Compile function was applied to add operation."
+
+
+def test_compilation_with_config_can_fail(spec, executor):
+    def compile_function(func, *, config=None):
+        raise NotImplementedError(f"Cannot compile {func} with {config}")
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(NotImplementedError) as excinfo:
+        c.compute(executor=executor, compile_function=compile_function)
+        
+    assert "BlockwiseSpec" in str(excinfo.value), "Compile function was applied with a config argument."
