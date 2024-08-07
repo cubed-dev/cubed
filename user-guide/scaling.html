@@ -36,14 +36,14 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=e8030fdb"></script>
+    <script src="../_static/documentation_options.js?v=d72be0c6"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/scaling';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="next" title="Diagnostics" href="diagnostics.html" />
     <link rel="prev" title="Reliability" href="reliability.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -162,6 +162,7 @@
 <li class="toctree-l2"><a class="reference internal" href="memory.html">Memory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reliability.html">Reliability</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diagnostics.html">Diagnostics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference external" href="https://cubed-dev.github.io/cubed/cubed-intro.slides.html">Intro slides</a></li>
@@ -366,12 +367,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#different-cloud-providers">Different Cloud Providers</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnosing-performance">Diagnosing Performance</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-plan">Optimized Plan</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history-callback">History Callback</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline-visualization-callback">Timeline Visualization Callback</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnosing-performance">Diagnosing Performance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips">Tips</a></li>
 </ul>
             </nav>
@@ -453,19 +449,7 @@ Some other executors such as Beam will first convert the Cubed Plan to a differe
 </section>
 <section id="diagnosing-performance">
 <h2>Diagnosing Performance<a class="headerlink" href="#diagnosing-performance" title="Link to this heading">#</a></h2>
-<p>To understand how your computation could perform better you first need to diagnose the source of any problems.</p>
-<section id="optimized-plan">
-<h3>Optimized Plan<a class="headerlink" href="#optimized-plan" title="Link to this heading">#</a></h3>
-<p>Use <code class="xref py py-meth docutils literal notranslate"><span class="pre">Plan.visualize()</span></code> to view the optimized plan. This allows you to see the number of steps involved in your calculation, the number of tasks in each step, and overall.</p>
-</section>
-<section id="history-callback">
-<h3>History Callback<a class="headerlink" href="#history-callback" title="Link to this heading">#</a></h3>
-<p>The history callback function can help determine how much time was spent in worker startup, as well as how much stragglers affected the overall speed.</p>
-</section>
-<section id="timeline-visualization-callback">
-<h3>Timeline Visualization Callback<a class="headerlink" href="#timeline-visualization-callback" title="Link to this heading">#</a></h3>
-<p>A timeline visualization callback can provide a visual representation of the above points. Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.</p>
-</section>
+<p>See <a class="reference internal" href="diagnostics.html"><span class="std std-doc">Diagnostics</span></a>.</p>
 </section>
 <section id="tips">
 <h2>Tips<a class="headerlink" href="#tips" title="Link to this heading">#</a></h2>
@@ -500,11 +484,11 @@ Some other executors such as Beam will first convert the Cubed Plan to a differe
       </div>
     </a>
     <a class="right-next"
-       href="../api.html"
+       href="diagnostics.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Diagnostics</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -536,12 +520,7 @@ Some other executors such as Beam will first convert the Cubed Plan to a differe
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#different-cloud-providers">Different Cloud Providers</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnosing-performance">Diagnosing Performance</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimized-plan">Optimized Plan</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history-callback">History Callback</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline-visualization-callback">Timeline Visualization Callback</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#diagnosing-performance">Diagnosing Performance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tips">Tips</a></li>
 </ul>
   </nav></div>

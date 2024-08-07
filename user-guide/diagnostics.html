@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; Cubed</title>
+    <title>Diagnostics &#8212; Cubed</title>
   
   
   
@@ -40,11 +40,11 @@
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'getting-started/installation';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/diagnostics';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Demo" href="demo.html" />
-    <link rel="prev" title="Why Cubed?" href="why-cubed.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Scaling" href="scaling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -150,19 +150,19 @@
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Getting Started</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="why-cubed.html">Why Cubed?</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demo.html">Demo</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting-started/index.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started/why-cubed.html">Why Cubed?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started/demo.html">Demo</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../user-guide/index.html">User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/executors.html">Executors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/storage.html">Storage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/memory.html">Memory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/reliability.html">Reliability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/scaling.html">Scaling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../user-guide/diagnostics.html">Diagnostics</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="memory.html">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reliability.html">Reliability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html">Scaling</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Diagnostics</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference external" href="https://cubed-dev.github.io/cubed/cubed-intro.slides.html">Intro slides</a></li>
@@ -278,7 +278,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/getting-started/installation.md" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/user-guide/diagnostics.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -295,7 +295,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgetting-started/installation.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fuser-guide/diagnostics.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -345,7 +345,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Installation</h1>
+    <h1>Diagnostics</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -355,9 +355,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda">Conda</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pip">Pip</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-dependencies">Optional dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-the-computation-plan">Visualize the computation plan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#progress-bar">Progress bar</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#history-and-timeline-visualization">History and timeline visualization</a></li>
 </ul>
             </nav>
         </div>
@@ -369,115 +369,54 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
-<section id="conda">
-<h2>Conda<a class="headerlink" href="#conda" title="Link to this heading">#</a></h2>
-<p>You can install Cubed with a minimal set of dependencies using conda:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>cubed
+  <section id="diagnostics">
+<h1>Diagnostics<a class="headerlink" href="#diagnostics" title="Link to this heading">#</a></h1>
+<p>Cubed provides a variety of tools to understand a computation before running it, to monitor its progress while running, and to view performance statistics after it has completed.</p>
+<p>To use these features ensure that the optional dependencies for diagnostics have been installed:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;cubed[diagnostics]&quot;</span>
 </pre></div>
 </div>
+<section id="visualize-the-computation-plan">
+<h2>Visualize the computation plan<a class="headerlink" href="#visualize-the-computation-plan" title="Link to this heading">#</a></h2>
+<p>Before running a computation, Cubed will create an internal plan that it uses to compute the output arrays.</p>
+<p>The plan is a directed acyclic graph (DAG), and it can be useful to visualize it to see the number of steps involved in your computation, the number of tasks in each step (and overall), and the amount of intermediate data written out.</p>
+<p>The <a class="reference internal" href="../generated/cubed.Array.visualize.html#cubed.Array.visualize" title="cubed.Array.visualize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Array.visualize()</span></code></a> method on an array creates an image of the DAG. By default it is saved in a file called <em>cubed.svg</em> in the current working directory, but the filename and format can be changed if needed. If running in a Jupyter notebook the image will be rendered in the notebook.</p>
+<p>If you are computing multiple arrays at once, then there is a <a class="reference internal" href="../generated/cubed.visualize.html#cubed.visualize" title="cubed.visualize"><code class="xref py py-func docutils literal notranslate"><span class="pre">visualize</span></code></a> function that takes multiple array arguments.</p>
+<p>This example shows a tiny computation and the resulting plan:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+<span class="kn">import</span> <span class="nn">cubed.random</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="Cubed visualization of a tiny computation" src="../_images/cubed-add.svg" /></p>
+<p>There are two type of nodes in the plan. Boxes with rounded corners are operations, while boxes with square corners are arrays.</p>
+<p>In this case there are three operations (labelled <code class="docutils literal notranslate"><span class="pre">op-001</span></code>, <code class="docutils literal notranslate"><span class="pre">op-002</span></code>, and <code class="docutils literal notranslate"><span class="pre">op-003</span></code>), which produce the three arrays <code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>, and <code class="docutils literal notranslate"><span class="pre">c</span></code>. (There is always an additional operation called <code class="docutils literal notranslate"><span class="pre">create-arrays</span></code>, shown on the right, which Cubed creates automatically.)</p>
+<p>Array <code class="docutils literal notranslate"><span class="pre">c</span></code> is coloured orange, which means it is materialized as a Zarr array. Arrays <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> do not need to be materialized as Zarr arrays since they are small constant arrays that are passed to the workers running the tasks.</p>
+<p>Similarly, the operation that produces <code class="docutils literal notranslate"><span class="pre">c</span></code> is shown in a lilac colour to signify that it runs tasks to produce the output. Operations <code class="docutils literal notranslate"><span class="pre">op-001</span></code> and <code class="docutils literal notranslate"><span class="pre">op-002</span></code> don’t run any tasks since <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> are just small constant arrays.</p>
 </section>
-<section id="pip">
-<h2>Pip<a class="headerlink" href="#pip" title="Link to this heading">#</a></h2>
-<p>You can also install Cubed with pip:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>cubed
+<section id="progress-bar">
+<h2>Progress bar<a class="headerlink" href="#progress-bar" title="Link to this heading">#</a></h2>
+<p>You can display a progress bar to track your computation by passing callbacks to <a class="reference internal" href="../generated/cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; from cubed.diagnostics.rich import RichProgressBar
+&gt;&gt;&gt; progress = RichProgressBar()
+&gt;&gt;&gt; c.compute(callbacks=[progress])  # c is the array from above
+  create-arrays 1/1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
+  op-003 add    4/4 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
 </pre></div>
 </div>
+<p>This will work in Jupyter notebooks, and for all executors.</p>
+<p>You can also pass callbacks to functions that call <code class="docutils literal notranslate"><span class="pre">compute</span></code>, such as <a class="reference internal" href="../generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-func docutils literal notranslate"><span class="pre">store</span></code></a> or <a class="reference internal" href="../generated/cubed.to_zarr.html#cubed.to_zarr" title="cubed.to_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_zarr</span></code></a>.</p>
 </section>
-<section id="optional-dependencies">
-<h2>Optional dependencies<a class="headerlink" href="#optional-dependencies" title="Link to this heading">#</a></h2>
-<p>Cubed has many optional dependencies, which can be installed in sets for different functionality (especially for running on different executors):</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>$ python -m pip install &quot;cubed[diagnostics]&quot;  # Install optional dependencies for cubed diagnostics
-$ python -m pip install &quot;cubed[beam]&quot;         # Install optional dependencies for the beam executor
-$ python -m pip install &quot;cubed[lithops]&quot;      # Install optional dependencies for the lithops executor
-$ python -m pip install &quot;cubed[modal]&quot;        # Install optional dependencies for the modal executor
-</pre></div>
-</div>
-<p>To see the full list of which packages are installed with which options see <code class="docutils literal notranslate"><span class="pre">[project.optional_dependencies]</span></code> in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
-<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[project.optional-dependencies]</span>
-<span class="na">diagnostics</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;tqdm&quot;,</span>
-<span class="w">    </span><span class="na">&quot;graphviz&quot;,</span>
-<span class="w">    </span><span class="na">&quot;jinja2&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pydot&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pandas&quot;,</span>
-<span class="w">    </span><span class="na">&quot;matplotlib&quot;,</span>
-<span class="w">    </span><span class="na">&quot;rich&quot;,</span>
-<span class="w">    </span><span class="na">&quot;seaborn&quot;,</span>
-<span class="na">]</span>
-<span class="na">beam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;apache-beam&quot;, &quot;gcsfs&quot;]</span>
-<span class="na">dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;dask&quot;]</span>
-<span class="na">dask-distributed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;distributed&quot;]</span>
-<span class="na">lithops</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[&quot;lithops[aws] &gt;= 2.7.0&quot;]</span>
-<span class="na">lithops-aws</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;lithops[aws]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
-<span class="na">]</span>
-<span class="na">lithops-gcp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;lithops[gcp]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;gcsfs&quot;,</span>
-<span class="na">]</span>
-<span class="na">modal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;modal-client&quot;,</span>
-<span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
-<span class="na">]</span>
-<span class="na">modal-gcp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;modal-client&quot;,</span>
-<span class="w">    </span><span class="na">&quot;gcsfs&quot;,</span>
-<span class="na">]</span>
-<span class="na">coiled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;coiled&quot;,</span>
-<span class="w">    </span><span class="na">&quot;dask[complete]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;s3fs&quot;,</span>
-<span class="na">]</span>
-<span class="na">test</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[diagnostics,lithops]&quot;,  # modal tests separate due to conflicting package reqs</span>
-<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
-<span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
-<span class="na">]</span>
-<span class="na">test-beam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[beam,diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
-<span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
-<span class="na">]</span>
-<span class="na">test-dask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[dask,diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
-<span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
-<span class="na">]</span>
-<span class="na">test-dask-distributed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[dask-distributed,diagnostics]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
-<span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
-<span class="na">]</span>
-<span class="na">test-modal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[</span>
-<span class="w">    </span><span class="na">&quot;cubed[modal]&quot;,</span>
-<span class="w">    </span><span class="na">&quot;numpy_groupies&quot;,</span>
-<span class="w">    </span><span class="na">&quot;dill&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-cov&quot;,</span>
-<span class="w">    </span><span class="na">&quot;pytest-mock&quot;,</span>
-<span class="na">]</span>
-</pre></div>
-</div>
+<section id="history-and-timeline-visualization">
+<h2>History and timeline visualization<a class="headerlink" href="#history-and-timeline-visualization" title="Link to this heading">#</a></h2>
+<p>The history and timeline visualization callbacks can be used to find out how long tasks took to run, and how much memory they used.</p>
+<p>The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation. (Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.)</p>
+<p>See the <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/README.md">examples</a> for more information about how to use them.</p>
 </section>
 </section>
 
@@ -493,20 +432,20 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="why-cubed.html"
+       href="scaling.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Why Cubed?</p>
+        <p class="prev-next-title">Scaling</p>
       </div>
     </a>
     <a class="right-next"
-       href="demo.html"
+       href="../api.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Demo</p>
+        <p class="prev-next-title">API Reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -526,9 +465,9 @@ $ python -m pip install &quot;cubed[modal]&quot;        # Install optional depen
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda">Conda</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pip">Pip</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#optional-dependencies">Optional dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-the-computation-plan">Visualize the computation plan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#progress-bar">Progress bar</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#history-and-timeline-visualization">History and timeline visualization</a></li>
 </ul>
   </nav></div>
 
