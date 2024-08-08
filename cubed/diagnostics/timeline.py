@@ -1,6 +1,7 @@
-import os
+import logging
 import time
 from dataclasses import asdict
+from pathlib import Path
 from typing import Optional
 
 import matplotlib.patches as mpatches
@@ -31,6 +32,9 @@ class TimelineVisualizationCallback(Callback):
         dst = f"history/{event.compute_id}"
         format = self.format
         create_timeline(self.stats, self.start_tstamp, end_tstamp, dst, format)
+        logging.info(
+            f"TimelineVisualizationCallback results saved to directory: {dst}/"
+        )
 
 
 # copy of lithops function of the same name, and modified for different field names
@@ -90,12 +94,13 @@ def create_timeline(stats, start_tstamp, end_tstamp, dst=None, format=None):
         format = "svg"
 
     if dst is None:
-        os.makedirs("plots", exist_ok=True)
-        dst = os.path.join(
-            os.getcwd(), "plots", "{}_{}".format(int(time.time()), f"timeline.{format}")
-        )
+        timeline_path = Path("history")
+        timeline_path.mkdir(parents=True, exist_ok=True)
+        dst = timeline_path / "{}_{}".format(int(time.time()), f"timeline.{format}")
+
     else:
-        dst = os.path.expanduser(dst) if "~" in dst else dst
-        dst = "{}/{}".format(os.path.realpath(dst), f"timeline.{format}")
+        dst = Path(dst)
+        dst.mkdir(parents=True, exist_ok=True)
+        dst = dst / f"timeline.{format}"
 
     fig.savefig(dst)
