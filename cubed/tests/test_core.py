@@ -491,11 +491,12 @@ def test_default_spec(executor):
 def test_default_spec_allowed_mem_exceeded():
     # default spec fails for large computations
     a = xp.ones((20000, 10000), chunks=(10000, 10000))
+    b = xp.negative(a)
     with pytest.raises(
         ValueError,
-        match=r"Projected blockwise memory \(\d+\) exceeds allowed_mem \(\d+\), including reserved_mem \(\d+\)",
+        match=r"Projected blockwise memory \(.+\) exceeds allowed_mem \(.+\), including reserved_mem \(.+\) for op-\d+",
     ):
-        xp.negative(a)
+        b.plan()
 
 
 def test_default_spec_config_override():

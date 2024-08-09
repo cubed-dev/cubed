@@ -413,11 +413,6 @@ def general_blockwise(
         buffer_copies=buffer_copies,
     )
 
-    if projected_mem > allowed_mem:
-        raise ValueError(
-            f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
-        )
-
     # this must be an iterator of lists, not of tuples, otherwise lithops breaks
     if output_blocks is None:
         output_blocks = map(
