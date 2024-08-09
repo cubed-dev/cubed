@@ -1,3 +1,4 @@
+import logging
 from dataclasses import asdict
 from pathlib import Path
 
@@ -41,6 +42,7 @@ class HistoryCallback(Callback):
 
         self.stats_df = analyze(self.plan_df, self.events_df)
         self.stats_df.to_csv(self.stats_df_path, index=False)
+        logging.info(f"HistoryCallback results saved to directory: {history_path}/")
 
 
 def analyze(plan_df, events_df):
