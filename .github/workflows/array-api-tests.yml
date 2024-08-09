@@ -79,15 +79,30 @@ jobs:
           array_api_tests/test_operators_and_elementwise_functions.py::test_subtract[__isub__(x1, x2)]
           array_api_tests/test_operators_and_elementwise_functions.py::test_subtract[__isub__(x, s)]
 
-          # don't run special cases yet
-          array_api_tests/test_special_cases.py
+          # special cases not implemented
+          array_api_tests/test_special_cases.py::test_empty_arrays[std]
+          array_api_tests/test_special_cases.py::test_empty_arrays[var]
+          array_api_tests/test_special_cases.py::test_nan_propagation[std]
+          array_api_tests/test_special_cases.py::test_nan_propagation[var]
 
-          # don't test signatures or names yet as some are not implemented
-          array_api_tests/test_signatures.py
+          # don't test names yet as some are not implemented
           array_api_tests/test_has_names.py
 
-          # very slow
-          array_api_tests/test_creation_functions.py::test_eye
+          # signatures of items not implemented
+          array_api_tests/test_signatures.py::test_func_signature[std]
+          array_api_tests/test_signatures.py::test_func_signature[var]
+          array_api_tests/test_signatures.py::test_func_signature[unique_all]
+          array_api_tests/test_signatures.py::test_func_signature[unique_counts]
+          array_api_tests/test_signatures.py::test_func_signature[unique_inverse]
+          array_api_tests/test_signatures.py::test_func_signature[unique_values]
+          array_api_tests/test_signatures.py::test_func_signature[nonzero]
+          array_api_tests/test_signatures.py::test_func_signature[from_dlpack]
+          array_api_tests/test_signatures.py::test_func_signature[argsort]
+          array_api_tests/test_signatures.py::test_func_signature[sort]
+          array_api_tests/test_signatures.py::test_array_method_signature[__dlpack__]
+          array_api_tests/test_signatures.py::test_array_method_signature[__dlpack_device__]
+          array_api_tests/test_signatures.py::test_array_method_signature[__setitem__]
+          array_api_tests/test_signatures.py::test_array_method_signature[to_device]
 
           # edge case failures (https://github.com/cubed-dev/cubed/issues/420)
           array_api_tests/test_linalg.py::test_tensordot
