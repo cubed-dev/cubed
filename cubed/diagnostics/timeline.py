@@ -17,7 +17,7 @@ pylab.switch_backend("Agg")
 
 
 class TimelineVisualizationCallback(Callback):
-    def __init__(self, format: Optional[str] = None) -> None:
+    def __init__(self, format: Optional[str] = "svg") -> None:
         self.format = format
 
     def on_compute_start(self, event):
@@ -28,79 +28,66 @@ class TimelineVisualizationCallback(Callback):
         self.stats.append(asdict(event))
 
     def on_compute_end(self, event):
-        end_tstamp = time.time()
-        dst = f"history/{event.compute_id}"
-        format = self.format
-        create_timeline(self.stats, self.start_tstamp, end_tstamp, dst, format)
-        logging.info(
-            f"TimelineVisualizationCallback results saved to directory: {dst}/"
+        self.end_tstamp = time.time()
+
+        stats_df = pd.DataFrame(self.stats)
+        stats_df = stats_df.sort_values(
+            by=["task_create_tstamp", "name"], ascending=True
         )
+        total_calls = len(stats_df)
+        palette = sns.color_palette("deep", 6)
 
+        fig = pylab.figure(figsize=(10, 6))
+        ax = fig.add_subplot(1, 1, 1)
 
-# copy of lithops function of the same name, and modified for different field names
-def create_timeline(stats, start_tstamp, end_tstamp, dst=None, format=None):
-    stats_df = pd.DataFrame(stats)
+        y = np.arange(total_calls)
+        point_size = 10
 
-    stats_df = stats_df.sort_values(by=["task_create_tstamp", "name"], ascending=True)
+        fields = [
+            ("task create", stats_df.task_create_tstamp - self.start_tstamp),
+            ("function start", stats_df.function_start_tstamp - self.start_tstamp),
+            ("function end", stats_df.function_end_tstamp - self.start_tstamp),
+            ("task result", stats_df.task_result_tstamp - self.start_tstamp),
+        ]
 
-    total_calls = len(stats_df)
+        patches = []
+        for f_i, (field_name, val) in enumerate(fields):
+            ax.scatter(
+                val, y, c=[palette[f_i]], edgecolor="none", s=point_size, alpha=0.8
+            )
+            patches.append(mpatches.Patch(color=palette[f_i], label=field_name))
 
-    palette = sns.color_palette("deep", 6)
+        ax.set_xlabel("Execution Time (sec)")
+        ax.set_ylabel("Function Call")
 
-    fig = pylab.figure(figsize=(10, 6))
-    ax = fig.add_subplot(1, 1, 1)
+        legend = pylab.legend(handles=patches, loc="upper right", frameon=True)
+        legend.get_frame().set_facecolor("#FFFFFF")
 
-    y = np.arange(total_calls)
-    point_size = 10
+        yplot_step = int(np.max([1, total_calls / 20]))
+        y_ticks = np.arange(total_calls // yplot_step + 2) * yplot_step
+        ax.set_yticks(y_ticks)
+        ax.set_ylim(-0.02 * total_calls, total_calls * 1.02)
+        for y in y_ticks:
+            ax.axhline(y, c="k", alpha=0.1, linewidth=1)
 
-    fields = [
-        ("task create", stats_df.task_create_tstamp - start_tstamp),
-        ("function start", stats_df.function_start_tstamp - start_tstamp),
-        ("function end", stats_df.function_end_tstamp - start_tstamp),
-        ("task result", stats_df.task_result_tstamp - start_tstamp),
-    ]
+        max_seconds = np.max(self.end_tstamp - self.start_tstamp) * 1.25
+        xplot_step = max(int(max_seconds / 8), 1)
+        x_ticks = np.arange(max_seconds // xplot_step + 2) * xplot_step
+        ax.set_xlim(0, max_seconds)
 
-    patches = []
-    for f_i, (field_name, val) in enumerate(fields):
-        ax.scatter(val, y, c=[palette[f_i]], edgecolor="none", s=point_size, alpha=0.8)
-        patches.append(mpatches.Patch(color=palette[f_i], label=field_name))
+        ax.set_xticks(x_ticks)
+        for x in x_ticks:
+            ax.axvline(x, c="k", alpha=0.2, linewidth=0.8)
 
-    ax.set_xlabel("Execution Time (sec)")
-    ax.set_ylabel("Function Call")
+        ax.grid(False)
+        fig.tight_layout()
 
-    legend = pylab.legend(handles=patches, loc="upper right", frameon=True)
-    legend.get_frame().set_facecolor("#FFFFFF")
+        self.dst = Path(f"history/{event.compute_id}")
+        self.dst.mkdir(parents=True, exist_ok=True)
+        self.dst = self.dst / f"timeline.{self.format}"
 
-    yplot_step = int(np.max([1, total_calls / 20]))
-    y_ticks = np.arange(total_calls // yplot_step + 2) * yplot_step
-    ax.set_yticks(y_ticks)
-    ax.set_ylim(-0.02 * total_calls, total_calls * 1.02)
-    for y in y_ticks:
-        ax.axhline(y, c="k", alpha=0.1, linewidth=1)
+        fig.savefig(self.dst)
 
-    max_seconds = np.max(end_tstamp - start_tstamp) * 1.25
-    xplot_step = max(int(max_seconds / 8), 1)
-    x_ticks = np.arange(max_seconds // xplot_step + 2) * xplot_step
-    ax.set_xlim(0, max_seconds)
-
-    ax.set_xticks(x_ticks)
-    for x in x_ticks:
-        ax.axvline(x, c="k", alpha=0.2, linewidth=0.8)
-
-    ax.grid(False)
-    fig.tight_layout()
-
-    if format is None:
-        format = "svg"
-
-    if dst is None:
-        timeline_path = Path("history")
-        timeline_path.mkdir(parents=True, exist_ok=True)
-        dst = timeline_path / "{}_{}".format(int(time.time()), f"timeline.{format}")
-
-    else:
-        dst = Path(dst)
-        dst.mkdir(parents=True, exist_ok=True)
-        dst = dst / f"timeline.{format}"
-
-    fig.savefig(dst)
+        logging.info(
+            f"TimelineVisualizationCallback results saved to directory: {self.dst}/"
+        )
