@@ -24,6 +24,10 @@ def gensym(name="array"):
     return f"{name}-{sym_counter:03}"
 
 
+# see cubed.testing
+compute_should_raise = False
+
+
 # type representing either a CoreArray or a public-facing Array
 T_ChunkedArray = TypeVar("T_ChunkedArray", bound="CoreArray")
 
@@ -269,6 +273,8 @@ def compute(
         If True, intermediate arrays that have already been computed won't be
         recomputed. Default is False.
     """
+    if compute_should_raise:
+        raise RuntimeError("'compute' was called")
     spec = check_array_specs(arrays)  # guarantees all arrays have same spec
     plan = arrays_to_plan(*arrays)
     if executor is None:
