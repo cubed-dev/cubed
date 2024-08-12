@@ -44,7 +44,7 @@ jobs:
       - name: Run tests
         run: |
           # exclude tests that rely on structured types since JAX doesn't support these
-          pytest -k "not argmax and not argmin and not mean and not apply_reduction and not broadcast_trick and not groupby"
+          pytest -k "not argmax and not argmin and not mean and not apply_reduction and not broadcast_trick and not groupby and not object_dtype"
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
           JAX_ENABLE_X64: True
