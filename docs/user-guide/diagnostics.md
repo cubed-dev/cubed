@@ -68,7 +68,7 @@ This will work in Jupyter notebooks, and for all executors.
 
 
 ### History
-The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [`events.csv`, `plan.csv` and `stats.csv`] to a new directory under with the schema `history/compute-{id}`.
+The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [`events.csv`, `plan.csv` and `stats.csv`] to a new directory under the current directory with the schema `history/compute-{id}`.
 
 
 ```ipython
