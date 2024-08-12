@@ -30,6 +30,16 @@ def open_backend_array(
         from cubed.storage.backends.zarr_python import open_zarr_array
 
         open_func = open_zarr_array
+
+        import numpy as np
+
+        if np.dtype(dtype).hasobject:
+            import numcodecs
+
+            object_codec = numcodecs.Pickle()
+            if "object_codec" not in kwargs:
+                kwargs["object_codec"] = object_codec
+
     elif storage_name == "zarr-python-v3":
         from cubed.storage.backends.zarr_python_v3 import open_zarr_v3_array
 
