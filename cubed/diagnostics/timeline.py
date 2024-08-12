@@ -1,4 +1,3 @@
-import logging
 import time
 from dataclasses import asdict
 from pathlib import Path
@@ -87,7 +86,3 @@ class TimelineVisualizationCallback(Callback):
         self.dst = self.dst / f"timeline.{self.format}"
 
         fig.savefig(self.dst)
-
-        logging.info(
-            f"TimelineVisualizationCallback results saved to directory: {self.dst}/"
-        )
