@@ -399,12 +399,18 @@ class Array(CoreArray):
     # Utility methods
 
     def _check_allowed_dtypes(self, other, dtype_category, op):
-        if self.dtype not in _dtype_categories[dtype_category]:
+        if (
+            dtype_category != "all"
+            and self.dtype not in _dtype_categories[dtype_category]
+        ):
             raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
         if isinstance(other, (int, complex, float, bool)):
             other = self._promote_scalar(other)
         elif isinstance(other, CoreArray):
-            if other.dtype not in _dtype_categories[dtype_category]:
+            if (
+                dtype_category != "all"
+                and other.dtype not in _dtype_categories[dtype_category]
+            ):
                 raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
         else:
             return NotImplemented
