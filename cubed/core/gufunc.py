@@ -68,7 +68,11 @@ def apply_gufunc(
     # Main code:
 
     # Cast all input arrays to cubed
-    # args = [asarray(a) for a in args]  # TODO: do we need to support casting?
+    from cubed.array_api.creation_functions import asarray
+
+    specs = [a.spec for a in args if hasattr(a, "spec")]
+    spec = specs[0] if len(specs) > 0 else None
+    args = [asarray(a, spec=spec) for a in args]
 
     if len(input_coredimss) != len(args):
         raise ValueError(

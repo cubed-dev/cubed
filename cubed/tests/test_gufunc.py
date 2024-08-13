@@ -38,6 +38,16 @@ def test_apply_gufunc_elemwise_01(spec):
     assert_equal(z, np.array([2, 4, 6]))
 
 
+def test_apply_gufunc_elemwise_01_non_cubed_input(spec):
+    def add(x, y):
+        return x + y
+
+    a = cubed.from_array(np.array([1, 2, 3]), chunks=3, spec=spec)
+    b = np.array([1, 2, 3])
+    z = apply_gufunc(add, "(),()->()", a, b, output_dtypes=a.dtype)
+    assert_equal(z, np.array([2, 4, 6]))
+
+
 def test_apply_gufunc_elemwise_loop(spec):
     def foo(x):
         assert x.shape in ((2,), (1,))
