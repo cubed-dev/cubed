@@ -41,7 +41,12 @@ Array `c` is coloured orange, which means it is materialized as a Zarr array. Ar
 
 Similarly, the operation that produces `c` is shown in a lilac colour to signify that it runs tasks to produce the output. Operations `op-001` and `op-002` don't run any tasks since `a` and `b` are just small constant arrays.
 
-## Progress bar
+
+## Callbacks
+
+You can pass callbacks to functions that call `compute`, such as {py:func}`store <cubed.store>` or {py:func}`to_zarr <cubed.to_zarr>`.
+
+### Progress bar
 
 You can display a progress bar to track your computation by passing callbacks to {py:meth}`compute() <cubed.Array.compute()>`:
 
@@ -53,14 +58,37 @@ You can display a progress bar to track your computation by passing callbacks to
   op-003 add    4/4 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
 ```
 
+The two current progress bar choice are:
+- `from cubed.diagnostics.rich import RichProgressBar`
+- `from cubed.diagnostics.tqdm import TqdmProgressBar`
+
+
 This will work in Jupyter notebooks, and for all executors.
 
-You can also pass callbacks to functions that call `compute`, such as {py:func}`store <cubed.store>` or {py:func}`to_zarr <cubed.to_zarr>`.
 
-## History and timeline visualization
 
-The history and timeline visualization callbacks can be used to find out how long tasks took to run, and how much memory they used.
+### History
+The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [`events.csv`, `plan.csv` and `stats.csv`] to a new directory under the current directory with the schema `history/compute-{id}`.
 
+
+```ipython
+>>> from cubed.diagnostics.history import HistoryCallback
+>>> hist = HistoryCallback()
+>>> c.compute(callbacks=[hist])
+```
+
+
+### Timeline
 The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation. (Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.)
 
+The timeline callback will write a graphic `timeline.svg` to a directory with the schema `history/compute-{id}`.
+
+
+```ipython
+>>> from cubed.diagnostics.timeline import TimelineVisualizationCallback
+>>> timeline_viz = TimelineVisualizationCallback()
+>>> c.compute(callbacks=[timeline_viz])
+```
+
+### Examples in use
 See the [examples](https://github.com/cubed-dev/cubed/blob/main/examples/README.md) for more information about how to use them.
