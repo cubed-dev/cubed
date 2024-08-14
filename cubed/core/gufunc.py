@@ -68,6 +68,8 @@ def apply_gufunc(
     # Main code:
 
     # Cast all input arrays to cubed
+    # Use a spec if there is one. Note that all args have to have the same spec, and
+    # this will be checked later when constructing the plan (see check_array_specs).
     from cubed.array_api.creation_functions import asarray
 
     specs = [a.spec for a in args if hasattr(a, "spec")]
