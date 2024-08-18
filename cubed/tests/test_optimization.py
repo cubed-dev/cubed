@@ -67,6 +67,21 @@ def test_fusion(spec, opt_fn):
         np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.float32),
     )
 
+    # if we compute c and d then both have to be materialized
+    num_created_arrays = 2  # c, d
+    task_counter = TaskCounter()
+    c_result, d_result = cubed.compute(c, d, optimize_function=opt_fn)
+    assert task_counter.value == num_created_arrays + 8
+
+    assert_array_equal(
+        c_result,
+        np.array([[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]]).astype(np.float32),
+    )
+    assert_array_equal(
+        d_result,
+        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.float32),
+    )
+
 
 @pytest.mark.parametrize(
     "opt_fn", [None, simple_optimize_dag, multiple_inputs_optimize_dag]
