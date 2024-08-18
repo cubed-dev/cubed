@@ -63,6 +63,34 @@ def test_fusion(spec, opt_fn):
 @pytest.mark.parametrize(
     "opt_fn", [None, simple_optimize_dag, multiple_inputs_optimize_dag]
 )
+def test_fusion_compute_multiple(spec, opt_fn):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.negative(a)
+    c = xp.astype(b, np.float32)
+    d = xp.negative(c)
+
+    # if we compute c and d then both have to be materialized
+    num_created_arrays = 2  # c, d
+    task_counter = TaskCounter()
+    cubed.visualize(c, d, optimize_function=opt_fn)
+    c_result, d_result = cubed.compute(
+        c, d, optimize_function=opt_fn, callbacks=[task_counter]
+    )
+    assert task_counter.value == num_created_arrays + 8
+
+    assert_array_equal(
+        c_result,
+        np.array([[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]]).astype(np.float32),
+    )
+    assert_array_equal(
+        d_result,
+        np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).astype(np.float32),
+    )
+
+
+@pytest.mark.parametrize(
+    "opt_fn", [None, simple_optimize_dag, multiple_inputs_optimize_dag]
+)
 def test_fusion_transpose(spec, opt_fn):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
