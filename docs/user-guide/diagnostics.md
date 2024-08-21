@@ -92,3 +92,41 @@ The timeline callback will write a graphic `timeline.svg` to a directory with th
 
 ### Examples in use
 See the [examples](https://github.com/cubed-dev/cubed/blob/main/examples/README.md) for more information about how to use them.
+
+## Memray
+
+[Memray](https://github.com/bloomberg/memray), a memory profiler for Python, can be used to track and view memory allocations when running a single task in a Cubed computation.
+
+This is not usually needed when using Cubed, but for developers writing new operations, improving projected memory sizes, or for debugging a memory issue, it can be very useful to understand how memory is actually allocated in Cubed.
+
+To enable Memray memory profiling in Cubed, simply install memray (`pip install memray`). Then use a local executor that runs tasks in separate processes, such as `processes` (Python 3.11 or later) or `lithops`. When you run a computation, Cubed will enable Memray for the first task in each operation (so if an array has 100 chunks it will only produce one Memray trace).
+
+Here is an example of a simple addition operation, with 200MB chunks. (It is adapted from [test_mem_utilization.py](https://github.com/cubed-dev/cubed/blob/main/cubed/tests/test_mem_utilization.py) in Cubed's test suite.)
+
+```python
+import cubed.array_api as xp
+import cubed.random
+
+a = cubed.random.random(
+    (10000, 10000), chunks=(5000, 5000), spec=spec
+)  # 200MB chunks
+b = cubed.random.random(
+    (10000, 10000), chunks=(5000, 5000), spec=spec
+)  # 200MB chunks
+c = xp.add(a, b)
+c.compute(optimize_graph=False)
+```
+
+The optimizer is turned off so that generation of the random arrays is not fused with the add operation. This way we can see the memory allocations for that operation alone.
+
+After the computation is complete there will be a collection of `.bin` files in the `history/compute-{id}/memray` directory - with one for each operation. To view them we convert them to HTML flame graphs as follows:
+
+```shell
+(cd $(ls -d history/compute-* | tail -1)/memray; for f in $(ls *.bin); do echo $f; python -m memray flamegraph --temporal -f -o $f.html $f; done)
+```
+
+Here is the flame graph for the add operation:
+
+![Memray temporal view of an 'add' operation](../images/memray-add.png)
+
+Annotations have been added to exaplin what is going on in this example. Note that reading a chunk from Zarr requires twice the chunk memory (400MB) since there is a buffer for the compressed Zarr block (200MB), as well as the resulting array (200MB). After the first chunk has been loaded the memory dips back to 200MB since the compressed buffer is no longer retained.
