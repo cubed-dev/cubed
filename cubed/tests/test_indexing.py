@@ -20,6 +20,8 @@ def spec(tmp_path):
         [6, 7, 2, 9, 10],
         ([6, 7, 2, 9, 10], xp.newaxis),
         (xp.newaxis, [6, 7, 2, 9, 10]),
+        (slice(None), xp.newaxis),
+        (xp.newaxis, slice(None)),
     ],
 )
 def test_int_array_index_1d(spec, ind):
@@ -36,6 +38,9 @@ def test_int_array_index_1d(spec, ind):
         (xp.newaxis, slice(None), [2, 1]),
         (slice(None), xp.newaxis, [2, 1]),
         (slice(None), [2, 1], xp.newaxis),
+        (xp.newaxis, slice(None), slice(None)),
+        (slice(None), xp.newaxis, slice(None)),
+        (slice(None), slice(None), xp.newaxis),
     ],
 )
 def test_int_array_index_2d(spec, ind):
