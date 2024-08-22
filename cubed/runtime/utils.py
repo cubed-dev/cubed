@@ -47,16 +47,16 @@ def execution_stats(func):
 
 
 def execute_with_memray(function, input, **kwargs):
-    # only run memray for first input (and only for operations that run on block locations)
-    compute_id = kwargs.get("compute_id", None)
-    name = kwargs["name"]
+    # only run memray if installed, and only for first input (for operations that run on block locations)
     if (
-        compute_id is not None
-        and memray is not None
+        memray is not None
+        and "compute_id" in kwargs
         and isinstance(input, list)
         and all(isinstance(i, int) for i in input)
         and sum(input) == 0
     ):
+        compute_id = kwargs["compute_id"]
+        name = kwargs["name"]
         memray_dir = Path(f"history/{compute_id}/memray")
         memray_dir.mkdir(parents=True, exist_ok=True)
         cm = memray.Tracker(memray_dir / f"{name}.bin")
