@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from cubed.array_api.array_object import Array
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import map_blocks, map_direct, merge_chunks_new
+from cubed.core.ops import map_blocks_multiple_outputs, map_direct, merge_chunks_new
 from cubed.utils import get_item
 
 
@@ -18,9 +18,6 @@ def qr(x, /, *, mode="reduced") -> QRResult:
     if mode != "reduced":
         raise ValueError("Cubed arrays only support using mode='reduced'")
 
-    # TODO: when multiple outputs are supported the first and second step will
-    # each have a single map_blocks (or map_direct)
-
     Q1, R1 = _qr_first_step(x)
 
     Q2, R2 = _qr_second_step(R1)
@@ -34,15 +31,17 @@ def _qr_first_step(A):
     m, n = A.chunksize
     k, _ = A.numblocks
 
-    Q1 = map_blocks(_qr, A, dtype=nxp.float64, chunks=A.chunks, qr_name="Q")
-
+    # Q1 has same shape and chunks as A
+    R1_shape = (n * k, n)
     R1_chunks = ((n,) * k, (n,))
-    R1 = map_blocks(_qr, A, dtype=nxp.float64, chunks=R1_chunks, qr_name="R")
+    Q1, R1 = map_blocks_multiple_outputs(
+        nxp.linalg.qr,
+        A,
+        shapes=[A.shape, R1_shape],
+        dtypes=[nxp.float64, nxp.float64],
+        chunkss=[A.chunks, R1_chunks],
+    )
     return QRResult(Q1, R1)
-
-
-def _qr(a, qr_name=None):
-    return getattr(nxp.linalg.qr(a), qr_name)
 
 
 def _qr_second_step(R1):
@@ -50,12 +49,17 @@ def _qr_second_step(R1):
 
     Q2_shape = R1.shape
     Q2_chunks = Q2_shape  # single chunk
-    Q2 = map_blocks(_qr, R1_single, dtype=nxp.float64, chunks=Q2_chunks, qr_name="Q")
 
     n = R1.shape[1]
     R2_shape = (n, n)
     R2_chunks = R2_shape  # single chunk
-    R2 = map_blocks(_qr, R1_single, dtype=nxp.float64, chunks=R2_chunks, qr_name="R")
+    Q2, R2 = map_blocks_multiple_outputs(
+        nxp.linalg.qr,
+        R1_single,
+        shapes=[Q2_shape, R2_shape],
+        dtypes=[nxp.float64, nxp.float64],
+        chunkss=[Q2_chunks, R2_chunks],
+    )
     return QRResult(Q2, R2)
 
 
