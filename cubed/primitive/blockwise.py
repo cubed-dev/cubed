@@ -89,8 +89,10 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
         args.append(arg)
 
     results = config.function(*args)
-    # if blockwise function is a regular function (not a generator) then make it iterable
-    if not inspect.isgeneratorfunction(config.function):
+    # if blockwise function is a regular function (not a generator) that doesn't return multiple values then make it iterable
+    if not inspect.isgeneratorfunction(config.function) and not isinstance(
+        results, tuple
+    ):
         results = (results,)
     for i, result in enumerate(results):
         out_chunk_key = key_to_slices(
