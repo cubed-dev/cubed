@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-import zarr
 from numpy.testing import assert_array_equal
 
 from cubed.backend_array_api import namespace as nxp
@@ -279,10 +278,10 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
 
     input = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
-    res1 = zarr.open_array(target_store1)
+    res1 = open_backend_array(target_store1, mode="r")
     assert_array_equal(res1[:], np.sqrt(input))
 
-    res2 = zarr.open_array(target_store2)
+    res2 = open_backend_array(target_store2, mode="r")
     assert_array_equal(res2[:], -np.sqrt(input))
 
 
