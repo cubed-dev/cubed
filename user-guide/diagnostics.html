@@ -36,7 +36,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=adcdb430"></script>
+    <script src="../_static/documentation_options.js?v=03c5a8c0"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -363,6 +363,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-in-use">Examples in use</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memray">Memray</a></li>
 </ul>
             </nav>
         </div>
@@ -448,6 +449,34 @@ document.write(`
 <p>See the <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/README.md">examples</a> for more information about how to use them.</p>
 </section>
 </section>
+<section id="memray">
+<h2>Memray<a class="headerlink" href="#memray" title="Link to this heading">#</a></h2>
+<p><a class="reference external" href="https://github.com/bloomberg/memray">Memray</a>, a memory profiler for Python, can be used to track and view memory allocations when running a single task in a Cubed computation.</p>
+<p>This is not usually needed when using Cubed, but for developers writing new operations, improving projected memory sizes, or for debugging a memory issue, it can be very useful to understand how memory is actually allocated in Cubed.</p>
+<p>To enable Memray memory profiling in Cubed, simply install memray (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">memray</span></code>). Then use a local executor that runs tasks in separate processes, such as <code class="docutils literal notranslate"><span class="pre">processes</span></code> (Python 3.11 or later) or <code class="docutils literal notranslate"><span class="pre">lithops</span></code>. When you run a computation, Cubed will enable Memray for the first task in each operation (so if an array has 100 chunks it will only produce one Memray trace).</p>
+<p>Here is an example of a simple addition operation, with 200MB chunks. (It is adapted from <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/cubed/tests/test_mem_utilization.py">test_mem_utilization.py</a> in Cubed’s test suite.)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+<span class="kn">import</span> <span class="nn">cubed.random</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span>
+<span class="p">)</span>  <span class="c1"># 200MB chunks</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span>
+<span class="p">)</span>  <span class="c1"># 200MB chunks</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">optimize_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The optimizer is turned off so that generation of the random arrays is not fused with the add operation. This way we can see the memory allocations for that operation alone.</p>
+<p>After the computation is complete there will be a collection of <code class="docutils literal notranslate"><span class="pre">.bin</span></code> files in the <code class="docutils literal notranslate"><span class="pre">history/compute-{id}/memray</span></code> directory - with one for each operation. To view them we convert them to HTML flame graphs as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">cd</span><span class="w"> </span><span class="k">$(</span>ls<span class="w"> </span>-d<span class="w"> </span>history/compute-*<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-1<span class="k">)</span>/memray<span class="p">;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>f<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="k">$(</span>ls<span class="w"> </span>*.bin<span class="k">)</span><span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="nv">$f</span><span class="p">;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>memray<span class="w"> </span>flamegraph<span class="w"> </span>--temporal<span class="w"> </span>-f<span class="w"> </span>-o<span class="w"> </span><span class="nv">$f</span>.html<span class="w"> </span><span class="nv">$f</span><span class="p">;</span><span class="w"> </span><span class="k">done</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>Here is the flame graph for the add operation:</p>
+<p><img alt="Memray temporal view of an 'add' operation" src="../_images/memray-add.png" /></p>
+<p>Annotations have been added to explain what is going on in this example. Note that reading a chunk from Zarr requires twice the chunk memory (400MB) since there is a buffer for the compressed Zarr block (200MB), as well as the resulting array (200MB). After the first chunk has been loaded the memory dips back to 200MB since the compressed buffer is no longer retained.</p>
+</section>
 </section>
 
 
@@ -503,6 +532,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-in-use">Examples in use</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memray">Memray</a></li>
 </ul>
   </nav></div>
 
