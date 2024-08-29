@@ -58,6 +58,11 @@ class VirtualFullArray:
             newshape, fill_value=self.fill_value, dtype=self.dtype
         )
 
+    @property
+    def chunkmem(self):
+        # take broadcast trick into account
+        return array_memory(self.dtype, (1,))
+
 
 class VirtualOffsetsArray:
     """An array that is never materialized (in memory or on disk) and contains sequentially incrementing integers."""
