@@ -198,7 +198,7 @@ def test_custom_optimize_function(spec):
         < num_tasks_with_no_optimization
     )
 
-    def custom_optimize_function(dag):
+    def custom_optimize_function(dag, array_names=None):
         # leave DAG unchanged
         return dag
 
