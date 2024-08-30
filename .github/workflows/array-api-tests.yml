@@ -32,6 +32,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: data-apis/array-api-tests
+          ref: 'db95e67b29235249e5776ca2b6bb4e77117e0690'  # Latest commit as of 2024-08-08
           path: array-api-tests
           submodules: "true"
       - name: Set up Python ${{ matrix.python-version }}
