@@ -244,6 +244,16 @@ def test_concat(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+def test_flip(tmp_path, spec, executor):
+    # Note 'a' has one fewer element in axis=0 to force chunking to cross array boundaries
+    a = cubed.random.random(
+        (9999, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.flip(a, axis=0)
+    run_operation(tmp_path, executor, "flip", b)
+
+
+@pytest.mark.slow
 def test_reshape(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
