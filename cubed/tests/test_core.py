@@ -373,13 +373,14 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
     # check that there is > 1 blockwise step (after optimization)
+    finalized_plan = b.plan._finalize()
     blockwises = [
         n
-        for (n, d) in b.plan.dag.nodes(data=True)
+        for (n, d) in finalized_plan.dag.nodes(data=True)
         if d.get("op_name", None) == "blockwise"
     ]
     assert len(blockwises) > 1
-    assert b.plan.max_projected_mem() <= 1000
+    assert finalized_plan.max_projected_mem() <= 1000
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
 
 
@@ -555,7 +556,7 @@ def test_plan_scaling(tmp_path, factor):
     )
     c = xp.matmul(a, b)
 
-    assert c.plan.num_tasks() > 0
+    assert c.plan._finalize().num_tasks() > 0
     c.visualize(filename=tmp_path / "c")
 
 
@@ -568,7 +569,7 @@ def test_plan_quad_means(tmp_path, t_length):
     uv = u * v
     m = xp.mean(uv, axis=0, split_every=10, use_new_impl=True)
 
-    assert m.plan.num_tasks() > 0
+    assert m.plan._finalize().num_tasks() > 0
     m.visualize(
         filename=tmp_path / "quad_means_unoptimized",
         optimize_graph=False,

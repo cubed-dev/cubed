@@ -181,7 +181,7 @@ def test_resume(spec, executor):
     d = xp.negative(c)
 
     num_created_arrays = 2  # c, d
-    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 8
+    assert d.plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 8
 
     task_counter = TaskCounter()
     c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
@@ -321,13 +321,15 @@ COMPILE_FUNCTIONS = [lambda fn: fn]
 
 try:
     from numba import jit as numba_jit
+
     COMPILE_FUNCTIONS.append(numba_jit)
 except ModuleNotFoundError:
     pass
 
 try:
-    if 'jax' in os.environ.get('CUBED_BACKEND_ARRAY_API_MODULE', ''):
+    if "jax" in os.environ.get("CUBED_BACKEND_ARRAY_API_MODULE", ""):
         from jax import jit as jax_jit
+
         COMPILE_FUNCTIONS.append(jax_jit)
 except ModuleNotFoundError:
     pass
@@ -339,7 +341,8 @@ def test_check_compilation(spec, executor, compile_function):
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
-        c.compute(executor=executor, compile_function=compile_function), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+        c.compute(executor=executor, compile_function=compile_function),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
     )
 
 
@@ -352,7 +355,7 @@ def test_compilation_can_fail(spec, executor):
     c = xp.add(a, b)
     with pytest.raises(NotImplementedError) as excinfo:
         c.compute(executor=executor, compile_function=compile_function)
-    
+
     assert "add" in str(excinfo.value), "Compile function was applied to add operation."
 
 
@@ -365,5 +368,7 @@ def test_compilation_with_config_can_fail(spec, executor):
     c = xp.add(a, b)
     with pytest.raises(NotImplementedError) as excinfo:
         c.compute(executor=executor, compile_function=compile_function)
-        
-    assert "BlockwiseSpec" in str(excinfo.value), "Compile function was applied with a config argument."
+
+    assert "BlockwiseSpec" in str(
+        excinfo.value
+    ), "Compile function was applied with a config argument."
