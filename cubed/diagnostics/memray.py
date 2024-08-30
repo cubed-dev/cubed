@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import memray
 from memray._memray import compute_statistics
+from memray._stats import Stats
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback
@@ -34,8 +35,8 @@ class MemrayCallback(Callback):
 
     def __init__(self, mem_threshold=50_000_000) -> None:
         self.mem_threshold = mem_threshold
-        self.allocations = {}
-        self.stats = {}
+        self.allocations: Dict[str, Allocation] = {}
+        self.stats: Dict[str, Stats] = {}
 
     def on_compute_end(self, event):
         for name, _ in visit_nodes(event.dag):
