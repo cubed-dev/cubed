@@ -6,7 +6,7 @@ import tempfile
 import uuid
 from datetime import datetime
 from functools import lru_cache
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 import networkx as nx
 import zarr
@@ -154,10 +154,11 @@ class Plan:
     def optimize(
         self,
         optimize_function: Optional[Callable[..., nx.MultiDiGraph]] = None,
+        array_names: Optional[Tuple[str]] = None,
     ):
         if optimize_function is None:
             optimize_function = multiple_inputs_optimize_dag
-        dag = optimize_function(self.dag)
+        dag = optimize_function(self.dag, array_names=array_names)
         return Plan(dag)
 
     def _create_lazy_zarr_arrays(self, dag):
@@ -243,8 +244,9 @@ class Plan:
         optimize_graph: bool = True,
         optimize_function=None,
         compile_function: Optional[Decorator] = None,
+        array_names=None,
     ) -> "FinalizedPlan":
-        dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
+        dag = self.optimize(optimize_function, array_names).dag if optimize_graph else self.dag
         # create a copy since _create_lazy_zarr_arrays mutates the dag
         dag = dag.copy()
         if callable(compile_function):
@@ -260,11 +262,12 @@ class Plan:
         optimize_function=None,
         compile_function=None,
         resume=None,
+        array_names=None,
         spec=None,
         **kwargs,
     ):
         finalized_plan = self._finalize(
-            optimize_graph, optimize_function, compile_function
+            optimize_graph, optimize_function, compile_function, array_names=array_names
         )
         dag = finalized_plan.dag
 
@@ -293,8 +296,11 @@ class Plan:
         optimize_graph=True,
         optimize_function=None,
         show_hidden=False,
+        array_names=None,
     ):
-        finalized_plan = self._finalize(optimize_graph, optimize_function)
+        finalized_plan = self._finalize(
+            optimize_graph, optimize_function, array_names=array_names
+        )
         dag = finalized_plan.dag
         dag = dag.copy()  # make a copy since we mutate the DAG below
 

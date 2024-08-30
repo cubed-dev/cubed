@@ -12,7 +12,7 @@ from cubed.primitive.blockwise import (
 logger = logging.getLogger(__name__)
 
 
-def simple_optimize_dag(dag):
+def simple_optimize_dag(dag, array_names=None):
     """Apply map blocks fusion."""
 
     # note there is no need to prune the dag, since the way it is built
@@ -205,6 +205,7 @@ def fuse_predecessors(
     dag,
     name,
     *,
+    array_names=None,
     max_total_source_arrays=4,
     max_total_num_input_blocks=None,
     always_fuse=None,
@@ -258,6 +259,7 @@ def fuse_predecessors(
 def multiple_inputs_optimize_dag(
     dag,
     *,
+    array_names=None,
     max_total_source_arrays=4,
     max_total_num_input_blocks=None,
     always_fuse=None,
@@ -270,6 +272,7 @@ def multiple_inputs_optimize_dag(
         dag = fuse_predecessors(
             dag,
             name,
+            array_names=array_names,
             max_total_source_arrays=max_total_source_arrays,
             max_total_num_input_blocks=max_total_num_input_blocks,
             always_fuse=always_fuse,
@@ -278,18 +281,20 @@ def multiple_inputs_optimize_dag(
     return dag
 
 
-def fuse_all_optimize_dag(dag):
+def fuse_all_optimize_dag(dag, array_names=None):
     """Force all operations to be fused."""
     dag = dag.copy()
     always_fuse = [op for op in dag.nodes() if op.startswith("op-")]
-    return multiple_inputs_optimize_dag(dag, always_fuse=always_fuse)
+    return multiple_inputs_optimize_dag(
+        dag, array_names=array_names, always_fuse=always_fuse
+    )
 
 
-def fuse_only_optimize_dag(dag, *, only_fuse=None):
+def fuse_only_optimize_dag(dag, *, array_names=None, only_fuse=None):
     """Force only specified operations to be fused, all others will be left even if they are suitable for fusion."""
     dag = dag.copy()
     always_fuse = only_fuse
     never_fuse = set(op for op in dag.nodes() if op.startswith("op-")) - set(only_fuse)
     return multiple_inputs_optimize_dag(
-        dag, always_fuse=always_fuse, never_fuse=never_fuse
+        dag, array_names=array_names, always_fuse=always_fuse, never_fuse=never_fuse
     )
