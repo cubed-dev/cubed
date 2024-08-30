@@ -36,8 +36,12 @@ def simple_optimize_dag(dag, array_names=None):
         if dag.in_degree(op2) != 1:
             return False
 
-        # if input is used by another node then don't fuse
+        # if input is one of the arrays being computed then don't fuse
         op2_input = next(dag.predecessors(op2))
+        if array_names is not None and op2_input in array_names:
+            return False
+
+        # if input is used by another node then don't fuse
         if dag.out_degree(op2_input) != 1:
             return False
 
@@ -143,6 +147,7 @@ def can_fuse_predecessors(
     dag,
     name,
     *,
+    array_names=None,
     max_total_source_arrays=4,
     max_total_num_input_blocks=None,
     always_fuse=None,
@@ -163,6 +168,20 @@ def can_fuse_predecessors(
     if all(not can_fuse for _, _, can_fuse in predecessor_ops_and_arrays(dag, name)):
         logger.debug("can't fuse %s since no predecessor ops can be fused", name)
         return False
+
+    # if a predecessor op produces one of the arrays being computed, then don't fuse
+    if array_names is not None:
+        predecessor_array_names = set(
+            array_name for _, array_name, _ in predecessor_ops_and_arrays(dag, name)
+        )
+        array_names_intersect = set(array_names) & predecessor_array_names
+        if len(array_names_intersect) > 0:
+            logger.debug(
+                "can't fuse %s since predecessor ops produce one or more arrays being computed %s",
+                name,
+                array_names_intersect,
+            )
+            return False
 
     # if node is in never_fuse or always_fuse list then it overrides logic below
     if never_fuse is not None and name in never_fuse:
@@ -217,6 +236,7 @@ def fuse_predecessors(
     if not can_fuse_predecessors(
         dag,
         name,
+        array_names=array_names,
         max_total_source_arrays=max_total_source_arrays,
         max_total_num_input_blocks=max_total_num_input_blocks,
         always_fuse=always_fuse,
