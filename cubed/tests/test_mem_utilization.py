@@ -7,6 +7,8 @@ from functools import partial, reduce
 import pandas as pd
 import pytest
 
+pytest.importorskip("memray")
+
 import cubed
 import cubed.array_api as xp
 import cubed.random
