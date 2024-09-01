@@ -94,6 +94,15 @@ def test_index_chunk_aligned(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+def test_index_multiple_axes(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = a[1:, 1:]
+    run_operation(tmp_path, executor, "index_multiple_axes", b)
+
+
+@pytest.mark.slow
 def test_index_step(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
@@ -263,6 +272,16 @@ def test_flip(tmp_path, spec, executor):
     )  # 200MB chunks
     b = xp.flip(a, axis=0)
     run_operation(tmp_path, executor, "flip", b)
+
+
+@pytest.mark.slow
+def test_flip_multiple_axes(tmp_path, spec, executor):
+    # Note 'a' has one fewer element in both axes to force chunking to cross array boundaries
+    a = cubed.random.random(
+        (9999, 9999), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.flip(a)
+    run_operation(tmp_path, executor, "flip_multiple_axes", b)
 
 
 @pytest.mark.slow
