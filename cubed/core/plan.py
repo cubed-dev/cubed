@@ -207,7 +207,9 @@ class Plan:
         """Compiles functions from all blockwise ops by mutating the input dag."""
         # Recommended: make a copy of the dag before calling this function.
 
-        compile_with_config = 'config' in inspect.getfullargspec(compile_function).kwonlyargs
+        compile_with_config = (
+            "config" in inspect.getfullargspec(compile_function).kwonlyargs
+        )
 
         for n in dag.nodes:
             node = dag.nodes[n]
@@ -219,7 +221,9 @@ class Plan:
                 continue
 
             if compile_with_config:
-                compiled = compile_function(node["pipeline"].config.function, config=node["pipeline"].config)
+                compiled = compile_function(
+                    node["pipeline"].config.function, config=node["pipeline"].config
+                )
             else:
                 compiled = compile_function(node["pipeline"].config.function)
 
@@ -227,23 +231,26 @@ class Plan:
             # maybe we should investigate some sort of optics library for frozen dataclasses...
             new_pipeline = dataclasses.replace(
                 node["pipeline"],
-                config=dataclasses.replace(node["pipeline"].config, function=compiled)
+                config=dataclasses.replace(node["pipeline"].config, function=compiled),
             )
             node["pipeline"] = new_pipeline
 
         return dag
 
     @lru_cache
-    def _finalize_dag(
-        self, optimize_graph: bool = True, optimize_function=None, compile_function: Optional[Decorator] = None,
-    ) -> nx.MultiDiGraph:
+    def _finalize(
+        self,
+        optimize_graph: bool = True,
+        optimize_function=None,
+        compile_function: Optional[Decorator] = None,
+    ) -> "FinalizedPlan":
         dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
         # create a copy since _create_lazy_zarr_arrays mutates the dag
         dag = dag.copy()
         if callable(compile_function):
             dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
-        return nx.freeze(dag)
+        return FinalizedPlan(nx.freeze(dag))
 
     def execute(
         self,
@@ -256,7 +263,10 @@ class Plan:
         spec=None,
         **kwargs,
     ):
-        dag = self._finalize_dag(optimize_graph, optimize_function, compile_function)
+        finalized_plan = self._finalize(
+            optimize_graph, optimize_function, compile_function
+        )
+        dag = finalized_plan.dag
 
         compute_id = f"compute-{datetime.now().strftime('%Y%m%dT%H%M%S.%f')}"
 
@@ -275,43 +285,6 @@ class Plan:
             event = ComputeEndEvent(compute_id, dag)
             [callback.on_compute_end(event) for callback in callbacks]
 
-    def num_tasks(self, optimize_graph=True, optimize_function=None, resume=None):
-        """Return the number of tasks needed to execute this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        tasks = 0
-        for _, node in visit_nodes(dag, resume=resume):
-            tasks += node["primitive_op"].num_tasks
-        return tasks
-
-    def num_arrays(self, optimize_graph: bool = True, optimize_function=None) -> int:
-        """Return the number of arrays in this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        return sum(d.get("type") == "array" for _, d in dag.nodes(data=True))
-
-    def max_projected_mem(
-        self, optimize_graph=True, optimize_function=None, resume=None
-    ):
-        """Return the maximum projected memory across all tasks to execute this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        projected_mem_values = [
-            node["primitive_op"].projected_mem
-            for _, node in visit_nodes(dag, resume=resume)
-        ]
-        return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
-
-    def total_nbytes_written(
-        self, optimize_graph: bool = True, optimize_function=None
-    ) -> int:
-        """Return the total number of bytes written for all materialized arrays in this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        nbytes = 0
-        for _, d in dag.nodes(data=True):
-            if d.get("type") == "array":
-                target = d["target"]
-                if isinstance(target, LazyZarrArray):
-                    nbytes += target.nbytes
-        return nbytes
-
     def visualize(
         self,
         filename="cubed",
@@ -321,7 +294,8 @@ class Plan:
         optimize_function=None,
         show_hidden=False,
     ):
-        dag = self._finalize_dag(optimize_graph, optimize_function)
+        finalized_plan = self._finalize(optimize_graph, optimize_function)
+        dag = finalized_plan.dag
         dag = dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
@@ -336,9 +310,9 @@ class Plan:
             "rankdir": rankdir,
             "label": (
                 # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
-                rf"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\l"
-                rf"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}\l"
-                rf"total nbytes written: {memory_repr(self.total_nbytes_written(optimize_graph, optimize_function))}\l"
+                rf"num tasks: {finalized_plan.num_tasks()}\l"
+                rf"max projected memory: {memory_repr(finalized_plan.max_projected_mem())}\l"
+                rf"total nbytes written: {memory_repr(finalized_plan.total_nbytes_written())}\l"
                 rf"optimized: {optimize_graph}\l"
             ),
             "labelloc": "bottom",
@@ -472,6 +446,49 @@ class Plan:
             # Can't return a display object if no IPython.
             pass
         return None
+
+
+class FinalizedPlan:
+    """A plan that is ready to be run.
+
+    Finalizing a plan involves the following steps:
+    1. optimization (optional)
+    2. adding housekeping nodes to create arrays
+    3. compiling functions (optional)
+    4. freezing the final DAG so it can't be changed
+    """
+
+    def __init__(self, dag):
+        self.dag = dag
+
+    def max_projected_mem(self, resume=None):
+        """Return the maximum projected memory across all tasks to execute this plan."""
+        projected_mem_values = [
+            node["primitive_op"].projected_mem
+            for _, node in visit_nodes(self.dag, resume=resume)
+        ]
+        return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
+
+    def num_arrays(self) -> int:
+        """Return the number of arrays in this plan."""
+        return sum(d.get("type") == "array" for _, d in self.dag.nodes(data=True))
+
+    def num_tasks(self, resume=None):
+        """Return the number of tasks needed to execute this plan."""
+        tasks = 0
+        for _, node in visit_nodes(self.dag, resume=resume):
+            tasks += node["primitive_op"].num_tasks
+        return tasks
+
+    def total_nbytes_written(self) -> int:
+        """Return the total number of bytes written for all materialized arrays in this plan."""
+        nbytes = 0
+        for _, d in self.dag.nodes(data=True):
+            if d.get("type") == "array":
+                target = d["target"]
+                if isinstance(target, LazyZarrArray):
+                    nbytes += target.nbytes
+        return nbytes
 
 
 def arrays_to_dag(*arrays):
