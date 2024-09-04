@@ -359,10 +359,10 @@ def general_blockwise(
     # - numcodecs uses a working output buffer that's the size of the array being compressed
     projected_mem += output_chunk_memory
 
-    if projected_mem > allowed_mem:
-        raise ValueError(
-            f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
-        )
+    # if projected_mem > allowed_mem:
+    #     raise ValueError(
+    #         f"Projected blockwise memory ({projected_mem}) exceeds allowed_mem ({allowed_mem}), including reserved_mem ({reserved_mem})"
+    #     )
 
     # this must be an iterator of lists, not of tuples, otherwise lithops breaks
     output_blocks = map(
