@@ -18,6 +18,7 @@ from cubed.runtime.utils import (
     asyncio_run,
     execution_stats,
     execution_timing,
+    handle_operation_end_callbacks,
     handle_operation_start_callbacks,
     profile_memray,
 )
@@ -57,6 +58,7 @@ class SingleThreadedExecutor(DagExecutor):
                 if callbacks is not None:
                     event = TaskEndEvent(name=name, result=result)
                     [callback.on_task_end(event) for callback in callbacks]
+            handle_operation_end_callbacks(callbacks, name)
 
 
 @execution_timing

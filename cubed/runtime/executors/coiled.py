@@ -8,6 +8,7 @@ from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import (
     execution_stats,
     handle_callbacks,
+    handle_operation_end_callbacks,
     handle_operation_start_callbacks,
 )
 from cubed.spec import Spec
@@ -51,3 +52,4 @@ class CoiledExecutor(DagExecutor):
                     if name is not None:
                         stats["name"] = name
                     handle_callbacks(callbacks, result, stats)
+            handle_operation_end_callbacks(callbacks, name)

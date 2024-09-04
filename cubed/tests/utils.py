@@ -1,4 +1,5 @@
 import platform
+from collections import Counter
 from typing import Iterable
 
 import networkx as nx
@@ -108,6 +109,39 @@ class TaskCounter(Callback):
                 > 0
             )
         self.value += event.num_tasks
+
+
+class CallbackCounter(Callback):
+    def __init__(self, check_timestamps=True) -> None:
+        self.check_timestamps = check_timestamps
+        self.compute_start = Counter()
+        self.compute_end = Counter()
+        self.operation_start = Counter()
+        self.operation_end = Counter()
+        self.task_end = Counter()
+
+    def on_compute_start(self, event):
+        self.compute_start.update({"compute_start": 1})
+
+    def on_compute_end(self, event):
+        self.compute_end.update({"compute_end": 1})
+
+    def on_operation_start(self, event):
+        self.operation_start.update({event.name: 1})
+
+    def on_operation_end(self, event):
+        self.operation_end.update({event.name: 1})
+
+    def on_task_end(self, event):
+        if self.check_timestamps and event.task_create_tstamp is not None:
+            assert (
+                event.task_result_tstamp
+                >= event.function_end_tstamp
+                >= event.function_start_tstamp
+                >= event.task_create_tstamp
+                > 0
+            )
+        self.task_end.update({event.name: event.num_tasks})
 
 
 def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):

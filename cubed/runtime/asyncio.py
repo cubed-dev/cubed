@@ -24,6 +24,7 @@ from cubed.runtime.types import Callback, CubedPipeline
 from cubed.runtime.utils import (
     batched,
     handle_callbacks,
+    handle_operation_end_callbacks,
     handle_operation_start_callbacks,
 )
 
@@ -142,19 +143,27 @@ async def async_map_dag(
             async with st.stream() as streamer:
                 async for result, stats in streamer:
                     handle_callbacks(callbacks, result, stats)
+            handle_operation_end_callbacks(callbacks, name)
     else:
         for gen in visit_node_generations(dag):
             # run pipelines in the same topological generation in parallel by merging their streams
-            streams = [
-                pipeline_to_stream(
-                    create_futures_func, name, node["pipeline"], **kwargs
+            streams = []
+            group_names = []
+            for name, node in gen:
+                streams.append(
+                    pipeline_to_stream(
+                        create_futures_func, name, node["pipeline"], **kwargs
+                    )
                 )
-                for name, node in gen
-            ]
+                group_names.append(name)
+            for name in group_names:
+                handle_operation_start_callbacks(callbacks, name)
             merged_stream = stream.merge(*streams)
             async with merged_stream.stream() as streamer:
                 async for result, stats in streamer:
                     handle_callbacks(callbacks, result, stats)
+            for name in group_names:
+                handle_operation_end_callbacks(callbacks, name)
 
 
 def pipeline_to_stream(

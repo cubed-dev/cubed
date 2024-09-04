@@ -26,6 +26,7 @@ from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
 from cubed.runtime.utils import (
     handle_callbacks,
+    handle_operation_end_callbacks,
     handle_operation_start_callbacks,
     profile_memray,
 )
@@ -207,6 +208,7 @@ def execute_dag(
                     compute_id=compute_id,
                 ):
                     handle_callbacks(callbacks, result, stats)
+                handle_operation_end_callbacks(callbacks, name)
         else:
             for gen in visit_node_generations(dag):
                 group_map_functions = []
@@ -234,6 +236,8 @@ def execute_dag(
                     compute_id=compute_id,
                 ):
                     handle_callbacks(callbacks, result, stats)
+                for name in group_names:
+                    handle_operation_end_callbacks(callbacks, name)
 
 
 def standardise_lithops_stats(name: str, future: RetryingFuture) -> Dict[str, Any]:

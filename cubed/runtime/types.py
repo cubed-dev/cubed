@@ -60,6 +60,14 @@ class OperationStartEvent:
 
 
 @dataclass
+class OperationEndEvent:
+    """Callback information about an operation that has finished."""
+
+    name: str
+    """Name of the operation."""
+
+
+@dataclass
 class TaskEndEvent:
     """Callback information about a completed task (or tasks)."""
 
@@ -135,6 +143,9 @@ class Callback:
         pass  # pragma: no cover
 
     def on_operation_start(self, event):
+        pass
+
+    def on_operation_end(self, event):
         pass
 
     def on_task_end(self, event):
