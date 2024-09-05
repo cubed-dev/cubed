@@ -17,19 +17,31 @@ class TqdmProgressBar(Callback):
     def on_compute_start(self, event):
         from tqdm.auto import tqdm
 
+        # find the maximum display width so we can align bars below
+        max_op_display_name = (
+            max(
+                len(node["op_display_name"].replace("\n", " "))
+                for _, node in visit_nodes(event.dag, event.resume)
+            )
+            + 1  # for the colon
+        )
+
         self.pbars = {}
-        i = 0
-        for name, node in visit_nodes(event.dag, event.resume):
+        for i, (name, node) in enumerate(visit_nodes(event.dag, event.resume)):
             num_tasks = node["primitive_op"].num_tasks
-            op_display_name = node["op_display_name"].replace("\n", " ")
+            op_display_name = node["op_display_name"].replace("\n", " ") + ":"
+            # note double curlies to get literal { and } for tqdm bar format
+            bar_format = (
+                f"{{desc:{max_op_display_name}}} {{percentage:3.0f}}%|{{bar}}{{r_bar}}"
+            )
             self.pbars[name] = tqdm(
                 *self.args,
                 desc=op_display_name,
                 total=num_tasks,
                 position=i,
+                bar_format=bar_format,
                 **self.kwargs,
             )
-            i = i + 1
 
     def on_compute_end(self, event):
         for pbar in self.pbars.values():
