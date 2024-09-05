@@ -235,6 +235,28 @@ def test_map_blocks_with_different_block_shapes(spec):
     assert_array_equal(c.compute(), np.array([[[12, 13]]]))
 
 
+def test_map_blocks_drop_axis_chunking(spec):
+    # This tests the case illustrated in https://docs.dask.org/en/stable/generated/dask.array.map_blocks.html
+    # Unlike Dask, Cubed does not support concatenating chunks, and will fail if the dropped axis has multiple chunks.
+
+    def func(x):
+        return nxp.sum(x, axis=2)
+
+    an = np.arange(8 * 6 * 2).reshape((8, 6, 2))
+
+    # single chunk in axis=2 works fine
+    a = xp.asarray(an, chunks=(5, 4, 2), spec=spec)
+    b = cubed.map_blocks(func, a, drop_axis=2)
+    assert_array_equal(b.compute(), np.sum(an, axis=2))
+
+    # multiple chunks in axis=2 raises
+    a = xp.asarray(an, chunks=(5, 4, 1), spec=spec)
+    with pytest.raises(
+        ValueError, match=r"Cannot have multiple chunks in dropped axis 2."
+    ):
+        cubed.map_blocks(func, a, drop_axis=2)
+
+
 def test_map_blocks_with_non_cubed_array(spec):
     a = xp.arange(10, dtype="int64", chunks=(2,), spec=spec)
     b = np.array([1, 2], dtype="int64")  # numpy array will be coerced to cubed

@@ -266,11 +266,11 @@ def test_make_blockwise_key_function_contract():
     func = lambda x: 0
 
     key_fn = make_blockwise_key_function(
-        func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 2), "y": (2, 2)}
+        func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 1), "y": (1, 2)}
     )
 
     graph = make_blockwise_graph(
-        func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 2), "y": (2, 2)}
+        func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 1), "y": (1, 2)}
     )
     check_consistent_with_graph(key_fn, graph)
 
@@ -290,10 +290,10 @@ def test_make_blockwise_key_function_contract_0d():
     func = lambda x: 0
 
     key_fn = make_blockwise_key_function(
-        func, "z", "", "x", "ij", numblocks={"x": (2, 2)}
+        func, "z", "", "x", "ij", numblocks={"x": (1, 1)}
     )
 
-    graph = make_blockwise_graph(func, "z", "", "x", "ij", numblocks={"x": (2, 2)})
+    graph = make_blockwise_graph(func, "z", "", "x", "ij", numblocks={"x": (1, 1)})
     check_consistent_with_graph(key_fn, graph)
 
 

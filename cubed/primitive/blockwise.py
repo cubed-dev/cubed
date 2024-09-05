@@ -687,6 +687,15 @@ def make_blockwise_key_function(
         False,
     )
 
+    for axes, (arg, _) in zip(concat_axes, argpairs):
+        for ax in axes:
+            if numblocks[arg][ax] > 1:
+                raise ValueError(
+                    f"Cannot have multiple chunks in dropped axis {ax}. "
+                    "To fix, use a reduction after calling map_blocks "
+                    "without specifying drop_axis, or rechunk first."
+                )
+
     def key_function(out_key):
         out_coords = out_key[1:]
 
