@@ -578,6 +578,13 @@ def map_blocks(
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
 
+    from cubed.array_api.creation_functions import asarray
+
+    # Coerce all args to Cubed arrays
+    specs = [a.spec for a in args if hasattr(a, "spec")]
+    spec0 = specs[0] if len(specs) > 0 else spec
+    args = tuple(asarray(a, spec=spec0) for a in args)
+
     # Handle the case where an array is created by calling `map_blocks` with no input arrays
     if len(args) == 0:
         from cubed.array_api.creation_functions import empty_virtual_array

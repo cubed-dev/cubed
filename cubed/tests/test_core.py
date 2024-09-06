@@ -235,6 +235,13 @@ def test_map_blocks_with_different_block_shapes(spec):
     assert_array_equal(c.compute(), np.array([[[12, 13]]]))
 
 
+def test_map_blocks_with_non_cubed_array(spec):
+    a = xp.arange(10, dtype="int64", chunks=(2,), spec=spec)
+    b = np.array([1, 2], dtype="int64")  # numpy array will be coerced to cubed
+    c = cubed.map_blocks(nxp.add, a, b, dtype="int64")
+    assert_array_equal(c.compute(), np.array([1, 3, 3, 5, 5, 7, 7, 9, 9, 11]))
+
+
 def test_multiple_ops(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
