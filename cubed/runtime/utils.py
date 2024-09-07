@@ -10,7 +10,7 @@ from cubed.utils import peak_measured_mem
 try:
     import memray
 except ImportError:
-    memray = None
+    memray = None  # type: ignore
 
 sym_counter = 0
 
