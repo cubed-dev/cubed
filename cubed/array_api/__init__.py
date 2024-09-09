@@ -228,6 +228,7 @@ from .manipulation_functions import (
     roll,
     squeeze,
     stack,
+    unstack,
 )
 
 __all__ += [
@@ -242,6 +243,7 @@ __all__ += [
     "roll",
     "squeeze",
     "stack",
+    "unstack",
 ]
 
 from .searching_functions import argmax, argmin, where

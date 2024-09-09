@@ -279,6 +279,15 @@ def test_stack(tmp_path, spec, executor):
     run_operation(tmp_path, executor, "stack", c)
 
 
+@pytest.mark.slow
+def test_unstack(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (2, 10000, 10000), chunks=(2, 5000, 5000), spec=spec
+    )  # 400MB chunks
+    b, c = xp.unstack(a)
+    run_operation(tmp_path, executor, "unstack", b, c)
+
+
 # Searching Functions
 
 

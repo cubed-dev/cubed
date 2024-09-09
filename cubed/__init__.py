@@ -286,6 +286,7 @@ from .array_api.manipulation_functions import (
     roll,
     squeeze,
     stack,
+    unstack,
 )
 
 __all__ += [
@@ -300,6 +301,7 @@ __all__ += [
     "roll",
     "squeeze",
     "stack",
+    "unstack",
 ]
 
 from .array_api.searching_functions import argmax, argmin, where

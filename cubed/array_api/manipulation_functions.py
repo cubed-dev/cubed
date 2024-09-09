@@ -412,3 +412,43 @@ def stack(arrays, /, *, axis=0):
 
 def _read_stack_chunk(array, axis=None):
     return nxp.expand_dims(array, axis=axis)
+
+
+def unstack(x, /, *, axis=0):
+    axis = validate_axis(axis, x.ndim)
+
+    n_arrays = x.shape[axis]
+
+    if n_arrays == 1:
+        return (x,)
+
+    shape = x.shape[:axis] + x.shape[axis + 1 :]
+    dtype = x.dtype
+    chunks = x.chunks[:axis] + x.chunks[axis + 1 :]
+
+    def key_function(out_key):
+        out_coords = out_key[1:]
+        all_in_coords = tuple(
+            out_coords[:axis] + (i,) + out_coords[axis:]
+            for i in range(x.numblocks[axis])
+        )
+        return tuple((x.name,) + in_coords for in_coords in all_in_coords)
+
+    return general_blockwise(
+        _unstack_chunk,
+        key_function,
+        x,
+        shapes=[shape] * n_arrays,
+        dtypes=[dtype] * n_arrays,
+        chunkss=[chunks] * n_arrays,
+        target_stores=[None] * n_arrays,  # filled in by general_blockwise
+        axis=axis,
+    )
+
+
+def _unstack_chunk(*arrs, axis=0):
+    # unstack each array in arrs and yield all in turn
+    for arr in arrs:
+        # TODO: replace with nxp.unstack(arr, axis=axis) when array-api-compat has unstack
+        for a in tuple(nxp.moveaxis(arr, axis, 0)):
+            yield a
