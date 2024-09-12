@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from cubed.array_api.array_object import Array
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import map_blocks, map_direct
+from cubed.core.ops import map_blocks, map_direct, merge_chunks_new
 from cubed.utils import get_item
 
 
@@ -34,50 +34,29 @@ def _qr_first_step(A):
     m, n = A.chunksize
     k, _ = A.numblocks
 
-    Q1 = map_blocks(_qr1, A, dtype=nxp.float64, chunks=A.chunks, qr_name="Q")
+    Q1 = map_blocks(_qr, A, dtype=nxp.float64, chunks=A.chunks, qr_name="Q")
 
     R1_chunks = ((n,) * k, (n,))
-    R1 = map_blocks(_qr1, A, dtype=nxp.float64, chunks=R1_chunks, qr_name="R")
+    R1 = map_blocks(_qr, A, dtype=nxp.float64, chunks=R1_chunks, qr_name="R")
     return QRResult(Q1, R1)
 
 
-def _qr1(a, qr_name=None):
+def _qr(a, qr_name=None):
     return getattr(nxp.linalg.qr(a), qr_name)
 
 
 def _qr_second_step(R1):
+    R1_single = merge_chunks_new(R1, R1.shape)  # single chunk
+
     Q2_shape = R1.shape
     Q2_chunks = Q2_shape  # single chunk
-    extra_projected_mem = 0
-    Q2 = map_direct(
-        _qr2,
-        R1,
-        shape=Q2_shape,
-        dtype=nxp.float64,
-        chunks=Q2_chunks,
-        extra_projected_mem=extra_projected_mem,
-        qr_name="Q",
-    )
+    Q2 = map_blocks(_qr, R1_single, dtype=nxp.float64, chunks=Q2_chunks, qr_name="Q")
 
     n = R1.shape[1]
     R2_shape = (n, n)
     R2_chunks = R2_shape  # single chunk
-    extra_projected_mem = 0
-    R2 = map_direct(
-        _qr2,
-        R1,
-        shape=R2_shape,
-        dtype=nxp.float64,
-        chunks=R2_chunks,
-        extra_projected_mem=extra_projected_mem,
-        qr_name="R",
-    )
+    R2 = map_blocks(_qr, R1_single, dtype=nxp.float64, chunks=R2_chunks, qr_name="R")
     return QRResult(Q2, R2)
-
-
-def _qr2(x, *arrays, qr_name=None, **kwargs):
-    a = arrays[0].zarray[:]  # read whole array
-    return getattr(nxp.linalg.qr(a), qr_name)
 
 
 def _qr_third_step(Q1, Q2):
