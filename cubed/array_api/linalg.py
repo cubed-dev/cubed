@@ -12,6 +12,16 @@ class QRResult(NamedTuple):
 
 
 def qr(x, /, *, mode="reduced") -> QRResult:
+    if x.ndim != 2:
+        raise ValueError("qr requires x to have 2 dimensions.")
+
+    if mode != "reduced":
+        raise ValueError("Cubed arrays only support using mode='reduced'")
+
+    return tsqr(x)
+
+
+def tsqr(x) -> QRResult:
     """Direct Tall-and-Skinny QR algorithm
 
     From:
@@ -22,18 +32,12 @@ def qr(x, /, *, mode="reduced") -> QRResult:
         https://arxiv.org/abs/1301.1071
     """
 
-    if x.ndim != 2:
-        raise ValueError("qr requires x to have 2 dimensions.")
-
-    if mode != "reduced":
-        raise ValueError("Cubed arrays only support using mode='reduced'")
-
     # follows Algorithm 2 from Benson et al
     Q1, R1 = _qr_first_step(x)
 
     if _r1_is_too_big(R1):
         R1 = _rechunk_r1(R1)
-        Q2, R2 = qr(R1)
+        Q2, R2 = tsqr(R1)
     else:
         Q2, R2 = _qr_second_step(R1)
 
