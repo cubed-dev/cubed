@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from cubed.array_api.array_object import Array
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import map_blocks_multiple_outputs, map_direct, merge_chunks_new
+from cubed.core.ops import general_blockwise, map_direct, merge_chunks_new
 from cubed.utils import array_memory, get_item
 
 
@@ -127,3 +127,26 @@ def _q_matmul(x, *arrays, q1_chunks=None, q2_chunks=None, block_id=None):
     # this array only has a single chunk, but we need to get a slice corresponding to q2_chunks
     q2 = arrays[1].zarray[get_item(q2_chunks, block_id)]
     return q1 @ q2
+
+
+def map_blocks_multiple_outputs(
+    func,
+    *args,
+    shapes,
+    dtypes,
+    chunkss,
+    **kwargs,
+):
+    def key_function(out_key):
+        return tuple((array.name,) + out_key[1:] for array in args)
+
+    return general_blockwise(
+        func,
+        key_function,
+        *args,
+        shapes=shapes,
+        dtypes=dtypes,
+        chunkss=chunkss,
+        target_stores=[None] * len(dtypes),
+        **kwargs,
+    )
