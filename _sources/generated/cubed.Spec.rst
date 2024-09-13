@@ -28,5 +28,6 @@
       ~Spec.reserved_mem
       ~Spec.storage_options
       ~Spec.work_dir
+      ~Spec.zarr_compressor
    
    
