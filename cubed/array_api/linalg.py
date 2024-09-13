@@ -3,7 +3,7 @@ from typing import NamedTuple
 from cubed.array_api.array_object import Array
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import map_blocks_multiple_outputs, map_direct, merge_chunks_new
-from cubed.utils import get_item
+from cubed.utils import array_memory, get_item
 
 
 class QRResult(NamedTuple):
@@ -12,15 +12,30 @@ class QRResult(NamedTuple):
 
 
 def qr(x, /, *, mode="reduced") -> QRResult:
+    """Direct Tall-and-Skinny QR algorithm
+
+    From:
+
+        Direct QR factorizations for tall-and-skinny matrices in MapReduce architectures
+        Austin R. Benson, David F. Gleich, James Demmel
+        Proceedings of the IEEE International Conference on Big Data, 2013
+        https://arxiv.org/abs/1301.1071
+    """
+
     if x.ndim != 2:
         raise ValueError("qr requires x to have 2 dimensions.")
 
     if mode != "reduced":
         raise ValueError("Cubed arrays only support using mode='reduced'")
 
+    # follows Algorithm 2 from Benson et al
     Q1, R1 = _qr_first_step(x)
 
-    Q2, R2 = _qr_second_step(R1)
+    if _r1_is_too_big(R1):
+        R1 = _rechunk_r1(R1)
+        Q2, R2 = qr(R1)
+    else:
+        Q2, R2 = _qr_second_step(R1)
 
     Q, R = _qr_third_step(Q1, Q2), R2
 
@@ -42,6 +57,19 @@ def _qr_first_step(A):
         chunkss=[A.chunks, R1_chunks],
     )
     return QRResult(Q1, R1)
+
+
+def _r1_is_too_big(R1):
+    array_mem = array_memory(R1.dtype, R1.shape)
+    # conservative values for max_mem (4 copies, doubled to give some slack)
+    max_mem = (R1.spec.allowed_mem - R1.spec.reserved_mem) // (4 * 2)
+    return array_mem > max_mem
+
+
+def _rechunk_r1(R1, split_every=4):
+    # expand R1's chunk size in axis 0 so that new R1 will be smaller by factor of split_every
+    chunks = (R1.chunksize[0] * split_every, R1.chunksize[1])
+    return merge_chunks_new(R1, chunks=chunks)
 
 
 def _qr_second_step(R1):
