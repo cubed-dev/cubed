@@ -27,6 +27,12 @@ class QRResult(NamedTuple):
     R: Array
 
 
+class SVDResult(NamedTuple):
+    U: Array
+    S: Array
+    Vh: Array
+
+
 def qr(x, /, *, mode="reduced") -> QRResult:
     if x.ndim != 2:
         raise ValueError("qr requires x to have 2 dimensions.")
@@ -43,10 +49,11 @@ def qr(x, /, *, mode="reduced") -> QRResult:
             "Consider rechunking so there is only a single column chunk."
         )
 
-    return tsqr(x)
+    Q, R, _, _, _ = tsqr(x)
+    return QRResult(Q, R)
 
 
-def tsqr(x) -> QRResult:
+def tsqr(x, compute_svd=False, final_u=True):
     """Direct Tall-and-Skinny QR algorithm
 
     From:
@@ -57,18 +64,21 @@ def tsqr(x) -> QRResult:
         https://arxiv.org/abs/1301.1071
     """
 
-    # follows Algorithm 2 from Benson et al
+    # follows Algorithm 2 from Benson et al, modified for SVD
     Q1, R1 = _qr_first_step(x)
 
     if _r1_is_too_big(R1):
         R1 = _rechunk_r1(R1)
-        Q2, R2 = tsqr(R1)
+        Q2, R2, U, S, Vh = tsqr(R1, compute_svd=compute_svd, final_u=False)
     else:
-        Q2, R2 = _qr_second_step(R1)
+        Q2, R2, U, S, Vh = _qr_second_step(R1, compute_svd=compute_svd)
 
     Q, R = _qr_third_step(Q1, Q2), R2
 
-    return QRResult(Q, R)
+    if compute_svd and final_u:
+        U = Q @ U  # fourth step (SVD only)
+
+    return Q, R, U, S, Vh
 
 
 def _qr_first_step(A):
@@ -108,7 +118,7 @@ def _rechunk_r1(R1, split_every=4):
     return merge_chunks(R1, chunks=chunks)
 
 
-def _qr_second_step(R1):
+def _qr_second_step(R1, compute_svd=False):
     R1_single = _merge_into_single_chunk(R1)
 
     Q2_shape = R1.shape
@@ -117,17 +127,38 @@ def _qr_second_step(R1):
     n = R1.shape[1]
     R2_shape = (n, n)
     R2_chunks = R2_shape  # single chunk
-    # qr implementation creates internal array buffers
-    extra_projected_mem = R1_single.chunkmem * 4
-    Q2, R2 = map_blocks_multiple_outputs(
-        nxp.linalg.qr,
-        R1_single,
-        shapes=[Q2_shape, R2_shape],
-        dtypes=[R1.dtype, R1.dtype],
-        chunkss=[Q2_chunks, R2_chunks],
-        extra_projected_mem=extra_projected_mem,
-    )
-    return QRResult(Q2, R2)
+
+    if not compute_svd:
+        # qr implementation creates internal array buffers
+        extra_projected_mem = R1_single.chunkmem * 4
+        Q2, R2 = map_blocks_multiple_outputs(
+            nxp.linalg.qr,
+            R1_single,
+            shapes=[Q2_shape, R2_shape],
+            dtypes=[R1.dtype, R1.dtype],
+            chunkss=[Q2_chunks, R2_chunks],
+            extra_projected_mem=extra_projected_mem,
+        )
+        return Q2, R2, None, None, None
+    else:
+        U_shape = (n, n)
+        U_chunks = U_shape
+        S_shape = (n,)
+        S_chunks = S_shape
+        Vh_shape = (n, n)
+        Vh_chunks = Vh_shape
+
+        # qr implementation creates internal array buffers
+        extra_projected_mem = R1_single.chunkmem * 4
+        Q2, R2, U, S, Vh = map_blocks_multiple_outputs(
+            _qr2,
+            R1_single,
+            shapes=[Q2_shape, R2_shape, U_shape, S_shape, Vh_shape],
+            dtypes=[R1.dtype, R1.dtype, R1.dtype, R1.dtype, R1.dtype],
+            chunkss=[Q2_chunks, R2_chunks, U_chunks, S_chunks, Vh_chunks],
+            extra_projected_mem=extra_projected_mem,
+        )
+        return Q2, R2, U, S, Vh
 
 
 def _merge_into_single_chunk(x, split_every=4):
@@ -136,6 +167,12 @@ def _merge_into_single_chunk(x, split_every=4):
         chunks = (x.chunksize[0] * split_every,) + x.chunksize[1:]
         x = merge_chunks(x, chunks)
     return x
+
+
+def _qr2(a):
+    Q, R = nxp.linalg.qr(a)
+    U, S, Vh = nxp.linalg.svd(R)
+    return Q, R, U, S, Vh
 
 
 def _qr_third_step(Q1, Q2):
@@ -172,6 +209,30 @@ def _q_matmul(a1, a2, q2_chunks=None, block_id=None):
     # this array only has a single chunk, but we need to get a slice corresponding to q2_chunks
     q2 = a2[get_item(q2_chunks, block_id)]
     return q1 @ q2
+
+
+def svd(x, /, *, full_matrices=True) -> SVDResult:
+    if full_matrices:
+        raise ValueError("Cubed arrays only support using full_matrices=False")
+
+    nb = x.numblocks
+    # TODO: what about nb[0] == nb[1] == 1
+    if nb[0] > nb[1]:
+        _, _, U, S, Vh = tsqr(x, compute_svd=True)
+        truncate = x.shape[0] < x.shape[1]
+    else:
+        _, _, Vht, S, Ut = tsqr(x.T, compute_svd=True)
+        U, S, Vh = Ut.T, S, Vht.T
+        truncate = x.shape[0] > x.shape[1]
+    if truncate:  # from dask
+        k = min(x.shape)
+        U, Vh = U[:, :k], Vh[:k, :]
+    return SVDResult(U, S, Vh)
+
+
+def svdvals(x, /):
+    _, S, _ = svd(x, full_matrices=False)
+    return S
 
 
 def map_blocks_multiple_outputs(

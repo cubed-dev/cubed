@@ -113,8 +113,8 @@ A few of the [linear algebra extension](https://data-apis.org/array-api/2022.12/
 |                          | `qr`                | :white_check_mark: |            |                              |
 |                          | `slogdet`           | :x:                |            |                              |
 |                          | `solve`             | :x:                |            |                              |
-|                          | `svd`               | :x:                |            |                              |
-|                          | `svdvals`           | :x:                |            |                              |
+|                          | `svd`               | :white_check_mark: |            |                              |
+|                          | `svdvals`           | :white_check_mark: |            |                              |
 |                          | `tensordot`         | :white_check_mark: |            |                              |
 |                          | `trace`             | :x:                |            |                              |
 |                          | `vecdot`            | :white_check_mark: |            |                              |
