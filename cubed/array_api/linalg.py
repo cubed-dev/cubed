@@ -66,14 +66,14 @@ def _r1_is_too_big(R1):
     return array_mem > max_mem
 
 
-def _rechunk_r1(R1, split_every=4):
+def _rechunk_r1(R1, split_every=10):
     # expand R1's chunk size in axis 0 so that new R1 will be smaller by factor of split_every
     chunks = (R1.chunksize[0] * split_every, R1.chunksize[1])
     return merge_chunks_new(R1, chunks=chunks)
 
 
 def _qr_second_step(R1):
-    R1_single = merge_chunks_new(R1, R1.shape)  # single chunk
+    R1_single = _merge_into_single_chunk(R1)
 
     Q2_shape = R1.shape
     Q2_chunks = Q2_shape  # single chunk
@@ -89,6 +89,14 @@ def _qr_second_step(R1):
         chunkss=[Q2_chunks, R2_chunks],
     )
     return QRResult(Q2, R2)
+
+
+def _merge_into_single_chunk(x, split_every=10):
+    # do a tree merge along first axis
+    while x.numblocks[0] > 1:
+        chunks = (min(x.chunksize[0] * split_every, x.shape[0]),) + x.chunksize[1:]
+        x = merge_chunks_new(x, chunks)
+    return x
 
 
 def _qr_third_step(Q1, Q2):
