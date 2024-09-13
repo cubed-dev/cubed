@@ -21,6 +21,7 @@ class Spec:
         executor_name: Optional[str] = None,
         executor_options: Optional[dict] = None,
         storage_options: Union[dict, None] = None,
+        zarr_compressor: Union[dict, str, None] = "default",
     ):
         """
         Specify resources available to run a computation.
@@ -42,6 +43,13 @@ class Spec:
             The default executor for running computations.
         storage_options : dict, optional
             Storage options to be passed to fsspec.
+        zarr_compressor : dict or str, optional
+            The compressor used by Zarr for intermediate data.
+
+            If not specified, or set to ``"default"``, Zarr will use the default Blosc compressor.
+            If set to ``None``, compression is disabled, which can be a good option when using local storage.
+            Use a dictionary to configure arbitrary compression using Numcodecs. The following example specifies
+            Blosc compression: ``zarr_compressor={"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1}``.
         """
 
         self._work_dir = work_dir
@@ -61,6 +69,7 @@ class Spec:
             self._executor = None
 
         self._storage_options = storage_options
+        self._zarr_compressor = zarr_compressor
 
     @property
     def work_dir(self) -> Optional[str]:
@@ -97,10 +106,15 @@ class Spec:
         """Storage options to be passed to fsspec."""
         return self._storage_options
 
+    @property
+    def zarr_compressor(self) -> Union[dict, str, None]:
+        """The compressor used by Zarr for intermediate data."""
+        return self._zarr_compressor
+
     def __repr__(self) -> str:
         return (
             f"cubed.Spec(work_dir={self._work_dir}, allowed_mem={self._allowed_mem}, "
-            f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options})"
+            f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options}, zarr_compressor={self._zarr_compressor})"
         )
 
     def __eq__(self, other):
@@ -111,6 +125,7 @@ class Spec:
                 and self.reserved_mem == other.reserved_mem
                 and self.executor == other.executor
                 and self.storage_options == other.storage_options
+                and self.zarr_compressor == other.zarr_compressor
             )
         else:
             return False

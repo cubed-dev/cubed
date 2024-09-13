@@ -349,6 +349,17 @@ def test_default_spec_config_override():
         assert_array_equal(b.compute(), -np.ones((20000, 1000)))
 
 
+@pytest.mark.parametrize(
+    "compressor",
+    [None, {"id": "zstd"}, {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1}],
+)
+def test_spec_compressor(tmp_path, compressor):
+    spec = cubed.Spec(tmp_path, allowed_mem=100000, zarr_compressor=compressor)
+    a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
+    b = xp.negative(a)
+    assert_array_equal(b.compute(), -np.ones((3, 3)))
+
+
 def test_different_specs(tmp_path):
     spec1 = cubed.Spec(tmp_path, allowed_mem=100000)
     spec2 = cubed.Spec(tmp_path, allowed_mem=200000)
