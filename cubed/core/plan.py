@@ -73,7 +73,7 @@ class Plan:
     def __init__(self, dag):
         self.dag = dag
 
-    # args from pipeline onwards are omitted for creation functions when no computation is needed
+    # args from primitive_op onwards are omitted for creation functions when no computation is needed
     @classmethod
     def _new(
         cls,
@@ -110,15 +110,26 @@ class Plan:
                 op_display_name=f"{op_name_unique}\n{first_cubed_summary.name}",
                 hidden=hidden,
             )
-            # array (when multiple outputs are supported there could be more than one)
-            dag.add_node(
-                name,
-                name=name,
-                type="array",
-                target=target,
-                hidden=hidden,
-            )
-            dag.add_edge(op_name_unique, name)
+            # array
+            if isinstance(name, list):  # multiple outputs
+                for n, t in zip(name, target):
+                    dag.add_node(
+                        n,
+                        name=n,
+                        type="array",
+                        target=t,
+                        hidden=hidden,
+                    )
+                    dag.add_edge(op_name_unique, n)
+            else:  # single output
+                dag.add_node(
+                    name,
+                    name=name,
+                    type="array",
+                    target=target,
+                    hidden=hidden,
+                )
+                dag.add_edge(op_name_unique, name)
         else:
             # op
             dag.add_node(
@@ -132,15 +143,26 @@ class Plan:
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
             )
-            # array (when multiple outputs are supported there could be more than one)
-            dag.add_node(
-                name,
-                name=name,
-                type="array",
-                target=target,
-                hidden=hidden,
-            )
-            dag.add_edge(op_name_unique, name)
+            # array
+            if isinstance(name, list):  # multiple outputs
+                for n, t in zip(name, target):
+                    dag.add_node(
+                        n,
+                        name=n,
+                        type="array",
+                        target=t,
+                        hidden=hidden,
+                    )
+                    dag.add_edge(op_name_unique, n)
+            else:  # single output
+                dag.add_node(
+                    name,
+                    name=name,
+                    type="array",
+                    target=target,
+                    hidden=hidden,
+                )
+                dag.add_edge(op_name_unique, name)
         for x in source_arrays:
             if hasattr(x, "name"):
                 dag.add_edge(x.name, op_name_unique)

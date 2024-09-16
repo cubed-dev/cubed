@@ -19,7 +19,7 @@ class PrimitiveOperation:
     """The names of the arrays which are inputs to this operation."""
 
     target_array: Any
-    """The array being computed by this operation."""
+    """The array or arrays being computed by this operation."""
 
     projected_mem: int
     """An upper bound of the memory needed to run a task, in bytes."""
