@@ -2,7 +2,7 @@ from typing import NamedTuple
 
 from cubed.array_api.array_object import Array
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import general_blockwise, map_direct, merge_chunks_new
+from cubed.core.ops import general_blockwise, map_direct, merge_chunks
 from cubed.utils import array_memory, get_item
 
 
@@ -53,12 +53,15 @@ def _qr_first_step(A):
     # Q1 has same shape and chunks as A
     R1_shape = (n * k, n)
     R1_chunks = ((n,) * k, (n,))
+    # qr implementation creates internal array buffers
+    extra_projected_mem = A.chunkmem * 4
     Q1, R1 = map_blocks_multiple_outputs(
         nxp.linalg.qr,
         A,
         shapes=[A.shape, R1_shape],
         dtypes=[nxp.float64, nxp.float64],
         chunkss=[A.chunks, R1_chunks],
+        extra_projected_mem=extra_projected_mem,
     )
     return QRResult(Q1, R1)
 
@@ -73,7 +76,7 @@ def _r1_is_too_big(R1):
 def _rechunk_r1(R1, split_every=10):
     # expand R1's chunk size in axis 0 so that new R1 will be smaller by factor of split_every
     chunks = (R1.chunksize[0] * split_every, R1.chunksize[1])
-    return merge_chunks_new(R1, chunks=chunks)
+    return merge_chunks(R1, chunks=chunks)
 
 
 def _qr_second_step(R1):
@@ -85,12 +88,15 @@ def _qr_second_step(R1):
     n = R1.shape[1]
     R2_shape = (n, n)
     R2_chunks = R2_shape  # single chunk
+    # qr implementation creates internal array buffers
+    extra_projected_mem = R1_single.chunkmem * 4
     Q2, R2 = map_blocks_multiple_outputs(
         nxp.linalg.qr,
         R1_single,
         shapes=[Q2_shape, R2_shape],
         dtypes=[nxp.float64, nxp.float64],
         chunkss=[Q2_chunks, R2_chunks],
+        extra_projected_mem=extra_projected_mem,
     )
     return QRResult(Q2, R2)
 
@@ -99,7 +105,7 @@ def _merge_into_single_chunk(x, split_every=10):
     # do a tree merge along first axis
     while x.numblocks[0] > 1:
         chunks = (min(x.chunksize[0] * split_every, x.shape[0]),) + x.chunksize[1:]
-        x = merge_chunks_new(x, chunks)
+        x = merge_chunks(x, chunks)
     return x
 
 
