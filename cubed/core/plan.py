@@ -268,7 +268,11 @@ class Plan:
         compile_function: Optional[Decorator] = None,
         array_names=None,
     ) -> "FinalizedPlan":
-        dag = self.optimize(optimize_function, array_names).dag if optimize_graph else self.dag
+        dag = (
+            self.optimize(optimize_function, array_names).dag
+            if optimize_graph
+            else self.dag
+        )
         # create a copy since _create_lazy_zarr_arrays mutates the dag
         dag = dag.copy()
         if callable(compile_function):
@@ -500,6 +504,10 @@ class FinalizedPlan:
     def num_arrays(self) -> int:
         """Return the number of arrays in this plan."""
         return sum(d.get("type") == "array" for _, d in self.dag.nodes(data=True))
+
+    def num_primitive_ops(self) -> int:
+        """Return the number of primitive operations in this plan."""
+        return len(list(visit_nodes(self.dag)))
 
     def num_tasks(self, resume=None):
         """Return the number of tasks needed to execute this plan."""
