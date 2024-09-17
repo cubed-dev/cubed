@@ -27,7 +27,11 @@ def test_lazy_zarr_array(tmp_path):
 )
 @pytest.mark.parametrize(
     "compressor",
-    [None, {"id": "zstd"}, {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1}],
+    [
+        None,
+        {"id": "zstd", "level": 1},
+        {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1},
+    ],
 )
 def test_compression(tmp_path, compressor):
     zarr_path = tmp_path / "lazy.zarr"

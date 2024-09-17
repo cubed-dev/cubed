@@ -352,7 +352,11 @@ def test_default_spec_config_override():
 
 @pytest.mark.parametrize(
     "compressor",
-    [None, {"id": "zstd"}, {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1}],
+    [
+        None,
+        {"id": "zstd", "level": 1},
+        {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1},
+    ],
 )
 def test_spec_compressor(tmp_path, compressor):
     spec = cubed.Spec(tmp_path, allowed_mem=100000, zarr_compressor=compressor)
