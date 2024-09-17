@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
 import cubed
@@ -28,3 +29,12 @@ def test_qr_recursion():
     assert_allclose(Q @ R, A, atol=1e-08)
     assert_allclose(Q.T @ Q, np.eye(2, 2), atol=1e-08)  # Q must be orthonormal
     assert_allclose(R, np.triu(R), atol=1e-08)  # R must be upper triangular
+
+
+def test_qr_chunking():
+    A = xp.ones((32, 4), chunks=(4, 2))
+    with pytest.raises(
+        ValueError,
+        match=r"qr only supports tall-and-skinny \(single column chunk\) arrays.",
+    ):
+        xp.linalg.qr(A)

@@ -16,7 +16,13 @@ def qr(x, /, *, mode="reduced") -> QRResult:
         raise ValueError("qr requires x to have 2 dimensions.")
 
     if mode != "reduced":
-        raise ValueError("Cubed arrays only support using mode='reduced'")
+        raise ValueError("qr only supports mode='reduced'")
+
+    if x.numblocks[1] > 1:
+        raise ValueError(
+            "qr only supports tall-and-skinny (single column chunk) arrays. "
+            "Consider rechunking so there is only a single column chunk."
+        )
 
     return tsqr(x)
 
