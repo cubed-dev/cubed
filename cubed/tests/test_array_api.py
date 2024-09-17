@@ -627,6 +627,28 @@ def test_stack(spec, executor):
     )
 
 
+@pytest.mark.parametrize("chunks", [(1, 2, 3), (2, 2, 3), (3, 2, 3)])
+def test_unstack(spec, executor, chunks):
+    a = xp.full((4, 6), 1, chunks=(2, 3), spec=spec)
+    b = xp.full((4, 6), 2, chunks=(2, 3), spec=spec)
+    c = xp.full((4, 6), 3, chunks=(2, 3), spec=spec)
+    d = xp.stack([a, b, c], axis=0)
+
+    d = d.rechunk(chunks)
+
+    au, bu, cu = cubed.compute(*xp.unstack(d), executor=executor, optimize_graph=False)
+
+    assert_array_equal(au, np.full((4, 6), 1))
+    assert_array_equal(bu, np.full((4, 6), 2))
+    assert_array_equal(cu, np.full((4, 6), 3))
+
+
+def test_unstack_noop(spec):
+    a = xp.full((1, 4, 6), 1, chunks=(1, 2, 3), spec=spec)
+    (b,) = xp.unstack(a)
+    assert a is b
+
+
 # Searching functions
 
 
