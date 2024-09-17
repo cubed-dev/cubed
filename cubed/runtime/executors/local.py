@@ -182,7 +182,10 @@ async def async_execute_dag(
         check_runtime_memory(spec, max_workers)
     if use_processes:
         max_tasks_per_child = kwargs.pop("max_tasks_per_child", None)
-        context = multiprocessing.get_context("spawn")
+        if isinstance(use_processes, str):
+            context = multiprocessing.get_context(use_processes)
+        else:
+            context = multiprocessing.get_context("spawn")
         # max_tasks_per_child is only supported from Python 3.11
         if max_tasks_per_child is None:
             concurrent_executor = ProcessPoolExecutor(
