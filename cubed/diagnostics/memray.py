@@ -12,10 +12,13 @@ from cubed.runtime.types import Callback
 
 
 class AllocationType(Enum):
+    # integer values match memray AllocatorType
     MALLOC = 1
     FREE = 2
     CALLOC = 3
     REALLOC = 4
+    MMAP = 10
+    MUNMAP = 11
 
 
 @dataclass()
@@ -75,6 +78,8 @@ def get_allocations_over_threshold(result_file, mem_threshold):
                     allocation_type = AllocationType.CALLOC
                 elif a.allocator == memray.AllocatorType.REALLOC:
                     allocation_type = AllocationType.REALLOC
+                elif a.allocator == memray.AllocatorType.MMAP:
+                    allocation_type = AllocationType.MMAP
                 else:
                     raise ValueError(f"Unsupported memray.AllocatorType {a.allocator}")
                 allocation = Allocation(
@@ -88,13 +93,19 @@ def get_allocations_over_threshold(result_file, mem_threshold):
                 address_to_allocation[a.address] = allocation
                 yield allocation
             elif (
-                a.allocator == memray.AllocatorType.FREE
+                a.allocator in (memray.AllocatorType.FREE, memray.AllocatorType.MUNMAP)
                 and a.address in address_to_allocation
             ):
+                if a.allocator == memray.AllocatorType.FREE:
+                    allocation_type = AllocationType.FREE
+                elif a.allocator == memray.AllocatorType.MUNMAP:
+                    allocation_type = AllocationType.MUNMAP
+                else:
+                    raise ValueError(f"Unsupported memray.AllocatorType {a.allocator}")
                 allocation = address_to_allocation.pop(a.address)
                 yield Allocation(
                     allocation.object_id,
-                    AllocationType.FREE,
+                    allocation_type,
                     allocation.memory,
                     address=a.address,
                 )
