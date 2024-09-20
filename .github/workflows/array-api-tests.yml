@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9"]
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout Cubed
@@ -126,4 +126,4 @@ jobs:
 
           EOF
 
-          pytest -v -rxXfEA --hypothesis-max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --hypothesis-disable-deadline --cov=cubed.array_api --cov-report=term-missing
+          pytest -v -rxXfEA --hypothesis-max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --hypothesis-disable-deadline
