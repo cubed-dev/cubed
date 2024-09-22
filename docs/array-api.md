@@ -15,7 +15,6 @@ The following parts of the standard are not implemented:
 | Array object           | In-place Ops     |
 | Creation Functions     | `from_dlpack`    |
 | Indexing               | Boolean array    |
-| Manipulation Functions | `flip`           |
 | Searching Functions    | `nonzero`        |
 | Set Functions          | `unique_all`     |
 |                        | `unique_counts`  |
