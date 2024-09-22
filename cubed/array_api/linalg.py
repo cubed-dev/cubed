@@ -10,8 +10,12 @@ from cubed.array_api.linear_algebra_functions import (  # noqa: F401
     vecdot,
 )
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import general_blockwise, map_direct, merge_chunks
+from cubed.core.ops import blockwise, general_blockwise, map_direct, merge_chunks
 from cubed.utils import array_memory, get_item
+
+
+def outer(x1, x2, /):
+    return blockwise(nxp.linalg.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)
 
 
 class QRResult(NamedTuple):

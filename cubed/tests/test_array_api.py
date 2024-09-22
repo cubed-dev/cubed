@@ -417,7 +417,7 @@ def test_matmul_modal(modal_executor):
 def test_outer(spec, executor):
     a = xp.asarray([0, 1, 2], chunks=2, spec=spec)
     b = xp.asarray([10, 50, 100], chunks=2, spec=spec)
-    c = xp.outer(a, b)
+    c = xp.linalg.outer(a, b)
     assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
 
 

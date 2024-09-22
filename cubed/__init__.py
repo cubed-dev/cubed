@@ -267,12 +267,11 @@ __all__ += ["take"]
 from .array_api.linear_algebra_functions import (
     matmul,
     matrix_transpose,
-    outer,
     tensordot,
     vecdot,
 )
 
-__all__ += ["matmul", "matrix_transpose", "outer", "tensordot", "vecdot"]
+__all__ += ["matmul", "matrix_transpose", "tensordot", "vecdot"]
 
 from .array_api.manipulation_functions import (
     broadcast_arrays,
