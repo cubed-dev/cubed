@@ -67,7 +67,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `squeeze`           | :white_check_mark: |            |                              |
 |                          | `stack`             | :white_check_mark: |            |                              |
 |                          | `tile`              | :x:                | 2023.12    |                              |
-|                          | `unstack`           | :x:                | 2023.12    |                              |
+|                          | `unstack`           | :white_check_mark: | 2023.12    |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
 |                          | `argmin`            | :white_check_mark: |            |                              |
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
