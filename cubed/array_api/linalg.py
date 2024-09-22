@@ -1,6 +1,14 @@
 from typing import NamedTuple
 
 from cubed.array_api.array_object import Array
+
+# These functions are in both the main and linalg namespaces
+from cubed.array_api.linear_algebra_functions import (  # noqa: F401
+    matmul,
+    matrix_transpose,
+    tensordot,
+    vecdot,
+)
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import general_blockwise, map_direct, merge_chunks
 from cubed.utils import array_memory, get_item
