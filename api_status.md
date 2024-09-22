@@ -79,7 +79,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unique_values`     | :x:                |            | Shape is data dependent      |
 | Sorting Functions        | `argsort`           | :x:                |            | Not in Dask                  |
 |                          | `sort`              | :x:                |            | Not in Dask                  |
-| Statistical Functions    | `cumulative_sum`    | :x:                | 2023.12    |                              |
+| Statistical Functions    | `cumulative_sum`    | :x:                | 2023.12    | WIP [#531](https://github.com/cubed-dev/cubed/pull/531) |
 |                          | `max`               | :white_check_mark: |            |                              |
 |                          | `mean`              | :white_check_mark: |            |                              |
 |                          | `min`               | :white_check_mark: |            |                              |
