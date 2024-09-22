@@ -193,6 +193,11 @@ def svd(x, /, *, full_matrices=True) -> SVDResult:
     return SVDResult(U, S, Vh)
 
 
+def svdvals(x, /):
+    _, S, _ = svd(x, full_matrices=False)
+    return S
+
+
 def map_blocks_multiple_outputs(
     func,
     *args,
