@@ -46,11 +46,11 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | Multi-axis          | :white_check_mark: |            |                              |
 |                          | Boolean array       | :x:                |            | Shape is data dependent, [#73](https://github.com/cubed-dev/cubed/issues/73) |
 | Indexing Functions       | `take`              | :white_check_mark: | 2022.12    |                              |
-| Inspection               | `capabilities`      | :x:                | 2023.12    |                              |
-|                          | `default_device`    | :x:                | 2023.12    |                              |
-|                          | `default_dtypes`    | :x:                | 2023.12    |                              |
-|                          | `devices`           | :x:                | 2023.12    |                              |
-|                          | `dtypes`            | :x:                | 2023.12    |                              |
+| Inspection               | `capabilities`      | :white_check_mark: | 2023.12    |                              |
+|                          | `default_device`    | :white_check_mark: | 2023.12    |                              |
+|                          | `default_dtypes`    | :white_check_mark: | 2023.12    |                              |
+|                          | `devices`           | :white_check_mark: | 2023.12    |                              |
+|                          | `dtypes`            | :white_check_mark: | 2023.12    |                              |
 | Linear Algebra Functions | `matmul`            | :white_check_mark: |            |                              |
 |                          | `matrix_transpose`  | :white_check_mark: |            |                              |
 |                          | `tensordot`         | :white_check_mark: |            |                              |
