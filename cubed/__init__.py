@@ -315,3 +315,9 @@ __all__ += ["max", "mean", "min", "prod", "sum"]
 from .array_api.utility_functions import all, any
 
 __all__ += ["all", "any"]
+
+# extensions
+
+from .array_api import linalg
+
+__all__ += ["linalg"]

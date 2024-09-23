@@ -330,6 +330,19 @@ def test_sum_partial_reduce(tmp_path, spec, executor):
     run_operation(tmp_path, executor, "sum_partial_reduce", b)
 
 
+# Linear algebra extension
+
+
+@pytest.mark.slow
+def test_qr(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (40000, 1000), chunks=(5000, 1000), spec=spec
+    )  # 40MB chunks
+    q, r = xp.linalg.qr(a)
+    # don't optimize graph so we use as much memory as possible (reading from Zarr)
+    run_operation(tmp_path, executor, "qr", q, r, optimize_graph=False)
+
+
 # Multiple outputs
 
 
@@ -362,7 +375,7 @@ def run_operation(
     # )
     hist = HistoryCallback()
     mem_warn = MemoryWarningCallback()
-    memray = MemrayCallback()
+    memray = MemrayCallback(mem_threshold=30_000_000)
     # use None for each store to write to temporary zarr
     cubed.store(
         results,
