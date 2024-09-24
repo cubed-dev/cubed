@@ -8,10 +8,12 @@ from cubed.array_api.dtypes import (
     complex128,
     float32,
     float64,
+    int32,
+    uint32,
     int64,
     uint64,
 )
-from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import namespace as nxp, PRECISION
 from cubed.core import reduction
 
 # TODO: refactor once nan functions are standardized:
@@ -69,12 +71,12 @@ def nansum(
         raise TypeError("Only numeric dtypes are allowed in nansum")
     if dtype is None:
         if x.dtype in _signed_integer_dtypes:
-            dtype = int64
+            dtype = int64 if PRECISION == 64 else int32
         elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
-        elif x.dtype == float32:
+            dtype = uint64 if PRECISION == 64 else uint32
+        elif x.dtype == float32 and PRECISION == 64:
             dtype = float64
-        elif x.dtype == complex64:
+        elif x.dtype == complex64 and PRECISION == 64:
             dtype = complex128
         else:
             dtype = x.dtype
