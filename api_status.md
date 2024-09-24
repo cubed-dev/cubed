@@ -1,6 +1,6 @@
 ## Array API Coverage Implementation Status
 
-Cubed supports version [2022.12](https://data-apis.org/array-api/2022.12/index.html) of the Python array API standard, with a few exceptions noted below. The [linear algebra extensions](https://data-apis.org/array-api/2022.12/extensions/linear_algebra_functions.html) and [Fourier transform functions¶](https://data-apis.org/array-api/2022.12/extensions/fourier_transform_functions.html) are *not* supported.
+Cubed supports version [2022.12](https://data-apis.org/array-api/2022.12/index.html) of the Python array API standard, with a few exceptions noted below. The [Fourier transform functions](https://data-apis.org/array-api/2022.12/extensions/fourier_transform_functions.html) are *not* supported.
 
 Support for version [2023.12](https://data-apis.org/array-api/2023.12/index.html) is tracked in Cubed issue [#438](https://github.com/cubed-dev/cubed/issues/438).
 
@@ -67,7 +67,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `squeeze`           | :white_check_mark: |            |                              |
 |                          | `stack`             | :white_check_mark: |            |                              |
 |                          | `tile`              | :x:                | 2023.12    |                              |
-|                          | `unstack`           | :x:                | 2023.12    |                              |
+|                          | `unstack`           | :white_check_mark: | 2023.12    |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
 |                          | `argmin`            | :white_check_mark: |            |                              |
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
@@ -79,7 +79,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unique_values`     | :x:                |            | Shape is data dependent      |
 | Sorting Functions        | `argsort`           | :x:                |            | Not in Dask                  |
 |                          | `sort`              | :x:                |            | Not in Dask                  |
-| Statistical Functions    | `cumulative_sum`    | :x:                | 2023.12    |                              |
+| Statistical Functions    | `cumulative_sum`    | :x:                | 2023.12    | WIP [#531](https://github.com/cubed-dev/cubed/pull/531) |
 |                          | `max`               | :white_check_mark: |            |                              |
 |                          | `mean`              | :white_check_mark: |            |                              |
 |                          | `min`               | :white_check_mark: |            |                              |
@@ -89,3 +89,33 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `var`               | :x:                |            | Like `mean`, [#29](https://github.com/cubed-dev/cubed/issues/29) |
 | Utility Functions        | `all`               | :white_check_mark: |            |                              |
 |                          | `any`               | :white_check_mark: |            |                              |
+
+### Linear Algebra Extension
+
+A few of the [linear algebra extension](https://data-apis.org/array-api/2022.12/extensions/linear_algebra_functions.html) functions are supported, as indicated in this table.
+
+| Category                 | Object/Function     | Implemented        | Version    | Notes                        |
+| ------------------------ | ------------------- | ------------------ | ---------- | ---------------------------- |
+| Linear Algebra Functions | `cholesky`          | :x:                |            |                              |
+|                          | `cross`             | :x:                |            |                              |
+|                          | `det`               | :x:                |            |                              |
+|                          | `diagonal`          | :x:                |            |                              |
+|                          | `eigh`              | :x:                |            |                              |
+|                          | `eigvalsh`          | :x:                |            |                              |
+|                          | `inv`               | :x:                |            |                              |
+|                          | `matmul`            | :white_check_mark: |            |                              |
+|                          | `matrix_norm`       | :x:                |            |                              |
+|                          | `matrix_power`      | :x:                |            |                              |
+|                          | `matrix_rank`       | :x:                |            |                              |
+|                          | `matrix_transpose`  | :white_check_mark: |            |                              |
+|                          | `outer`             | :white_check_mark: |            |                              |
+|                          | `pinv`              | :x:                |            |                              |
+|                          | `qr`                | :white_check_mark: |            |                              |
+|                          | `slogdet`           | :x:                |            |                              |
+|                          | `solve`             | :x:                |            |                              |
+|                          | `svd`               | :x:                |            |                              |
+|                          | `svdvals`           | :x:                |            |                              |
+|                          | `tensordot`         | :white_check_mark: |            |                              |
+|                          | `trace`             | :x:                |            |                              |
+|                          | `vecdot`            | :white_check_mark: |            |                              |
+|                          | `vectornorm`        | :x:                |            |                              |

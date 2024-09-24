@@ -212,9 +212,9 @@ from .indexing_functions import take
 
 __all__ += ["take"]
 
-from .linear_algebra_functions import matmul, matrix_transpose, outer, tensordot, vecdot
+from .linear_algebra_functions import matmul, matrix_transpose, tensordot, vecdot
 
-__all__ += ["matmul", "matrix_transpose", "outer", "tensordot", "vecdot"]
+__all__ += ["matmul", "matrix_transpose", "tensordot", "vecdot"]
 
 from .manipulation_functions import (
     broadcast_arrays,

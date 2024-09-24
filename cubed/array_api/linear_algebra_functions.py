@@ -95,10 +95,6 @@ def matrix_transpose(x, /):
     return permute_dims(x, axes)
 
 
-def outer(x1, x2, /):
-    return blockwise(nxp.linalg.outer, "ij", x1, "i", x2, "j", dtype=x1.dtype)
-
-
 def tensordot(x1, x2, /, *, axes=2, use_new_impl=True, split_every=None):
     from cubed.array_api.statistical_functions import sum
 
