@@ -41,7 +41,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 | Data Types               | `bool`, `int8`, ... | :white_check_mark: |            |                              |
 | Elementwise Functions    | `add`               | :white_check_mark: |            | Example of a binary function |
 |                          | `negative`          | :white_check_mark: |            | Example of a unary function  |
-|                          | _others_            | :white_check_mark: |            | Except 2023.12 functions in [#438](https://github.com/cubed-dev/cubed/issues/438) |
+|                          | _others_            | :white_check_mark: |            |                              |
 | Indexing                 | Single-axis         | :white_check_mark: |            |                              |
 |                          | Multi-axis          | :white_check_mark: |            |                              |
 |                          | Boolean array       | :x:                |            | Shape is data dependent, [#73](https://github.com/cubed-dev/cubed/issues/73) |

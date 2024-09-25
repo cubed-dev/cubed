@@ -1,3 +1,5 @@
+from cubed.array_api.array_object import Array
+from cubed.array_api.creation_functions import asarray
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import (
     _boolean_dtypes,
@@ -131,10 +133,48 @@ def ceil(x, /):
     return elemwise(nxp.ceil, x, dtype=x.dtype)
 
 
+def clip(x, /, min=None, max=None):
+    if (
+        x.dtype not in _real_numeric_dtypes
+        or isinstance(min, Array)
+        and min.dtype not in _real_numeric_dtypes
+        or isinstance(max, Array)
+        and max.dtype not in _real_numeric_dtypes
+    ):
+        raise TypeError("Only real numeric dtypes are allowed in clip")
+    if not isinstance(min, (int, float, Array, type(None))):
+        raise TypeError("min must be an None, int, float, or an array")
+    if not isinstance(max, (int, float, Array, type(None))):
+        raise TypeError("max must be an None, int, float, or an array")
+
+    if min is max is None:
+        return x
+    elif min is not None and max is None:
+        min = asarray(min, spec=x.spec)
+        return elemwise(nxp.clip, x, min, dtype=x.dtype)
+    elif min is None and max is not None:
+
+        def clip_max(x_, max_):
+            return nxp.clip(x_, max=max_)
+
+        max = asarray(max, spec=x.spec)
+        return elemwise(clip_max, x, max, dtype=x.dtype)
+    else:  # min is not None and max is not None
+        min = asarray(min, spec=x.spec)
+        max = asarray(max, spec=x.spec)
+        return elemwise(nxp.clip, x, min, max, dtype=x.dtype)
+
+
 def conj(x, /):
     if x.dtype not in _complex_floating_dtypes:
         raise TypeError("Only complex floating-point dtypes are allowed in conj")
     return elemwise(nxp.conj, x, dtype=x.dtype)
+
+
+def copysign(x1, x2, /):
+    if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in copysign")
+    return elemwise(nxp.copysign, x1, x2, dtype=result_type(x1, x2))
 
 
 def cos(x, /):
@@ -192,6 +232,12 @@ def greater(x1, x2, /):
 
 def greater_equal(x1, x2, /):
     return elemwise(nxp.greater_equal, x1, x2, dtype=nxp.bool)
+
+
+def hypot(x1, x2, /):
+    if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in hypot")
+    return elemwise(nxp.hypot, x1, x2, dtype=result_type(x1, x2))
 
 
 def imag(x, /):
@@ -284,6 +330,18 @@ def logical_xor(x1, x2, /):
     return elemwise(nxp.logical_xor, x1, x2, dtype=nxp.bool)
 
 
+def maximum(x1, x2, /):
+    if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in maximum")
+    return elemwise(nxp.maximum, x1, x2, dtype=result_type(x1, x2))
+
+
+def minimum(x1, x2, /):
+    if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in minimum")
+    return elemwise(nxp.minimum, x1, x2, dtype=result_type(x1, x2))
+
+
 def multiply(x1, x2, /):
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in multiply")
@@ -338,6 +396,12 @@ def sign(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in sign")
     return elemwise(nxp.sign, x, dtype=x.dtype)
+
+
+def signbit(x, /):
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in signbit")
+    return elemwise(nxp.signbit, x, dtype=nxp.bool)
 
 
 def sin(x, /):

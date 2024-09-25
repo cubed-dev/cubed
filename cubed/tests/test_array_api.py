@@ -194,6 +194,26 @@ def test_add_different_chunks_fail(spec, executor):
     assert_array_equal(c.compute(executor=executor), np.ones((10,)) + np.ones((10,)))
 
 
+@pytest.mark.parametrize(
+    "min, max",
+    [
+        (None, None),
+        (4, None),
+        (None, 7),
+        (4, 7),
+        (0, 10),
+    ],
+)
+def test_clip(spec, min, max):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    npa = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.clip(a, min, max)
+    if min is max is None:
+        assert b is a
+    else:
+        assert_array_equal(b.compute(), np.clip(npa, min, max))
+
+
 def test_equal(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
