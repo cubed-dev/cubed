@@ -727,69 +727,33 @@ def test_sum_axis_0(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.array([12, 15, 18]))
 
 
-def test_var(spec, executor):
+@pytest.mark.parametrize("axis", [None, 0, 1])
+@pytest.mark.parametrize("keepdims", [False, True])
+def test_var(spec, axis, keepdims):
     a = xp.asarray(
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
     )
-    b = xp.var(a)
+    b = xp.var(a, axis=axis, keepdims=keepdims)
     assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(),
+        b.compute(),
+        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(
+            axis=axis, keepdims=keepdims
+        ),
     )
 
 
-def test_var_axis_0(spec, executor):
+@pytest.mark.parametrize("axis", [None, 0, 1])
+@pytest.mark.parametrize("keepdims", [False, True])
+def test_std(spec, axis, keepdims):
     a = xp.asarray(
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
     )
-    b = xp.var(a, axis=0)
+    b = xp.std(a, axis=axis, keepdims=keepdims)
     assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(axis=0),
-    )
-
-
-def test_var_axis_1(spec, executor):
-    a = xp.asarray(
-        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
-    )
-    b = xp.var(a, axis=1)
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(axis=1),
-    )
-
-
-def test_var_keepdims_true(spec, executor):
-    a = xp.asarray(
-        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
-    )
-    b = xp.var(a, keepdims=True)
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(keepdims=True),
-    )
-
-
-def test_std(spec, executor):
-    a = xp.asarray(
-        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
-    )
-    b = xp.std(a)
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).std(),
-    )
-
-
-def test_std_axis_0(spec, executor):
-    a = xp.asarray(
-        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
-    )
-    b = xp.std(a, axis=0)
-    assert_array_equal(
-        b.compute(executor=executor),
-        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).std(axis=0),
+        b.compute(),
+        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).std(
+            axis=axis, keepdims=keepdims
+        ),
     )
 
 
