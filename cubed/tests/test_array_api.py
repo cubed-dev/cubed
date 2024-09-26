@@ -728,31 +728,33 @@ def test_sum_axis_0(spec, executor):
 
 
 @pytest.mark.parametrize("axis", [None, 0, 1])
+@pytest.mark.parametrize("correction", [0.0, 1.0])
 @pytest.mark.parametrize("keepdims", [False, True])
-def test_var(spec, axis, keepdims):
+def test_var(spec, axis, correction, keepdims):
     a = xp.asarray(
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
     )
-    b = xp.var(a, axis=axis, keepdims=keepdims)
+    b = xp.var(a, axis=axis, correction=correction, keepdims=keepdims)
     assert_array_equal(
         b.compute(),
         np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(
-            axis=axis, keepdims=keepdims
+            axis=axis, ddof=correction, keepdims=keepdims
         ),
     )
 
 
 @pytest.mark.parametrize("axis", [None, 0, 1])
+@pytest.mark.parametrize("correction", [0.0, 1.0])
 @pytest.mark.parametrize("keepdims", [False, True])
-def test_std(spec, axis, keepdims):
+def test_std(spec, axis, correction, keepdims):
     a = xp.asarray(
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
     )
-    b = xp.std(a, axis=axis, keepdims=keepdims)
+    b = xp.std(a, axis=axis, correction=correction, keepdims=keepdims)
     assert_array_equal(
         b.compute(),
         np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).std(
-            axis=axis, keepdims=keepdims
+            axis=axis, ddof=correction, keepdims=keepdims
         ),
     )
 

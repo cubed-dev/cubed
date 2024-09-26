@@ -184,4 +184,4 @@ def var(x, /, *, axis=None, correction=0.0, keepdims=False):
 
 
 def std(x, /, *, axis=None, correction=0.0, keepdims=False):
-    return sqrt(var(x, axis=axis, keepdims=keepdims))
+    return sqrt(var(x, axis=axis, correction=correction, keepdims=keepdims))
