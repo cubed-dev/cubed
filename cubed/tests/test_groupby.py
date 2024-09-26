@@ -62,7 +62,7 @@ def _mean_groupby_combine(a, axis, dummy_axis, dtype, keepdims):
     return {"n": n, "total": total}
 
 
-def _mean_groupby_aggregate(a):
+def _mean_groupby_aggregate(a, **kwargs):
     return nxp.divide(a["total"], a["n"])
 
 
