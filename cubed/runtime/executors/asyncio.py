@@ -81,8 +81,8 @@ async def async_map_unordered(
                     task, now, start_times, end_times
                 ):
                     # launch backup task
-                    print("Launching backup task")
                     i = tasks[task]
+                    print(f"Launching backup task for input {i} at time {now}")
                     i, new_task = create_backup_futures_func([i], **kwargs)[0]
                     tasks[new_task] = i
                     start_times[new_task] = time.monotonic()

@@ -29,4 +29,10 @@ def should_launch_backup(
         [end_times[task] - start_times[task] for task in end_times]
     )
     duration = now - start_times[task]
-    return duration > completed_durations[n] * slow_factor
+    result = duration > completed_durations[n] * slow_factor
+    if result:
+        print(
+            "should_launch_backup is True, with duration=%s, completed_durations=%s, n=%s, completed_durations[n]=%s, slow_factor=%s"
+            % (duration, completed_durations, n, completed_durations[n], slow_factor)
+        )
+    return result
