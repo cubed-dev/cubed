@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import islice
 from math import prod
-from operator import add
+from operator import add, mul
 from pathlib import Path
 from posixpath import join
 from typing import Dict, Tuple, Union, cast
@@ -18,6 +18,7 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
 import tlz as toolz
+from toolz import reduce
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
@@ -39,6 +40,11 @@ def chunk_memory(arr) -> int:
         arr.dtype,
         to_chunksize(normalize_chunks(arr.chunks, shape=arr.shape, dtype=arr.dtype)),
     )
+
+
+def array_size(shape: T_Shape) -> int:
+    """Number of elements in an array."""
+    return reduce(mul, shape, 1)
 
 
 def offset_to_block_id(offset: int, numblocks: Tuple[int, ...]) -> Tuple[int, ...]:
