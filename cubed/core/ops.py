@@ -6,7 +6,6 @@ from itertools import product
 from numbers import Integral, Number
 from operator import add
 from typing import TYPE_CHECKING, Any, Sequence, Tuple, Union
-from warnings import warn
 
 import ndindex
 import numpy as np
@@ -939,7 +938,6 @@ def reduction(
     x: "Array",
     func,
     combine_func=None,
-    aggegrate_func=None,  # typo, will removed in next release
     aggregate_func=None,
     axis=None,
     intermediate_dtype=None,
@@ -950,13 +948,6 @@ def reduction(
     extra_func_kwargs=None,
 ) -> "Array":
     """Apply a function to reduce an array along one or more axes."""
-    if aggegrate_func is not None and aggregate_func is None:
-        warn(
-            "`aggegrate_func` is deprecated, please use `aggregate_func` instead",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        aggregate_func = aggegrate_func
     if use_new_impl:
         return reduction_new(
             x,
