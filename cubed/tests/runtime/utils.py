@@ -17,7 +17,7 @@ def write_int_to_file(path, i):
         f.write(str(i))
 
 
-def deterministic_failure(path, timing_map, i, *, name=None):
+def deterministic_failure(path, timing_map, i, *, default_sleep=0.01, name=None):
     """A function that can either run normally, run slowly, or raise
     an exception, depending on input and invocation count.
 
@@ -27,7 +27,8 @@ def deterministic_failure(path, timing_map, i, *, name=None):
     the sign indicates the input is returned normally (positive, or 0),
     or an exception is raised (negative).
 
-    If a input is missing then all invocations will run normally.
+    If a input is missing then all invocations will run normally, with a
+    small default sleep to avoid spurious backups being launched.
 
     If there are subsequent invocations to the ones in the sequence, then
     they will all run normally.
@@ -41,11 +42,11 @@ def deterministic_failure(path, timing_map, i, *, name=None):
         invocation_count = 0
     write_int_to_file(invocation_count_file, invocation_count + 1)
 
-    timing_code = 0
+    timing_code = default_sleep
     if i in timing_map:
         timing_codes = timing_map[i]
         if invocation_count >= len(timing_codes):
-            timing_code = 0
+            timing_code = default_sleep
         else:
             timing_code = timing_codes[invocation_count]
 
