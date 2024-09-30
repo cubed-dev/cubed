@@ -1064,122 +1064,6 @@ def reduction(
     intermediate_dtype=None,
     dtype=None,
     keepdims=False,
-    use_new_impl=True,
-    split_every=None,
-    extra_func_kwargs=None,
-) -> "Array":
-    """Apply a function to reduce an array along one or more axes."""
-    if use_new_impl:
-        return reduction_new(
-            x,
-            func,
-            combine_func=combine_func,
-            aggregate_func=aggregate_func,
-            axis=axis,
-            intermediate_dtype=intermediate_dtype,
-            dtype=dtype,
-            keepdims=keepdims,
-            split_every=split_every,
-            extra_func_kwargs=extra_func_kwargs,
-        )
-    if combine_func is None:
-        combine_func = func
-    if axis is None:
-        axis = tuple(range(x.ndim))
-    if isinstance(axis, Integral):
-        axis = (axis,)
-    axis = validate_axis(axis, x.ndim)
-    if intermediate_dtype is None:
-        intermediate_dtype = dtype
-
-    inds = tuple(range(x.ndim))
-
-    result = x
-    allowed_mem = x.spec.allowed_mem
-    max_mem = allowed_mem - x.spec.reserved_mem
-
-    # reduce initial chunks
-    args = (result, inds)
-    adjust_chunks = {
-        i: (1,) * len(c) if i in axis else c for i, c in enumerate(result.chunks)
-    }
-    result = blockwise(
-        func,
-        inds,
-        *args,
-        axis=axis,
-        keepdims=True,
-        dtype=intermediate_dtype,
-        adjust_chunks=adjust_chunks,
-        extra_func_kwargs=extra_func_kwargs,
-    )
-
-    # merge/reduce along axis in multiple rounds until there's a single block in each reduction axis
-    while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
-        # merge along axis
-        target_chunks = list(result.chunksize)
-        chunk_mem = array_memory(intermediate_dtype, result.chunksize)
-        for i, s in enumerate(result.shape):
-            if i in axis:
-                assert result.chunksize[i] == 1  # result of reduction
-                if len(axis) > 1:
-                    # multi-axis: don't exceed original chunksize in any reduction axis
-                    # TODO: improve to use up to max_mem
-                    target_chunks[i] = min(s, x.chunksize[i])
-                else:
-                    # single axis: see how many result chunks fit in max_mem
-                    # factor of 4 is memory for {compressed, uncompressed} x {input, output}
-                    target_chunk_size = (max_mem - chunk_mem) // (chunk_mem * 4)
-                    if target_chunk_size <= 1:
-                        raise ValueError(
-                            f"Not enough memory for reduction. Increase allowed_mem ({allowed_mem}) or decrease chunk size"
-                        )
-                    target_chunks[i] = min(s, target_chunk_size)
-        _target_chunks = tuple(target_chunks)
-        result = merge_chunks(result, _target_chunks)
-
-        # reduce chunks (if any axis chunksize is > 1)
-        if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
-            args = (result, inds)
-            adjust_chunks = {
-                i: (1,) * len(c) if i in axis else c
-                for i, c in enumerate(result.chunks)
-            }
-            result = blockwise(
-                combine_func,
-                inds,
-                *args,
-                axis=axis,
-                keepdims=True,
-                dtype=intermediate_dtype,
-                adjust_chunks=adjust_chunks,
-                extra_func_kwargs=extra_func_kwargs,
-            )
-
-    if aggregate_func is not None:
-        result = map_blocks(aggregate_func, result, dtype=dtype)
-
-    if not keepdims:
-        axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)
-        if len(axis_to_squeeze) > 0:
-            result = squeeze(result, axis_to_squeeze)
-
-    from cubed.array_api import astype
-
-    result = astype(result, dtype, copy=False)
-
-    return result
-
-
-def reduction_new(
-    x: "Array",
-    func,
-    combine_func=None,
-    aggregate_func=None,
-    axis=None,
-    intermediate_dtype=None,
-    dtype=None,
-    keepdims=False,
     split_every=None,
     combine_sizes=None,
     extra_func_kwargs=None,
@@ -1426,9 +1310,7 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
     return result
 
 
-def arg_reduction(
-    x, /, arg_func, axis=None, *, keepdims=False, use_new_impl=True, split_every=None
-):
+def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None):
     """A reduction that returns the array indexes, not the values."""
     dtype = nxp.int64  # index data type
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
@@ -1454,7 +1336,6 @@ def arg_reduction(
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
 

@@ -429,14 +429,6 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
 
 
-def test_reduction_not_enough_memory(tmp_path):
-    spec = cubed.Spec(tmp_path, allowed_mem=50)
-    a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
-    with pytest.raises(ValueError, match=r"Not enough memory for reduction"):
-        # only a problem with the old implementation, so set use_new_impl=False
-        xp.sum(a, axis=0, dtype=np.uint8, use_new_impl=False)
-
-
 def test_partial_reduce(spec):
     a = xp.asarray(np.arange(242).reshape((11, 22)), chunks=(3, 4), spec=spec)
     b = partial_reduce(a, np.sum, split_every={0: 2})
@@ -612,7 +604,7 @@ def test_plan_quad_means(tmp_path, t_length):
     u = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
     v = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)
     uv = u * v
-    m = xp.mean(uv, axis=0, split_every=10, use_new_impl=True)
+    m = xp.mean(uv, axis=0, split_every=10)
 
     assert m.plan._finalize().num_tasks() > 0
     m.visualize(
@@ -674,7 +666,7 @@ def test_quad_means_zarr(tmp_path, t_length=50):
     u = cubed.from_zarr(f"{tmp_path}/u_{t_length}.zarr", spec=spec)
     v = cubed.from_zarr(f"{tmp_path}/v_{t_length}.zarr", spec=spec)
     uv = u * v
-    m = xp.mean(uv, axis=0, use_new_impl=True, split_every=10)
+    m = xp.mean(uv, axis=0, split_every=10)
 
     opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=40)
 

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from cubed.array_api.manipulation_functions import broadcast_to, expand_dims
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import map_blocks, map_direct, reduction_new
+from cubed.core.ops import map_blocks, map_direct, reduction
 from cubed.utils import array_memory, get_item
 from cubed.vendor.dask.array.core import normalize_chunks
 
@@ -105,7 +105,7 @@ def groupby_reduction(
     out = expand_dims(out, axis=dummy_axis)
 
     # then reduce across blocks
-    return reduction_new(
+    return reduction(
         out,
         func=None,
         combine_func=combine_func,

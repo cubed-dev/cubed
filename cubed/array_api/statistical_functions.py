@@ -18,7 +18,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
 
-def max(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def max(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in max")
     return reduction(
@@ -26,13 +26,12 @@ def max(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None)
         nxp.max,
         axis=axis,
         dtype=x.dtype,
-        use_new_impl=use_new_impl,
         split_every=split_every,
         keepdims=keepdims,
     )
 
 
-def mean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def mean(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in mean")
     # This implementation uses NumPy and Zarr's structured arrays to store a
@@ -53,7 +52,6 @@ def mean(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )
@@ -108,7 +106,7 @@ def _numel(x, **kwargs):
     return nxp.broadcast_to(nxp.asarray(prod, dtype=dtype), new_shape)
 
 
-def min(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def min(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in min")
     return reduction(
@@ -116,15 +114,12 @@ def min(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None)
         nxp.min,
         axis=axis,
         dtype=x.dtype,
-        use_new_impl=use_new_impl,
         split_every=split_every,
         keepdims=keepdims,
     )
 
 
-def prod(
-    x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
-):
+def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     # boolean is allowed by numpy
     if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
         raise TypeError("Only numeric or boolean dtypes are allowed in prod")
@@ -148,15 +143,12 @@ def prod(
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )
 
 
-def sum(
-    x, /, *, axis=None, dtype=None, keepdims=False, use_new_impl=True, split_every=None
-):
+def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     # boolean is allowed by numpy
     if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
         raise TypeError("Only numeric or boolean dtypes are allowed in sum")
@@ -180,7 +172,6 @@ def sum(
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )

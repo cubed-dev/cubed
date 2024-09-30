@@ -3,7 +3,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
 
-def all(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def all(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.size == 0:
         return asarray(True, dtype=x.dtype)
     return reduction(
@@ -12,12 +12,11 @@ def all(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None)
         axis=axis,
         dtype=bool,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
 
 
-def any(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def any(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.size == 0:
         return asarray(False, dtype=x.dtype)
     return reduction(
@@ -26,6 +25,5 @@ def any(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None)
         axis=axis,
         dtype=bool,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
