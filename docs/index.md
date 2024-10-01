@@ -25,6 +25,7 @@ Examples <https://github.com/tomwhite/cubed/tree/main/examples/README.md>
 api
 array-api
 configuration
+why-cubed
 related-projects
 ```
 
