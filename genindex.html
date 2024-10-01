@@ -35,7 +35,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=10ebb3cd"></script>
+    <script src="_static/documentation_options.js?v=cccd218b"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -150,7 +150,6 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="getting-started/index.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="getting-started/why-cubed.html">Why Cubed?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting-started/installation.html">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting-started/demo.html">Demo</a></li>
 </ul>
@@ -188,16 +187,11 @@
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html">cubed.runtime.executors.local.SingleThreadedExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.ThreadsExecutor.html">cubed.runtime.executors.local.ThreadsExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.local.ProcessesExecutor.html">cubed.runtime.executors.local.ProcessesExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.beam.BeamExecutor.html">cubed.runtime.executors.beam.BeamExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html">cubed.runtime.executors.lithops.LithopsExecutor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/cubed.runtime.executors.modal.ModalExecutor.html">cubed.runtime.executors.modal.ModalExecutor</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why-cubed.html">Why Cubed?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
@@ -369,18 +363,6 @@ document.write(`
       <ul>
         <li><a href="generated/cubed.Callback.html#cubed.Callback.__init__">(cubed.Callback method)</a>
 </li>
-        <li><a href="generated/cubed.runtime.executors.beam.BeamExecutor.html#cubed.runtime.executors.beam.BeamExecutor.__init__">(cubed.runtime.executors.beam.BeamExecutor method)</a>
-</li>
-        <li><a href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html#cubed.runtime.executors.lithops.LithopsExecutor.__init__">(cubed.runtime.executors.lithops.LithopsExecutor method)</a>
-</li>
-        <li><a href="generated/cubed.runtime.executors.local.ProcessesExecutor.html#cubed.runtime.executors.local.ProcessesExecutor.__init__">(cubed.runtime.executors.local.ProcessesExecutor method)</a>
-</li>
-        <li><a href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html#cubed.runtime.executors.local.SingleThreadedExecutor.__init__">(cubed.runtime.executors.local.SingleThreadedExecutor method)</a>
-</li>
-        <li><a href="generated/cubed.runtime.executors.local.ThreadsExecutor.html#cubed.runtime.executors.local.ThreadsExecutor.__init__">(cubed.runtime.executors.local.ThreadsExecutor method)</a>
-</li>
-        <li><a href="generated/cubed.runtime.executors.modal.ModalExecutor.html#cubed.runtime.executors.modal.ModalExecutor.__init__">(cubed.runtime.executors.modal.ModalExecutor method)</a>
-</li>
         <li><a href="generated/cubed.Spec.html#cubed.Spec.__init__">(cubed.Spec method)</a>
 </li>
         <li><a href="generated/cubed.TaskEndEvent.html#cubed.TaskEndEvent.__init__">(cubed.TaskEndEvent method)</a>
@@ -407,10 +389,6 @@ document.write(`
 
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.beam.BeamExecutor.html#cubed.runtime.executors.beam.BeamExecutor">BeamExecutor (class in cubed.runtime.executors.beam)</a>
-</li>
-  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="array-api.html#cubed.array_api.broadcast_to">broadcast_to() (in module cubed.array_api)</a>
 </li>
@@ -471,10 +449,6 @@ document.write(`
       <li><a href="array-api.html#cubed.array_api.linspace">linspace() (in module cubed.array_api)</a>
 </li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.lithops.LithopsExecutor.html#cubed.runtime.executors.lithops.LithopsExecutor">LithopsExecutor (class in cubed.runtime.executors.lithops)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
@@ -482,13 +456,11 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/cubed.map_blocks.html#cubed.map_blocks">map_blocks() (in module cubed)</a>
 </li>
-      <li><a href="generated/cubed.map_overlap.html#cubed.map_overlap">map_overlap() (in module cubed)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem">measure_reserved_mem() (in module cubed)</a>
+      <li><a href="generated/cubed.map_overlap.html#cubed.map_overlap">map_overlap() (in module cubed)</a>
 </li>
-      <li><a href="generated/cubed.runtime.executors.modal.ModalExecutor.html#cubed.runtime.executors.modal.ModalExecutor">ModalExecutor (class in cubed.runtime.executors.modal)</a>
+      <li><a href="generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem">measure_reserved_mem() (in module cubed)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -523,10 +495,6 @@ document.write(`
       <li><a href="generated/cubed.pad.html#cubed.pad">pad() (in module cubed)</a>
 </li>
   </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.local.ProcessesExecutor.html#cubed.runtime.executors.local.ProcessesExecutor">ProcessesExecutor (class in cubed.runtime.executors.local)</a>
-</li>
-  </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
@@ -544,12 +512,10 @@ document.write(`
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.local.SingleThreadedExecutor.html#cubed.runtime.executors.local.SingleThreadedExecutor">SingleThreadedExecutor (class in cubed.runtime.executors.local)</a>
+      <li><a href="generated/cubed.Spec.html#cubed.Spec">Spec (class in cubed)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.Spec.html#cubed.Spec">Spec (class in cubed)</a>
-</li>
       <li><a href="generated/cubed.store.html#cubed.store">store() (in module cubed)</a>
 </li>
   </ul></td>
@@ -562,8 +528,6 @@ document.write(`
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/cubed.runtime.executors.local.ThreadsExecutor.html#cubed.runtime.executors.local.ThreadsExecutor">ThreadsExecutor (class in cubed.runtime.executors.local)</a>
-</li>
       <li><a href="generated/cubed.to_zarr.html#cubed.to_zarr">to_zarr() (in module cubed)</a>
 </li>
   </ul></td>
