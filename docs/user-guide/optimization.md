@@ -28,13 +28,17 @@ c.visualize()
 
 ![Map fusion optimization](../images/optimization_map_fusion.svg)
 
-Note that with optimization turned on, the array `b` is no longer written as an intermediate output since it will be computed in the same tasks that compute array `c`. The overall number of tasks is reduced from 10 to 5, and the intermediate data (total nbytes) is reduced too.
+Note that with optimization turned on, the array `b` is no longer written as an intermediate output since it will be computed in the same tasks that compute array `c`. The overall number of tasks is reduced from 10 to 5, and the intermediate data (total `nbytes`) is reduced too.
 
-## Advanced optimization
+Here we have just called `visualize` with the `optimize_graph` argument, but it's possible to use it when calling `compute` - which can be useful when debugging a computation.
 
-Cubed supports more powerful optimizations, but these are not (currently) enabled by default. This section explains what they are and how you can try them out.
+```python
+c.compute(optimize_graph=False)
+```
 
-Map fusion is limited to the cases where there is a single preceding input with the same number of tasks. However, many computations have a branching structure, and the default optimization doesn't help in such cases. Here is an example, where even though optimization is enabled, it doesn't have any effect.
+## Multiple-input fusion
+
+Cubed supports more powerful optimizations, such as for when an array is created from multiple input arrays. Here is an example, shown first with optimization turned off.
 
 ```python
 import cubed.array_api as xp
@@ -45,48 +49,24 @@ c = xp.ones((3, 3), chunks=(2, 2))
 d = xp.add(b, c)
 e = xp.add(a, d)
 
-e.visualize()
+e.visualize("cubed-unoptimized", optimize_graph=False)
 ```
 
 ![Multiple inputs unoptimized](../images/optimization_multiple_inputs_unoptimized.svg)
 
-To overcome this limitation we can use the `optimize_function` argument, which allows us to specify the function that performs optimization. Here we use the `multiple_inputs_optimize_dag` function that can handle multiple inputs.
+And with optimization turned on (the default):
 
 ```python
-from cubed.core.optimization import multiple_inputs_optimize_dag
-
-e.visualize(optimize_function=multiple_inputs_optimize_dag)
+e.visualize()
 ```
 
-![Multiple inputs unoptimized](../images/optimization_multiple_inputs.svg)
+![Multiple inputs optimized](../images/optimization_multiple_inputs.svg)
 
 Notice how the array `d` is fused away.
 
-The `multiple_inputs_optimize_dag` function has a couple of parameters to control how it works:
-
-`max_total_source_arrays` specifies the maximum number of source arrays that are allowed in the fused operation, in order to limit the number of reads that an individual task must perform.
-
-The default is 4. In the previous example above the fused operation has three source arrays (`a`, `b`, and `c`), which is below the maximum default allowed. On the other hand, a computation with a higher "fan-in" that exceeds the maximum will not be fused, or operations will be fused in stages.
-
-To change this setting, you can use Python's `functools.partial` as follows:
-
-```python
-opt_fn = partial(multiple_inputs_optimize_dag, max_total_source_arrays=8)
-visualize(optimize_function=opt_fn)
-```
-
-`max_total_num_input_blocks` specifies the maximum number of input blocks (chunks) that are allowed in the fused operation.
-
-Again, this is to limit the number of reads that an individual task must perform. The default is `None`, which means that operations are fused only if they have the same number of tasks. If set to an integer, then this limitation is removed, and tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be set using `functools.partial`:
-
-```python
-opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=10)
-visualize(optimize_function=opt_fn)
-```
-
 ## Debugging optimization
 
-For the advanced optimizations it can be difficult to understand why particular operations in a computation plan have been fused together - or more commonly, why they have *not* been fused. By enabling debug logging you can get detailed information from the optimize function to help you understand which operations are being fused - or not - and the reason in either case.
+Sometimes it can be difficult to understand why particular operations in a computation plan have been fused together - or more commonly, why they have *not* been fused. By enabling debug logging you can get detailed information from the optimize function to help you understand which operations are being fused - or not - and the reason in either case.
 
 Here's the previous example with logging enabled:
 
@@ -95,15 +75,46 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-e.visualize(optimize_function=multiple_inputs_optimize_dag)
+e.visualize()
 ```
 
 The output explains which operations can or can't be fused, and why:
 
 ```
-DEBUG:cubed.core.optimization:can't fuse op-001 since it is not fusable
-DEBUG:cubed.core.optimization:can't fuse op-002 since it is not fusable
-DEBUG:cubed.core.optimization:can't fuse op-003 since it is not fusable
+DEBUG:cubed.core.optimization:can't fuse op-001 since it is not a primitive operation, or it uses map_direct
+DEBUG:cubed.core.optimization:can't fuse op-002 since it is not a primitive operation, or it uses map_direct
+DEBUG:cubed.core.optimization:can't fuse op-003 since it is not a primitive operation, or it uses map_direct
 DEBUG:cubed.core.optimization:can't fuse op-004 since no predecessor ops can be fused
 DEBUG:cubed.primitive.blockwise:can fuse op-005 since num tasks of predecessor ops match
+```
+
+## Advanced settings
+
+There are limits to how many input arrays and input chunks reads are fused together. These are imposed so that the number of reads that an individual task must perform is not excessive, which would otherwise result in slow running tasks.
+
+In some cases you may want to change these limits, which we look at here.
+
+### Total number of source arrays
+
+Cubed will not fuse operations that result in more than 4 source arrays in the fused operation. In the previous example above the fused operation has three source arrays (`a`, `b`, and `c`), which is below the maximum default allowed. On the other hand, a computation with a higher "fan-in" that exceeds the maximum will not be fused, or operations will be fused in stages.
+
+To change this, we have to specify the `optimize_function` that Cubed should use: `multiple_inputs_optimize_dag`. In addition, we use `fuctools.partial` to set the `max_total_source_arrays` argument to 8 as follows:
+
+```python
+from functools import partial
+from cubed.core.optimization import multiple_inputs_optimize_dag
+
+opt_fn = partial(multiple_inputs_optimize_dag, max_total_source_arrays=8)
+e.visualize(optimize_function=opt_fn)
+```
+
+### Total number of input blocks
+
+The `max_total_num_input_blocks` argument to `multiple_inputs_optimize_dag` specifies the maximum number of input blocks (chunks) that are allowed in the fused operation.
+
+Again, this is to limit the number of reads that an individual task must perform. The default is `None`, which means that operations are fused only if they have the same number of tasks. If set to an integer, then this limitation is removed, and tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be set using `functools.partial`:
+
+```python
+opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=10)
+e.visualize(optimize_function=opt_fn)
 ```
