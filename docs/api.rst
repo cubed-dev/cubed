@@ -83,18 +83,3 @@ Runtime
     Spec
     TaskEndEvent
     measure_reserved_mem
-
-Executors
-=========
-
-.. currentmodule:: cubed.runtime.executors
-.. autosummary::
-    :nosignatures:
-    :toctree: generated/
-
-    local.SingleThreadedExecutor
-    local.ThreadsExecutor
-    local.ProcessesExecutor
-    beam.BeamExecutor
-    lithops.LithopsExecutor
-    modal.ModalExecutor
