@@ -85,6 +85,15 @@ def test_index(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+def test_index_chunk_aligned(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = a[0:5000, :]
+    run_operation(tmp_path, executor, "index_chunk_aligned", b)
+
+
+@pytest.mark.slow
 def test_index_step(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
