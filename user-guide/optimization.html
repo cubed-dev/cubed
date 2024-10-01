@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Optimization &#8212; Cubed</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=afdda1ca"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/optimization';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Scaling" href="scaling.html" />
+    <link rel="prev" title="Reliability" href="reliability.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">Cubed</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting-started/index.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started/demo.html">Demo</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="memory.html">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reliability.html">Reliability</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scaling.html">Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diagnostics.html">Diagnostics</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference external" href="https://cubed-dev.github.io/cubed/cubed-intro.slides.html">Intro slides</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.html">cubed.Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.visualize.html">cubed.Array.visualize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.compute.html">cubed.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.visualize.html">cubed.visualize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.from_array.html">cubed.from_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.from_zarr.html">cubed.from_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.store.html">cubed.store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.to_zarr.html">cubed.to_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.map_blocks.html">cubed.map_blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.map_overlap.html">cubed.map_overlap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.nanmean.html">cubed.nanmean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.nansum.html">cubed.nansum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.pad.html">cubed.pad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.random.random.html">cubed.random.random</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Callback.html">cubed.Callback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Spec.html">cubed.Spec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../array-api.html">Python Array API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../why-cubed.html">Why Cubed?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../related-projects.html">Related Projects</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../design.html">Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../operations.html">Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../computation.html">Computation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/cubed-dev/cubed" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/user-guide/optimization.md" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fuser-guide/optimization.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Optimization</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-fusion">Map fusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-input-fusion">Multiple-input fusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-optimization">Debugging optimization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-settings">Advanced settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#total-number-of-source-arrays">Total number of source arrays</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#total-number-of-input-blocks">Total number of input blocks</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="optimization">
+<h1>Optimization<a class="headerlink" href="#optimization" title="Link to this heading">#</a></h1>
+<p>Cubed will automatically optimize the computation graph before running it. This can reduce the number of tasks in the plan, and the amount of intermediate IO, both of which speed up the computation.</p>
+<section id="map-fusion">
+<h2>Map fusion<a class="headerlink" href="#map-fusion" title="Link to this heading">#</a></h2>
+<p>The simplest kind of optimization is <em>map fusion</em>, where operations that have one preceding operation with the same number of tasks are fused together. This optimization is enabled by default.</p>
+<p>You can see the effect of optimization before running any computation by using the <code class="docutils literal notranslate"><span class="pre">visualize</span></code> method on a Cubed array, such as in the following small example. We start by specifying <code class="docutils literal notranslate"><span class="pre">optimize_graph=False</span></code> to turn off optimization so we can see what the unoptimized plan looks like.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">negative</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">xp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s2">&quot;cubed-unoptimized&quot;</span><span class="p">,</span> <span class="n">optimize_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Computation with optimization turned off" src="../_images/optimization_turned_off.svg" /></p>
+<p>Now we call <code class="docutils literal notranslate"><span class="pre">visualize</span></code> again, this time not setting <code class="docutils literal notranslate"><span class="pre">optimize_graph</span></code> so it picks up its default value of <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="Map fusion optimization" src="../_images/optimization_map_fusion.svg" /></p>
+<p>Note that with optimization turned on, the array <code class="docutils literal notranslate"><span class="pre">b</span></code> is no longer written as an intermediate output since it will be computed in the same tasks that compute array <code class="docutils literal notranslate"><span class="pre">c</span></code>. The overall number of tasks is reduced from 10 to 5, and the intermediate data (total <code class="docutils literal notranslate"><span class="pre">nbytes</span></code>) is reduced too.</p>
+<p>Here we have just called <code class="docutils literal notranslate"><span class="pre">visualize</span></code> with the <code class="docutils literal notranslate"><span class="pre">optimize_graph</span></code> argument, but it’s possible to use it when calling <code class="docutils literal notranslate"><span class="pre">compute</span></code> - which can be useful when debugging a computation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">optimize_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multiple-input-fusion">
+<h2>Multiple-input fusion<a class="headerlink" href="#multiple-input-fusion" title="Link to this heading">#</a></h2>
+<p>Cubed supports more powerful optimizations, such as for when an array is created from multiple input arrays. Here is an example, shown first with optimization turned off.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">e</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+<span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="s2">&quot;cubed-unoptimized&quot;</span><span class="p">,</span> <span class="n">optimize_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Multiple inputs unoptimized" src="../_images/optimization_multiple_inputs_unoptimized.svg" /></p>
+<p>And with optimization turned on (the default):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><img alt="Multiple inputs optimized" src="../_images/optimization_multiple_inputs.svg" /></p>
+<p>Notice how the array <code class="docutils literal notranslate"><span class="pre">d</span></code> is fused away.</p>
+</section>
+<section id="debugging-optimization">
+<h2>Debugging optimization<a class="headerlink" href="#debugging-optimization" title="Link to this heading">#</a></h2>
+<p>Sometimes it can be difficult to understand why particular operations in a computation plan have been fused together - or more commonly, why they have <em>not</em> been fused. By enabling debug logging you can get detailed information from the optimize function to help you understand which operations are being fused - or not - and the reason in either case.</p>
+<p>Here’s the previous example with logging enabled:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+<span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The output explains which operations can or can’t be fused, and why:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DEBUG</span><span class="p">:</span><span class="n">cubed</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">optimization</span><span class="p">:</span><span class="n">can</span><span class="s1">&#39;t fuse op-001 since it is not a primitive operation, or it uses map_direct</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">cubed</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">optimization</span><span class="p">:</span><span class="n">can</span><span class="s1">&#39;t fuse op-002 since it is not a primitive operation, or it uses map_direct</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">cubed</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">optimization</span><span class="p">:</span><span class="n">can</span><span class="s1">&#39;t fuse op-003 since it is not a primitive operation, or it uses map_direct</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">cubed</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">optimization</span><span class="p">:</span><span class="n">can</span><span class="s1">&#39;t fuse op-004 since no predecessor ops can be fused</span>
+<span class="n">DEBUG</span><span class="p">:</span><span class="n">cubed</span><span class="o">.</span><span class="n">primitive</span><span class="o">.</span><span class="n">blockwise</span><span class="p">:</span><span class="n">can</span> <span class="n">fuse</span> <span class="n">op</span><span class="o">-</span><span class="mi">005</span> <span class="n">since</span> <span class="n">num</span> <span class="n">tasks</span> <span class="n">of</span> <span class="n">predecessor</span> <span class="n">ops</span> <span class="n">match</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-settings">
+<h2>Advanced settings<a class="headerlink" href="#advanced-settings" title="Link to this heading">#</a></h2>
+<p>There are limits to how many input arrays and input chunks reads are fused together. These are imposed so that the number of reads that an individual task must perform is not excessive, which would otherwise result in slow running tasks.</p>
+<p>In some cases you may want to change these limits, which we look at here.</p>
+<section id="total-number-of-source-arrays">
+<h3>Total number of source arrays<a class="headerlink" href="#total-number-of-source-arrays" title="Link to this heading">#</a></h3>
+<p>Cubed will not fuse operations that result in more than 4 source arrays in the fused operation. In the previous example above the fused operation has three source arrays (<code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>, and <code class="docutils literal notranslate"><span class="pre">c</span></code>), which is below the maximum default allowed. On the other hand, a computation with a higher “fan-in” that exceeds the maximum will not be fused, or operations will be fused in stages.</p>
+<p>To change this, we have to specify the <code class="docutils literal notranslate"><span class="pre">optimize_function</span></code> that Cubed should use: <code class="docutils literal notranslate"><span class="pre">multiple_inputs_optimize_dag</span></code>. In addition, we use <code class="docutils literal notranslate"><span class="pre">fuctools.partial</span></code> to set the <code class="docutils literal notranslate"><span class="pre">max_total_source_arrays</span></code> argument to 8 as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">cubed.core.optimization</span> <span class="kn">import</span> <span class="n">multiple_inputs_optimize_dag</span>
+
+<span class="n">opt_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">multiple_inputs_optimize_dag</span><span class="p">,</span> <span class="n">max_total_source_arrays</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">optimize_function</span><span class="o">=</span><span class="n">opt_fn</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="total-number-of-input-blocks">
+<h3>Total number of input blocks<a class="headerlink" href="#total-number-of-input-blocks" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">max_total_num_input_blocks</span></code> argument to <code class="docutils literal notranslate"><span class="pre">multiple_inputs_optimize_dag</span></code> specifies the maximum number of input blocks (chunks) that are allowed in the fused operation.</p>
+<p>Again, this is to limit the number of reads that an individual task must perform. The default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, which means that operations are fused only if they have the same number of tasks. If set to an integer, then this limitation is removed, and tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be set using <code class="docutils literal notranslate"><span class="pre">functools.partial</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">opt_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">multiple_inputs_optimize_dag</span><span class="p">,</span> <span class="n">max_total_num_input_blocks</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">optimize_function</span><span class="o">=</span><span class="n">opt_fn</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="reliability.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Reliability</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="scaling.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Scaling</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-fusion">Map fusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-input-fusion">Multiple-input fusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-optimization">Debugging optimization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-settings">Advanced settings</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#total-number-of-source-arrays">Total number of source arrays</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#total-number-of-input-blocks">Total number of input blocks</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tom White
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022-2024, Tom White.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
