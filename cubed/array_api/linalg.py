@@ -12,7 +12,7 @@ from cubed.array_api.linear_algebra_functions import (  # noqa: F401
     vecdot,
 )
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import blockwise, general_blockwise, map_direct, merge_chunks
+from cubed.core.ops import blockwise, general_blockwise, merge_chunks
 from cubed.utils import array_memory, get_item
 
 
@@ -145,26 +145,32 @@ def _qr_third_step(Q1, Q2):
     Q1_shape = Q1.shape
     Q1_chunks = Q1.chunks
 
+    Q2_single = _merge_into_single_chunk(Q2)
+
+    # These aren't the actual chunks, but the chunks we need for _q_matmul
     Q2_chunks = ((n,) * k, (n,))
-    extra_projected_mem = 0
-    Q = map_direct(
+
+    def key_function(out_key):
+        # Q1 is a simple 1:1 mapping, Q2_single has a single chunk
+        return ((Q1.name,) + out_key[1:], (Q2_single.name,) + (0, 0))
+
+    Q = general_blockwise(
         _q_matmul,
+        key_function,
         Q1,
-        Q2,
-        shape=Q1_shape,
-        dtype=result_type(Q1, Q2),
-        chunks=Q1_chunks,
-        extra_projected_mem=extra_projected_mem,
-        q1_chunks=Q1_chunks,
+        Q2_single,
+        shapes=[Q1_shape],
+        dtypes=[result_type(Q1, Q2_single)],
+        chunkss=[Q1_chunks],
         q2_chunks=Q2_chunks,
     )
     return Q
 
 
-def _q_matmul(x, *arrays, q1_chunks=None, q2_chunks=None, block_id=None):
-    q1 = arrays[0].zarray[get_item(q1_chunks, block_id)]
+def _q_matmul(a1, a2, q2_chunks=None, block_id=None):
+    q1 = a1
     # this array only has a single chunk, but we need to get a slice corresponding to q2_chunks
-    q2 = arrays[1].zarray[get_item(q2_chunks, block_id)]
+    q2 = a2[get_item(q2_chunks, block_id)]
     return q1 @ q2
 
 
