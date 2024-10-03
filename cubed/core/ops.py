@@ -286,6 +286,7 @@ def blockwise(
 
     fusable = kwargs.pop("fusable", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
+    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -311,6 +312,7 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -368,6 +370,11 @@ def general_blockwise(
         num_input_blocks = kwargs.pop("num_input_blocks", None)
         if num_input_blocks is not None:
             num_input_blocks = num_input_blocks + (1,)  # for offsets array
+        iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
+        if iterable_input_blocks is not None:
+            iterable_input_blocks = iterable_input_blocks + (
+                False,
+            )  # for offsets array
 
         return _general_blockwise(
             func_with_block_id(func),
@@ -380,6 +387,7 @@ def general_blockwise(
             target_paths=target_paths,
             extra_func_kwargs=extra_func_kwargs,
             num_input_blocks=num_input_blocks,
+            iterable_input_blocks=iterable_input_blocks,
             **kwargs,
         )
 
@@ -421,6 +429,7 @@ def _general_blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     num_input_blocks = kwargs.pop("num_input_blocks", None)
+    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     spec = check_array_specs(arrays)
 
@@ -452,6 +461,7 @@ def _general_blockwise(
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -1085,9 +1095,10 @@ def merge_chunks_new(x, chunks):
         # return a tuple with a single item that is the list of input keys to be merged
         return (lol_product((x.name,), in_keys),)
 
-    num_input_blocks = int(
-        np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])
+    num_input_blocks = (
+        int(np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])),
     )
+    iterable_input_blocks = (True,)
 
     return general_blockwise(
         _concatenate2,
@@ -1097,7 +1108,8 @@ def merge_chunks_new(x, chunks):
         dtypes=[x.dtype],
         chunkss=[target_chunks],
         extra_projected_mem=0,
-        num_input_blocks=(num_input_blocks,),
+        num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         axes=axes,
     )
 
@@ -1325,6 +1337,7 @@ def partial_reduce(
         chunkss=[chunks],
         extra_projected_mem=extra_projected_mem,
         num_input_blocks=(sum(split_every.values()),),
+        iterable_input_blocks=(True,),
         reduce_func=func,
         initial_func=initial_func,
         axis=axis,
