@@ -55,6 +55,8 @@ class BlockwiseSpec:
         The number of array arguments that ``function`` takes.
     num_input_blocks: Tuple[int, ...]
         The number of input blocks read from each input array.
+    iterable_input_blocks: Tuple[int, ...]
+        Whether the input blocks read from each input array are supplied as an iterable or not.
     reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
     writes_list : List[CubedArrayProxy]
@@ -65,6 +67,7 @@ class BlockwiseSpec:
     function: Callable[..., Any]
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
+    iterable_input_blocks: Tuple[bool, ...]
     reads_map: Dict[str, CubedArrayProxy]
     writes_list: List[CubedArrayProxy]
 
@@ -143,6 +146,7 @@ def blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
+    iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -229,6 +233,7 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
 
@@ -251,6 +256,7 @@ def general_blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
+    iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -297,6 +303,7 @@ def general_blockwise(
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
+    iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
     read_proxies = {
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
@@ -346,6 +353,7 @@ def general_blockwise(
         func_with_kwargs,
         len(arrays),
         num_input_blocks,
+        iterable_input_blocks,
         read_proxies,
         write_proxies,
     )
@@ -433,18 +441,6 @@ def can_fuse_multiple_primitive_ops(
                 primitive_op.allowed_mem,
             )
             return False
-        # If the number of input blocks for each input is not uniform, then we
-        # can't fuse. (This should never happen since all operations are
-        # currently uniform, and fused operations are too if fuse is applied in
-        # topological order.)
-        num_input_blocks = primitive_op.pipeline.config.num_input_blocks
-        if not all(num_input_blocks[0] == n for n in num_input_blocks):
-            logger.debug(
-                "can't fuse %s since number of input blocks for each input is not uniform: %s",
-                name,
-                num_input_blocks,
-            )
-            return False
         if max_total_num_input_blocks is None:
             # If max total input blocks not specified, then only fuse if num
             # tasks of predecessor ops match.
@@ -462,6 +458,7 @@ def can_fuse_multiple_primitive_ops(
                 )
             return ret
         else:
+            num_input_blocks = primitive_op.pipeline.config.num_input_blocks
             total_num_input_blocks = 0
             for ni, p in zip(num_input_blocks, predecessor_primitive_ops):
                 for nj in p.pipeline.config.num_input_blocks:
@@ -526,11 +523,13 @@ def fuse(
         n * pipeline2.config.num_input_blocks[0]
         for n in pipeline1.config.num_input_blocks
     )
+    iterable_input_blocks = pipeline1.config.iterable_input_blocks
     spec = BlockwiseSpec(
         fused_key_func,
         fused_func,
         function_nargs,
         num_input_blocks,
+        iterable_input_blocks,
         read_proxies,
         write_proxies,
     )
@@ -567,113 +566,25 @@ def fuse_multiple(
     Fuse a blockwise operation and its predecessors into a single operation, avoiding writing to (or reading from) the targets of the predecessor operations.
     """
 
-    pipeline = primitive_op.pipeline
-    predecessor_pipelines = [
-        primitive_op.pipeline if primitive_op is not None else None
+    bw_spec = primitive_op.pipeline.config
+
+    null_blockwise_spec = BlockwiseSpec(
+        key_function=lambda x: (x,),
+        function=lambda x: x,
+        function_nargs=1,
+        num_input_blocks=(1,),
+        iterable_input_blocks=(False,),
+        reads_map={},
+        writes_list=[],
+    )
+    predecessor_bw_specs = [
+        primitive_op.pipeline.config
+        if primitive_op is not None
+        else null_blockwise_spec
         for primitive_op in predecessor_primitive_ops
     ]
 
-    # if a predecessor has no primitive op then use 1 for nargs
-    predecessor_funcs_nargs = [
-        pipeline.config.function_nargs if pipeline is not None else 1
-        for pipeline in predecessor_pipelines
-    ]
-
-    mappable = pipeline.mappable
-
-    def apply_pipeline_key_func(pipeline, n_input_blocks, arg):
-        if pipeline is None:
-            return (arg,)
-        if n_input_blocks == 1:
-            assert isinstance(arg, tuple)
-            return pipeline.config.key_function(arg)
-        else:
-            # more than one input block is being read from arg
-            assert isinstance(arg, (list, Iterator))
-            if isinstance(arg, list):
-                return tuple(
-                    list(item)
-                    for item in zip(*(pipeline.config.key_function(a) for a in arg))
-                )
-            else:
-                # Return iterators to avoid materializing all array blocks at
-                # once.
-                return tuple(
-                    iter(list(item))
-                    for item in zip(*(pipeline.config.key_function(a) for a in arg))
-                )
-
-    def fused_key_func(out_key):
-        # this will change when multiple outputs are supported
-        args = pipeline.config.key_function(out_key)
-        # split all args to the fused function into groups, one for each predecessor function
-        func_args = tuple(
-            item
-            for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
-            for item in apply_pipeline_key_func(
-                p, pipeline.config.num_input_blocks[i], a
-            )
-        )
-        return split_into(func_args, predecessor_funcs_nargs)
-
-    def apply_pipeline_func(pipeline, n_input_blocks, *args):
-        if pipeline is None:
-            return args[0]
-        if n_input_blocks == 1:
-            ret = pipeline.config.function(*args)
-        else:
-            # More than one input block is being read from this group of args to primitive op.
-            # Note that it is important that a list is not returned to avoid materializing all
-            # array blocks at once.
-            ret = map(lambda item: pipeline.config.function(*item), zip(*args))
-        return ret
-
-    def fused_func_single(*args):
-        # args are grouped appropriately so they can be called by each predecessor function
-        func_args = [
-            apply_pipeline_func(p, pipeline.config.num_input_blocks[i], *a)
-            for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
-        ]
-        return pipeline.config.function(*func_args)
-
-    # multiple outputs
-    def fused_func_generator(*args):
-        # args are grouped appropriately so they can be called by each predecessor function
-        func_args = [
-            apply_pipeline_func(p, pipeline.config.num_input_blocks[i], *a)
-            for i, (p, a) in enumerate(zip(predecessor_pipelines, args))
-        ]
-        yield from pipeline.config.function(*func_args)
-
-    fused_func = (
-        fused_func_generator
-        if inspect.isgeneratorfunction(pipeline.config.function)
-        else fused_func_single
-    )
-    fused_function_nargs = pipeline.config.function_nargs
-    # ok to get num_input_blocks[0] since it is uniform (see check in can_fuse_multiple_primitive_ops)
-    fused_num_input_blocks = tuple(
-        pipeline.config.num_input_blocks[0] * n
-        for n in itertools.chain(
-            *(
-                p.pipeline.config.num_input_blocks if p is not None else (1,)
-                for p in predecessor_primitive_ops
-            )
-        )
-    )
-    read_proxies = dict(pipeline.config.reads_map)
-    for p in predecessor_pipelines:
-        if p is not None:
-            read_proxies.update(p.config.reads_map)
-    write_proxies = pipeline.config.writes_list
-    spec = BlockwiseSpec(
-        fused_key_func,
-        fused_func,
-        fused_function_nargs,
-        fused_num_input_blocks,
-        read_proxies,
-        write_proxies,
-    )
+    spec = fuse_blockwise_specs(bw_spec, *predecessor_bw_specs)
 
     source_array_names = []
     for i, p in enumerate(predecessor_primitive_ops):
@@ -693,7 +604,7 @@ def fuse_multiple(
     fused_pipeline = CubedPipeline(
         apply_blockwise,
         gensym("fused_apply_blockwise"),
-        mappable,
+        primitive_op.pipeline.mappable,
         spec,
     )
     return PrimitiveOperation(
@@ -705,6 +616,130 @@ def fuse_multiple(
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
         fusable=True,
+    )
+
+
+def fuse_blockwise_specs(
+    bw_spec: BlockwiseSpec, *predecessor_bw_specs: BlockwiseSpec
+) -> BlockwiseSpec:
+    """
+    Fuse a blockwise spec and its predecessors into a single spec.
+    """
+
+    predecessor_funcs_nargs = [bws.function_nargs for bws in predecessor_bw_specs]
+
+    fused_key_func = make_fused_key_function(
+        bw_spec.key_function,
+        [bws.key_function for bws in predecessor_bw_specs],
+        predecessor_funcs_nargs,
+    )
+
+    fused_func = make_fused_function(
+        bw_spec.function,
+        [bws.function for bws in predecessor_bw_specs],
+        bw_spec.iterable_input_blocks,
+    )
+
+    fused_function_nargs = bw_spec.function_nargs
+    num_input_blocks = bw_spec.num_input_blocks
+    predecessor_num_blocks = [bws.num_input_blocks for bws in predecessor_bw_specs]
+    # note that the length of fused_num_input_blocks is the same as the number of input arrays
+    # but may be different to fused_function_nargs since the fused function groups args
+    fused_num_input_blocks = tuple(
+        itertools.chain(
+            *(
+                tuple(n * m for m in nb)
+                for n, nb in zip(num_input_blocks, predecessor_num_blocks)
+            )
+        )
+    )
+    predecessor_iterable_input_blocks = [
+        bws.iterable_input_blocks for bws in predecessor_bw_specs
+    ]
+    fused_iterable_input_blocks = tuple(
+        itertools.chain(*predecessor_iterable_input_blocks)
+    )
+
+    read_proxies = dict(bw_spec.reads_map)
+    for bws in predecessor_bw_specs:
+        read_proxies.update(bws.reads_map)
+    write_proxies = bw_spec.writes_list
+    return BlockwiseSpec(
+        fused_key_func,
+        fused_func,
+        fused_function_nargs,
+        fused_num_input_blocks,
+        fused_iterable_input_blocks,
+        read_proxies,
+        write_proxies,
+    )
+
+
+def apply_blockwise_key_func(key_function, arg):
+    if isinstance(arg, tuple):
+        return key_function(arg)
+    else:
+        # more than one input block is being read from arg
+        assert isinstance(arg, (list, Iterator))
+        if isinstance(arg, list):
+            return tuple(list(item) for item in zip(*(key_function(a) for a in arg)))
+        else:
+            # Return iterators to avoid materializing all array blocks at
+            # once.
+            return tuple(
+                iter(list(item)) for item in zip(*(key_function(a) for a in arg))
+            )
+
+
+def apply_blockwise_func(func, is_iterable, *args):
+    if is_iterable is False:
+        ret = func(*args)
+    else:
+        # More than one input block is being read from this group of args to primitive op.
+        # Note that it is important that a list is not returned to avoid materializing all
+        # array blocks at once.
+        ret = map(lambda item: func(*item), zip(*args))
+    return ret
+
+
+def make_fused_key_function(
+    key_function, predecessor_key_functions, predecessor_funcs_nargs
+):
+    def fused_key_func(out_key):
+        args = key_function(out_key)
+        # split all args to the fused function into groups, one for each predecessor function
+        func_args = tuple(
+            item
+            for pkf, a in zip(predecessor_key_functions, args)
+            for item in apply_blockwise_key_func(pkf, a)
+        )
+        return split_into(func_args, predecessor_funcs_nargs)
+
+    return fused_key_func
+
+
+def make_fused_function(function, predecessor_functions, iterable_input_blocks):
+    def fused_func_single(*args):
+        # args are grouped appropriately so they can be called by each predecessor function
+        func_args = [
+            apply_blockwise_func(pf, iterable_input_blocks[i], *a)
+            for i, (pf, a) in enumerate(zip(predecessor_functions, args))
+        ]
+        return function(*func_args)
+
+    # multiple outputs
+    def fused_func_generator(*args):
+        # args are grouped appropriately so they can be called by each predecessor function
+        func_args = [
+            apply_blockwise_func(pf, iterable_input_blocks[i], *a)
+            for i, (pf, a) in enumerate(zip(predecessor_functions, args))
+        ]
+        yield from function(*func_args)
+
+    return (
+        fused_func_generator
+        if inspect.isgeneratorfunction(function)
+        else fused_func_single
     )
 
 
