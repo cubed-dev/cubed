@@ -12,7 +12,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import blockwise, reduction, squeeze
 
 
-def matmul(x1, x2, /, use_new_impl=True, split_every=None):
+def matmul(x1, x2, /, split_every=None):
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in matmul")
 
@@ -51,9 +51,7 @@ def matmul(x1, x2, /, use_new_impl=True, split_every=None):
         dtype=dtype,
     )
 
-    out = _sum_wo_cat(
-        out, axis=-2, dtype=dtype, use_new_impl=use_new_impl, split_every=split_every
-    )
+    out = _sum_wo_cat(out, axis=-2, dtype=dtype, split_every=split_every)
 
     if x1_is_1d:
         out = squeeze(out, -2)
@@ -68,7 +66,7 @@ def _matmul(a, b):
     return chunk[..., nxp.newaxis, :]
 
 
-def _sum_wo_cat(a, axis=None, dtype=None, use_new_impl=True, split_every=None):
+def _sum_wo_cat(a, axis=None, dtype=None, split_every=None):
     if a.shape[axis] == 1:
         return squeeze(a, axis)
 
@@ -78,7 +76,6 @@ def _sum_wo_cat(a, axis=None, dtype=None, use_new_impl=True, split_every=None):
         _chunk_sum,
         axis=axis,
         dtype=dtype,
-        use_new_impl=use_new_impl,
         split_every=split_every,
         extra_func_kwargs=extra_func_kwargs,
     )
@@ -99,7 +96,7 @@ def matrix_transpose(x, /):
     return permute_dims(x, axes)
 
 
-def tensordot(x1, x2, /, *, axes=2, use_new_impl=True, split_every=None):
+def tensordot(x1, x2, /, *, axes=2, split_every=None):
     from cubed.array_api.statistical_functions import sum
 
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
@@ -147,7 +144,6 @@ def tensordot(x1, x2, /, *, axes=2, use_new_impl=True, split_every=None):
         out,
         axis=x1_axes,
         dtype=dtype,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
 
@@ -161,7 +157,7 @@ def _tensordot(a, b, axes):
     return x
 
 
-def vecdot(x1, x2, /, *, axis=-1, use_new_impl=True, split_every=None):
+def vecdot(x1, x2, /, *, axis=-1, split_every=None):
     # based on the implementation in array-api-compat
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in vecdot")
@@ -176,7 +172,6 @@ def vecdot(x1, x2, /, *, axis=-1, use_new_impl=True, split_every=None):
     res = matmul(
         x1_[..., None, :],
         x2_[..., None],
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
     return res[..., 0, 0]

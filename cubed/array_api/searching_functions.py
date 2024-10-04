@@ -5,7 +5,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import arg_reduction, elemwise
 
 
-def argmax(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def argmax(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in argmax")
     if axis is None:
@@ -17,12 +17,11 @@ def argmax(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=No
         nxp.argmax,
         axis=axis,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
 
 
-def argmin(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=None):
+def argmin(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in argmin")
     if axis is None:
@@ -34,7 +33,6 @@ def argmin(x, /, *, axis=None, keepdims=False, use_new_impl=True, split_every=No
         nxp.argmin,
         axis=axis,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
 
