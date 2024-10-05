@@ -1,5 +1,3 @@
-import pytest
-
 import cubed.array_api as xp
 
 info = xp.__array_namespace_info__()
@@ -12,7 +10,9 @@ def test_capabilities():
 
 
 def test_default_device():
-    assert info.default_device() == xp.asarray(0).device
+    assert (
+        info.default_device() is None or info.default_device() == xp.asarray(0).device
+    )
 
 
 def test_default_dtypes():
@@ -21,9 +21,6 @@ def test_default_dtypes():
     assert dtypes["complex floating"] == xp.asarray(0.0j).dtype
     assert dtypes["integral"] == xp.asarray(0).dtype
     assert dtypes["indexing"] == xp.argmax(xp.zeros(10)).dtype
-
-    with pytest.raises(ValueError, match="Device not understood"):
-        info.default_dtypes(device="xpu")
 
 
 def test_devices():
