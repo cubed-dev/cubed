@@ -55,6 +55,8 @@ class BlockwiseSpec:
         The number of array arguments that ``function`` takes.
     num_input_blocks: Tuple[int, ...]
         The number of input blocks read from each input array.
+    iterable_input_blocks: Tuple[int, ...]
+        Whether the input blocks read from each input array are supplied as an iterable or not.
     reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
     writes_list : List[CubedArrayProxy]
@@ -65,6 +67,7 @@ class BlockwiseSpec:
     function: Callable[..., Any]
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
+    iterable_input_blocks: Tuple[bool, ...]
     reads_map: Dict[str, CubedArrayProxy]
     writes_list: List[CubedArrayProxy]
 
@@ -143,6 +146,7 @@ def blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
+    iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -229,6 +233,7 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
 
@@ -251,6 +256,7 @@ def general_blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
+    iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -297,6 +303,7 @@ def general_blockwise(
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
+    iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
     read_proxies = {
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
@@ -346,6 +353,7 @@ def general_blockwise(
         func_with_kwargs,
         len(arrays),
         num_input_blocks,
+        iterable_input_blocks,
         read_proxies,
         write_proxies,
     )
@@ -526,11 +534,13 @@ def fuse(
         n * pipeline2.config.num_input_blocks[0]
         for n in pipeline1.config.num_input_blocks
     )
+    iterable_input_blocks = pipeline1.config.iterable_input_blocks
     spec = BlockwiseSpec(
         fused_key_func,
         fused_func,
         function_nargs,
         num_input_blocks,
+        iterable_input_blocks,
         read_proxies,
         write_proxies,
     )
@@ -574,6 +584,7 @@ def fuse_multiple(
         function=lambda x: x,
         function_nargs=1,
         num_input_blocks=(1,),
+        iterable_input_blocks=(False,),
         reads_map={},
         writes_list=[],
     )
@@ -637,7 +648,7 @@ def fuse_blockwise_specs(
     fused_func = make_fused_function(
         bw_spec.function,
         [bws.function for bws in predecessor_bw_specs],
-        bw_spec.num_input_blocks,
+        bw_spec.iterable_input_blocks,
     )
 
     fused_function_nargs = bw_spec.function_nargs
@@ -653,6 +664,7 @@ def fuse_blockwise_specs(
             )
         )
     )
+    fused_iterable_input_blocks = tuple(itertools.chain(predecessor_num_blocks))
 
     read_proxies = dict(bw_spec.reads_map)
     for bws in predecessor_bw_specs:
@@ -663,6 +675,7 @@ def fuse_blockwise_specs(
         fused_func,
         fused_function_nargs,
         fused_num_input_blocks,
+        fused_iterable_input_blocks,
         read_proxies,
         write_proxies,
     )
@@ -711,11 +724,11 @@ def make_fused_key_function(
     return fused_key_func
 
 
-def make_fused_function(function, predecessor_functions, num_input_blocks):
+def make_fused_function(function, predecessor_functions, iterable_input_blocks):
     def fused_func_single(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_blockwise_func(pf, num_input_blocks[i] != 1, *a)
+            apply_blockwise_func(pf, iterable_input_blocks[i], *a)
             for i, (pf, a) in enumerate(zip(predecessor_functions, args))
         ]
         return function(*func_args)
@@ -724,7 +737,7 @@ def make_fused_function(function, predecessor_functions, num_input_blocks):
     def fused_func_generator(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_blockwise_func(pf, num_input_blocks[i] != 1, *a)
+            apply_blockwise_func(pf, iterable_input_blocks[i], *a)
             for i, (pf, a) in enumerate(zip(predecessor_functions, args))
         ]
         yield from function(*func_args)

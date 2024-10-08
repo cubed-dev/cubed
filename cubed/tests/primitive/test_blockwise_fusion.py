@@ -105,12 +105,19 @@ class IteratorWithRepr(collections.abc.Iterator):
         return "<" + ", ".join(str(v) for v in self.values) + ">"
 
 
-def make_blockwise_spec(key_function, function, function_nargs=1, num_input_blocks=[1]):
+def make_blockwise_spec(
+    key_function,
+    function,
+    function_nargs=1,
+    num_input_blocks=(1,),
+    iterable_input_blocks=(False,),
+):
     return BlockwiseSpec(
         key_function=key_function,
         function=function,
         function_nargs=function_nargs,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         reads_map={},  # unused
         writes_list=[],  # unused
     )
@@ -263,7 +270,8 @@ def test_apply_blockwise_fused2():
             "b", numblocks=5, split_every=2
         ),
         function=sum_iter,
-        num_input_blocks=[2],
+        num_input_blocks=(2,),
+        iterable_input_blocks=(True,),
     )
 
     bw_spec = fuse_blockwise_specs(bw_spec2, bw_spec1)
@@ -283,7 +291,8 @@ def test_apply_blockwise_fused_iterator_with_single_input_block():
             "b", numblocks=5, split_every=1
         ),
         function=sum_iter,
-        num_input_blocks=[1],
+        num_input_blocks=(1,),
+        iterable_input_blocks=(True,),
     )
 
     bw_spec = fuse_blockwise_specs(bw_spec2, bw_spec1)
