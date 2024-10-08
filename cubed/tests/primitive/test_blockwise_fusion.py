@@ -271,3 +271,23 @@ def test_apply_blockwise_fused2():
     input_data = {"a": [0, 1, 2, 3, 4]}
     out = [apply_blockwise(input_data, [i], bw_spec) for i in range(3)]
     assert out == [-1, -5, -4]
+
+
+def test_apply_blockwise_fused_iterator_with_single_input_block():
+    bw_spec1 = make_blockwise_spec(
+        key_function=make_map_blocks_key_function("a"), function=negative
+    )
+    # the iterator only reads from a single input block
+    bw_spec2 = make_blockwise_spec(
+        key_function=make_combine_blocks_iter_key_function(
+            "b", numblocks=5, split_every=1
+        ),
+        function=sum_iter,
+        num_input_blocks=[1],
+    )
+
+    bw_spec = fuse_blockwise_specs(bw_spec2, bw_spec1)
+
+    input_data = {"a": [0, 1, 2, 3, 4]}
+    out = [apply_blockwise(input_data, [i], bw_spec) for i in range(5)]
+    assert out == [0, -1, -2, -3, -4]
