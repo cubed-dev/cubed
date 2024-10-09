@@ -285,6 +285,45 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
     assert_array_equal(res2[:], -np.sqrt(input))
 
 
+def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
+    source = create_zarr(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+        dtype=int,
+        chunks=(2, 2),
+        store=tmp_path / "source.zarr",
+    )
+    allowed_mem = 1000
+    target_store1 = tmp_path / "target1.zarr"
+    target_store2 = tmp_path / "target2.zarr"
+
+    in_name = "x"
+
+    def sqrts(x):
+        yield np.sqrt(x)
+        yield -np.sqrt(x)
+
+    def block_function(out_key):
+        out_coords = out_key[1:]
+        return ((in_name, *out_coords),)
+
+    with pytest.raises(
+        ValueError,
+        match="All outputs must have matching number of blocks in each dimension",
+    ):
+        general_blockwise(
+            sqrts,
+            block_function,
+            source,
+            allowed_mem=allowed_mem,
+            reserved_mem=0,
+            target_stores=[target_store1, target_store2],
+            shapes=[(3, 3), (3, 3)],
+            dtypes=[float, float],
+            chunkss=[(2, 2), (4, 2)],  # numblocks differ
+            in_names=[in_name],
+        )
+
+
 def test_make_blockwise_key_function_map():
     func = lambda x: 0
 

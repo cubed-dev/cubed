@@ -18,14 +18,9 @@ from cubed.backend_array_api import (
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
-from cubed.utils import (
-    array_memory,
-    chunk_memory,
-    get_item,
-    map_nested,
-    split_into,
-    to_chunksize,
-)
+from cubed.utils import array_memory, chunk_memory, get_item, map_nested
+from cubed.utils import numblocks as compute_numblocks
+from cubed.utils import split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
@@ -261,6 +256,8 @@ def general_blockwise(
     """A more general form of ``blockwise`` that uses a function to specify the block
     mapping, rather than an index notation, and which supports multiple outputs.
 
+    For multiple outputs, all output arrays must have matching numblocks.
+
     Parameters
     ----------
     func : callable
@@ -308,9 +305,18 @@ def general_blockwise(
     output_chunk_memory = 0
     target_array = []
 
+    numblocks0 = None
     for i, target_store in enumerate(target_stores):
         chunks_normal = normalize_chunks(chunkss[i], shape=shapes[i], dtype=dtypes[i])
         chunksize = to_chunksize(chunks_normal)
+        if numblocks0 is None:
+            numblocks0 = compute_numblocks(chunks_normal)
+        else:
+            numblocks = compute_numblocks(chunks_normal)
+            if numblocks != numblocks0:
+                raise ValueError(
+                    f"All outputs must have matching number of blocks in each dimension. Chunks specified: {chunkss}"
+                )
         if isinstance(target_store, zarr.Array):
             ta = target_store
         else:

@@ -147,6 +147,10 @@ def to_chunksize(chunkset: T_RectangularChunks) -> T_RegularChunks:
     return tuple(max(c[0], 1) for c in chunkset)
 
 
+def numblocks(chunks: T_RectangularChunks) -> Tuple[int, ...]:
+    return tuple(map(len, chunks))
+
+
 @dataclass
 class StackSummary:
     """Like Python's ``FrameSummary``, but with module information."""
