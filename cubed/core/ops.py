@@ -677,7 +677,6 @@ class ZarrArrayIndexingAdaptor:
 def _assemble_index_chunk(
     arrays,
     dtype=None,
-    target_chunks=None,
     func=None,
     selection_function=None,
     in_shape=None,
@@ -801,7 +800,6 @@ def map_selection(
         extra_func_kwargs=dict(func=func, dtype=dtype),
         num_input_blocks=num_input_blocks,
         iterable_input_blocks=iterable_input_blocks,
-        target_chunks=chunks,
         selection_function=selection_function,
         in_shape=x.shape,
         in_chunksize=x.chunksize,
