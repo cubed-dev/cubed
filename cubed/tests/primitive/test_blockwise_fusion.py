@@ -157,7 +157,7 @@ def test_combine_blocks_iter_key_function():
     check_key_function(key_function, (2,), "(<('a', 4)>,)")
 
 
-def test_fuse_key_function():
+def test_fuse_key_function_single_multiple():
     key_function1 = make_map_blocks_key_function("a")
     key_function2 = make_combine_blocks_iter_key_function(
         "b", numblocks=5, split_every=2
@@ -169,7 +169,7 @@ def test_fuse_key_function():
     check_key_function(fused_key_function, (2,), "([<('a', 4)>],)")
 
 
-def test_fuse_key_function2():
+def test_fuse_key_function_multiple_single():
     key_function1 = make_combine_blocks_iter_key_function(
         "a", numblocks=5, split_every=2
     )
@@ -181,7 +181,7 @@ def test_fuse_key_function2():
     check_key_function(fused_key_function, (2,), "([<('a', 4)>],)")
 
 
-def test_fuse_key_function3():
+def test_fuse_key_function_multiple_multiple():
     key_function1 = make_combine_blocks_iter_key_function(
         "a", numblocks=5, split_every=2
     )
@@ -233,7 +233,7 @@ def test_apply_blockwise_multiple_inputs():
     assert out == [5, 7, 9, 11, 13]
 
 
-def test_apply_blockwise2():
+def test_apply_blockwise_iterator():
     bw_spec = make_blockwise_spec(
         key_function=make_combine_blocks_iter_key_function(
             "a", numblocks=5, split_every=2
@@ -246,7 +246,7 @@ def test_apply_blockwise2():
     assert out == [1, 5, 4]
 
 
-def test_apply_blockwise_fused1():
+def test_apply_blockwise_fused():
     bw_spec1 = make_blockwise_spec(
         key_function=make_map_blocks_key_function("a"), function=negative
     )
@@ -261,7 +261,7 @@ def test_apply_blockwise_fused1():
     assert out == [0, 1, 2, 3, 4]
 
 
-def test_apply_blockwise_fused2():
+def test_apply_blockwise_fused_iterator():
     bw_spec1 = make_blockwise_spec(
         key_function=make_map_blocks_key_function("a"), function=negative
     )
