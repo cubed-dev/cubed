@@ -66,7 +66,7 @@ def map_overlap(
             x.chunks, block_id, depth[0]
         )  # TODO: support multiple
 
-    max_num_input_blocks = 2  # TODO: calculate
+    max_num_input_blocks = _overlap_num_input_blocks(x, depth[0])
 
     has_block_id_kw = has_keyword(func, "block_id")
 
@@ -88,6 +88,13 @@ def map_overlap(
         numblocks=x.numblocks,
         has_block_id_kw=has_block_id_kw,
     )
+
+
+def _overlap_num_input_blocks(x, depth):
+    num = 1
+    for i in depth.keys():
+        num *= min(x.numblocks[i], 3)
+    return num
 
 
 def _overlap(
