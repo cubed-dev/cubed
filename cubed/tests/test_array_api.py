@@ -291,7 +291,6 @@ def test_index_2d(spec, ind):
     ],
 )
 def test_index_2d_fusion(spec, ind):
-    print("ind", ind)
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 2),
