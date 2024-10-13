@@ -584,7 +584,7 @@ def index(x, key):
                 out_coords = out_key[1:]
                 return _target_chunk_selection(target_chunks, out_coords, selection)
 
-            max_num_input_blocks = calculate_num_input_blocks(idx, chunks)
+            max_num_input_blocks = calculate_num_input_blocks(idx, chunks, x.numblocks)
 
             out = map_selection(
                 None,  # no function to apply after selection
@@ -637,14 +637,16 @@ def _is_basic_selection(idx: ndindex.Tuple):
     return all(isinstance(ia, (ndindex.Integer, ndindex.Slice)) for ia in idx.args)
 
 
-def calculate_num_input_blocks(idx: ndindex.Tuple, chunksizes):
+def calculate_num_input_blocks(idx: ndindex.Tuple, chunksizes, numblocks):
     num = 1
-    for ia, c in zip(idx.args, chunksizes):
-        if isinstance(ia, ndindex.Integer):
+    for ia, c, nb in zip(idx.args, chunksizes, numblocks):
+        if isinstance(ia, ndindex.Integer) or nb == 1:
             pass  # single block
         elif isinstance(ia, ndindex.Slice):
-            if ia.start % c != 0:  # doesn't start on chunk boundary
-                num *= 2
+            if (ia.start // c) == ((ia.stop - 1) // c):
+                pass  # within same block
+            elif ia.start % c != 0:
+                num *= 2  # doesn't start on chunk boundary
             elif ia.step is not None and 1 < ia.step < c:
                 num *= 2
         else:
