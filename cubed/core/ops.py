@@ -790,6 +790,20 @@ def map_selection(
     num_input_blocks = (max_num_input_blocks,)
     iterable_input_blocks = (True,)
 
+    # TODO: delete this (and test somewhere else?) - this justs scans whole key space to check calculate_num_input_blocks -
+    actual_max_num_input_blocks = 1
+    for out_coords in product(*[range(len(c)) for c in chunks]):
+        out_key = ("out",) + out_coords
+        # print("out key", out_key, "->", len([i for i in key_function(out_key)[0]]))
+        in_key_iter = key_function(out_key)[0]
+        out_key_num_input_blocks = len([i for i in in_key_iter])
+        actual_max_num_input_blocks = max(
+            actual_max_num_input_blocks, out_key_num_input_blocks
+        )
+    assert (
+        actual_max_num_input_blocks == max_num_input_blocks
+    ), f"num_input_blocks differs: specified {max_num_input_blocks}, actual {actual_max_num_input_blocks}"
+
     return general_blockwise(
         _assemble_index_chunk,
         key_function,
