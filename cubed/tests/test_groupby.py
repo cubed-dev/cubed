@@ -96,7 +96,6 @@ def test_get_chunks_for_groups(
 def test_groupby_blockwise_axis0():
     a = xp.ones((10, 3), dtype=nxp.int32, chunks=(6, 2))
     b = nxp.asarray([0, 0, 0, 1, 1, 2, 2, 4, 4, 4])
-    extra_func_kwargs = dict(dtype=nxp.int32)
     c = groupby_blockwise(
         a,
         b,
@@ -104,7 +103,6 @@ def test_groupby_blockwise_axis0():
         axis=0,
         dtype=nxp.int64,
         num_groups=6,
-        extra_func_kwargs=extra_func_kwargs,
     )
     assert_array_equal(
         c.compute(),
@@ -124,7 +122,6 @@ def test_groupby_blockwise_axis0():
 def test_groupby_blockwise_axis1():
     a = xp.ones((3, 10), dtype=nxp.int32, chunks=(6, 2))
     b = nxp.asarray([0, 0, 0, 1, 1, 2, 2, 4, 4, 4])
-    extra_func_kwargs = dict(dtype=nxp.int32)
     c = groupby_blockwise(
         a,
         b,
@@ -132,7 +129,6 @@ def test_groupby_blockwise_axis1():
         axis=1,
         dtype=nxp.int64,
         num_groups=6,
-        extra_func_kwargs=extra_func_kwargs,
     )
     assert_array_equal(
         c.compute(),
@@ -146,7 +142,7 @@ def test_groupby_blockwise_axis1():
     )
 
 
-def _sum_reduction_func(arr, by, axis, start_group, num_groups, dtype):
+def _sum_reduction_func(arr, by, axis, start_group, num_groups):
     # change 'by' so it starts from 0 for each chunk
     by = by - start_group
-    return npg.aggregate(by, arr, func="sum", dtype=dtype, axis=axis, size=num_groups)
+    return npg.aggregate(by, arr, func="sum", axis=axis, size=num_groups)

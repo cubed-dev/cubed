@@ -287,6 +287,31 @@ def test_index_2d(spec, ind):
 @pytest.mark.parametrize(
     "ind",
     [
+        (slice(None), 2),
+    ],
+)
+def test_index_2d_fusion(spec, ind):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.positive(a)
+    c = b[ind]
+    d = xp.positive(c)
+    d.visualize("cubed-test_general_index_2d_fusion", show_hidden=True)
+    d.visualize(
+        "cubed-test_general_index_2d_fusion-unoptimized",
+        optimize_graph=False,
+        show_hidden=True,
+    )
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    assert_array_equal(d.compute(), x[ind])
+
+
+@pytest.mark.parametrize(
+    "ind",
+    [
         Ellipsis,
         (slice(None), slice(None)),
         (slice(0, 4), slice(None)),
@@ -517,11 +542,13 @@ def test_expand_dims(spec, executor):
     [
         ((10,), (4,), None),
         ((10,), (4,), 0),
+        ((10,), (5,), 0),
         ((10, 7), (4, 3), None),
         ((10, 7), (4, 3), 0),
         ((10, 7), (4, 3), 1),
         ((10, 7), (4, 3), (0, 1)),
         ((10, 7), (4, 3), -1),
+        ((10, 7), (5, 3), (0, 1)),
     ],
 )
 def test_flip(executor, shape, chunks, axis):

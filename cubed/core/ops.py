@@ -286,6 +286,7 @@ def blockwise(
 
     fusable = kwargs.pop("fusable", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
+    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -311,6 +312,7 @@ def blockwise(
         extra_func_kwargs=extra_func_kwargs,
         fusable=fusable,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -368,6 +370,11 @@ def general_blockwise(
         num_input_blocks = kwargs.pop("num_input_blocks", None)
         if num_input_blocks is not None:
             num_input_blocks = num_input_blocks + (1,)  # for offsets array
+        iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
+        if iterable_input_blocks is not None:
+            iterable_input_blocks = iterable_input_blocks + (
+                False,
+            )  # for offsets array
 
         return _general_blockwise(
             func_with_block_id(func),
@@ -380,6 +387,7 @@ def general_blockwise(
             target_paths=target_paths,
             extra_func_kwargs=extra_func_kwargs,
             num_input_blocks=num_input_blocks,
+            iterable_input_blocks=iterable_input_blocks,
             **kwargs,
         )
 
@@ -421,6 +429,7 @@ def _general_blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     num_input_blocks = kwargs.pop("num_input_blocks", None)
+    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     spec = check_array_specs(arrays)
 
@@ -452,6 +461,7 @@ def _general_blockwise(
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -567,35 +577,23 @@ def index(x, key):
 
         target_chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
-        if _is_chunk_aligned_selection(idx):
-            # use general_blockwise, which allows more opportunities for optimization than map_direct
+        if _is_basic_selection(idx):
+            # use map_selection (which uses general_blockwise) to allow more opportunities for optimization than map_direct
 
-            def key_function(out_key):
+            def selection_function(out_key):
                 out_coords = out_key[1:]
+                return _target_chunk_selection(target_chunks, out_coords, selection)
 
-                # compute the selection on x required to get the relevant chunk for out_coords
-                in_sel = _target_chunk_selection(target_chunks, out_coords, selection)
+            max_num_input_blocks = calculate_num_input_blocks(idx, chunks, x.numblocks)
 
-                # use a Zarr BasicIndexer to convert this to input coordinates
-                indexer = create_basic_indexer(
-                    in_sel, x.zarray_maybe_lazy.shape, x.zarray_maybe_lazy.chunks
-                )
-
-                return tuple(
-                    (x.name,) + chunk_coords for (chunk_coords, _, _) in indexer
-                )
-
-            out = general_blockwise(
-                _assemble_index_chunk,
-                key_function,
+            out = map_selection(
+                None,  # no function to apply after selection
+                selection_function,
                 x,
-                shapes=[shape],
-                dtypes=[x.dtype],
-                chunkss=[target_chunks],
-                target_chunks=target_chunks,
-                selection=selection,
-                in_shape=x.shape,
-                in_chunksize=x.chunksize,
+                shape,
+                x.dtype,
+                target_chunks,
+                max_num_input_blocks=max_num_input_blocks,
             )
         else:
             # use map_direct, which can't be fused
@@ -635,16 +633,25 @@ def index(x, key):
     return out
 
 
-def _is_chunk_aligned_selection(idx: ndindex.Tuple):
-    return all(
-        isinstance(ia, ndindex.Integer)
-        or (
-            isinstance(ia, ndindex.Slice)
-            and ia.start == 0
-            and (ia.step is None or ia.step == 1)
-        )
-        for ia in idx.args
-    )
+def _is_basic_selection(idx: ndindex.Tuple):
+    return all(isinstance(ia, (ndindex.Integer, ndindex.Slice)) for ia in idx.args)
+
+
+def calculate_num_input_blocks(idx: ndindex.Tuple, chunksizes, numblocks):
+    num = 1
+    for ia, c, nb in zip(idx.args, chunksizes, numblocks):
+        if isinstance(ia, ndindex.Integer) or nb == 1:
+            pass  # single block
+        elif isinstance(ia, ndindex.Slice):
+            if (ia.start // c) == ((ia.stop - 1) // c):
+                pass  # within same block
+            elif ia.start % c != 0:
+                num *= 2  # doesn't start on chunk boundary
+            elif ia.step is not None and 1 < ia.step < c:
+                num *= 2
+        else:
+            raise NotImplementedError("Only integer or slice indexes are supported.")
+    return num
 
 
 def create_basic_indexer(selection, shape, chunks):
@@ -670,28 +677,41 @@ class ZarrArrayIndexingAdaptor:
 
 
 def _assemble_index_chunk(
-    *arrs,
-    target_chunks=None,
-    selection=None,
+    arrays,
+    dtype=None,
+    func=None,
+    selection_function=None,
     in_shape=None,
     in_chunksize=None,
     block_id=None,
+    **kwargs,
 ):
+    assert not isinstance(
+        arrays, list
+    ), "index expects an iterator of array blocks, not a list"
+
     # compute the selection on x required to get the relevant chunk for out_coords
     out_coords = block_id
-    in_sel = _target_chunk_selection(target_chunks, out_coords, selection)
+    in_sel = selection_function(("out",) + out_coords)
 
     # use a Zarr BasicIndexer to convert this to input coordinates
     indexer = create_basic_indexer(in_sel, in_shape, in_chunksize)
 
     shape = indexer.shape
-    out = np.empty_like(arrs[0], shape=shape)
+    out = np.empty(shape, dtype=dtype)
 
     if array_size(shape) > 0:
         _, lchunk_selection, lout_selection = zip(*indexer)
-        for ai, chunk_select, out_select in zip(arrs, lchunk_selection, lout_selection):
+        for ai, chunk_select, out_select in zip(
+            arrays, lchunk_selection, lout_selection
+        ):
             out[out_select] = ai[chunk_select]
 
+    if func is not None:
+        if has_keyword(func, "block_id"):
+            out = func(out, block_id=block_id, **kwargs)
+        else:
+            out = func(out, **kwargs)
     return out
 
 
@@ -745,6 +765,62 @@ def _target_chunk_selection(target_chunks, idx, selection):
         else:
             raise ValueError(f"Unsupported selection: {s}")
     return tuple(sel)
+
+
+# TODO: move this and indexing to indexing.py?
+def map_selection(
+    func,
+    selection_function,
+    x,
+    shape,
+    dtype,
+    chunks,
+    max_num_input_blocks,
+    **kwargs,
+) -> "Array":
+    def key_function(out_key):
+        # compute the selection on x required to get the relevant chunk for out_key
+        in_sel = selection_function(out_key)
+
+        # use a Zarr BasicIndexer to convert selection to input coordinates
+        indexer = create_basic_indexer(in_sel, x.shape, x.chunksize)
+
+        return (
+            iter(tuple((x.name,) + chunk_coords for (chunk_coords, _, _) in indexer)),
+        )
+
+    num_input_blocks = (max_num_input_blocks,)
+    iterable_input_blocks = (True,)
+
+    # TODO: delete this (and test somewhere else?) - this justs scans whole key space to check calculate_num_input_blocks -
+    actual_max_num_input_blocks = 1
+    for out_coords in product(*[range(len(c)) for c in chunks]):
+        out_key = ("out",) + out_coords
+        # print("out key", out_key, "->", len([i for i in key_function(out_key)[0]]))
+        in_key_iter = key_function(out_key)[0]
+        out_key_num_input_blocks = len([i for i in in_key_iter])
+        actual_max_num_input_blocks = max(
+            actual_max_num_input_blocks, out_key_num_input_blocks
+        )
+    assert (
+        actual_max_num_input_blocks == max_num_input_blocks
+    ), f"num_input_blocks differs: specified {max_num_input_blocks}, actual {actual_max_num_input_blocks}"
+
+    return general_blockwise(
+        _assemble_index_chunk,
+        key_function,
+        x,
+        shapes=[shape],
+        dtypes=[x.dtype],
+        chunkss=[chunks],
+        extra_func_kwargs=dict(func=func, dtype=dtype),
+        num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
+        selection_function=selection_function,
+        in_shape=x.shape,
+        in_chunksize=x.chunksize,
+        **kwargs,
+    )
 
 
 def map_blocks(
@@ -1085,9 +1161,10 @@ def merge_chunks_new(x, chunks):
         # return a tuple with a single item that is the list of input keys to be merged
         return (lol_product((x.name,), in_keys),)
 
-    num_input_blocks = int(
-        np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])
+    num_input_blocks = (
+        int(np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])),
     )
+    iterable_input_blocks = (True,)
 
     return general_blockwise(
         _concatenate2,
@@ -1097,7 +1174,8 @@ def merge_chunks_new(x, chunks):
         dtypes=[x.dtype],
         chunkss=[target_chunks],
         extra_projected_mem=0,
-        num_input_blocks=(num_input_blocks,),
+        num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         axes=axes,
     )
 
@@ -1323,6 +1401,7 @@ def partial_reduce(
         chunkss=[chunks],
         extra_projected_mem=extra_projected_mem,
         num_input_blocks=(sum(split_every.values()),),
+        iterable_input_blocks=(True,),
         reduce_func=func,
         initial_func=initial_func,
         axis=axis,
