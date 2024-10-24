@@ -1,4 +1,4 @@
-boto
+boto3
 cftime
 cubed
 cubed-xarray
