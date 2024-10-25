@@ -40,12 +40,12 @@ lithops runtime build -b aws_lambda -f Dockerfile_virtualizarr virtualizarr-runt
 
 4. Stage the virtual zarr using `lithops`
 ```bash
-python create-virtualzarr.py
+python stage-virtual-zarr.py
 ```
 
 5. Rechunk the virtual zarr with `cubed` (using `lithops`)
 ```bash
-python cubed-rechunk.py
+python rechunk-virtual-zarr.py
 ```
 
 ## Cleaning up
