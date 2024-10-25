@@ -7,9 +7,13 @@
 # aren't propogated until the kernel is restarted.
 
 import os
+import fsspec
 import xarray as xr
 
 bucket_url = os.getenv("BUCKET_URL")
+
+target = fsspec.get_mapper(f"{bucket_url}/rechunked.zarr")
+                           # client_kwargs={'region_name':'us-west-2'})
 
 combined_ds = xr.open_dataset(
     f"{bucket_url}/combined.json", # location must be accessible to workers
@@ -26,7 +30,7 @@ rechunked_ds = combined_ds.chunk(
 )
 
 rechunked_ds.to_zarr(
-    f"{bucket_url}/rechunked.zarr",
+    target,
     mode="w",
     encoding={},  # TODO
     consolidated=True,

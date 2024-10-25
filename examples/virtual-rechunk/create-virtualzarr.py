@@ -40,7 +40,7 @@ def reduce_references(results):
         coords="minimal",
         compat="override",
     )
-
+    
     return combined_vds
 
 
@@ -55,5 +55,9 @@ futures = fexec.map_reduce(
 
 ds = futures.get_result()
 
-# Save the virtual zarr manifest to s3
-ds.virtualize.to_kerchunk(f"{bucket_url}/combined.json", format="json")
+# Save the virtual zarr manifest
+ds.virtualize.to_kerchunk(f"combined.json", format="json")
+
+# Upload manifest to s3
+fs_write = fsspec.filesystem("s3", anon=False, skip_instance_cache=True)
+fs_write.put("combined.json", f"{bucket_url}/combined.json")
