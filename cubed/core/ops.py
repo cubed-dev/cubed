@@ -1483,7 +1483,7 @@ def unify_chunks(*args: "Array", **kwargs):
             if chunks != a.chunks and all(a.chunks):
                 # this will raise if chunks are not regular
                 # but this should never happen with smallest_blockdim
-                chunksize = to_chunksize(chunks)
+                chunksize = to_chunksize(chunks)  # type: ignore
                 arrays.append(rechunk(a, chunksize))
             else:
                 arrays.append(a)
