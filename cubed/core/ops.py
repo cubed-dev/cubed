@@ -1193,7 +1193,9 @@ def reduction(
 
     # aggregate final chunks
     if aggregate_func is not None:
-        result = map_blocks(aggregate_func, result, dtype=dtype)
+        result = map_blocks(
+            partial(aggregate_func, **(extra_func_kwargs or {})), result, dtype=dtype
+        )
 
     if not keepdims:
         axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)

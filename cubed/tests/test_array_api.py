@@ -727,6 +727,46 @@ def test_sum_axis_0(spec, executor):
     assert_array_equal(b.compute(executor=executor), np.array([12, 15, 18]))
 
 
+@pytest.mark.parametrize("axis", [None, 0, 1, (0, 1)])
+@pytest.mark.parametrize("correction", [0.0, 1.0])
+@pytest.mark.parametrize("keepdims", [False, True])
+def test_var(spec, axis, correction, keepdims):
+    a = xp.asarray(
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
+    )
+    b = xp.var(a, axis=axis, correction=correction, keepdims=keepdims)
+    assert_array_equal(
+        b.compute(optimize_graph=False),
+        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).var(
+            axis=axis, ddof=correction, keepdims=keepdims
+        ),
+    )
+
+
+@pytest.mark.parametrize("axis", [None, 0, 1, (0, 1)])
+@pytest.mark.parametrize("correction", [0.0, 1.0])
+@pytest.mark.parametrize("keepdims", [False, True])
+def test_std(spec, axis, correction, keepdims):
+    a = xp.asarray(
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec
+    )
+    b = xp.std(a, axis=axis, correction=correction, keepdims=keepdims)
+    assert_array_equal(
+        b.compute(),
+        np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).std(
+            axis=axis, ddof=correction, keepdims=keepdims
+        ),
+    )
+
+
+def test_var__poorly_conditioned(spec):
+    # from https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Example
+    npa = np.array([4.0, 7.0, 13.0, 16.0]) + 1e9
+    a = xp.asarray(npa, chunks=2, spec=spec)
+    b = xp.var(a, axis=0)
+    assert_array_equal(b.compute(), npa.var(axis=0))
+
+
 # Utility functions
 
 

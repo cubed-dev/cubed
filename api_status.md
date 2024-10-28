@@ -84,9 +84,9 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `mean`              | :white_check_mark: |            |                              |
 |                          | `min`               | :white_check_mark: |            |                              |
 |                          | `prod`              | :white_check_mark: |            |                              |
-|                          | `std`               | :x:                |            | Like `mean`, [#29](https://github.com/cubed-dev/cubed/issues/29) |
+|                          | `std`               | :white_check_mark: |            |                              |
 |                          | `sum`               | :white_check_mark: |            |                              |
-|                          | `var`               | :x:                |            | Like `mean`, [#29](https://github.com/cubed-dev/cubed/issues/29) |
+|                          | `var`               | :white_check_mark: |            |                              |
 | Utility Functions        | `all`               | :white_check_mark: |            |                              |
 |                          | `any`               | :white_check_mark: |            |                              |
 
