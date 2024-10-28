@@ -80,7 +80,7 @@ async def map_unordered(
     function: Callable[..., Any],
     input: Iterable[Any],
     retries: int = 2,
-    use_backups: bool = True,
+    use_backups: bool = False,
     batch_size: Optional[int] = None,
     return_stats: bool = False,
     name: Optional[str] = None,

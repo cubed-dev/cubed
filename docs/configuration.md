@@ -118,23 +118,26 @@ since it is deliberately designed not to have anything except the most basic fea
 | Property                     | Default | Description                                                                                        |
 |------------------------------|---------|----------------------------------------------------------------------------------------------------|
 | `retries`                    | 2       | The number of times to retry a task if it fails.                                                   |
-| `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                                             |
+| `use_backups`                | `False` | Whether to use backup tasks for mitigating stragglers.                                             |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. The default is not to batch.                |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                          |
 | `max_workers`                | `None`  | The maximum number of workers to use in the `ThreadPoolExecutor`. Defaults to number of CPU cores. |
 
+Note that `use_backups` is `False` by default since stragglers are not generally a problem on a local machine.
 
 #### `processes`
 
 | Property                     | Default | Description                                                                                                                                |
 |------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                                                                                     |
+| `use_backups`                | `False` | Whether to use backup tasks for mitigating stragglers.                                                                                     |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. `None` means don't batch.                                                           |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                                                                  |
 | `max_workers`                | `None`  | The maximum number of workers to use in the `ProcessPoolExecutor`. Defaults to number of CPU cores.                                        |
 | `max_tasks_per_child`        | `None`  | The number of tasks to run in each child process. See the Python documentation for `concurrent.futures.ProcessPoolExecutor`. (Python 3.11) |
 
-Note that `retries` is not currently supported for the `processes` executor.
+Note that `use_backups` is `False` by default since stragglers are not generally a problem on a local machine.
+
+Also, `retries` is not currently supported for the `processes` executor.
 
 #### `beam`
 
