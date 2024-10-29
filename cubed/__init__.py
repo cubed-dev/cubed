@@ -9,8 +9,8 @@ from donfig import Config
 
 config = Config(
     "cubed",
-    # default spec is local temp dir and a modest amount of memory (200MB, of which 100MB is reserved)
-    defaults=[{"spec": {"allowed_mem": 200_000_000, "reserved_mem": 100_000_000}}],
+    # default spec is local temp dir and a reasonable amount of memory (2GB, of which 100MB is reserved)
+    defaults=[{"spec": {"allowed_mem": "2GB", "reserved_mem": "100MB"}}],
 )
 
 from .core.array import compute, measure_reserved_mem, visualize
