@@ -463,6 +463,5 @@ def unstack(x, /, *, axis=0):
 def _unstack_chunk(*arrs, axis=0):
     # unstack each array in arrs and yield all in turn
     for arr in arrs:
-        # TODO: replace with nxp.unstack(arr, axis=axis) when array-api-compat has unstack
-        for a in tuple(nxp.moveaxis(arr, axis, 0)):
+        for a in nxp.unstack(arr, axis=axis):
             yield a
