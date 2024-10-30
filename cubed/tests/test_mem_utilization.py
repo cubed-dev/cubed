@@ -104,9 +104,10 @@ def test_index_multiple_axes(tmp_path, spec, executor):
 
 @pytest.mark.slow
 def test_index_step(tmp_path, spec, executor):
+    # use 400MB chunks so that intermediate after indexing has 200MB chunks
     a = cubed.random.random(
-        (10000, 10000), chunks=(5000, 5000), spec=spec
-    )  # 200MB chunks
+        (20000, 10000), chunks=(10000, 5000), spec=spec
+    )  # 400MB chunks
     b = a[::2, :]
     run_operation(tmp_path, executor, "index_step", b)
 

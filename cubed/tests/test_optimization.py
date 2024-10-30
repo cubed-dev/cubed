@@ -9,7 +9,7 @@ import cubed
 import cubed.array_api as xp
 import cubed.random
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import elemwise, merge_chunks_new, partial_reduce
+from cubed.core.ops import elemwise, merge_chunks, partial_reduce
 from cubed.core.optimization import (
     fuse_all_optimize_dag,
     fuse_only_optimize_dag,
@@ -259,11 +259,19 @@ def add_placeholder_op(dag, inputs, outputs):
     add_op(dag, placeholder_func, [a.name for a in inputs], [b.name for b in outputs])
 
 
-def structurally_equivalent(dag1, dag2):
+def structurally_equivalent(dag1, dag2, remove_hidden=False):
     # compare structure, and node labels for values but not operators since they are placeholders
 
-    # draw_dag(dag1, "dag1")  # uncomment for debugging
-    # draw_dag(dag2, "dag2")  # uncomment for debugging
+    if remove_hidden:
+        dag1.remove_nodes_from(
+            list(n for n, d in dag1.nodes(data=True) if d.get("hidden", False))
+        )
+        dag2.remove_nodes_from(
+            list(n for n, d in dag2.nodes(data=True) if d.get("hidden", False))
+        )
+
+    draw_dag(dag1, "dag1")  # uncomment for debugging
+    draw_dag(dag2, "dag2")  # uncomment for debugging
 
     labelled_dag1 = nx.convert_node_labels_to_integers(dag1, label_attribute="label")
     labelled_dag2 = nx.convert_node_labels_to_integers(dag2, label_attribute="label")
@@ -282,8 +290,10 @@ def structurally_equivalent(dag1, dag2):
 def draw_dag(dag, name="dag"):
     dag = dag.copy()
     for _, d in dag.nodes(data=True):
-        if "name" in d:  # pydot already has name
-            del d["name"]
+        # remove keys or values with possibly unescaped characters
+        for k in ("name", "pipeline", "primitive_op", "stack_summaries"):
+            if k in d:
+                del d[k]
     gv = nx.drawing.nx_pydot.to_pydot(dag)
     format = "svg"
     full_filename = f"{name}.{format}"
@@ -810,7 +820,7 @@ def test_fuse_large_fan_in_override(spec):
 #
 def test_fuse_with_merge_chunks_unary(spec):
     a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
-    b = merge_chunks_new(a, chunks=(3, 2))
+    b = merge_chunks(a, chunks=(3, 2))
     c = xp.negative(b)
 
     opt_fn = fuse_one_level(c)
@@ -822,10 +832,14 @@ def test_fuse_with_merge_chunks_unary(spec):
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a,), (c,))
     optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
-    assert structurally_equivalent(optimized_dag, expected_fused_dag)
-    assert get_num_input_blocks(b.plan.dag, b.name) == (3,)
+
+    # merge_chunks uses a hidden op and array for block ids - ignore when comparing structure
+    assert structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
+    assert get_num_input_blocks(b.plan.dag, b.name) == (3, 1)  # final 1 is block ids
     assert get_num_input_blocks(c.plan.dag, c.name) == (1,)
-    assert get_num_input_blocks(optimized_dag, c.name) == (3,)
+    assert get_num_input_blocks(optimized_dag, c.name) == (3, 1)  # final 1 is block ids
 
     result = c.compute(optimize_function=opt_fn)
     assert_array_equal(result, -np.ones((3, 2)))
@@ -842,7 +856,7 @@ def test_fuse_with_merge_chunks_unary(spec):
 def test_fuse_with_merge_chunks_binary(spec):
     a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     b = xp.ones((3, 2), chunks=(3, 2), spec=spec)
-    c = merge_chunks_new(a, chunks=(3, 2))
+    c = merge_chunks(a, chunks=(3, 2))
     d = xp.negative(b)
     e = xp.add(c, d)
 
@@ -856,9 +870,17 @@ def test_fuse_with_merge_chunks_binary(spec):
     add_placeholder_op(expected_fused_dag, (), (b,))
     add_placeholder_op(expected_fused_dag, (a, b), (e,))
     optimized_dag = e.plan.optimize(optimize_function=opt_fn).dag
-    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    # merge_chunks uses a hidden op and array for block ids - ignore when comparing structure
+    assert structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
     assert get_num_input_blocks(e.plan.dag, e.name) == (1, 1)
-    assert get_num_input_blocks(optimized_dag, e.name) == (3, 1)
+    assert get_num_input_blocks(optimized_dag, e.name) == (
+        3,
+        1,
+        1,
+    )  # final 1 is block ids
 
     result = e.compute(optimize_function=opt_fn)
     assert_array_equal(result, np.zeros((3, 2)))
@@ -875,7 +897,7 @@ def test_fuse_with_merge_chunks_binary(spec):
 def test_fuse_merge_chunks_unary(spec):
     a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     b = xp.negative(a)
-    c = merge_chunks_new(b, chunks=(3, 2))
+    c = merge_chunks(b, chunks=(3, 2))
 
     # specify max_total_num_input_blocks to force c to fuse
     opt_fn = fuse_multiple_levels(max_total_num_input_blocks=3)
@@ -887,10 +909,14 @@ def test_fuse_merge_chunks_unary(spec):
     add_placeholder_op(expected_fused_dag, (), (a,))
     add_placeholder_op(expected_fused_dag, (a,), (c,))
     optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
-    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    # merge_chunks uses a hidden op and array for block ids - ignore when comparing structure
+    assert structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
     assert get_num_input_blocks(b.plan.dag, b.name) == (1,)
-    assert get_num_input_blocks(c.plan.dag, c.name) == (3,)
-    assert get_num_input_blocks(optimized_dag, c.name) == (3,)
+    assert get_num_input_blocks(c.plan.dag, c.name) == (3, 1)  # final 1 is block ids
+    assert get_num_input_blocks(optimized_dag, c.name) == (3, 1)  # final 1 is block ids
 
     result = c.compute(optimize_function=opt_fn)
     assert_array_equal(result, -np.ones((3, 2)))
@@ -908,7 +934,7 @@ def test_fuse_merge_chunks_binary(spec):
     a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     b = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     c = xp.add(a, b)
-    d = merge_chunks_new(c, chunks=(3, 2))
+    d = merge_chunks(c, chunks=(3, 2))
 
     # specify max_total_num_input_blocks to force d to fuse
     opt_fn = fuse_multiple_levels(max_total_num_input_blocks=6)
@@ -921,10 +947,18 @@ def test_fuse_merge_chunks_binary(spec):
     add_placeholder_op(expected_fused_dag, (), (b,))
     add_placeholder_op(expected_fused_dag, (a, b), (d,))
     optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
-    assert structurally_equivalent(optimized_dag, expected_fused_dag)
+
+    # merge_chunks uses a hidden op and array for block ids - ignore when comparing structure
+    assert structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
     assert get_num_input_blocks(c.plan.dag, c.name) == (1, 1)
-    assert get_num_input_blocks(d.plan.dag, d.name) == (3,)
-    assert get_num_input_blocks(optimized_dag, d.name) == (3, 3)
+    assert get_num_input_blocks(d.plan.dag, d.name) == (3, 1)  # final 1 is block ids
+    assert get_num_input_blocks(optimized_dag, d.name) == (
+        3,
+        3,
+        1,
+    )  # final 1 is block ids
 
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 2 * np.ones((3, 2)))
