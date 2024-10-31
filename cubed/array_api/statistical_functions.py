@@ -35,12 +35,9 @@ def max(x, /, *, axis=None, keepdims=False, split_every=None):
 def mean(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in mean")
-    # This implementation uses NumPy and Zarr's structured arrays to store a
+    # This implementation uses a Zarr group of two arrays to store a
     # pair of fields needed to keep per-chunk counts and totals for computing
-    # the mean. Structured arrays are row-based, so are less efficient than
-    # regular arrays, but for a function that reduces the amount of data stored,
-    # this is usually OK. An alternative would be to add support for multiple
-    # outputs.
+    # the mean.
     dtype = x.dtype
     intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype)
