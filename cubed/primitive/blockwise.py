@@ -59,8 +59,9 @@ class BlockwiseSpec:
         Whether the input blocks read from each input array are supplied as an iterable or not.
     reads_map : Dict[str, CubedArrayProxy]
         Read proxy dictionary keyed by array name.
-    writes_list : List[CubedArrayProxy]
-        Write proxy list where entries have an ``array`` attribute that supports ``__setitem__``.
+    writes_map : List[CubedArrayProxy]
+        Write proxy dictionary keyed by array name where entries have an ``array`` attribute that supports ``__setitem__``.
+        Note that the order of the entries must correspond to the order of the outputs created by the function.
     """
 
     key_function: Callable[..., Any]
@@ -69,7 +70,7 @@ class BlockwiseSpec:
     num_input_blocks: Tuple[int, ...]
     iterable_input_blocks: Tuple[bool, ...]
     reads_map: Dict[str, CubedArrayProxy]
-    writes_list: List[CubedArrayProxy]
+    writes_map: Dict[str, CubedArrayProxy]
 
 
 def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
@@ -92,19 +93,17 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
         results, tuple
     ):
         results = (results,)
-    for i, result in enumerate(results):
+    for result, write_proxy in zip(results, config.writes_map.values()):
         out_chunk_key = key_to_slices(
-            out_coords_tuple, config.writes_list[i].array, config.writes_list[i].chunks
+            out_coords_tuple, write_proxy.array, write_proxy.chunks
         )
         if isinstance(result, dict):  # group of arrays with named fields
             for k, v in result.items():
                 v = backend_array_to_numpy_array(v)
-                config.writes_list[i].open().set_basic_selection(
-                    out_chunk_key, v, fields=k
-                )
+                write_proxy.open().set_basic_selection(out_chunk_key, v, fields=k)
         else:
             result = backend_array_to_numpy_array(result)
-            config.writes_list[i].open()[out_chunk_key] = result
+            write_proxy.open()[out_chunk_key] = result
 
 
 def key_to_slices(
@@ -134,6 +133,7 @@ def blockwise(
     reserved_mem: int,
     target_store: T_Store,
     target_path: Optional[str] = None,
+    target_name: Optional[str] = None,
     storage_options: Optional[Dict[str, Any]] = None,
     compressor: Union[dict, str, None] = "default",
     shape: T_Shape,
@@ -223,6 +223,7 @@ def blockwise(
         reserved_mem=reserved_mem,
         target_stores=[target_store],
         target_paths=[target_path] if target_path is not None else None,
+        target_names=[target_name] if target_name is not None else None,
         storage_options=storage_options,
         compressor=compressor,
         shapes=[shape],
@@ -246,6 +247,7 @@ def general_blockwise(
     reserved_mem: int,
     target_stores: List[T_Store],
     target_paths: Optional[List[str]] = None,
+    target_names: Optional[List[str]] = None,  # TODO improve
     storage_options: Optional[Dict[str, Any]] = None,
     compressor: Union[dict, str, None] = "default",
     shapes: List[T_Shape],
@@ -308,7 +310,7 @@ def general_blockwise(
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }
 
-    write_proxies = []
+    write_proxies = {}
     output_chunk_memory = 0
     target_array = []
 
@@ -338,7 +340,7 @@ def general_blockwise(
             )
         target_array.append(ta)
 
-        write_proxies.append(CubedArrayProxy(ta, chunksize))
+        write_proxies[target_names[i]] = CubedArrayProxy(ta, chunksize)
 
         # only one output chunk is read into memory at a time, so we find the largest
         output_chunk_memory = max(
@@ -518,7 +520,7 @@ def fuse(
 
     function_nargs = pipeline1.config.function_nargs
     read_proxies = pipeline1.config.reads_map
-    write_proxies = pipeline2.config.writes_list
+    write_proxies = pipeline2.config.writes_map
     num_input_blocks = tuple(
         n * pipeline2.config.num_input_blocks[0]
         for n in pipeline1.config.num_input_blocks
@@ -575,7 +577,7 @@ def fuse_multiple(
         num_input_blocks=(1,),
         iterable_input_blocks=(False,),
         reads_map={},
-        writes_list=[],
+        writes_map={},
     )
     predecessor_bw_specs = [
         primitive_op.pipeline.config
@@ -663,7 +665,7 @@ def fuse_blockwise_specs(
     read_proxies = dict(bw_spec.reads_map)
     for bws in predecessor_bw_specs:
         read_proxies.update(bws.reads_map)
-    write_proxies = bw_spec.writes_list
+    write_proxies = bw_spec.writes_map
     return BlockwiseSpec(
         fused_key_func,
         fused_func,

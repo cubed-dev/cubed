@@ -301,6 +301,7 @@ def blockwise(
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
         target_path=target_path,
+        target_name=name,
         storage_options=spec.storage_options,
         compressor=spec.zarr_compressor,
         shape=shape,
@@ -439,10 +440,12 @@ def _general_blockwise(
             ts if ts is not None else new_temp_path(name=n, spec=spec)
             for n, ts in zip(name, target_stores)
         ]
+        target_names = name
     else:  # single output
         name = gensym()
         if target_stores is None:
             target_stores = [new_temp_path(name=name, spec=spec)]
+        target_names = [name]
 
     op = primitive_general_blockwise(
         func,
@@ -453,6 +456,7 @@ def _general_blockwise(
         extra_projected_mem=extra_projected_mem,
         target_stores=target_stores,
         target_paths=target_paths,
+        target_names=target_names,
         storage_options=spec.storage_options,
         compressor=spec.zarr_compressor,
         shapes=shapes,

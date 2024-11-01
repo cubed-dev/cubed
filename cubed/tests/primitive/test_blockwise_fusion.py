@@ -119,7 +119,7 @@ def make_blockwise_spec(
         num_input_blocks=num_input_blocks,
         iterable_input_blocks=iterable_input_blocks,
         reads_map={},  # unused
-        writes_list=[],  # unused
+        writes_map={},  # unused
     )
 
 
