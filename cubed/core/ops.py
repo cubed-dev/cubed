@@ -26,12 +26,12 @@ from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
 from cubed.types import T_RegularChunks, T_Shape
-from cubed.utils import _concatenate2, array_memory, array_size, get_item
+from cubed.utils import array_memory, array_size, get_item
 from cubed.utils import numblocks as compute_numblocks
 from cubed.utils import offset_to_block_id, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
-from cubed.vendor.dask.blockwise import broadcast_dimensions, lol_product
+from cubed.vendor.dask.blockwise import broadcast_dimensions
 from cubed.vendor.dask.utils import has_keyword
 
 if TYPE_CHECKING:
@@ -1089,77 +1089,23 @@ def merge_chunks(x, chunks):
         )
 
     target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
-    return map_direct(
-        _copy_chunk,
-        x,
-        shape=x.shape,
-        dtype=x.dtype,
-        chunks=target_chunks,
-        extra_projected_mem=0,
-        target_chunks=target_chunks,
-    )
 
-
-def _copy_chunk(e, x, target_chunks=None, block_id=None):
-    if isinstance(x.zarray, dict):
-        return {
-            k: numpy_array_to_backend_array(v[get_item(target_chunks, block_id)])
-            for k, v in x.zarray.items()
-        }
-    out = x.zarray[get_item(target_chunks, block_id)]
-    out = numpy_array_to_backend_array(out)
-    return out
-
-
-def merge_chunks_new(x, chunks):
-    # new implementation that uses general_blockwise rather than map_direct
-    target_chunksize = chunks
-    if len(target_chunksize) != x.ndim:
-        raise ValueError(
-            f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
-        )
-    if not all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunksize)):
-        raise ValueError(
-            f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
-        )
-
-    target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
-    axes = [
-        i for (i, (c0, c1)) in enumerate(zip(x.chunksize, target_chunksize)) if c0 != c1
-    ]
-
-    def key_function(out_key):
+    def selection_function(out_key):
         out_coords = out_key[1:]
+        return get_item(target_chunks, out_coords)
 
-        in_keys = []
-        for i, (c0, c1) in enumerate(zip(x.chunksize, target_chunksize)):
-            k = c1 // c0  # number of blocks to merge in axis i
-            if k == 1:
-                in_keys.append(out_coords[i])
-            else:
-                start = out_coords[i] * k
-                stop = min(start + k, x.numblocks[i])
-                in_keys.append(list(range(start, stop)))
-
-        # return a tuple with a single item that is the list of input keys to be merged
-        return (lol_product((x.name,), in_keys),)
-
-    num_input_blocks = (
-        int(np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])),
+    max_num_input_blocks = math.prod(
+        c1 // c0 for c0, c1 in zip(x.chunksize, target_chunksize)
     )
-    iterable_input_blocks = (True,)
 
-    return general_blockwise(
-        _concatenate2,
-        key_function,
+    return map_selection(
+        None,  # no function to apply after selection
+        selection_function,
         x,
-        shapes=[x.shape],
-        dtypes=[x.dtype],
-        chunkss=[target_chunks],
-        extra_projected_mem=0,
-        num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
-        axes=axes,
+        x.shape,
+        x.dtype,
+        target_chunks,
+        max_num_input_blocks=max_num_input_blocks,
     )
 
 
