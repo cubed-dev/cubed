@@ -25,7 +25,7 @@ from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
 
-from .types import CubedArrayProxy, MemoryModeller, PrimitiveOperation
+from .types import ArrayObjectStore, CubedArrayProxy, MemoryModeller, PrimitiveOperation
 
 logger = logging.getLogger(__name__)
 
@@ -313,9 +313,9 @@ def general_blockwise(
         )
 
     read_proxies = {
-        name: CubedArrayProxy(
-            array, array.chunks, name, use_object_store=should_use_object_store(array)
-        )
+        name: ArrayObjectStore(array, array.chunks, name)
+        if should_use_object_store(array)
+        else CubedArrayProxy(array, array.chunks, name)
         for name, array in array_map.items()
     }
 
@@ -352,11 +352,14 @@ def general_blockwise(
             )
         target_array.append(ta)
 
-        write_proxies[target_names[i]] = CubedArrayProxy(
-            ta,
-            chunksize,
-            target_names[i],
-            use_object_store=should_use_object_store(ta),
+        write_proxies[target_names[i]] = (
+            ArrayObjectStore(ta, chunksize, target_names[i])
+            if should_use_object_store(ta)
+            else CubedArrayProxy(
+                ta,
+                chunksize,
+                target_names[i],
+            )
         )
 
         # only one output chunk is read into memory at a time, so we find the largest
