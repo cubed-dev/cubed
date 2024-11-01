@@ -542,7 +542,7 @@ def arrays_to_plan(*arrays):
     return plans[0].arrays_to_plan(*arrays)
 
 
-def new_temp_path(name, suffix=".zarr", spec=None):
+def new_temp_path(name, suffix=".obs", spec=None):
     """Return a string path for a temporary file path, which may be local or remote.
 
     Note that this function does not create the file or any directories (and they

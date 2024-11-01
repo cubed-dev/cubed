@@ -16,7 +16,7 @@ from cubed.backend_array_api import (
     numpy_array_to_backend_array,
 )
 from cubed.runtime.types import CubedPipeline
-from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
+from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
 from cubed.utils import array_memory, chunk_memory, get_item, map_nested
 from cubed.utils import numblocks as compute_numblocks
@@ -305,9 +305,16 @@ def general_blockwise(
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
     iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
 
+    def should_use_object_store(array):
+        return (
+            isinstance(array, LazyZarrArray)
+            and isinstance(array.store, str)
+            and array.store.endswith(".obs")
+        )
+
     read_proxies = {
         name: CubedArrayProxy(
-            array, array.chunks, name, use_object_store=(name == "array-003")
+            array, array.chunks, name, use_object_store=should_use_object_store(array)
         )
         for name, array in array_map.items()
     }
@@ -349,7 +356,7 @@ def general_blockwise(
             ta,
             chunksize,
             target_names[i],
-            use_object_store=(target_names[i] == "array-003"),
+            use_object_store=should_use_object_store(ta),
         )
 
         # only one output chunk is read into memory at a time, so we find the largest

@@ -1028,9 +1028,9 @@ def rechunk(x, chunks, target_store=None):
     name = gensym()
     spec = x.spec
     if target_store is None:
-        target_store = new_temp_path(name=name, spec=spec)
+        target_store = new_temp_path(name=name, spec=spec, suffix=".zarr")
     name_int = f"{name}-int"
-    temp_store = new_temp_path(name=name_int, spec=spec)
+    temp_store = new_temp_path(name=name_int, spec=spec, suffix=".zarr")
     ops = primitive_rechunk(
         x.zarray_maybe_lazy,
         source_array_name=name,

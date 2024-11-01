@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, List, Optional, Tuple
 
 import numpy as np
@@ -65,8 +66,8 @@ class CubedArrayProxy:
         self.name = name
         self.use_object_store = use_object_store
         if use_object_store:
-            # TODO: use a better path
-            self.object_store = obs.store.LocalStore("/Users/tom/workspace/cubed")
+            Path(array.store).mkdir(parents=True, exist_ok=True)
+            self.object_store = obs.store.LocalStore(array.store)
 
     def open(self) -> zarr.Array:
         return open_if_lazy_zarr_array(self.array)
