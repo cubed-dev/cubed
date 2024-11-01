@@ -306,6 +306,7 @@ def blockwise(
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
         target_store=target_store,
+        target_name=name,
         target_path=target_path,
         storage_options=spec.storage_options,
         compressor=spec.zarr_compressor,
@@ -314,7 +315,6 @@ def blockwise(
         chunks=_chunks,
         new_axes=new_axes,
         in_names=in_names,
-        out_name=name,
         buffer_copies=buffer_copies,
         extra_func_kwargs=extra_func_kwargs,
         fusable_with_predecessors=fusable_with_predecessors,
@@ -454,10 +454,12 @@ def _general_blockwise(
             ts if ts is not None else new_temp_path(name=n, spec=spec)
             for n, ts in zip(name, target_stores)
         ]
+        target_names = name
     else:  # single output
         name = gensym()
         if target_stores is None:
             target_stores = [new_temp_path(name=name, spec=spec)]
+        target_names = [name]
 
     op = primitive_general_blockwise(
         func,
@@ -468,6 +470,7 @@ def _general_blockwise(
         extra_projected_mem=extra_projected_mem,
         buffer_copies=buffer_copies,
         target_stores=target_stores,
+        target_names=target_names,
         target_paths=target_paths,
         storage_options=spec.storage_options,
         compressor=spec.zarr_compressor,

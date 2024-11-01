@@ -40,6 +40,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         target_store=target_store,
+        target_name="target",
         shape=(3, 3),
         dtype=int,
         chunks=(2, 2),
@@ -70,7 +71,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
     assert_array_equal(res[:], np.outer([0, 1, 2], [10, 50, 100]))
 
 
-def _permute_dims(x, /, axes, allowed_mem, reserved_mem, target_store):
+def _permute_dims(x, /, axes, allowed_mem, reserved_mem, target_store, target_name):
     # From dask transpose
     if axes:
         if len(axes) != x.ndim:
@@ -86,6 +87,7 @@ def _permute_dims(x, /, axes, allowed_mem, reserved_mem, target_store):
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         target_store=target_store,
+        target_name=target_name,
         shape=x.shape,
         dtype=x.dtype,
         chunks=x.chunks,
@@ -109,6 +111,7 @@ def test_blockwise_with_args(tmp_path, executor):
         allowed_mem=allowed_mem,
         reserved_mem=0,
         target_store=target_store,
+        target_name="target",
     )
 
     assert op.target_array.shape == (3, 3)
@@ -160,6 +163,7 @@ def test_blockwise_allowed_mem_exceeded(tmp_path, reserved_mem):
             allowed_mem=allowed_mem,
             reserved_mem=reserved_mem,
             target_store=target_store,
+            target_name="target",
             shape=(3, 3),
             dtype=np.int64,
             chunks=(2, 2),
@@ -204,6 +208,7 @@ def test_general_blockwise(tmp_path, executor):
         allowed_mem=allowed_mem,
         reserved_mem=0,
         target_stores=[target_store],
+        target_names=["target"],
         shapes=[(20,)],
         dtypes=[int],
         chunkss=[(6,)],
@@ -252,6 +257,7 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
         allowed_mem=allowed_mem,
         reserved_mem=0,
         target_stores=[target_store1, target_store2],
+        target_names=["target1", "target2"],
         shapes=[(3, 3), (3, 3)],
         dtypes=[float, float],
         chunkss=[(2, 2), (2, 2)],
@@ -317,6 +323,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
             allowed_mem=allowed_mem,
             reserved_mem=0,
             target_stores=[target_store1, target_store2],
+            target_names=["target1", "target2"],
             shapes=[(3, 3), (3, 3)],
             dtypes=[float, float],
             chunkss=[(2, 2), (4, 2)],  # numblocks differ
