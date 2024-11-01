@@ -103,7 +103,7 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
                 write_proxy.open().set_basic_selection(out_chunk_key, v, fields=k)
         else:
             result = backend_array_to_numpy_array(result)
-            write_proxy.open()[out_chunk_key] = result
+            write_proxy.write_chunk(out_coords_tuple, result)
 
 
 def key_to_slices(
@@ -118,9 +118,7 @@ def get_chunk(in_key, config):
     """Read a chunk from the named array"""
     name = in_key[0]
     in_coords = in_key[1:]
-    arr = config.reads_map[name].open()
-    selection = key_to_slices(in_coords, arr)
-    arg = arr[selection]
+    arg = config.reads_map[name].read_chunk(in_coords)
     arg = numpy_array_to_backend_array(arg)
     return arg
 
@@ -306,13 +304,20 @@ def general_blockwise(
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
     iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
+
     read_proxies = {
-        name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
+        name: CubedArrayProxy(
+            array, array.chunks, name, use_object_store=(name == "array-003")
+        )
+        for name, array in array_map.items()
     }
 
     write_proxies = {}
     output_chunk_memory = 0
     target_array = []
+
+    print("target_stores", target_stores)
+    print("target_names", target_names)
 
     numblocks0 = None
     for i, target_store in enumerate(target_stores):
@@ -340,7 +345,12 @@ def general_blockwise(
             )
         target_array.append(ta)
 
-        write_proxies[target_names[i]] = CubedArrayProxy(ta, chunksize)
+        write_proxies[target_names[i]] = CubedArrayProxy(
+            ta,
+            chunksize,
+            target_names[i],
+            use_object_store=(target_names[i] == "array-003"),
+        )
 
         # only one output chunk is read into memory at a time, so we find the largest
         output_chunk_memory = max(

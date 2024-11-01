@@ -175,6 +175,16 @@ def test_to_zarr(tmp_path, spec, executor, path):
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+def test_to_zarr_add(tmp_path, spec, executor):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    store = tmp_path / "output.zarr"
+    cubed.to_zarr(c, store, executor=executor, optimize_graph=False)
+    res = open_backend_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]))
+
+
 def test_map_blocks_with_kwargs(spec, executor):
     # based on dask test
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=5, spec=spec)

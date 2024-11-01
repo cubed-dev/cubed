@@ -197,6 +197,7 @@ def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
         target_store=store,
         target_path=path,
     )
+    out.visualize(**kwargs)
     out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
 
 
