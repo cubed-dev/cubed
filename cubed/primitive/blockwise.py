@@ -77,16 +77,8 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
     # lithops needs params to be lists not tuples, so convert back
     out_coords_tuple = tuple(out_coords)
 
-    # get array chunks for input keys, preserving any nested list structure
-    args = []
-    get_chunk_config = partial(get_chunk, config=config)
-    out_key = ("out",) + out_coords_tuple  # array name is ignored by key_function
-    in_keys = config.key_function(out_key)
-    for in_key in in_keys:
-        arg = map_nested(get_chunk_config, in_key)
-        args.append(arg)
+    results = get_results_in_different_scope(out_coords, config=config)
 
-    results = config.function(*args)
     # if blockwise function is a regular function (not a generator) that doesn't return multiple values then make it iterable
     if not inspect.isgeneratorfunction(config.function) and not isinstance(
         results, tuple
@@ -105,6 +97,24 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
         else:
             result = backend_array_to_numpy_array(result)
             config.writes_list[i].open()[out_chunk_key] = result
+
+
+def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSpec):
+    # wrap function call in a function so that args go out of scope (and free memory) as soon as results are returned
+
+    # lithops needs params to be lists not tuples, so convert back
+    out_coords_tuple = tuple(out_coords)
+
+    # get array chunks for input keys, preserving any nested list structure
+    args = []
+    get_chunk_config = partial(get_chunk, config=config)
+    out_key = ("out",) + out_coords_tuple  # array name is ignored by key_function
+    in_keys = config.key_function(out_key)
+    for in_key in in_keys:
+        arg = map_nested(get_chunk_config, in_key)
+        args.append(arg)
+
+    return config.function(*args)
 
 
 def key_to_slices(
