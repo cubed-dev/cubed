@@ -127,7 +127,7 @@ def groupby_blockwise(
     axis=None,
     dtype=None,
     num_groups=None,
-    extra_func_kwargs=None,
+    **kwargs,
 ):
     """A blockwise operation that performs groupby aggregations.
 
@@ -148,8 +148,6 @@ def groupby_blockwise(
         Data type of output.
     num_groups: int
         The number of groups in the grouping array ``by``.
-    extra_func_kwargs: dict, optional
-        Extra keyword arguments to pass to ``func``.
     """
 
     if by.ndim != 1:
@@ -203,6 +201,7 @@ def groupby_blockwise(
         by_read_chunks=by_read_chunks,
         target_chunks=target_chunks,
         groups_per_chunk=groups_per_chunk,
+        **kwargs,
     )
 
 

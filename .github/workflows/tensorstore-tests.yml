@@ -1,6 +1,7 @@
 name: TensorStore tests
 
 on:
+  pull_request:
   schedule:
     # Every weekday at 03:58 UTC, see https://crontab.guru/
     - cron: "58 3 * * 1-5"

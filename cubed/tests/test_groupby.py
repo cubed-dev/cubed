@@ -103,6 +103,7 @@ def test_groupby_blockwise_axis0():
         axis=0,
         dtype=nxp.int64,
         num_groups=6,
+        groupby_dtype=nxp.int32,
     )
     assert_array_equal(
         c.compute(),
@@ -129,6 +130,7 @@ def test_groupby_blockwise_axis1():
         axis=1,
         dtype=nxp.int64,
         num_groups=6,
+        groupby_dtype=nxp.int32,
     )
     assert_array_equal(
         c.compute(),
@@ -142,7 +144,9 @@ def test_groupby_blockwise_axis1():
     )
 
 
-def _sum_reduction_func(arr, by, axis, start_group, num_groups):
+def _sum_reduction_func(arr, by, axis, start_group, num_groups, groupby_dtype):
     # change 'by' so it starts from 0 for each chunk
     by = by - start_group
-    return npg.aggregate(by, arr, func="sum", axis=axis, size=num_groups)
+    return npg.aggregate(
+        by, arr, func="sum", dtype=groupby_dtype, axis=axis, size=num_groups
+    )
