@@ -52,7 +52,9 @@ class BlockwiseSpec:
     function : Callable
         A function that maps input chunks to an output chunk.
     function_nargs: int
-        The number of array arguments that ``function`` takes.
+        The number of array arguments that ``function`` takes. Note that for some
+        functions (``concat``, ``stack``) this may be different to the number of
+        arrays that the operation depends on.
     num_input_blocks: Tuple[int, ...]
         The number of input blocks read from each input array.
     iterable_input_blocks: Tuple[int, ...]
@@ -196,14 +198,14 @@ def blockwise(
     inds: Sequence[Union[str, int]] = args[1::2]
 
     numblocks: Dict[str, Tuple[int, ...]] = {}
-    for name, array in zip(array_names, arrays):
+    for name, array in zip(array_names, arrays, strict=True):
         input_chunks = normalize_chunks(
             array.chunks, shape=array.shape, dtype=array.dtype
         )
         numblocks[name] = tuple(map(len, input_chunks))
 
     argindsstr: List[Any] = []
-    for name, ind in zip(array_names, inds):
+    for name, ind in zip(array_names, inds, strict=True):
         argindsstr.extend((name, ind))
 
     key_function = make_blockwise_key_function_flattened(
@@ -255,6 +257,7 @@ def general_blockwise(
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable: bool = True,
+    function_nargs: Optional[int] = None,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
@@ -298,10 +301,11 @@ def general_blockwise(
     PrimitiveOperation to run the operation
     """
     array_names = in_names or [f"in_{i}" for i in range(len(arrays))]
-    array_map = {name: array for name, array in zip(array_names, arrays)}
+    array_map = {name: array for name, array in zip(array_names, arrays, strict=True)}
 
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
+    function_nargs = function_nargs or len(arrays)
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
     iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
     read_proxies = {
@@ -351,7 +355,7 @@ def general_blockwise(
     spec = BlockwiseSpec(
         key_function,
         func_with_kwargs,
-        len(arrays),
+        function_nargs,
         num_input_blocks,
         iterable_input_blocks,
         read_proxies,
@@ -428,7 +432,7 @@ def can_fuse_multiple_primitive_ops(
     max_total_num_input_blocks: Optional[int] = None,
 ) -> bool:
     if is_fuse_candidate(primitive_op) and all(
-        is_fuse_candidate(p) for p in predecessor_primitive_ops
+        p is None or is_fuse_candidate(p) for p in predecessor_primitive_ops
     ):
         # If the peak projected memory for running all the predecessor ops in
         # order is larger than allowed_mem then we can't fuse.
@@ -445,7 +449,9 @@ def can_fuse_multiple_primitive_ops(
             # If max total input blocks not specified, then only fuse if num
             # tasks of predecessor ops match.
             ret = all(
-                primitive_op.num_tasks == p.num_tasks for p in predecessor_primitive_ops
+                primitive_op.num_tasks == p.num_tasks
+                for p in predecessor_primitive_ops
+                if p is not None
             )
             if ret:
                 logger.debug(
@@ -460,7 +466,9 @@ def can_fuse_multiple_primitive_ops(
         else:
             num_input_blocks = primitive_op.pipeline.config.num_input_blocks
             total_num_input_blocks = 0
-            for ni, p in zip(num_input_blocks, predecessor_primitive_ops):
+            for ni, p in zip(num_input_blocks, predecessor_primitive_ops, strict=True):
+                if p is None:
+                    continue
                 for nj in p.pipeline.config.num_input_blocks:
                     total_num_input_blocks += ni * nj
             ret = total_num_input_blocks <= max_total_num_input_blocks
@@ -490,6 +498,8 @@ def peak_projected_mem(primitive_ops):
     and retaining their return values in memory."""
     memory_modeller = MemoryModeller()
     for p in primitive_ops:
+        if p is None:
+            continue
         memory_modeller.allocate(p.projected_mem)
         chunkmem = chunk_memory(p.target_array)
         memory_modeller.free(p.projected_mem - chunkmem)
@@ -649,7 +659,7 @@ def fuse_blockwise_specs(
         itertools.chain(
             *(
                 tuple(n * m for m in nb)
-                for n, nb in zip(num_input_blocks, predecessor_num_blocks)
+                for n, nb in zip(num_input_blocks, predecessor_num_blocks, strict=True)
             )
         )
     )
@@ -682,12 +692,15 @@ def apply_blockwise_key_func(key_function, arg):
         # more than one input block is being read from arg
         assert isinstance(arg, (list, Iterator))
         if isinstance(arg, list):
-            return tuple(list(item) for item in zip(*(key_function(a) for a in arg)))
+            return tuple(
+                list(item) for item in zip(*(key_function(a) for a in arg), strict=True)
+            )
         else:
             # Return iterators to avoid materializing all array blocks at
             # once.
             return tuple(
-                iter(list(item)) for item in zip(*(key_function(a) for a in arg))
+                iter(list(item))
+                for item in zip(*(key_function(a) for a in arg), strict=True)
             )
 
 
@@ -698,7 +711,7 @@ def apply_blockwise_func(func, is_iterable, *args):
         # More than one input block is being read from this group of args to primitive op.
         # Note that it is important that a list is not returned to avoid materializing all
         # array blocks at once.
-        ret = map(lambda item: func(*item), zip(*args))
+        ret = map(lambda item: func(*item), zip(*args, strict=True))
     return ret
 
 
@@ -710,7 +723,7 @@ def make_fused_key_function(
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
             item
-            for pkf, a in zip(predecessor_key_functions, args)
+            for pkf, a in zip(predecessor_key_functions, args, strict=True)
             for item in apply_blockwise_key_func(pkf, a)
         )
         return split_into(func_args, predecessor_funcs_nargs)
@@ -723,7 +736,7 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
             apply_blockwise_func(pf, iterable_input_blocks[i], *a)
-            for i, (pf, a) in enumerate(zip(predecessor_functions, args))
+            for i, (pf, a) in enumerate(zip(predecessor_functions, args, strict=True))
         ]
         return function(*func_args)
 
@@ -732,7 +745,7 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
             apply_blockwise_func(pf, iterable_input_blocks[i], *a)
-            for i, (pf, a) in enumerate(zip(predecessor_functions, args))
+            for i, (pf, a) in enumerate(zip(predecessor_functions, args, strict=True))
         ]
         yield from function(*func_args)
 
@@ -773,7 +786,7 @@ def make_blockwise_key_function(
         False,
     )
 
-    for axes, (arg, _) in zip(concat_axes, argpairs):
+    for axes, (arg, _) in zip(concat_axes, argpairs, strict=True):
         for ax in axes:
             if numblocks[arg][ax] > 1:
                 raise ValueError(
@@ -789,7 +802,9 @@ def make_blockwise_key_function(
         deps = set()
         coords = out_coords + dummies
         args = []
-        for cmap, axes, (arg, ind) in zip(coord_maps, concat_axes, argpairs):
+        for cmap, axes, (arg, ind) in zip(
+            coord_maps, concat_axes, argpairs, strict=True
+        ):
             if ind is None:
                 args.append(arg)
             else:

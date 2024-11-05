@@ -367,6 +367,9 @@ def general_blockwise(
 
             return wrap
 
+        function_nargs = kwargs.pop("function_nargs", None)
+        if function_nargs is not None:
+            function_nargs = function_nargs + 1  # for offsets array
         num_input_blocks = kwargs.pop("num_input_blocks", None)
         if num_input_blocks is not None:
             num_input_blocks = num_input_blocks + (1,)  # for offsets array
@@ -386,6 +389,7 @@ def general_blockwise(
             target_stores=target_stores,
             target_paths=target_paths,
             extra_func_kwargs=extra_func_kwargs,
+            function_nargs=function_nargs,
             num_input_blocks=num_input_blocks,
             iterable_input_blocks=iterable_input_blocks,
             **kwargs,
