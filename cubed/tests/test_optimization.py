@@ -116,9 +116,9 @@ def test_fusion_transpose(spec, opt_fn):
     )
 
 
-def test_fusion_map_direct(spec):
-    # test that operations after a map_direct operation (indexing) can be fused
-    # with the map_direct operation
+def test_fusion_map_selection(spec):
+    # test that operations after a map_selection operation (indexing) can be fused
+    # with the map_selection operation
     # this is only true for the (default) multiple_inputs_optimize_dag optimize function
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = a[1:, :]
