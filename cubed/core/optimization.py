@@ -164,7 +164,7 @@ def can_fuse_predecessors(
     # if node itself can't be fused then there is nothing to fuse
     if not is_fusable(nodes[name]):
         logger.debug(
-            "can't fuse %s since it is not a primitive operation, or it uses map_direct",
+            "can't fuse %s since it is not a primitive operation, or it uses an operation that can't be fused (concat or stack)",
             name,
         )
         return False
@@ -224,10 +224,10 @@ def can_fuse_predecessors(
             )
             return False
 
+    # if a predecessor has no primitive op then just use None
     predecessor_primitive_ops = [
-        nodes[pre]["primitive_op"]
+        nodes[pre]["primitive_op"] if can_fuse else None
         for pre, _, can_fuse in predecessor_ops_and_arrays(dag, name)
-        if can_fuse
     ]
     return can_fuse_multiple_primitive_ops(
         name,
