@@ -420,6 +420,7 @@ def stack(arrays, /, *, axis=0):
         dtypes=[dtype],
         chunkss=[chunks],
         axis=axis,
+        function_nargs=1,
         fusable=False,
     )
 
