@@ -1177,3 +1177,13 @@ def test_optimize_stack(spec):
     d = c + 1
     # try to fuse all ops into one (d will fuse with c, but c won't fuse with a and b)
     d.compute(optimize_function=fuse_multiple_levels(max_total_num_input_blocks=10))
+
+
+def test_optimize_concat(spec):
+    # This test fails if concat's general_blockwise call doesn't have fusable=False
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    c = xp.concat((a, b), axis=0)
+    d = c + 1
+    # try to fuse all ops into one (d will fuse with c, but c won't fuse with a and b)
+    d.compute(optimize_function=fuse_multiple_levels(max_total_num_input_blocks=10))
