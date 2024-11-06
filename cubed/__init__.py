@@ -15,7 +15,7 @@ config = Config(
 
 from .core.array import compute, measure_reserved_mem, visualize
 from .core.gufunc import apply_gufunc
-from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
+from .core.ops import from_array, from_zarr, map_blocks, rechunk, store, to_zarr
 from .nan_functions import nanmean, nansum
 from .overlap import map_overlap
 from .pad import pad
@@ -38,6 +38,7 @@ __all__ = [
     "nanmean",
     "nansum",
     "pad",
+    "rechunk",
     "store",
     "to_zarr",
     "visualize",
