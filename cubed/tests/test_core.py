@@ -298,6 +298,7 @@ def test_rechunk(spec, executor, new_chunks, expected_chunks):
 def test_rechunk_same_chunks(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
     b = a.rechunk((2, 1))
+    assert b is a
     task_counter = TaskCounter()
     res = b.compute(callbacks=[task_counter])
     # no tasks should have run since chunks are same
@@ -314,6 +315,31 @@ def test_rechunk_intermediate(tmp_path):
     assert_array_equal(b.compute(), np.ones((4, 4)))
     intermediates = [n for (n, d) in b.plan.dag.nodes(data=True) if "-int" in d["name"]]
     assert len(intermediates) == 1
+    rechunks = [
+        n
+        for (n, d) in b.plan.dag.nodes(data=True)
+        if d.get("op_name", None) == "rechunk"
+    ]
+    assert len(rechunks) > 0
+
+
+def test_rechunk_merge_chunks_optimization():
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 1),
+    )
+    b = a.rechunk((4, 2))
+    assert b.chunks == ((4,), (2, 2))
+    assert_array_equal(
+        b.compute(),
+        np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]),
+    )
+    rechunks = [
+        n
+        for (n, d) in b.plan.dag.nodes(data=True)
+        if d.get("op_name", None) == "rechunk"
+    ]
+    assert len(rechunks) == 0
 
 
 def test_compute_is_idempotent(spec, executor):
