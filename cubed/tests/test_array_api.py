@@ -557,6 +557,15 @@ def test_permute_dims(spec, executor):
     )
 
 
+def test_repeat(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.repeat(a, 3, axis=1)
+    assert_array_equal(
+        b.compute(),
+        np.repeat(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), 3, axis=1),
+    )
+
+
 def test_reshape(spec, executor):
     a = xp.arange(12, chunks=4, spec=spec)
     b = xp.reshape(a, (3, 4))

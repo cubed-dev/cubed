@@ -286,6 +286,15 @@ def test_flip_multiple_axes(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+def test_repeat(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.repeat(a, 3, axis=0)
+    run_operation(tmp_path, executor, "repeat", b)
+
+
+@pytest.mark.slow
 def test_reshape(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
