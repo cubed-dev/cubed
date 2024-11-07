@@ -130,3 +130,4 @@ repository = "https://github.com/cubed-dev/cubed"
 filterwarnings = [
     "error::UserWarning",
 ]
+testpaths = "cubed/tests"
