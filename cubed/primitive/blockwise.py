@@ -5,6 +5,7 @@ import math
 from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import partial
+from multiprocessing.dummy import Pool
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import toolz
@@ -15,10 +16,11 @@ from cubed.backend_array_api import (
     backend_array_to_numpy_array,
     numpy_array_to_backend_array,
 )
+from cubed.io import map_nested_concurrent
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
-from cubed.utils import array_memory, chunk_memory, get_item, map_nested
+from cubed.utils import array_memory, chunk_memory, get_item
 from cubed.utils import numblocks as compute_numblocks
 from cubed.utils import split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
@@ -111,7 +113,12 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
     get_chunk_config = partial(get_chunk, config=config)
     out_key = ("out",) + out_coords_tuple  # array name is ignored by key_function
     name_chunk_inds = list(config.key_function(out_key))
-    args = map_nested(get_chunk_config, name_chunk_inds)
+
+    try:
+        thread_pool = Pool(2)
+        args = map_nested_concurrent(get_chunk_config, name_chunk_inds, thread_pool)
+    finally:
+        thread_pool.terminate()
 
     return config.function(*args)
 
