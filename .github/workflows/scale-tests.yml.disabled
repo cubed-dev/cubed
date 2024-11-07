@@ -63,7 +63,7 @@ jobs:
           LITHOPS_CONFIG_FILE: ${{ github.workspace }}/.github/workflows/.lithops_config
 
       - name: Save plots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: plots
           path: plots/
