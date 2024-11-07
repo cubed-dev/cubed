@@ -1,10 +1,11 @@
+import asyncio
 import time
 from multiprocessing.dummy import Pool
 from typing import Iterator
 
 import pytest
 
-from cubed.io import map_nested_concurrent
+from cubed.io import map_nested_async, map_nested_concurrent
 
 
 @pytest.fixture()
@@ -77,10 +78,28 @@ def test_map_nested_concurrent_iterators(thread_pool):
     assert count == 0
     assert next(out0) == 2
     # note we can't assert precisely here since imap does not have back pressure
-    assert count > 1 # has read 2 (and maybe more) already
+    assert count > 1  # has read 2 (and maybe more) already
     assert next(out0) == 3
     out1 = out[1]
     assert isinstance(out1, Iterator)
     assert next(out1) == 4
     assert next(out1) == 5
     assert count == 4
+
+
+def test_map_nested_async_lists():
+    asyncio.run(run_test_map_nested_async_lists())
+
+
+async def run_test_map_nested_async_lists():
+    async def inc(x):
+        print("calling inc", x)
+        await asyncio.sleep(2)
+        print("DONE calling inc", x)
+        return x + 1
+
+    out = map_nested_async(inc, [1, 2, 3], task_limit=2)
+
+    async with out.stream() as streamer:
+        async for z in streamer:
+            print(z)
