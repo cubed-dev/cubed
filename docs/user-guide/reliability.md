@@ -23,4 +23,4 @@ A few slow running tasks (called stragglers) can disproportionately slow down th
 
 When a backup task is launched the original task is not cancelled, so it is to be expected that both tasks will complete and write their (identical) output. This only works since tasks are idempotent and each write a single, whole Zarr chunk in an atomic operation. (Updates to a single key are atomic in both [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html#ConsistencyModel) and Google Cloud Storage.)
 
-Backup tasks are enabled by default, but if you need to turn them off you can do so with ``use_backups=False``.
+Backup tasks are only enabled by default on filesystems supporting atomic writes, which currently includes cloud stores like S3 or GCS. You can turn backup tasks off completely on cloud stores by setting ``use_backups=False``.

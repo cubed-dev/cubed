@@ -17,6 +17,7 @@ from aiostream.core import Stream
 from dask.distributed import Client
 from networkx import MultiDiGraph
 
+from cubed.runtime.backup import use_backups_default
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
@@ -41,7 +42,7 @@ async def map_unordered(
     map_function: Callable[..., Any],
     map_iterdata: Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
     retries: int = 2,
-    use_backups: bool = True,
+    use_backups: bool = False,
     batch_size: Optional[int] = None,
     return_stats: bool = False,
     name: Optional[str] = None,
@@ -125,6 +126,8 @@ async def async_execute_dag(
     async with Client(asynchronous=True, **compute_kwargs) as client:
         if spec is not None:
             check_runtime_memory(spec, client)
+            if "use_backups" not in kwargs and use_backups_default(spec):
+                kwargs["use_backups"] = True
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
             for name, node in visit_nodes(dag, resume=resume):

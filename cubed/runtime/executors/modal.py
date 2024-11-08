@@ -11,6 +11,7 @@ from modal.functions import Function
 from networkx import MultiDiGraph
 from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
+from cubed.runtime.backup import use_backups_default
 from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
@@ -119,7 +120,7 @@ class Container:
 async def map_unordered(
     app_function: Function,
     input: Iterable[Any],
-    use_backups: bool = True,
+    use_backups: bool = False,
     backup_function: Optional[Function] = None,
     batch_size: Optional[int] = None,
     return_stats: bool = False,
@@ -209,6 +210,8 @@ async def async_execute_dag(
 ) -> None:
     if spec is not None:
         check_runtime_memory(spec)
+        if "use_backups" not in kwargs and use_backups_default(spec):
+            kwargs["use_backups"] = True
     async with app.run(show_progress=False):
         cloud = cloud or "aws"
         if cloud == "aws":

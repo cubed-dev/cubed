@@ -20,7 +20,7 @@ from lithops.executors import FunctionExecutor
 from lithops.wait import ALWAYS, ANY_COMPLETED
 from networkx import MultiDiGraph
 
-from cubed.runtime.backup import should_launch_backup
+from cubed.runtime.backup import should_launch_backup, use_backups_default
 from cubed.runtime.executors.lithops_retries import (
     RetryingFunctionExecutor,
     RetryingFuture,
@@ -53,7 +53,7 @@ def map_unordered(
     include_modules: List[str] = [],
     timeout: Optional[int] = None,
     retries: int = 2,
-    use_backups: bool = True,
+    use_backups: bool = False,
     return_stats: bool = False,
     wait_dur_sec: Optional[int] = 1,
     **kwargs,
@@ -174,7 +174,7 @@ def execute_dag(
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
-    use_backups = kwargs.pop("use_backups", True)
+    use_backups = kwargs.pop("use_backups", use_backups_default(spec))
     wait_dur_sec = kwargs.pop("wait_dur_sec", None)
     compute_id = kwargs.pop("compute_id")
     allowed_mem = spec.allowed_mem if spec is not None else None

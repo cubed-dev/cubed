@@ -118,7 +118,7 @@ since it is deliberately designed not to have anything except the most basic fea
 | Property                     | Default | Description                                                                                        |
 |------------------------------|---------|----------------------------------------------------------------------------------------------------|
 | `retries`                    | 2       | The number of times to retry a task if it fails.                                                   |
-| `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                                             |
+| `use_backups`                |         | Whether to use backup tasks for mitigating stragglers. Defaults to `True` only if `work_dir` is a filesystem supporting atomic writes (currently a cloud store like S3 or GCS). |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. The default is not to batch.                |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                          |
 | `max_workers`                | `None`  | The maximum number of workers to use in the `ThreadPoolExecutor`. Defaults to number of CPU cores. |
@@ -128,7 +128,7 @@ since it is deliberately designed not to have anything except the most basic fea
 
 | Property                     | Default | Description                                                                                                                                |
 |------------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------|
-| `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                                                                                     |
+| `use_backups`                |         | Whether to use backup tasks for mitigating stragglers. Defaults to `True` only if `work_dir` is a filesystem supporting atomic writes (currently a cloud store like S3 or GCS). |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. `None` means don't batch.                                                           |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                                                                  |
 | `max_workers`                | `None`  | The maximum number of workers to use in the `ProcessPoolExecutor`. Defaults to number of CPU cores.                                        |
@@ -154,7 +154,7 @@ Note that there is currently no way to set retries or a timeout for the Coiled e
 | Property                     | Default | Description                                                                                                                     |
 |------------------------------|---------|---------------------------------------------------------------------------------------------------------------------------------|
 | `retries`                    | 2       | The number of times to retry a task if it fails.                                                                                |
-| `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                                                                          |
+| `use_backups`                |         | Whether to use backup tasks for mitigating stragglers. Defaults to `True` only if `work_dir` is a filesystem supporting atomic writes (currently a cloud store like S3 or GCS). |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. The default is not to batch.                                             |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                                                       |
 | `compute_kwargs`             | `None`  | Keyword arguments to pass to Dask's [`distributed.Client`](https://distributed.dask.org/en/latest/api.html#client) constructor. |
@@ -167,7 +167,7 @@ Note that there is currently no way to set a timeout for the Dask executor.
 |------------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `retries`                    | 2       | The number of times to retry a task if it fails.                                                                                                                                                                                                                                                                                                                  |
 | `timeout`                    | `None`  | Tasks that take longer than the timeout will be automatically killed and retried. Defaults to the timeout specified when [deploying the lithops runtime image](https://lithops-cloud.github.io/docs/source/cli.html#lithops-runtime-deploy-runtime-name). This is 180 seconds in the [examples](https://github.com/cubed-dev/cubed/blob/main/examples/README.md). |
-| `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                                                                                                                                                                                                                                                                                                            |
+| `use_backups`                |         | Whether to use backup tasks for mitigating stragglers. Defaults to `True` only if `work_dir` is a filesystem supporting atomic writes (currently a cloud store like S3 or GCS). |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                                                                                                                                                                                                                                                                                         |
 | Other properties             | N/A     | Other properties will be passed as keyword arguments to the [`lithops.executors.FunctionExecutor`](https://lithops-cloud.github.io/docs/source/api_futures.html#lithops.executors.FunctionExecutor) constructor.                                                                                                                                                  |
 
