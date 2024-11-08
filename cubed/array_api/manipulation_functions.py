@@ -352,6 +352,50 @@ def permute_dims(x, /, axes):
     )
 
 
+def repeat(x, repeats, /, *, axis=0):
+    if axis is None:
+        x = flatten(x)
+        axis = 0
+
+    shape = x.shape[:axis] + (x.shape[axis] * repeats,) + x.shape[axis + 1 :]
+    chunks = normalize_chunks(x.chunksize, shape=shape, dtype=x.dtype)
+
+    # This implementation calls nxp.repeat in every output block, which is 'repeats' times
+    # more than necessary than if we had a primitive op that could write multiple blocks.
+
+    def key_function(out_key):
+        out_coords = out_key[1:]
+        in_coords = tuple(
+            bi // repeats if i == axis else bi for i, bi in enumerate(out_coords)
+        )
+        return ((x.name, *in_coords),)
+
+    # extra memory from calling 'nxp.repeat' on a chunk
+    extra_projected_mem = x.chunkmem * repeats
+    return general_blockwise(
+        _repeat,
+        key_function,
+        x,
+        shapes=[shape],
+        dtypes=[x.dtype],
+        chunkss=[chunks],
+        extra_projected_mem=extra_projected_mem,
+        repeats=repeats,
+        axis=axis,
+        chunksize=x.chunksize,
+    )
+
+
+def _repeat(x, repeats, axis=None, chunksize=None, block_id=None):
+    out = nxp.repeat(x, repeats, axis=axis)
+    bi = block_id[axis] % repeats
+    ind = tuple(
+        slice(bi * chunksize[i], (bi + 1) * chunksize[i]) if i == axis else slice(None)
+        for i in range(x.ndim)
+    )
+    return out[ind]
+
+
 def reshape(x, /, shape, *, copy=None):
     # based on dask reshape
 

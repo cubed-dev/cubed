@@ -61,7 +61,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `expand_dims`       | :white_check_mark: |            |                              |
 |                          | `flip`              | :white_check_mark: |            |                              |
 |                          | `permute_dims`      | :white_check_mark: |            |                              |
-|                          | `repeat`            | :x:                | 2023.12    |                              |
+|                          | `repeat`            | :white_check_mark: |            |                              |
 |                          | `reshape`           | :white_check_mark: |            | Partial implementation       |
 |                          | `roll`              | :white_check_mark: |            |                              |
 |                          | `squeeze`           | :white_check_mark: |            |                              |
