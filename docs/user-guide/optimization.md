@@ -112,9 +112,9 @@ e.visualize(optimize_function=opt_fn)
 
 The `max_total_num_input_blocks` argument to `multiple_inputs_optimize_dag` specifies the maximum number of input blocks (chunks) that are allowed in the fused operation.
 
-Again, this is to limit the number of reads that an individual task must perform. The default is `None`, which means that operations are fused only if they have the same number of tasks. If set to an integer, then this limitation is removed, and tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be set using `functools.partial`:
+Again, this is to limit the number of reads that an individual task must perform. If set to `None`, operations are fused only if they have the same number of tasks. If set to an integer (the default is 10), then tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be changed using `functools.partial`:
 
 ```python
-opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=10)
+opt_fn = partial(multiple_inputs_optimize_dag, max_total_num_input_blocks=20)
 e.visualize(optimize_function=opt_fn)
 ```

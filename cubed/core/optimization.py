@@ -11,6 +11,9 @@ from cubed.primitive.blockwise import (
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_MAX_TOTAL_SOURCE_ARRAYS = 4
+DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS = 10
+
 
 def simple_optimize_dag(dag, array_names=None):
     """Apply map blocks fusion."""
@@ -154,8 +157,8 @@ def can_fuse_predecessors(
     name,
     *,
     array_names=None,
-    max_total_source_arrays=4,
-    max_total_num_input_blocks=None,
+    max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
+    max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
     always_fuse=None,
     never_fuse=None,
 ):
@@ -242,8 +245,8 @@ def fuse_predecessors(
     name,
     *,
     array_names=None,
-    max_total_source_arrays=4,
-    max_total_num_input_blocks=None,
+    max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
+    max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
     always_fuse=None,
     never_fuse=None,
 ):
@@ -297,8 +300,8 @@ def multiple_inputs_optimize_dag(
     dag,
     *,
     array_names=None,
-    max_total_source_arrays=4,
-    max_total_num_input_blocks=None,
+    max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
+    max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
     always_fuse=None,
     never_fuse=None,
 ):
