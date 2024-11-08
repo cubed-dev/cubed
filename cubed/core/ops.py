@@ -1027,7 +1027,7 @@ def rechunk(x, chunks, target_store=None):
 
     # merge chunks special case
     if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
-        return merge_chunks(x, chunks)
+        return merge_chunks(x, target_chunks)
 
     name = gensym()
     spec = x.spec
