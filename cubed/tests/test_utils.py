@@ -135,7 +135,9 @@ def test_map_nested_iterators():
     out = map_nested(inc, iter([1, 2]))
     assert isinstance(out, map)
     assert count == 0
-    assert list(out) == [2, 3]
+    assert next(out) == 2
+    assert count == 1
+    assert next(out) == 3
     assert count == 2
 
     # reset count
@@ -148,7 +150,9 @@ def test_map_nested_iterators():
     out = out[0]
     assert isinstance(out, map)
     assert count == 0
-    assert list(out) == [2, 3]
+    assert next(out) == 2
+    assert count == 1
+    assert next(out) == 3
     assert count == 2
 
     # reset count
@@ -161,12 +165,16 @@ def test_map_nested_iterators():
     out0 = out[0]
     assert isinstance(out0, map)
     assert count == 0
-    assert list(out0) == [2, 3]
+    assert next(out0) == 2
+    assert count == 1
+    assert next(out0) == 3
     assert count == 2
     out1 = out[1]
     assert isinstance(out1, map)
     assert count == 2
-    assert list(out1) == [4, 5]
+    assert next(out1) == 4
+    assert count == 3
+    assert next(out1) == 5
     assert count == 4
 
 

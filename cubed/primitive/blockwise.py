@@ -108,13 +108,10 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
     out_coords_tuple = tuple(out_coords)
 
     # get array chunks for input keys, preserving any nested list structure
-    args = []
     get_chunk_config = partial(get_chunk, config=config)
     out_key = ("out",) + out_coords_tuple  # array name is ignored by key_function
-    in_keys = config.key_function(out_key)
-    for in_key in in_keys:
-        arg = map_nested(get_chunk_config, in_key)
-        args.append(arg)
+    name_chunk_inds = list(config.key_function(out_key))
+    args = map_nested(get_chunk_config, name_chunk_inds)
 
     return config.function(*args)
 
