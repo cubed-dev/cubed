@@ -57,3 +57,47 @@ def test_qr_chunking():
         match=r"qr only supports tall-and-skinny \(single column chunk\) arrays.",
     ):
         xp.linalg.qr(A)
+
+
+def test_svd():
+    A = np.reshape(np.arange(32, dtype=np.float64), (16, 2))
+
+    U, S, Vh = xp.linalg.svd(xp.asarray(A, chunks=(4, 2)), full_matrices=False)
+    U, S, Vh = cubed.compute(U, S, Vh)
+
+    assert_allclose(U * S @ Vh, A, atol=1e-08)
+    assert_allclose(U.T @ U, np.eye(2, 2), atol=1e-08)  # U must be orthonormal
+    assert_allclose(Vh @ Vh.T, np.eye(2, 2), atol=1e-08)  # Vh must be orthonormal
+
+
+def test_svd_recursion():
+    A = np.reshape(np.arange(128, dtype=np.float64), (64, 2))
+
+    # find a memory setting where recursion happens
+    found = False
+    for factor in range(4, 16):
+        spec = cubed.Spec(allowed_mem=128 * factor, reserved_mem=0)
+
+        try:
+            U, S, Vh = xp.linalg.svd(
+                xp.asarray(A, chunks=(8, 2), spec=spec), full_matrices=False
+            )
+
+            found = True
+            plan_unopt = arrays_to_plan(U, S, Vh)._finalize()
+            assert plan_unopt.num_primitive_ops() > 4  # more than without recursion
+
+            U, S, Vh = cubed.compute(U, S, Vh)
+
+            assert_allclose(U * S @ Vh, A, atol=1e-08)
+            assert_allclose(U.T @ U, np.eye(2, 2), atol=1e-08)  # U must be orthonormal
+            assert_allclose(
+                Vh @ Vh.T, np.eye(2, 2), atol=1e-08
+            )  # Vh must be orthonormal
+
+            break
+
+        except ValueError:
+            pass  # not enough memory
+
+    assert found
