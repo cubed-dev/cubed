@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 import zarr
@@ -36,6 +37,13 @@ def open_zarr_v3_array(
     path: Optional[str] = None,
     **kwargs,
 ):
+    import obstore as obs
+    from zarr.storage.object_store import ObjectStore
+
+    p = Path(store)
+    p.mkdir(parents=True, exist_ok=True)
+
+    store = ObjectStore(obs.store.LocalStore(p))
     if isinstance(chunks, int):
         chunks = (chunks,)
 
