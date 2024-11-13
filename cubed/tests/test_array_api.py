@@ -506,6 +506,43 @@ def test_concat(spec, executor):
     )
 
 
+def test_concat_different_chunks(spec):
+    a = xp.asarray([[1], [5]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[2, 3, 4], [6, 7, 8]], chunks=(2, 3), spec=spec)
+    c = xp.concat([a, b], axis=1)
+    assert_array_equal(
+        c.compute(),
+        np.concatenate(
+            [
+                np.array([[1], [5]]),
+                np.array([[2, 3, 4], [6, 7, 8]]),
+            ],
+            axis=1,
+        ),
+    )
+
+
+@pytest.mark.parametrize("axis", [None, 0])
+def test_concat_single_array(spec, axis):
+    a = xp.full((4, 5), 1, chunks=(3, 2), spec=spec)
+    d = xp.concat([a], axis=axis)
+    assert_array_equal(
+        d.compute(),
+        np.concatenate([np.full((4, 5), 1)], axis=axis),
+    )
+
+
+def test_concat_incompatible_shapes(spec):
+    a = xp.full((4, 5), 1, chunks=(3, 2), spec=spec)
+    b = xp.full((4, 6), 2, chunks=(3, 2), spec=spec)
+    with pytest.raises(
+        ValueError,
+        match="all the input array dimensions except for the concatenation axis must match exactly",
+    ):
+        xp.concat([a, b], axis=0)
+    xp.concat([a, b], axis=1)  # OK
+
+
 def test_expand_dims(spec, executor):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
     b = xp.expand_dims(a, axis=0)

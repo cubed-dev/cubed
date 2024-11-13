@@ -83,25 +83,55 @@ def concat(arrays, /, *, axis=0, chunks=None):
     if not arrays:
         raise ValueError("Need array(s) to concat")
 
+    if len({a.dtype for a in arrays}) > 1:
+        raise ValueError("concat inputs must all have the same dtype")
+
     if axis is None:
         arrays = [flatten(array) for array in arrays]
         axis = 0
 
-    # TODO: check arrays all have same shape (except in the dimension specified by axis)
-    # TODO: type promotion
-    # TODO: unify chunks
+    if len(arrays) == 1:
+        return arrays[0]
 
     a = arrays[0]
+
+    # check arrays all have same shape (except in the dimension specified by axis)
+    ndim = a.ndim
+    if not all(
+        i == axis or all(x.shape[i] == arrays[0].shape[i] for x in arrays)
+        for i in range(ndim)
+    ):
+        raise ValueError(
+            f"all the input array dimensions except for the concatenation axis must match exactly: {[x.shape for x in arrays]}"
+        )
+
+    # check arrays all have the same chunk size along axis (if more than one chunk)
+    if len({a.chunksize[axis] for a in arrays if a.numblocks[axis] > 1}) > 1:
+        raise ValueError(
+            f"all the input array chunk sizes must match along the concatenation axis: {[x.chunksize[axis] for x in arrays]}"
+        )
+
+    # unify chunks (except in the dimension specified by axis)
+    inds = [list(range(x.ndim)) for x in arrays]
+    for i, ind in enumerate(inds):
+        ind[axis] = -(i + 1)
+    uc_args = tlz.concat(zip(arrays, inds))
+    chunkss, arrays = unify_chunks(*uc_args, warn=False)
 
     # offsets along axis for the start of each array
     offsets = [0] + list(tlz.accumulate(add, [a.shape[axis] for a in arrays]))
     in_shapes = tuple(array.shape for array in arrays)
 
-    axis = validate_axis(axis, a.ndim)
+    axis = validate_axis(axis, ndim)
     shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
     dtype = a.dtype
     if chunks is None:
-        chunks = normalize_chunks(to_chunksize(a.chunks), shape=shape, dtype=dtype)
+        # use unified chunks except for dimension specified by axis
+        axis_chunksize = max(a.chunksize[axis] for a in arrays)
+        chunksize = tuple(
+            axis_chunksize if i == axis else chunkss[i] for i in range(ndim)
+        )
+        chunks = normalize_chunks(chunksize, shape=shape, dtype=dtype)
     else:
         chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
