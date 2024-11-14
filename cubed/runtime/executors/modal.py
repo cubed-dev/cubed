@@ -36,7 +36,6 @@ else:
         [
             "array-api-compat",
             "donfig",
-            "fsspec",
             "mypy_extensions",  # for rechunker
             "ndindex",
             "networkx",
@@ -52,7 +51,6 @@ else:
         [
             "array-api-compat",
             "donfig",
-            "fsspec",
             "mypy_extensions",  # for rechunker
             "ndindex",
             "networkx",
