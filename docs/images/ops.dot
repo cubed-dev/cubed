@@ -11,21 +11,20 @@ digraph {
     // core
     elemwise [style="filled"; fillcolor="#ffd8b1";];
     map_blocks [style="filled"; fillcolor="#ffd8b1";];
-    map_direct [style="filled"; fillcolor="#ffd8b1";];
+    map_selection [style="filled"; fillcolor="#ffd8b1";];
     reduction [style="filled"; fillcolor="#ffd8b1";];
     arg_reduction [style="filled"; fillcolor="#ffd8b1";];
 
     elemwise -> blockwise;
     map_blocks -> blockwise;
-    map_direct -> map_blocks;
+    map_selection -> blockwise;
     reduction -> blockwise;
-    reduction -> rechunk;
     arg_reduction -> reduction;
 
     // array API
 
     // array object
-    __getitem__ -> map_direct
+    __getitem__ -> map_selection
 
     // elementwise
     add -> elemwise
@@ -34,12 +33,11 @@ digraph {
     // linear algebra
     matmul -> blockwise;
     matmul -> reduction;
-    outer -> blockwise;
 
     // manipulation
-    concat -> map_direct;
+    concat -> blockwise;
     reshape -> rechunk;
-    reshape -> map_direct;
+    reshape -> blockwise;
     squeeze -> map_blocks;
 
     // searching
@@ -51,18 +49,17 @@ digraph {
     // utility
     all -> reduction;
 
-
     {
         rank = min;
 
         // fix horizontal placing with invisible edges
         edge[style=invis];
-        add -> negative -> outer -> matmul -> __getitem__ -> concat -> reshape -> squeeze -> argmax -> sum -> all;
+        add -> negative -> squeeze -> __getitem__ -> concat -> matmul -> sum -> all -> argmax -> reshape;
         rankdir = LR;
     }
     {
         rank = same;
-        elemwise; map_blocks; reduction;
+        elemwise; map_blocks; map_selection; reduction;
     }
     {
         rank = max;
