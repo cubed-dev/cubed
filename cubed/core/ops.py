@@ -775,6 +775,28 @@ def map_selection(
     max_num_input_blocks,
     **kwargs,
 ) -> "Array":
+    """
+    Apply a function to selected subsets of an input array using standard NumPy indexing notation.
+
+    Parameters
+    ----------
+    func : callable
+        Function to apply to every block to produce the output array.
+        Must accept ``block_id`` as a keyword argument (with same meaning as for ``map_blocks``).
+    selection_function : callable
+        A function that maps an output chunk key to one or more selections on the input array.
+    x: Array
+        The input array.
+    shape : tuple
+        Shape of the output array.
+    dtype : np.dtype
+        The ``dtype`` of the output array.
+    chunks : tuple
+        Chunk shape of blocks in the output array.
+    max_num_input_blocks : int
+        The maximum number of input blocks read from the input array.
+    """
+
     def key_function(out_key):
         # compute the selection on x required to get the relevant chunk for out_key
         in_sel = selection_function(out_key)

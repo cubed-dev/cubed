@@ -39,18 +39,20 @@ This example shows how the `squeeze` operation is implemented using `map_blocks`
 
 ![The map_blocks core operation](images/map_blocks.svg)
 
-## `map_direct`
+## `map_selection`
 
-The `map_direct` operation is more general than `map_blocks` since it allows input arrays to be read directly, without regard for block boundaries.
+The `map_selection` operation selects subsets of an input array using standard NumPy indexing notation.
 
 * No input array attributes are preserved in general
-* __Multiple__ inputs, __single__ output
+* __Single__ input, __single__ output
 
-It is a core operation that is implemented using `map_blocks`, which is in turn implemented using `blockwise`. It works by creating an empty array that has the same shape and chunk structure as the output, and calling `map_blocks` on this empty array, passing in the input arrays as side inputs to the function, which may access them in whatever way is needed.
+It is a core operation that is implemented using `blockwise` on the output's blocks. It works by converting indexing selections, such as slices, to keys that refer to blocks in the input array, then retrieving these blocks, slicing them, and assembling them into the final output block.
 
-This example shows how `concat` is implemented using `map_direct`. Each block in the output array is read directly from one or more blocks from the inputs.
+This example shows how `index` is implemented using `map_selection`. Each block in the output array is read directly from one or more blocks from the inputs.
 
-![The map_direct core operation](images/map_direct.svg)
+![The map_selection core operation](images/map_selection.svg)
+
+Note: previously, operations that now use `map_selection` were written using `map_direct`, which allowed input arrays to be read directly. The main difference between the two operations is that `map_selection` tracks which blocks are read by the operation, which allows the optimizer to fuse operations. This is unlike `map_direct`, which does not provide information about block inputs, and therefore cannot be fused by the optimizer.
 
 ## `blockwise`
 

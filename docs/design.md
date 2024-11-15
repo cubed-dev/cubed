@@ -45,8 +45,7 @@ These are built on top of the primitive operations, and provide functions that a
 
     elemwise
     map_blocks
-    map_direct
-    index
+    map_selection
     reduction
     arg_reduction
 ```
