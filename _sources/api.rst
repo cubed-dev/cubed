@@ -46,6 +46,7 @@ Chunk-specific functions
     apply_gufunc
     map_blocks
     map_overlap
+    rechunk
 
 Non-standardised functions
 ==========================

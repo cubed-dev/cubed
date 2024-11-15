@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cubed.Spec &#8212; Cubed</title>
+    <title>cubed.rechunk &#8212; Cubed</title>
   
   
   
@@ -43,11 +43,11 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.Spec';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.rechunk';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.TaskEndEvent" href="cubed.TaskEndEvent.html" />
-    <link rel="prev" title="cubed.Callback" href="cubed.Callback.html" />
+    <link rel="next" title="cubed.nanmean" href="cubed.nanmean.html" />
+    <link rel="prev" title="cubed.map_overlap" href="cubed.map_overlap.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="c75556f
@@ -171,13 +171,13 @@
 <li class="toctree-l2"><a class="reference internal" href="cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.map_blocks.html">cubed.map_blocks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.map_overlap.html">cubed.map_overlap</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.rechunk.html">cubed.rechunk</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.rechunk</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nanmean.html">cubed.nanmean</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.nansum.html">cubed.nansum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.pad.html">cubed.pad</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.random.random.html">cubed.random.random</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.Spec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
 </ul>
@@ -264,7 +264,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.Spec.rst" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.rechunk.rst" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -281,7 +281,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.Spec.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.rechunk.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -323,7 +323,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.Spec</h1>
+    <h1>cubed.rechunk</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -333,10 +333,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.Spec.__init__"><code class="docutils literal notranslate"><span class="pre">Spec.__init__()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.rechunk"><code class="docutils literal notranslate"><span class="pre">rechunk()</span></code></a></li>
 </ul>
             </nav>
         </div>
@@ -348,74 +345,12 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="cubed-spec">
-<h1>cubed.Spec<a class="headerlink" href="#cubed-spec" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="cubed.Spec">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">Spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reserved_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarr_compressor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.Spec" title="Link to this definition">#</a></dt>
-<dd><p>Specification of resources available to run a computation.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="cubed.Spec.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">work_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reserved_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zarr_compressor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.Spec.__init__" title="Link to this definition">#</a></dt>
-<dd><p>Specify resources available to run a computation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>work_dir</strong> (<em>str</em><em> or </em><em>None</em>) – The directory path (specified as an fsspec URL) used for storing intermediate data.</p></li>
-<li><p><strong>allowed_mem</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – <p>The total memory available to a worker for running a task, in bytes.</p>
-<p>If int it should be &gt;=0. If str it should be of form &lt;value&gt;&lt;unit&gt; where unit can be kB, MB, GB, TB etc.
-This includes any <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> that has been set.</p>
-</p></li>
-<li><p><strong>reserved_mem</strong> (<em>int</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – <p>The memory reserved on a worker for non-data use when running a task, in bytes.</p>
-<p>If int it should be &gt;=0. If str it should be of form &lt;value&gt;&lt;unit&gt; where unit can be kB, MB, GB, TB etc.</p>
-</p></li>
-<li><p><strong>executor</strong> (<em>Executor</em><em>, </em><em>optional</em>) – The default executor for running computations.</p></li>
-<li><p><strong>storage_options</strong> (<em>dict</em><em>, </em><em>optional</em>) – Storage options to be passed to fsspec.</p></li>
-<li><p><strong>zarr_compressor</strong> (<em>dict</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – <p>The compressor used by Zarr for intermediate data.</p>
-<p>If not specified, or set to <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code>, Zarr will use the default Blosc compressor.
-If set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, compression is disabled, which can be a good option when using local storage.
-Use a dictionary to configure arbitrary compression using Numcodecs. The following example specifies
-Blosc compression: <code class="docutils literal notranslate"><span class="pre">zarr_compressor={&quot;id&quot;:</span> <span class="pre">&quot;blosc&quot;,</span> <span class="pre">&quot;cname&quot;:</span> <span class="pre">&quot;lz4&quot;,</span> <span class="pre">&quot;clevel&quot;:</span> <span class="pre">2,</span> <span class="pre">&quot;shuffle&quot;:</span> <span class="pre">-1}</span></code>.</p>
-</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cubed.Spec.__init__" title="cubed.Spec.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([work_dir, allowed_mem, ...])</p></td>
-<td><p>Specify resources available to run a computation.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p class="rubric">Attributes</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">allowed_mem</span></code></p></td>
-<td><p>The total memory available to a worker for running a task, in bytes.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">executor</span></code></p></td>
-<td><p>The default executor for running computations.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reserved_mem</span></code></p></td>
-<td><p>The memory reserved on a worker for non-data use when running a task, in bytes.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">storage_options</span></code></p></td>
-<td><p>Storage options to be passed to fsspec.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">work_dir</span></code></p></td>
-<td><p>The directory path (specified as an fsspec URL) used for storing intermediate data.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zarr_compressor</span></code></p></td>
-<td><p>The compressor used by Zarr for intermediate data.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</dd></dl>
+  <section id="cubed-rechunk">
+<h1>cubed.rechunk<a class="headerlink" href="#cubed-rechunk" title="Link to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="cubed.rechunk">
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">rechunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.rechunk" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 
@@ -431,20 +366,20 @@ Blosc compression: <code class="docutils literal notranslate"><span class="pre">
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.Callback.html"
+       href="cubed.map_overlap.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.Callback</p>
+        <p class="prev-next-title">cubed.map_overlap</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.TaskEndEvent.html"
+       href="cubed.nanmean.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.TaskEndEvent</p>
+        <p class="prev-next-title">cubed.nanmean</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -465,10 +400,7 @@ Blosc compression: <code class="docutils literal notranslate"><span class="pre">
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.Spec"><code class="docutils literal notranslate"><span class="pre">Spec</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.Spec.__init__"><code class="docutils literal notranslate"><span class="pre">Spec.__init__()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.rechunk"><code class="docutils literal notranslate"><span class="pre">rechunk()</span></code></a></li>
 </ul>
   </nav></div>
 
