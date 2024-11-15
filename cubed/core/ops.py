@@ -1031,6 +1031,18 @@ def map_direct(
 
 
 def rechunk(x, chunks, target_store=None):
+    """Change the chunking of an array without changing its shape or data.
+
+    Parameters
+    ----------
+    chunks : tuple
+        The desired chunks of the array after rechunking.
+
+    Returns
+    -------
+    cubed.Array
+        An array with the desired chunks.
+    """
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
