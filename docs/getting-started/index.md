@@ -8,7 +8,6 @@ Have a look at [Cubed: an introduction](https://cubed-dev.github.io/cubed/cubed-
 ---
 maxdepth: 2
 ---
-why-cubed
 installation
 demo
 ```
