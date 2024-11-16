@@ -81,9 +81,9 @@ e.visualize()
 The output explains which operations can or can't be fused, and why:
 
 ```
-DEBUG:cubed.core.optimization:can't fuse op-001 since it is not a primitive operation, or it uses map_direct
-DEBUG:cubed.core.optimization:can't fuse op-002 since it is not a primitive operation, or it uses map_direct
-DEBUG:cubed.core.optimization:can't fuse op-003 since it is not a primitive operation, or it uses map_direct
+DEBUG:cubed.core.optimization:can't fuse op-001 since it is not a primitive operation, or it uses an operation that can't be fused (concat or stack)
+DEBUG:cubed.core.optimization:can't fuse op-002 since it is not a primitive operation, or it uses an operation that can't be fused (concat or stack)
+DEBUG:cubed.core.optimization:can't fuse op-003 since it is not a primitive operation, or it uses an operation that can't be fused (concat or stack)
 DEBUG:cubed.core.optimization:can't fuse op-004 since no predecessor ops can be fused
 DEBUG:cubed.primitive.blockwise:can fuse op-005 since num tasks of predecessor ops match
 ```

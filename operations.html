@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="_static/documentation_options.js?v=9e750ebb"></script>
+    <script src="_static/documentation_options.js?v=d5542f40"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -50,7 +50,7 @@
     <link rel="prev" title="Design" href="design.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="c75556f
+  <meta name="docsearch:version" content="b3396a9
 " />
   </head>
   
@@ -336,7 +336,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-tree">Dependency Tree</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#elemwise"><code class="docutils literal notranslate"><span class="pre">elemwise</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-blocks"><code class="docutils literal notranslate"><span class="pre">map_blocks</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-direct"><code class="docutils literal notranslate"><span class="pre">map_direct</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-selection"><code class="docutils literal notranslate"><span class="pre">map_selection</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blockwise"><code class="docutils literal notranslate"><span class="pre">blockwise</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rechunk"><code class="docutils literal notranslate"><span class="pre">rechunk</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-and-arg-reduction"><code class="docutils literal notranslate"><span class="pre">reduction</span></code> and <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code></a></li>
@@ -383,16 +383,17 @@
 <p>This example shows how the <code class="docutils literal notranslate"><span class="pre">squeeze</span></code> operation is implemented using <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> (with a single input). Note that although the number of blocks is preserved, the shape and chunk size of the output is different to the input since the second dimension is dropped.</p>
 <p><img alt="The map_blocks core operation" src="_images/map_blocks.svg" /></p>
 </section>
-<section id="map-direct">
-<h2><code class="docutils literal notranslate"><span class="pre">map_direct</span></code><a class="headerlink" href="#map-direct" title="Link to this heading">#</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">map_direct</span></code> operation is more general than <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> since it allows input arrays to be read directly, without regard for block boundaries.</p>
+<section id="map-selection">
+<h2><code class="docutils literal notranslate"><span class="pre">map_selection</span></code><a class="headerlink" href="#map-selection" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">map_selection</span></code> operation selects subsets of an input array using standard NumPy indexing notation.</p>
 <ul class="simple">
 <li><p>No input array attributes are preserved in general</p></li>
-<li><p><strong>Multiple</strong> inputs, <strong>single</strong> output</p></li>
+<li><p><strong>Single</strong> input, <strong>single</strong> output</p></li>
 </ul>
-<p>It is a core operation that is implemented using <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code>, which is in turn implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code>. It works by creating an empty array that has the same shape and chunk structure as the output, and calling <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> on this empty array, passing in the input arrays as side inputs to the function, which may access them in whatever way is needed.</p>
-<p>This example shows how <code class="docutils literal notranslate"><span class="pre">concat</span></code> is implemented using <code class="docutils literal notranslate"><span class="pre">map_direct</span></code>. Each block in the output array is read directly from one or more blocks from the inputs.</p>
-<p><img alt="The map_direct core operation" src="_images/map_direct.svg" /></p>
+<p>It is a core operation that is implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> on the output’s blocks. It works by converting indexing selections, such as slices, to keys that refer to blocks in the input array, then retrieving these blocks, slicing them, and assembling them into the final output block.</p>
+<p>This example shows how <code class="docutils literal notranslate"><span class="pre">index</span></code> is implemented using <code class="docutils literal notranslate"><span class="pre">map_selection</span></code>. Each block in the output array is read directly from one or more blocks from the inputs.</p>
+<p><img alt="The map_selection core operation" src="_images/map_selection.svg" /></p>
+<p>Note: previously, operations that now use <code class="docutils literal notranslate"><span class="pre">map_selection</span></code> were written using <code class="docutils literal notranslate"><span class="pre">map_direct</span></code>, which allowed input arrays to be read directly. The main difference between the two operations is that <code class="docutils literal notranslate"><span class="pre">map_selection</span></code> tracks which blocks are read by the operation, which allows the optimizer to fuse operations. This is unlike <code class="docutils literal notranslate"><span class="pre">map_direct</span></code>, which does not provide information about block inputs, and therefore cannot be fused by the optimizer.</p>
 </section>
 <section id="blockwise">
 <h2><code class="docutils literal notranslate"><span class="pre">blockwise</span></code><a class="headerlink" href="#blockwise" title="Link to this heading">#</a></h2>
@@ -403,6 +404,12 @@
 </ul>
 <p>This example shows how <code class="docutils literal notranslate"><span class="pre">outer</span></code> is implemented using <code class="docutils literal notranslate"><span class="pre">blockwise</span></code>. Each block from the input is sent to three blocks in the output. (Arrows are only shown for two input blocks, in order to avoid cluttering the diagram.)</p>
 <p><img alt="The blockwise primitive operation" src="_images/blockwise.svg" /></p>
+<p>Note: the <code class="docutils literal notranslate"><span class="pre">general_blockwise</span></code> operation is a more general form of <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> that uses a function to specify the block mapping, rather than an index notation, and which supports multiple outputs.</p>
+<ul class="simple">
+<li><p>No input array attributes are preserved in general</p></li>
+<li><p><strong>Multiple</strong> inputs, <strong>multiple</strong> outputs</p></li>
+</ul>
+<p>For multiple outputs, all output arrays must have matching <code class="docutils literal notranslate"><span class="pre">numblocks</span></code>.</p>
 </section>
 <section id="rechunk">
 <span id="rechunk-operation"></span><h2><code class="docutils literal notranslate"><span class="pre">rechunk</span></code><a class="headerlink" href="#rechunk" title="Link to this heading">#</a></h2>
@@ -478,7 +485,7 @@ The <code class="docutils literal notranslate"><span class="pre">partial_reduce<
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dependency-tree">Dependency Tree</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#elemwise"><code class="docutils literal notranslate"><span class="pre">elemwise</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-blocks"><code class="docutils literal notranslate"><span class="pre">map_blocks</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-direct"><code class="docutils literal notranslate"><span class="pre">map_direct</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#map-selection"><code class="docutils literal notranslate"><span class="pre">map_selection</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#blockwise"><code class="docutils literal notranslate"><span class="pre">blockwise</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rechunk"><code class="docutils literal notranslate"><span class="pre">rechunk</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-and-arg-reduction"><code class="docutils literal notranslate"><span class="pre">reduction</span></code> and <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code></a></li>

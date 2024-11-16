@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="_static/documentation_options.js?v=9e750ebb"></script>
+    <script src="_static/documentation_options.js?v=d5542f40"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -50,7 +50,7 @@
     <link rel="prev" title="Related Projects" href="related-projects.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="c75556f
+  <meta name="docsearch:version" content="b3396a9
 " />
   </head>
   
@@ -353,7 +353,7 @@
 <h1>Design<a class="headerlink" href="#design" title="Link to this heading">#</a></h1>
 <p>Cubed is composed of five layers: from the storage layer at the bottom, to the Array API layer at the top:</p>
 <p><img alt="Five layer diagram" src="_images/design.svg" /></p>
-<p>Blue blocks are implemented in Cubed, green in Rechunker, and red in other projects like Zarr and Beam.</p>
+<p>Blue blocks are implemented in Cubed; red blocks in other projects like Zarr and Lithops.</p>
 <p>Let’s go through the layers from the bottom:</p>
 <section id="storage">
 <h2>Storage<a class="headerlink" href="#storage" title="Link to this heading">#</a></h2>
@@ -361,7 +361,7 @@
 </section>
 <section id="runtime">
 <h2>Runtime<a class="headerlink" href="#runtime" title="Link to this heading">#</a></h2>
-<p>Cubed uses external runtimes for computation. It follows the Rechunker model (and uses its algorithm) to delegate tasks to stateless executors, which include Python (in-process), Lithops, Modal, and Apache Beam.</p>
+<p>Cubed uses external runtimes for computation, delegating tasks to stateless executors, which include Python (in-process), Lithops, Modal, and Apache Beam.</p>
 </section>
 <section id="primitive-operations">
 <h2>Primitive operations<a class="headerlink" href="#primitive-operations" title="Link to this heading">#</a></h2>
@@ -394,16 +394,13 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_blocks</span></code></p></td>
 <td><p>Apply a function to corresponding blocks from multiple input arrays.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_direct</span></code></p></td>
-<td><p>Apply a function across blocks of a new array, reading directly from side inputs (not necessarily in a blockwise fashion).</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_selection</span></code></p></td>
+<td><p>Apply a function to selected subsets of an input array using standard NumPy indexing notation.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">index</span></code></p></td>
-<td><p>Subset an array, along one or more axes.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduction</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduction</span></code></p></td>
 <td><p>Apply a function to reduce an array along one or more axes.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arg_reduction</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arg_reduction</span></code></p></td>
 <td><p>A reduction that returns the array indexes, not the values.</p></td>
 </tr>
 </tbody>
