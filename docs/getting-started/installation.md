@@ -25,10 +25,4 @@ Cubed has many optional dependencies, which can be installed in sets for differe
     $ python -m pip install "cubed[lithops]"      # Install optional dependencies for the lithops executor
     $ python -m pip install "cubed[modal]"        # Install optional dependencies for the modal executor
 
-To see the full list of which packages are installed with which options see `[project.optional_dependencies]` in `pyproject.toml`:
-```{eval-rst}
-.. literalinclude:: ../../pyproject.toml
-   :language: ini
-   :start-at: [project.optional-dependencies]
-   :end-before: [project.urls]
-```
+See the [examples](https://github.com/cubed-dev/cubed/blob/main/examples/README.md) for details on installing Cubed to run on different executors.
