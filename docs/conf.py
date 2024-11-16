@@ -33,14 +33,16 @@ print("sys.path:", sys.path)
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "myst_parser",
+    "myst_nb",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
+    "sphinx_design",
 ]
 autodoc_mock_imports = ["modal"]
 autodoc_typehints = "none"
+myst_enable_extensions = ["colon_fence"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

@@ -19,4 +19,5 @@ zarr
 # docs
 sphinx-book-theme
 sphinx-autobuild
-myst-parser
+sphinx-design
+myst-nb
