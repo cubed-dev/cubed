@@ -65,12 +65,12 @@ This example shows how `outer` is implemented using `blockwise`. Each block from
 
 ![The blockwise primitive operation](images/blockwise.svg)
 
-Note: the `general_blockwise` operation is a more general form of ``blockwise`` that uses a function to specify the block mapping, rather than an index notation, and which supports multiple outputs.
+Note: the `general_blockwise` operation is a more general form of `blockwise` that uses a function to specify the block mapping, rather than an index notation, and which supports multiple outputs.
 
 * No input array attributes are preserved in general
 * __Multiple__ inputs, __multiple__ outputs
 
-For multiple outputs, all output arrays must have matching ``numblocks``.
+For multiple outputs, all output arrays must have matching `numblocks`.
 
 (rechunk-operation)=
 ## `rechunk`
