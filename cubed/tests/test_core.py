@@ -127,43 +127,43 @@ def test_from_zarr(tmp_path, spec, executor, path):
     )
 
 
-def test_store(tmp_path, spec):
+def test_store(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
 
     store = tmp_path / "source.zarr"
-    target = zarr.empty(a.shape, store=store)
+    target = zarr.empty(a.shape, chunks=a.chunksize, store=store)
 
-    cubed.store(a, target)
+    cubed.store(a, target, executor=executor)
     assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
-def test_store_multiple(tmp_path, spec):
+def test_store_multiple(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
 
     store1 = tmp_path / "source1.zarr"
-    target1 = zarr.empty(a.shape, store=store1)
+    target1 = zarr.empty(a.shape, chunks=a.chunksize, store=store1)
     store2 = tmp_path / "source2.zarr"
-    target2 = zarr.empty(b.shape, store=store2)
+    target2 = zarr.empty(b.shape, chunks=b.chunksize, store=store2)
 
-    cubed.store([a, b], [target1, target2])
+    cubed.store([a, b], [target1, target2], executor=executor)
     assert_array_equal(target1[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
     assert_array_equal(target2[:], np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]]))
 
 
-def test_store_fails(tmp_path, spec):
+def test_store_fails(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     store = tmp_path / "source.zarr"
-    target = zarr.empty(a.shape, store=store)
+    target = zarr.empty(a.shape, chunks=a.chunksize, store=store)
 
     with pytest.raises(
         ValueError, match=r"Different number of sources \(2\) and targets \(1\)"
     ):
-        cubed.store([a, b], [target])
+        cubed.store([a, b], [target], executor=executor)
 
     with pytest.raises(ValueError, match="All sources must be cubed array objects"):
-        cubed.store([1], [target])
+        cubed.store([1], [target], executor=executor)
 
 
 @pytest.mark.parametrize("path", [None, "sub", "sub/group"])
