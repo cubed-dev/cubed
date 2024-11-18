@@ -370,7 +370,9 @@ def test_default_spec_config_override():
     # override default spec to increase allowed_mem
     from cubed import config
 
-    with config.set({"spec.allowed_mem": "4GB"}):
+    with config.set(
+        {"spec.allowed_mem": "4GB", "spec.executor_name": "single-threaded"}
+    ):
         a = xp.ones((20000, 10000), chunks=(10000, 10000))
         b = xp.negative(a)
         assert_array_equal(b.compute(), -np.ones((20000, 10000)))
