@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=d5542f40"></script>
+    <script src="../_static/documentation_options.js?v=2c4086a0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -50,7 +50,7 @@
     <link rel="prev" title="Reliability" href="reliability.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="b3396a9
+  <meta name="docsearch:version" content="4b18053
 " />
   </head>
   
@@ -441,8 +441,8 @@
 <section id="total-number-of-input-blocks">
 <h3>Total number of input blocks<a class="headerlink" href="#total-number-of-input-blocks" title="Link to this heading">#</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">max_total_num_input_blocks</span></code> argument to <code class="docutils literal notranslate"><span class="pre">multiple_inputs_optimize_dag</span></code> specifies the maximum number of input blocks (chunks) that are allowed in the fused operation.</p>
-<p>Again, this is to limit the number of reads that an individual task must perform. The default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, which means that operations are fused only if they have the same number of tasks. If set to an integer, then this limitation is removed, and tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be set using <code class="docutils literal notranslate"><span class="pre">functools.partial</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">opt_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">multiple_inputs_optimize_dag</span><span class="p">,</span> <span class="n">max_total_num_input_blocks</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<p>Again, this is to limit the number of reads that an individual task must perform. If set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, operations are fused only if they have the same number of tasks. If set to an integer (the default is 10), then tasks with a different number of tasks will be fused - as long as the total number of input blocks does not exceed the maximum. This setting is useful for reductions, and can be changed using <code class="docutils literal notranslate"><span class="pre">functools.partial</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">opt_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">multiple_inputs_optimize_dag</span><span class="p">,</span> <span class="n">max_total_num_input_blocks</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">optimize_function</span><span class="o">=</span><span class="n">opt_fn</span><span class="p">)</span>
 </pre></div>
 </div>
