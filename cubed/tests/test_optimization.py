@@ -11,6 +11,8 @@ import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import elemwise, merge_chunks, partial_reduce
 from cubed.core.optimization import (
+    DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
+    DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
     fuse_all_optimize_dag,
     fuse_only_optimize_dag,
     fuse_predecessors,
@@ -223,7 +225,11 @@ def fuse_one_level(arr, *, always_fuse=None):
     )
 
 
-def fuse_multiple_levels(*, max_total_source_arrays=4, max_total_num_input_blocks=None):
+def fuse_multiple_levels(
+    *,
+    max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
+    max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
+):
     # use multiple_inputs_optimize_dag to test multiple levels of fusion
     return partial(
         multiple_inputs_optimize_dag,
@@ -899,8 +905,7 @@ def test_fuse_merge_chunks_unary(spec):
     b = xp.negative(a)
     c = merge_chunks(b, chunks=(3, 2))
 
-    # specify max_total_num_input_blocks to force c to fuse
-    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=3)
+    opt_fn = fuse_multiple_levels()
 
     c.visualize(optimize_function=opt_fn)
 
@@ -921,6 +926,16 @@ def test_fuse_merge_chunks_unary(spec):
     result = c.compute(optimize_function=opt_fn)
     assert_array_equal(result, -np.ones((3, 2)))
 
+    # now set max_total_num_input_blocks=None which means
+    # "only fuse if ops have same number of tasks", which they don't here
+    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=None)
+    optimized_dag = c.plan.optimize(optimize_function=opt_fn).dag
+
+    # merge_chunks uses a hidden op and array for block ids - ignore when comparing structure
+    assert not structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
+
 
 # merge chunks with different number of tasks (c has more tasks than d)
 #
@@ -936,8 +951,7 @@ def test_fuse_merge_chunks_binary(spec):
     c = xp.add(a, b)
     d = merge_chunks(c, chunks=(3, 2))
 
-    # specify max_total_num_input_blocks to force d to fuse
-    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=6)
+    opt_fn = fuse_multiple_levels()
 
     d.visualize(optimize_function=opt_fn)
 
@@ -963,6 +977,16 @@ def test_fuse_merge_chunks_binary(spec):
     result = d.compute(optimize_function=opt_fn)
     assert_array_equal(result, 2 * np.ones((3, 2)))
 
+    # now set max_total_num_input_blocks=None which means
+    # "only fuse if ops have same number of tasks", which they don't here
+    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=None)
+    optimized_dag = d.plan.optimize(optimize_function=opt_fn).dag
+
+    # merge_chunks uses a hidden op and array for block ids - ignore when comparing structure
+    assert not structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
+
 
 # like test_fuse_merge_chunks_unary, except uses partial_reduce
 def test_fuse_partial_reduce_unary(spec):
@@ -970,8 +994,7 @@ def test_fuse_partial_reduce_unary(spec):
     b = xp.negative(a)
     c = partial_reduce(b, np.sum, split_every={0: 3})
 
-    # specify max_total_num_input_blocks to force c to fuse
-    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=3)
+    opt_fn = fuse_multiple_levels()
 
     c.visualize(optimize_function=opt_fn)
 
@@ -996,8 +1019,7 @@ def test_fuse_partial_reduce_binary(spec):
     c = xp.add(a, b)
     d = partial_reduce(c, np.sum, split_every={0: 3})
 
-    # specify max_total_num_input_blocks to force d to fuse
-    opt_fn = fuse_multiple_levels(max_total_num_input_blocks=6)
+    opt_fn = fuse_multiple_levels()
 
     d.visualize(optimize_function=opt_fn)
 
@@ -1176,7 +1198,7 @@ def test_optimize_stack(spec):
     c = xp.stack((a, b), axis=0)
     d = c + 1
     # try to fuse all ops into one (d will fuse with c, but c won't fuse with a and b)
-    d.compute(optimize_function=fuse_multiple_levels(max_total_num_input_blocks=10))
+    d.compute(optimize_function=fuse_multiple_levels())
 
 
 def test_optimize_concat(spec):
@@ -1186,4 +1208,4 @@ def test_optimize_concat(spec):
     c = xp.concat((a, b), axis=0)
     d = c + 1
     # try to fuse all ops into one (d will fuse with c, but c won't fuse with a and b)
-    d.compute(optimize_function=fuse_multiple_levels(max_total_num_input_blocks=10))
+    d.compute(optimize_function=fuse_multiple_levels())
