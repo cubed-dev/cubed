@@ -1,7 +1,22 @@
 import math
-from typing import Dict, TypeVar
+from typing import Dict, Optional, TypeVar
+
+from cubed.spec import Spec
+from cubed.utils import is_cloud_storage_path
 
 T = TypeVar("T")
+
+
+def use_backups_default(spec: Optional[Spec]) -> bool:
+    """The default setting for ``use_backups``.
+
+    Backup tasks are only enabled on cloud object stores since they provide atomic writes.
+    """
+    return (
+        spec is not None
+        and spec.work_dir is not None
+        and is_cloud_storage_path(spec.work_dir)
+    )
 
 
 def should_launch_backup(

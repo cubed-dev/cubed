@@ -11,7 +11,7 @@ from cubed.runtime.utils import batched
 async def async_map_unordered(
     create_futures_func: Callable[..., List[Tuple[Any, Future]]],
     input: Iterable[Any],
-    use_backups: bool = True,
+    use_backups: bool = False,
     create_backup_futures_func: Optional[
         Callable[..., List[Tuple[Any, Future]]]
     ] = None,

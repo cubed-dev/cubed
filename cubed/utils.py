@@ -80,9 +80,14 @@ def join_path(dir_url: PathType, child_path: str) -> str:
     return urlunsplit(split_parts)
 
 
-def is_local_path(path: str):
+def is_local_path(path: PathType):
     """Determine if a path string is for the local filesystem."""
-    return urlsplit(path).scheme in ("", "file")
+    return urlsplit(str(path)).scheme in ("", "file")
+
+
+def is_cloud_storage_path(path: PathType):
+    """Determine if a path string is for cloud storage."""
+    return urlsplit(str(path)).scheme in ("gs", "s3")
 
 
 def memory_repr(num: int) -> str:

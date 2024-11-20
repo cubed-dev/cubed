@@ -12,6 +12,7 @@ from cubed.utils import (
     block_id_to_offset,
     broadcast_trick,
     extract_stack_summaries,
+    is_cloud_storage_path,
     is_local_path,
     join_path,
     map_nested,
@@ -77,6 +78,17 @@ def test_is_local_path():
     assert is_local_path("file://absolute_path/path")
     assert is_local_path("file:///absolute_path/path")
     assert not is_local_path("s3://host/path")
+    assert not is_local_path("gs://host/path")
+
+
+def test_is_cloud_storage_path():
+    assert not is_cloud_storage_path("relative_path/path")
+    assert not is_cloud_storage_path("/absolute_path/path")
+    assert not is_cloud_storage_path("file:relative_path/path")
+    assert not is_cloud_storage_path("file://absolute_path/path")
+    assert not is_cloud_storage_path("file:///absolute_path/path")
+    assert is_cloud_storage_path("s3://host/path")
+    assert is_cloud_storage_path("gs://host/path")
 
 
 def test_memory_repr():
