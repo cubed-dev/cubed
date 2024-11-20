@@ -1,6 +1,5 @@
 import inspect
 import itertools
-import platform
 
 import numpy as np
 import pytest
@@ -92,7 +91,6 @@ def test_memory_repr():
         memory_repr(-1)
 
 
-@pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
 def test_peak_measured_mem():
     assert peak_measured_mem() > 0
 

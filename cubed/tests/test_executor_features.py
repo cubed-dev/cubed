@@ -1,6 +1,5 @@
 import contextlib
 import os
-import platform
 import re
 
 import fsspec
@@ -72,9 +71,6 @@ def mock_apply_blockwise(*args, **kwargs):
 
 
 # see tests/runtime for more tests for retries for other executors
-@pytest.mark.skipif(
-    platform.system() == "Windows", reason="measuring memory does not run on windows"
-)
 def test_retries(mocker, spec):
     # Use threads executor since single-threaded executor doesn't support retries
     executor = create_executor("threads")
@@ -91,9 +87,6 @@ def test_retries(mocker, spec):
     )
 
 
-@pytest.mark.skipif(
-    platform.system() == "Windows", reason="measuring memory does not run on windows"
-)
 def test_callbacks(spec, executor):
     task_counter = TaskCounter()
     # test following indirectly by checking they don't cause a failure
@@ -149,9 +142,6 @@ def test_callbacks_modal(spec, modal_executor):
         fs.rm(tmp_path, recursive=True)
 
 
-@pytest.mark.skipif(
-    platform.system() == "Windows", reason="measuring memory does not run on windows"
-)
 def test_mem_warn(tmp_path, executor):
     if executor.name not in ("processes", "lithops"):
         pytest.skip(f"{executor.name} executor does not support MemoryWarningCallback")

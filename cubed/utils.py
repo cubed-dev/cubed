@@ -112,13 +112,12 @@ def memory_repr(num: int) -> str:
 
 
 def peak_measured_mem() -> int:
-    """Measures the peak memory usage in bytes.
-
-    Note: this function currently doesn't work on Windows.
-    """
+    """Measures the peak memory usage in bytes."""
 
     if platform.system() == "Windows":
-        raise NotImplementedError("`peak_measured_mem` is not implemented on Windows")
+        import psutil
+
+        return psutil.Process().memory_info().peak_wset
 
     from resource import RUSAGE_SELF, getrusage
 
