@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="_static/documentation_options.js?v=ce75a5e6"></script>
+    <script src="_static/documentation_options.js?v=11f78f62"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -50,7 +50,7 @@
     <link rel="prev" title="Python Array API" href="array-api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="eb01803
+  <meta name="docsearch:version" content="4d79a26
 " />
   </head>
   
@@ -186,6 +186,7 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="why-cubed.html">Why Cubed?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="articles.html">Articles</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
 <ul class="nav bd-sidenav">
@@ -458,20 +459,24 @@ The Cubed <a class="reference external" href="https://github.com/cubed-dev/cubed
 <td><p>The directory path (specified as an fsspec URL) used for storing intermediate data. If not set, the user’s temporary directory is used.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">2GB</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;2GB&quot;</span></code></p></td>
 <td><p>The total memory available to a worker for running a task. This includes any <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> that has been set.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">100MB</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;100MB&quot;</span></code></p></td>
 <td><p>The memory reserved on a worker for non-data use when running a task</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">executor_name</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">single-threaded</span></code></p></td>
-<td><p>The executor for running computations. One of <code class="docutils literal notranslate"><span class="pre">single-threaded</span></code>, <code class="docutils literal notranslate"><span class="pre">threads</span></code>, <code class="docutils literal notranslate"><span class="pre">processes</span></code>, <code class="docutils literal notranslate"><span class="pre">beam</span></code>, <code class="docutils literal notranslate"><span class="pre">coiled</span></code>, <code class="docutils literal notranslate"><span class="pre">dask</span></code>, <code class="docutils literal notranslate"><span class="pre">lithops</span></code>, <code class="docutils literal notranslate"><span class="pre">modal</span></code>.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;single-threaded&quot;</span></code></p></td>
+<td><p>The executor for running computations. One of <code class="docutils literal notranslate"><span class="pre">&quot;single-threaded&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;threads&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;processes&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;beam&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;coiled&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;dask&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;lithops&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;modal&quot;</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">executor_options</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Options to pass to the executor on construction. See below for possible options for each executor.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">zarr_compressor</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></td>
+<td><p>The compressor used by Zarr for intermediate data. If not specified, or set to <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code>, Zarr will use the default Blosc compressor. If set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression using Numcodecs.</p></td>
 </tr>
 </tbody>
 </table>
@@ -660,8 +665,8 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cloud</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">aws</span></code></p></td>
-<td><p>The cloud to run on. One of <code class="docutils literal notranslate"><span class="pre">aws</span></code> or <code class="docutils literal notranslate"><span class="pre">gcp</span></code>.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;aws&quot;</span></code></p></td>
+<td><p>The cloud to run on. One of <code class="docutils literal notranslate"><span class="pre">&quot;aws&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;gcp&quot;</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_backups</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>

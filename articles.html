@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Design &#8212; Cubed</title>
+    <title>Articles &#8212; Cubed</title>
   
   
   
@@ -43,11 +43,11 @@
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'design';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'articles';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Operations" href="operations.html" />
-    <link rel="prev" title="Articles" href="articles.html" />
+    <link rel="next" title="Design" href="design.html" />
+    <link rel="prev" title="Related Projects" href="related-projects.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="4d79a26
@@ -139,7 +139,7 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="getting-started/index.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="getting-started/installation.html">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting-started/demo.html">Demo</a></li>
@@ -186,11 +186,11 @@
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="why-cubed.html">Why Cubed?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a></li>
-<li class="toctree-l1"><a class="reference internal" href="articles.html">Articles</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Articles</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Design</a></li>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="operations.html">Operations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="computation.html">Computation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
@@ -265,7 +265,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/design.md" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/articles.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -282,7 +282,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fdesign.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Farticles.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -311,9 +311,7 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -324,23 +322,11 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Design</h1>
+    <h1>Articles</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#storage">Storage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime">Runtime</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-operations">Primitive operations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-operations">Core operations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#array-api">Array API</a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -350,68 +336,10 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="design">
-<h1>Design<a class="headerlink" href="#design" title="Link to this heading">#</a></h1>
-<p>Cubed is composed of five layers: from the storage layer at the bottom, to the Array API layer at the top:</p>
-<p><img alt="Five layer diagram" src="_images/design.svg" /></p>
-<p>Blue blocks are implemented in Cubed; red blocks in other projects like Zarr and Lithops.</p>
-<p>Let’s go through the layers from the bottom:</p>
-<section id="storage">
-<h2>Storage<a class="headerlink" href="#storage" title="Link to this heading">#</a></h2>
-<p>Every <em>array</em> in Cubed is backed by a Zarr array. This means that the array type inherits Zarr attributes including the underlying store (which may be on local disk, or a cloud store, for example), as well as the shape, dtype, and chunks. Chunks are the unit of storage and computation in this system.</p>
-</section>
-<section id="runtime">
-<h2>Runtime<a class="headerlink" href="#runtime" title="Link to this heading">#</a></h2>
-<p>Cubed uses external runtimes for computation, delegating tasks to stateless executors, which include Python (in-process), Lithops, Modal, and Apache Beam.</p>
-</section>
-<section id="primitive-operations">
-<h2>Primitive operations<a class="headerlink" href="#primitive-operations" title="Link to this heading">#</a></h2>
-<p>There are two primitive operations on arrays:</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">blockwise</span></code></p></td>
-<td><p>Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rechunk</span></code></p></td>
-<td><p>Change the chunking of an array, without changing its shape or dtype.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="core-operations">
-<h2>Core operations<a class="headerlink" href="#core-operations" title="Link to this heading">#</a></h2>
-<p>These are built on top of the primitive operations, and provide functions that are needed to implement all array operations.</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">elemwise</span></code></p></td>
-<td><p>Apply a function elementwise to array arguments, respecting broadcasting.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_blocks</span></code></p></td>
-<td><p>Apply a function to corresponding blocks from multiple input arrays.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_selection</span></code></p></td>
-<td><p>Apply a function to selected subsets of an input array using standard NumPy indexing notation.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduction</span></code></p></td>
-<td><p>Apply a function to reduce an array along one or more axes.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arg_reduction</span></code></p></td>
-<td><p>A reduction that returns the array indexes, not the values.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="array-api">
-<h2>Array API<a class="headerlink" href="#array-api" title="Link to this heading">#</a></h2>
-<p>The new <a class="reference external" href="https://data-apis.org/array-api/latest/">Python Array API</a> was chosen for the public API as it provides a useful, well-defined subset of the NumPy API. There are a few extensions, including Zarr IO, random number generation, and operations like <code class="docutils literal notranslate"><span class="pre">map_blocks</span></code> which are heavily used in Dask applications.</p>
-</section>
+  <section id="articles">
+<h1>Articles<a class="headerlink" href="#articles" title="Link to this heading">#</a></h1>
+<p><a class="reference external" href="https://xarray.dev/blog/cubed-xarray">Cubed: Bounded-memory serverless array processing in xarray</a></p>
+<p><a class="reference external" href="https://medium.com/pangeo/optimizing-cubed-7a0b8f65f5b7">Optimizing Cubed</a></p>
 </section>
 
 
@@ -426,20 +354,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="articles.html"
+       href="related-projects.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Articles</p>
+        <p class="prev-next-title">Related Projects</p>
       </div>
     </a>
     <a class="right-next"
-       href="operations.html"
+       href="design.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Operations</p>
+        <p class="prev-next-title">Design</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -449,26 +377,6 @@
             </div>
             
             
-              
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#storage">Storage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime">Runtime</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-operations">Primitive operations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-operations">Core operations</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#array-api">Array API</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

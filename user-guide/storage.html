@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=ce75a5e6"></script>
+    <script src="../_static/documentation_options.js?v=11f78f62"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -50,7 +50,7 @@
     <link rel="prev" title="Executors" href="executors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="eb01803
+  <meta name="docsearch:version" content="4d79a26
 " />
   </head>
   
@@ -186,6 +186,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../why-cubed.html">Why Cubed?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../related-projects.html">Related Projects</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../articles.html">Articles</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
 <ul class="nav bd-sidenav">
@@ -333,8 +334,8 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-storage">Local storage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-storage">Cloud storage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deleting-intermediate-data">Deleting intermediate data</a></li>
 </ul>
             </nav>
         </div>
@@ -349,6 +350,10 @@
   <section id="storage">
 <h1>Storage<a class="headerlink" href="#storage" title="Link to this heading">#</a></h1>
 <p>Cubed uses a filesystem working directory to store intermediate data (in the form of Zarr arrays) when running a computation. By default this is a local temporary directory, which is appropriate for the default local executor.</p>
+<section id="local-storage">
+<h2>Local storage<a class="headerlink" href="#local-storage" title="Link to this heading">#</a></h2>
+<p>Cubed will delete intermediate data only when the main Python process running the computation exits. If you run many computations in one process (in a Jupyter Notebook, for example), then you could risk running out of local storage. The directories where intermediate data is stored that Cubed creates by default are named <code class="docutils literal notranslate"><span class="pre">$TMPDIR/cubed-*</span></code>; these can be removed manually with regular file commands like <code class="docutils literal notranslate"><span class="pre">rm</span></code>.</p>
+</section>
 <section id="cloud-storage">
 <h2>Cloud storage<a class="headerlink" href="#cloud-storage" title="Link to this heading">#</a></h2>
 <p>When using a cloud service, the working directory should be set to a cloud storage directory in the same cloud region that the executor runtimes are in. In this case the directory is specified as a <a class="reference external" href="https://filesystem-spec.readthedocs.io/en/latest/"><code class="docutils literal notranslate"><span class="pre">fsspec</span></code></a> URL, such as <code class="docutils literal notranslate"><span class="pre">s3://cubed-tomwhite-temp</span></code>. This is how you would set it using a <a class="reference internal" href="../generated/cubed.Spec.html#cubed.Spec" title="cubed.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spec</span></code></a> object:</p>
@@ -358,12 +363,7 @@
 </pre></div>
 </div>
 <p>Note that you need to create the bucket before running a computation.</p>
-</section>
-<section id="deleting-intermediate-data">
-<h2>Deleting intermediate data<a class="headerlink" href="#deleting-intermediate-data" title="Link to this heading">#</a></h2>
-<p>Cubed does not delete any intermediate data that it writes, so you should ensure it is cleared out so you don’t run out of space or incur unnecessary cloud storage costs.</p>
-<p>For a local temporary directory, the operating system will typically remove old files, but if you are running a lot of jobs in a short period of time you may need to manually clean them up. The directories that Cubed creates by default are named <code class="docutils literal notranslate"><span class="pre">$TMPDIR/cubed-*</span></code>; these can be removed with regular file commands like <code class="docutils literal notranslate"><span class="pre">rm</span></code>.</p>
-<p>On cloud object stores the data does not get removed automatically. Rather than removing the old data manually, it’s convenient to use a dedicated bucket for intermediate data with a lifecycle rule that deletes data after a certain time.</p>
+<p>On cloud object stores intermediate data does <em>not</em> get removed automatically, so you should ensure it is cleared out so you don’t incur unnecessary cloud storage costs. Rather than removing the old data manually, it’s convenient to use a dedicated bucket for intermediate data with a lifecycle rule that deletes data after a certain time.</p>
 <p>To set up a lifecycle rule:</p>
 <ul class="simple">
 <li><p>For <strong>Google Cloud Storage</strong>, in the cloud console click on the bucket, then the “lifecycle” tab. Click “add a rule”, select “delete object”, then select “age” and enter “1” day. This will delete any data that is over 1 day old.</p></li>
@@ -419,8 +419,8 @@
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-storage">Local storage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-storage">Cloud storage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deleting-intermediate-data">Deleting intermediate data</a></li>
 </ul>
   </nav></div>
 

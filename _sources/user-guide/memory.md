@@ -8,14 +8,16 @@ The various memory settings and values are illustrated in the following diagaram
 
 ## Allowed memory
 
-You should set ``allowed_mem`` to the maximum amount of memory that is available to the Cubed runtime. When running locally this should be no more than the amount of memory you have available on your machine. For cloud services it should be the amount of memory that the container runtime is configured to use.
+You should set `allowed_mem` to the maximum amount of memory that is available to each executor running tasks. When running locally this is typically the amount of memory you have available on your machine divided by the number of cores. For example, on an 8 core machine with 16GB of memory, setting `allowed_mem` to 2GB (which is actually the default) would be appropriate.
 
-In this example we set the allowed memory to 2GB:
+For cloud services `allowed_mem` should be the amount of memory that the container runtime is configured to use.
+
+In this example we increase the allowed memory to 4GB from the default of 2GB:
 
 ```python
 import cubed
 
-spec = cubed.Spec(allowed_mem="2GB")
+spec = cubed.Spec(allowed_mem="4GB")
 ```
 
 ## Projected memory

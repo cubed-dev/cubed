@@ -95,11 +95,11 @@ These properties can be passed directly to the {py:class}`Spec <cubed.Spec>` con
 | Property           | Default           | Description                                                                                                                             |
 |--------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
 | `work_dir`         | `None`            | The directory path (specified as an fsspec URL) used for storing intermediate data. If not set, the user's temporary directory is used. |
-| `allowed_mem`      | `2GB`             | The total memory available to a worker for running a task. This includes any `reserved_mem` that has been set.                          |
-| `reserved_mem`     | `100MB`           | The memory reserved on a worker for non-data use when running a task                                                                    |
-| `executor_name`    | `single-threaded` | The executor for running computations. One of `single-threaded`, `threads`, `processes`, `beam`, `coiled`, `dask`, `lithops`, `modal`.  |
+| `allowed_mem`      | `"2GB"`             | The total memory available to a worker for running a task. This includes any `reserved_mem` that has been set.                          |
+| `reserved_mem`     | `"100MB"`           | The memory reserved on a worker for non-data use when running a task                                                                    |
+| `executor_name`    | `"single-threaded"` | The executor for running computations. One of `"single-threaded"`, `"threads"`, `"processes"`, `"beam"`, `"coiled"`, `"dask"`, `"lithops"`, `"modal"`.  |
 | `executor_options` | `None`            | Options to pass to the executor on construction. See below for possible options for each executor.                                      |
-
+| `zarr_compressor`  | `"default"`| The compressor used by Zarr for intermediate data. If not specified, or set to `"default"`, Zarr will use the default Blosc compressor. If set to `None`, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression using Numcodecs. |
 
 ### Executor options
 
@@ -177,7 +177,7 @@ Note that `batch_size` is not currently supported for Lithops.
 
 | Property                     | Default | Description                                                                         |
 |------------------------------|---------|-------------------------------------------------------------------------------------|
-| `cloud`                      | `aws`   | The cloud to run on. One of `aws` or `gcp`.                                         |
+| `cloud`                      | `"aws"` | The cloud to run on. One of `"aws"` or `"gcp"`.                                     |
 | `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                              |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. The default is not to batch. |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                           |
