@@ -39,7 +39,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=11f78f62"></script>
+    <script src="../_static/documentation_options.js?v=cb20ffec"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -50,7 +50,7 @@
     <link rel="prev" title="User Guide" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="4d79a26
+  <meta name="docsearch:version" content="003bf92
 " />
   </head>
   
@@ -354,8 +354,9 @@
 <p>Cubed provides a variety of executors for running the tasks in a computation, which are discussed below. Executors are also sometimes referred to as runtimes.</p>
 <section id="local-single-machine-executors">
 <h2>Local single-machine executors<a class="headerlink" href="#local-single-machine-executors" title="Link to this heading">#</a></h2>
-<p>If you don’t specify an executor then the local in-process single-threaded Python executor is used. This is a very simple executor (called <code class="docutils literal notranslate"><span class="pre">single-threaded</span></code>) that is intended for testing on small amounts of data before running larger computations using the <code class="docutils literal notranslate"><span class="pre">processes</span></code> executor on a single machine, or a distributed executor in the cloud.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">processes</span></code> executor runs on a single machine, and uses all the cores on the machine. It doesn’t require any set up so it is useful for quickly getting started and running on datasets that don’t fit in memory, but can fit on a single machine’s disk.</p>
+<p>If you don’t specify an executor then the local in-process multi-threaded Python executor is used by default. This is called the <code class="docutils literal notranslate"><span class="pre">threads</span></code> executor. It doesn’t require any set up so it is useful for quickly getting started and running on datasets that don’t fit in memory, but that can fit on a single machine’s disk.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">processes</span></code> executor also runs on a single machine, and uses all the cores on the machine. However, unlike the <code class="docutils literal notranslate"><span class="pre">threads</span></code> executor, each task runs in a separate process, which avoids GIL contention, but adds some overhead in process startup time and communication. Typically, running using <code class="docutils literal notranslate"><span class="pre">processes</span></code> is more performant than <code class="docutils literal notranslate"><span class="pre">threads</span></code>, but it is worth trying both on your workload to see which is best.</p>
+<p>There is a third local executor called <code class="docutils literal notranslate"><span class="pre">single-threaded</span></code> that runs tasks sequentially in a single thread, and is intended for testing on small amounts of data.</p>
 </section>
 <section id="which-cloud-service-executor-should-i-use">
 <h2>Which cloud service executor should I use?<a class="headerlink" href="#which-cloud-service-executor-should-i-use" title="Link to this heading">#</a></h2>
