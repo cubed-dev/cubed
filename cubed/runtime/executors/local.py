@@ -18,6 +18,7 @@ from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor, TaskEndEvent
 from cubed.runtime.utils import (
     execution_stats,
+    execution_timing,
     handle_callbacks,
     handle_operation_start_callbacks,
     profile_memray,
@@ -61,9 +62,14 @@ class SingleThreadedExecutor(DagExecutor):
                     [callback.on_task_end(event) for callback in callbacks]
 
 
+@execution_timing
+def run_func_threads(input, func=None, config=None, name=None, compute_id=None):
+    return func(input, config=config)
+
+
 @profile_memray
 @execution_stats
-def run_func(input, func=None, config=None, name=None, compute_id=None):
+def run_func_processes(input, func=None, config=None, name=None, compute_id=None):
     return func(input, config=config)
 
 
@@ -142,7 +148,11 @@ async def map_unordered(
 
 
 def pipeline_to_stream(
-    concurrent_executor: Executor, name: str, pipeline: CubedPipeline, **kwargs
+    concurrent_executor: Executor,
+    run_func: Callable,
+    name: str,
+    pipeline: CubedPipeline,
+    **kwargs,
 ) -> Stream:
     return stream.iterate(
         map_unordered(
@@ -200,15 +210,17 @@ async def async_execute_dag(
                 mp_context=context,
                 max_tasks_per_child=max_tasks_per_child,
             )
+        run_func = run_func_processes
     else:
         concurrent_executor = ThreadPoolExecutor(max_workers=max_workers)
+        run_func = run_func_threads
     try:
         if not compute_arrays_in_parallel:
             # run one pipeline at a time
             for name, node in visit_nodes(dag, resume=resume):
                 handle_operation_start_callbacks(callbacks, name)
                 st = pipeline_to_stream(
-                    concurrent_executor, name, node["pipeline"], **kwargs
+                    concurrent_executor, run_func, name, node["pipeline"], **kwargs
                 )
                 async with st.stream() as streamer:
                     async for _, stats in streamer:
@@ -218,7 +230,7 @@ async def async_execute_dag(
                 # run pipelines in the same topological generation in parallel by merging their streams
                 streams = [
                     pipeline_to_stream(
-                        concurrent_executor, name, node["pipeline"], **kwargs
+                        concurrent_executor, run_func, name, node["pipeline"], **kwargs
                     )
                     for name, node in gen
                 ]

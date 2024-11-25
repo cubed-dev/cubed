@@ -40,10 +40,31 @@ def execute_with_stats(function, *args, **kwargs):
     )
 
 
+def execute_with_timing(function, *args, **kwargs):
+    """Invoke function and measure timing information.
+
+    Returns the result of the function call and a stats dictionary.
+    """
+
+    function_start_tstamp = time.time()
+    result = function(*args, **kwargs)
+    function_end_tstamp = time.time()
+    return result, dict(
+        function_start_tstamp=function_start_tstamp,
+        function_end_tstamp=function_end_tstamp,
+    )
+
+
 def execution_stats(func):
     """Decorator to measure timing information and peak memory usage of a function call."""
 
     return partial(execute_with_stats, func)
+
+
+def execution_timing(func):
+    """Decorator to measure timing information of a function call."""
+
+    return partial(execute_with_timing, func)
 
 
 def execute_with_memray(function, input, **kwargs):

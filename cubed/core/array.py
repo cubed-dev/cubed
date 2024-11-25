@@ -274,9 +274,9 @@ def compute(
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
-            from cubed.runtime.executors.local import SingleThreadedExecutor
+            from cubed.runtime.executors.local import ThreadsExecutor
 
-            executor = SingleThreadedExecutor()
+            executor = ThreadsExecutor()
 
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
     plan.execute(
