@@ -1,4 +1,4 @@
-# Cubed: Out-of-core array processing in Python
+# Cubed: Scalable out-of-core array processing in Python
 
 Cubed is a Python library for scalable out-of-core multi-dimensional array processing with bounded memory.
 
