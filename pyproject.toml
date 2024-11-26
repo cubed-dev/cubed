@@ -9,7 +9,7 @@ authors = [
     {name = "Tom White", email = "tom.e.white@gmail.com"},
 ]
 license = {text = "Apache License 2.0"}
-description = "Bounded-memory serverless distributed N-dimensional array processing"
+description = "Scalable out-of-core array processing in Python"
 readme = {file = "README.md", content-type = "text/markdown"}
 classifiers = [
     "Development Status :: 4 - Beta",
