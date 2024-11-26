@@ -1,23 +1,34 @@
-# Cubed
+# Cubed: Scalable out-of-core array processing in Python
 
-## Bounded-memory serverless distributed N-dimensional array processing
+Cubed is a Python library for scalable out-of-core multi-dimensional array processing with bounded memory.
 
-Cubed is a distributed N-dimensional array library implemented in Python using bounded-memory serverless processing and Zarr for storage.
+::::{grid} 2
+:gutter: 2
 
-- Implements the [Python Array API standard](https://data-apis.org/array-api/latest/)
-- Guaranteed maximum memory usage for standard array functions
-- Follows [Dask Array](https://docs.dask.org/en/stable/array.html)'s chunked array API (`map_blocks`, `map_overlap`, `rechunk`, `apply_gufunc`, etc)
-- [Zarr](https://zarr.readthedocs.io/en/stable/) for storage
-- Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Modal](https://modal.com/), [Apache Beam](https://beam.apache.org/)
-- Integration with [Xarray](https://xarray.dev/) via [cubed-xarray](https://github.com/xarray-contrib/cubed-xarray)
-
-## Documentation
+:::{grid-item-card}  Familiar API
+Cubed provides NumPy and Xarray APIs for processing your multi-dimensional array data
+:::
+:::{grid-item-card}  Dask replacement
+Cubed is a drop-in replacement for Dask's Array API
+:::
+:::{grid-item-card}  Predictable memory usage
+Cubed will tell you if your computation would run out of memory *before* running it
+:::
+:::{grid-item-card}  Reliable
+Cubed is designed to be robust to failures and will reliably complete a computation
+:::
+:::{grid-item-card}  Run locally
+Cubed can process hundreds of GB of array data on your laptop using all available cores
+:::
+:::{grid-item-card}  Scale in the cloud
+Cubed is horizontally scalable and stateless, and can scale to multi-TB datasets in the cloud
+:::
+::::
 
 ```{toctree}
----
-maxdepth: 2
-caption: For users
----
+:hidden:
+:maxdepth: 2
+:caption: For users
 getting-started/index
 user-guide/index
 Intro slides <https://cubed-dev.github.io/cubed/cubed-intro.slides.html>
@@ -31,10 +42,9 @@ articles
 ```
 
 ```{toctree}
----
-maxdepth: 2
-caption: For developers
----
+:hidden:
+:maxdepth: 2
+:caption: For developers
 design
 operations
 computation

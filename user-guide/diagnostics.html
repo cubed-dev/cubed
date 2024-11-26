@@ -32,6 +32,8 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
@@ -39,10 +41,11 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="../_static/documentation_options.js?v=cb20ffec"></script>
+    <script src="../_static/documentation_options.js?v=51b8dbb0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/diagnostics';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -50,7 +53,7 @@
     <link rel="prev" title="Scaling" href="scaling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="003bf92
+  <meta name="docsearch:version" content="4bc8517
 " />
   </head>
   
@@ -390,11 +393,11 @@
 <section id="progress-bar">
 <h3>Progress bar<a class="headerlink" href="#progress-bar" title="Link to this heading">#</a></h3>
 <p>You can display a progress bar to track your computation by passing callbacks to <a class="reference internal" href="../generated/cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; from cubed.diagnostics.rich import RichProgressBar
-&gt;&gt;&gt; progress = RichProgressBar()
-&gt;&gt;&gt; c.compute(callbacks=[progress])  # c is the array from above
-  create-arrays 1/1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
-  op-003 add    4/4 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">cubed.diagnostics.rich</span> <span class="kn">import</span> <span class="n">RichProgressBar</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">progress</span> <span class="o">=</span> <span class="n">RichProgressBar</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress</span><span class="p">])</span>  <span class="c1"># c is the array from above</span>
+  <span class="n">create</span><span class="o">-</span><span class="n">arrays</span> <span class="mi">1</span><span class="o">/</span><span class="mi">1</span> <span class="err">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="mf">100.0</span><span class="o">%</span> <span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
+  <span class="n">op</span><span class="o">-</span><span class="mi">003</span> <span class="n">add</span>    <span class="mi">4</span><span class="o">/</span><span class="mi">4</span> <span class="err">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="mf">100.0</span><span class="o">%</span> <span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
 <p>The two current progress bar choice are:</p>
@@ -407,9 +410,9 @@
 <section id="history">
 <h3>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h3>
 <p>The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [<code class="docutils literal notranslate"><span class="pre">events.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">plan.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">stats.csv</span></code>] to a new directory under the current directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; from cubed.diagnostics.history import HistoryCallback
-&gt;&gt;&gt; hist = HistoryCallback()
-&gt;&gt;&gt; c.compute(callbacks=[hist])
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">cubed.diagnostics.history</span> <span class="kn">import</span> <span class="n">HistoryCallback</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hist</span> <span class="o">=</span> <span class="n">HistoryCallback</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">hist</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -417,9 +420,9 @@
 <h3>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h3>
 <p>The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation. (Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.)</p>
 <p>The timeline callback will write a graphic <code class="docutils literal notranslate"><span class="pre">timeline.svg</span></code> to a directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; from cubed.diagnostics.timeline import TimelineVisualizationCallback
-&gt;&gt;&gt; timeline_viz = TimelineVisualizationCallback()
-&gt;&gt;&gt; c.compute(callbacks=[timeline_viz])
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">cubed.diagnostics.timeline</span> <span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">timeline_viz</span> <span class="o">=</span> <span class="n">TimelineVisualizationCallback</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">timeline_viz</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>

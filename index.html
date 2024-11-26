@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Cubed &#8212; Cubed</title>
+    <title>Cubed: Scalable out-of-core array processing in Python &#8212; Cubed</title>
   
   
   
@@ -32,6 +32,8 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
@@ -39,17 +41,18 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="_static/documentation_options.js?v=cb20ffec"></script>
+    <script src="_static/documentation_options.js?v=51b8dbb0"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting Started" href="getting-started/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="003bf92
+  <meta name="docsearch:version" content="4bc8517
 " />
   </head>
   
@@ -312,9 +315,7 @@
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -325,22 +326,11 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Cubed</h1>
+    <h1>Cubed: Scalable out-of-core array processing in Python</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bounded-memory-serverless-distributed-n-dimensional-array-processing">Bounded-memory serverless distributed N-dimensional array processing</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a><ul class="nav section-nav flex-column">
-</ul>
-</li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -350,104 +340,71 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="cubed">
-<h1>Cubed<a class="headerlink" href="#cubed" title="Link to this heading">#</a></h1>
-<section id="bounded-memory-serverless-distributed-n-dimensional-array-processing">
-<h2>Bounded-memory serverless distributed N-dimensional array processing<a class="headerlink" href="#bounded-memory-serverless-distributed-n-dimensional-array-processing" title="Link to this heading">#</a></h2>
-<p>Cubed is a distributed N-dimensional array library implemented in Python using bounded-memory serverless processing and Zarr for storage.</p>
-<ul class="simple">
-<li><p>Implements the <a class="reference external" href="https://data-apis.org/array-api/latest/">Python Array API standard</a></p></li>
-<li><p>Guaranteed maximum memory usage for standard array functions</p></li>
-<li><p>Follows <a class="reference external" href="https://docs.dask.org/en/stable/array.html">Dask Array</a>’s chunked array API (<code class="docutils literal notranslate"><span class="pre">map_blocks</span></code>, <code class="docutils literal notranslate"><span class="pre">map_overlap</span></code>, <code class="docutils literal notranslate"><span class="pre">rechunk</span></code>, <code class="docutils literal notranslate"><span class="pre">apply_gufunc</span></code>, etc)</p></li>
-<li><p><a class="reference external" href="https://zarr.readthedocs.io/en/stable/">Zarr</a> for storage</p></li>
-<li><p>Multiple serverless runtimes: Python (in-process), <a class="reference external" href="https://lithops-cloud.github.io/">Lithops</a>, <a class="reference external" href="https://modal.com/">Modal</a>, <a class="reference external" href="https://beam.apache.org/">Apache Beam</a></p></li>
-<li><p>Integration with <a class="reference external" href="https://xarray.dev/">Xarray</a> via <a class="reference external" href="https://github.com/xarray-contrib/cubed-xarray">cubed-xarray</a></p></li>
-</ul>
-</section>
-<section id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h2>
-<div class="toctree-wrapper compound">
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="getting-started/index.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getting-started/installation.html">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getting-started/demo.html">Demo</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="user-guide/index.html">User Guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/executors.html">Executors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/storage.html">Storage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/memory.html">Memory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/reliability.html">Reliability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/optimization.html">Optimization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/scaling.html">Scaling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user-guide/diagnostics.html">Diagnostics</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference external" href="https://cubed-dev.github.io/cubed/cubed-intro.slides.html">Intro slides</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#array">Array</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#io">IO</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#chunk-specific-functions">Chunk-specific functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#non-standardised-functions">Non-standardised functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#random-number-generation">Random number generation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#runtime">Runtime</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="array-api.html">Python Array API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="array-api.html#differences-between-cubed-and-the-standard">Differences between Cubed and the standard</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#specification">Specification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="configuration.html#reference">Reference</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="why-cubed.html">Why Cubed?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="related-projects.html">Related Projects</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="related-projects.html#dask">Dask</a></li>
-<li class="toctree-l2"><a class="reference internal" href="related-projects.html#xarray">Xarray</a></li>
-<li class="toctree-l2"><a class="reference internal" href="related-projects.html#previous-work">Previous work</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="articles.html">Articles</a></li>
-</ul>
+  <section id="cubed-scalable-out-of-core-array-processing-in-python">
+<h1>Cubed: Scalable out-of-core array processing in Python<a class="headerlink" href="#cubed-scalable-out-of-core-array-processing-in-python" title="Link to this heading">#</a></h1>
+<p>Cubed is a Python library for scalable out-of-core multi-dimensional array processing with bounded memory.</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-2 sd-row-cols-xs-2 sd-row-cols-sm-2 sd-row-cols-md-2 sd-row-cols-lg-2 sd-g-2 sd-g-xs-2 sd-g-sm-2 sd-g-md-2 sd-g-lg-2 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Familiar API</div>
+<p class="sd-card-text">Cubed provides NumPy and Xarray APIs for processing your multi-dimensional array data</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Dask replacement</div>
+<p class="sd-card-text">Cubed is a drop-in replacement for Dask’s Array API</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Predictable memory usage</div>
+<p class="sd-card-text">Cubed will tell you if your computation would run out of memory <em>before</em> running it</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Reliable</div>
+<p class="sd-card-text">Cubed is designed to be robust to failures and will reliably complete a computation</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Run locally</div>
+<p class="sd-card-text">Cubed can process hundreds of GB of array data on your laptop using all available cores</p>
+</div>
+</div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm docutils">
+<div class="sd-card-body docutils">
+<div class="sd-card-title sd-font-weight-bold docutils">
+Scale in the cloud</div>
+<p class="sd-card-text">Cubed is horizontally scalable and stateless, and can scale to multi-TB datasets in the cloud</p>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="toctree-wrapper compound">
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">For developers</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="design.html">Design</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="design.html#storage">Storage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="design.html#runtime">Runtime</a></li>
-<li class="toctree-l2"><a class="reference internal" href="design.html#primitive-operations">Primitive operations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="design.html#core-operations">Core operations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="design.html#array-api">Array API</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="operations.html">Operations</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#dependency-tree">Dependency Tree</a></li>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#elemwise"><code class="docutils literal notranslate"><span class="pre">elemwise</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#map-blocks"><code class="docutils literal notranslate"><span class="pre">map_blocks</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#map-selection"><code class="docutils literal notranslate"><span class="pre">map_selection</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#blockwise"><code class="docutils literal notranslate"><span class="pre">blockwise</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#rechunk"><code class="docutils literal notranslate"><span class="pre">rechunk</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="operations.html#reduction-and-arg-reduction"><code class="docutils literal notranslate"><span class="pre">reduction</span></code> and <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="computation.html">Computation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="computation.html#plan">Plan</a></li>
-<li class="toctree-l2"><a class="reference internal" href="computation.html#memory">Memory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="computation.html#execution">Execution</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="contributing.html#development">Development</a></li>
-</ul>
-</li>
-</ul>
 </div>
-</section>
+<div class="toctree-wrapper compound">
+</div>
 </section>
 
 
@@ -476,25 +433,6 @@
             </div>
             
             
-              
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bounded-memory-serverless-distributed-n-dimensional-array-processing">Bounded-memory serverless distributed N-dimensional array processing</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a><ul class="nav section-nav flex-column">
-</ul>
-</li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
