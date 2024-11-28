@@ -29,9 +29,8 @@ Cubed is horizontally scalable and stateless, and can scale to multi-TB datasets
 :hidden:
 :maxdepth: 2
 :caption: For users
-getting-started/index
+getting-started
 user-guide/index
-Intro slides <https://cubed-dev.github.io/cubed/cubed-intro.slides.html>
 Examples <https://github.com/tomwhite/cubed/tree/main/examples/README.md>
 api
 array-api
