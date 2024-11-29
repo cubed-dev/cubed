@@ -19,4 +19,4 @@ def test_prod_sum_bool():
 )
 def test_object_dtype():
     a = xp.asarray(["a", "b"], dtype=object, chunks=2)
-    cubed.to_zarr(a, store=None)
+    cubed.to_zarr(a, target=None)

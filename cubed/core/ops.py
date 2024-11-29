@@ -118,7 +118,13 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     return Array(name, target, spec, plan)
 
 
-def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **kwargs):
+def store(
+    sources: Union["Array", Sequence["Array"]],
+    targets,
+    target_paths=None,
+    executor=None,
+    **kwargs,
+):
     """Save source arrays to array-like objects.
 
     In the current implementation ``targets`` must be Zarr arrays.
@@ -139,17 +145,21 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
     if isinstance(sources, CoreArray):
         sources = [sources]
         targets = [targets]
+        target_paths = [target_paths] if target_paths is not None else [None]
 
     if any(not isinstance(s, CoreArray) for s in sources):
         raise ValueError("All sources must be cubed array objects")
 
+    # TODO: test len(target_paths)
+    if target_paths is None:
+        target_paths = [None] * len(targets)
     if len(sources) != len(targets):
         raise ValueError(
             f"Different number of sources ({len(sources)}) and targets ({len(targets)})"
         )
 
     arrays = []
-    for source, target in zip(sources, targets):
+    for source, target, target_path in zip(sources, targets, target_paths):
         identity = lambda a: a
         ind = tuple(range(source.ndim))
         array = blockwise(
@@ -160,12 +170,13 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
             dtype=source.dtype,
             align_arrays=False,
             target_store=target,
+            target_path=target_path,
         )
         arrays.append(array)
     compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
 
 
-def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
+def to_zarr(x: "Array", target, path=None, executor=None, **kwargs):
     """Save an array to Zarr storage.
 
     Note that this operation is eager, and will run the computation
@@ -175,7 +186,7 @@ def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
     ----------
     x : cubed.Array
         Array to save
-    store : string or Zarr Store
+    target : string or Zarr Store
         Output Zarr store
     path : string, optional
         Group path
@@ -183,21 +194,7 @@ def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
     """
-    # Note that the intermediate write to x's store will be optimized away
-    # by map fusion (if it was produced with a blockwise operation).
-    identity = lambda a: a
-    ind = tuple(range(x.ndim))
-    out = blockwise(
-        identity,
-        ind,
-        x,
-        ind,
-        dtype=x.dtype,
-        align_arrays=False,
-        target_store=store,
-        target_path=path,
-    )
-    out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
+    store(x, target, path, executor=executor, **kwargs)
 
 
 def blockwise(

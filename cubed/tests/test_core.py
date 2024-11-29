@@ -670,9 +670,9 @@ def test_quad_means(tmp_path, t_length=50):
         filename=tmp_path / "quad_means", optimize_function=fuse_all_optimize_dag
     )
 
-    cubed.to_zarr(m0, store=tmp_path / "result0")
+    cubed.to_zarr(m0, target=tmp_path / "result0")
     cubed.to_zarr(
-        m1, store=tmp_path / "result1", optimize_function=fuse_all_optimize_dag
+        m1, target=tmp_path / "result1", optimize_function=fuse_all_optimize_dag
     )
 
     res0 = open_backend_array(tmp_path / "result0", mode="r")
@@ -700,7 +700,7 @@ def test_quad_means_zarr(tmp_path, t_length=50):
 
     m.visualize(filename=tmp_path / "quad_means", optimize_function=opt_fn)
 
-    cubed.to_zarr(m, store=tmp_path / "result", optimize_function=opt_fn)
+    cubed.to_zarr(m, target=tmp_path / "result", optimize_function=opt_fn)
 
 
 def sqrts(x):
