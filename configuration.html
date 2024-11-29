@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
 
-    <script src="_static/documentation_options.js?v=9f6b4ff0"></script>
+    <script src="_static/documentation_options.js?v=9a49c360"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Python Array API" href="array-api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="8781b5f
+  <meta name="docsearch:version" content="23ddc75
 " />
   </head>
   
@@ -154,7 +154,12 @@
 <li class="toctree-l2"><a class="reference internal" href="user-guide/diagnostics.html">Diagnostics</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/tomwhite/cubed/tree/main/examples/README.md">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/how-to-run.html">How to run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/basic-array-ops.html">Basic array operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/pangeo.html">Pangeo</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.html">cubed.Array</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
@@ -404,7 +409,7 @@
 <h3>YAML file<a class="headerlink" href="#yaml-file" title="Link to this heading">#</a></h3>
 <p>A YAML file is a good way to encapsulate the configuration in a single file that lives outside the Python program.
 It’s a useful way to package up the settings for running using a particular executor, so it can be reused.
-The Cubed <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/README.md">examples</a> use YAML files for this reason.</p>
+The Cubed <a class="reference internal" href="examples/index.html"><span class="std std-doc">examples</span></a> use YAML files for this reason.</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">work_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;s3://cubed-$USER-temp&quot;</span>
 <span class="w">  </span><span class="nt">allowed_mem</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2GB&quot;</span>
@@ -633,7 +638,7 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p>Tasks that take longer than the timeout will be automatically killed and retried. Defaults to the timeout specified when <a class="reference external" href="https://lithops-cloud.github.io/docs/source/cli.html#lithops-runtime-deploy-runtime-name">deploying the lithops runtime image</a>. This is 180 seconds in the <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/README.md">examples</a>.</p></td>
+<td><p>Tasks that take longer than the timeout will be automatically killed and retried. Defaults to the timeout specified when <a class="reference external" href="https://lithops-cloud.github.io/docs/source/cli.html#lithops-runtime-deploy-runtime-name">deploying the lithops runtime image</a>. This is 180 seconds in the <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/lithops/aws/README.md">examples</a>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_backups</span></code></p></td>
 <td><p></p></td>

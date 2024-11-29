@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cubed.apply_gufunc &#8212; Cubed</title>
+    <title>Pangeo &#8212; Cubed</title>
   
   
   
@@ -46,11 +46,11 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'generated/cubed.apply_gufunc';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/pangeo';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cubed.map_blocks" href="cubed.map_blocks.html" />
-    <link rel="prev" title="cubed.to_zarr" href="cubed.to_zarr.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="Basic array operations" href="basic-array-ops.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="23ddc75
@@ -154,35 +154,35 @@
 <li class="toctree-l2"><a class="reference internal" href="../user-guide/diagnostics.html">Diagnostics</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../examples/how-to-run.html">How to run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/basic-array-ops.html">Basic array operations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/pangeo.html">Pangeo</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how-to-run.html">How to run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic-array-ops.html">Basic array operations</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Pangeo</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../api.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.html">cubed.Array</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.compute.html">cubed.Array.compute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Array.visualize.html">cubed.Array.visualize</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.compute.html">cubed.compute</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.visualize.html">cubed.visualize</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.from_array.html">cubed.from_array</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.from_zarr.html">cubed.from_zarr</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.store.html">cubed.store</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.to_zarr.html">cubed.to_zarr</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">cubed.apply_gufunc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.map_blocks.html">cubed.map_blocks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.map_overlap.html">cubed.map_overlap</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.rechunk.html">cubed.rechunk</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.nanmean.html">cubed.nanmean</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.nansum.html">cubed.nansum</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.pad.html">cubed.pad</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.random.random.html">cubed.random.random</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Callback.html">cubed.Callback</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.Spec.html">cubed.Spec</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.html">cubed.Array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.compute.html">cubed.Array.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.rechunk.html">cubed.Array.rechunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Array.visualize.html">cubed.Array.visualize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.compute.html">cubed.compute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.visualize.html">cubed.visualize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.from_array.html">cubed.from_array</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.from_zarr.html">cubed.from_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.store.html">cubed.store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.to_zarr.html">cubed.to_zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.apply_gufunc.html">cubed.apply_gufunc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.map_blocks.html">cubed.map_blocks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.map_overlap.html">cubed.map_overlap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.rechunk.html">cubed.rechunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.nanmean.html">cubed.nanmean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.nansum.html">cubed.nansum</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.pad.html">cubed.pad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.random.random.html">cubed.random.random</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Callback.html">cubed.Callback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.Spec.html">cubed.Spec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../array-api.html">Python Array API</a></li>
@@ -268,7 +268,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/generated/cubed.apply_gufunc.rst" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/examples/pangeo.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -285,7 +285,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fgenerated/cubed.apply_gufunc.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fexamples/pangeo.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -327,7 +327,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>cubed.apply_gufunc</h1>
+    <h1>Pangeo</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -337,7 +337,8 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.apply_gufunc"><code class="docutils literal notranslate"><span class="pre">apply_gufunc()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebook-examples">Running the notebook examples</a></li>
 </ul>
             </nav>
         </div>
@@ -349,22 +350,27 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="cubed-apply-gufunc">
-<h1>cubed.apply_gufunc<a class="headerlink" href="#cubed-apply-gufunc" title="Link to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="cubed.apply_gufunc">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">apply_gufunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signature</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.apply_gufunc" title="Link to this definition">#</a></dt>
-<dd><p>Apply a generalized ufunc or similar python function to arrays.</p>
-<p>This is a cutdown version of the
-<a class="reference external" href="https://docs.dask.org/en/stable/generated/dask.array.gufunc.apply_gufunc.html">equivalent function</a>
-in Dask. Refer there for usage information.</p>
-<p>Current limitations: <code class="docutils literal notranslate"><span class="pre">keepdims</span></code>, and <code class="docutils literal notranslate"><span class="pre">allow_rechunk</span></code> are not supported;
-and multiple outputs are not supported.</p>
-<p>Cubed assumes that <code class="docutils literal notranslate"><span class="pre">func</span></code> will allocate a new output array. However, if it allocates more memory
-than than, then you need to tell Cubed about it by setting the <code class="docutils literal notranslate"><span class="pre">extra_projected_mem</span></code> parameter
-to the amount needed in bytes (per task).</p>
-</dd></dl>
-
+  <section id="pangeo">
+<h1>Pangeo<a class="headerlink" href="#pangeo" title="Link to this heading">#</a></h1>
+<section id="notebooks">
+<h2>Notebooks<a class="headerlink" href="#notebooks" title="Link to this heading">#</a></h2>
+<p>The following example notebooks demonstrate the use of Cubed with Xarray to tackle some challenging Pangeo workloads:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-1-vorticity.ipynb">Pangeo Vorticity Workload</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-2-quadratic-means.ipynb">Pangeo Quadratic Means Workload</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-3-tem.ipynb">Pangeo Transformed Eulerian Mean Workload</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-4-climatological-anomalies.ipynb">Pangeo Climatological Anomalies Workload</a></p></li>
+</ol>
+</section>
+<section id="running-the-notebook-examples">
+<h2>Running the notebook examples<a class="headerlink" href="#running-the-notebook-examples" title="Link to this heading">#</a></h2>
+<p>Before running these notebook examples, you will need to install some additional dependencies (besides Cubed).</p>
+<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">rich</span> <span class="pre">pydot</span> <span class="pre">flox</span> <span class="pre">cubed-xarray</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">cubed-xarray</span></code> is necessary to wrap Cubed arrays as Xarray DataArrays or Xarray Datasets.
+<code class="docutils literal notranslate"><span class="pre">flox</span></code> is for supporting efficient groupby operations in Xarray.
+<code class="docutils literal notranslate"><span class="pre">pydot</span></code> allows plotting the Cubed execution plan.
+<code class="docutils literal notranslate"><span class="pre">rich</span></code> is for showing progress of array operations within callbacks applied to Cubed plan operations.</p>
+</section>
 </section>
 
 
@@ -379,20 +385,20 @@ to the amount needed in bytes (per task).</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cubed.to_zarr.html"
+       href="basic-array-ops.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cubed.to_zarr</p>
+        <p class="prev-next-title">Basic array operations</p>
       </div>
     </a>
     <a class="right-next"
-       href="cubed.map_blocks.html"
+       href="../api.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cubed.map_blocks</p>
+        <p class="prev-next-title">API Reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -413,7 +419,8 @@ to the amount needed in bytes (per task).</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed.apply_gufunc"><code class="docutils literal notranslate"><span class="pre">apply_gufunc()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebook-examples">Running the notebook examples</a></li>
 </ul>
   </nav></div>
 

@@ -12,6 +12,7 @@ The `processes` executor also runs on a single machine, and uses all the cores o
 
 There is a third local executor called `single-threaded` that runs tasks sequentially in a single thread, and is intended for testing on small amounts of data.
 
+(which-cloud-service)=
 ## Which cloud service executor should I use?
 
 When it comes to scaling out, there are a number of executors that work in the cloud.
@@ -39,4 +40,4 @@ spec = cubed.Spec(
 )
 ```
 
-A default spec may also be configured using a YAML file. The [examples](https://github.com/cubed-dev/cubed/blob/main/examples/README.md) show this in more detail for all of the executors described above.
+A default spec may also be configured using a YAML file. The [examples](#cloud-set-up) show this in more detail for all of the executors described above.
