@@ -41,7 +41,7 @@ Before running the examples, first change to the top-level examples directory (`
 export CUBED_CONFIG=$(pwd)/lithops/gcp
 ```
 
-Then you can run the examples described [there](../../README.md).
+Then you can run the examples in the [docs](https://cubed-dev.github.io/cubed/examples/index.html).
 
 ## Cleaning up
 
