@@ -193,7 +193,7 @@ def execute_dag(
             for name, node in visit_nodes(dag, resume=resume):
                 handle_operation_start_callbacks(callbacks, name)
                 pipeline = node["pipeline"]
-                for _, stats in map_unordered(
+                for result, stats in map_unordered(
                     executor,
                     [run_func],
                     [pipeline.mappable],
@@ -207,7 +207,7 @@ def execute_dag(
                     name=name,
                     compute_id=compute_id,
                 ):
-                    handle_callbacks(callbacks, stats)
+                    handle_callbacks(callbacks, result, stats)
         else:
             for gen in visit_node_generations(dag, resume=resume):
                 group_map_functions = []
@@ -223,7 +223,7 @@ def execute_dag(
                     group_names.append(name)
                 for name in group_names:
                     handle_operation_start_callbacks(callbacks, name)
-                for _, stats in map_unordered(
+                for result, stats in map_unordered(
                     executor,
                     group_map_functions,
                     group_map_iterdata,
@@ -234,7 +234,7 @@ def execute_dag(
                     # TODO: other kwargs (func, config, name)
                     compute_id=compute_id,
                 ):
-                    handle_callbacks(callbacks, stats)
+                    handle_callbacks(callbacks, result, stats)
 
 
 def standardise_lithops_stats(future: RetryingFuture) -> Dict[str, Any]:

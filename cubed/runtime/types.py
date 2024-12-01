@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Any, Iterable, Optional
 
 from networkx import MultiDiGraph
 
@@ -70,6 +70,9 @@ class TaskEndEvent:
 
     num_tasks: int = 1
     """Number of tasks that this event applies to (default 1)."""
+
+    result: Optional[Any] = None
+    """Return value of the task."""
 
     task_create_tstamp: Optional[float] = None
     """Timestamp of when the task was created by the client."""

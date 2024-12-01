@@ -99,18 +99,19 @@ def handle_operation_start_callbacks(callbacks, name):
         [callback.on_operation_start(event) for callback in callbacks]
 
 
-def handle_callbacks(callbacks, stats):
+def handle_callbacks(callbacks, result, stats):
     """Construct a TaskEndEvent from stats and send to all callbacks."""
 
     if callbacks is not None:
         if "task_result_tstamp" not in stats:
             task_result_tstamp = time.time()
             event = TaskEndEvent(
+                result=result,
                 task_result_tstamp=task_result_tstamp,
                 **stats,
             )
         else:
-            event = TaskEndEvent(**stats)
+            event = TaskEndEvent(result=result, **stats)
         [callback.on_task_end(event) for callback in callbacks]
 
 

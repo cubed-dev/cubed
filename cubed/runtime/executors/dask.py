@@ -134,8 +134,8 @@ async def async_execute_dag(
                 handle_operation_start_callbacks(callbacks, name)
                 st = pipeline_to_stream(client, name, node["pipeline"], **kwargs)
                 async with st.stream() as streamer:
-                    async for _, stats in streamer:
-                        handle_callbacks(callbacks, stats)
+                    async for result, stats in streamer:
+                        handle_callbacks(callbacks, result, stats)
         else:
             for gen in visit_node_generations(dag, resume=resume):
                 # run pipelines in the same topological generation in parallel by merging their streams
@@ -145,8 +145,8 @@ async def async_execute_dag(
                 ]
                 merged_stream = stream.merge(*streams)
                 async with merged_stream.stream() as streamer:
-                    async for _, stats in streamer:
-                        handle_callbacks(callbacks, stats)
+                    async for result, stats in streamer:
+                        handle_callbacks(callbacks, result, stats)
 
 
 class DaskExecutor(DagExecutor):

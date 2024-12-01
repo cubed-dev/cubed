@@ -50,7 +50,7 @@ class SingleThreadedExecutor(DagExecutor):
             handle_operation_start_callbacks(callbacks, name)
             pipeline: CubedPipeline = node["pipeline"]
             for m in pipeline.mappable:
-                exec_stage_func(
+                result = exec_stage_func(
                     m,
                     pipeline.function,
                     config=pipeline.config,
@@ -58,7 +58,7 @@ class SingleThreadedExecutor(DagExecutor):
                     compute_id=compute_id,
                 )
                 if callbacks is not None:
-                    event = TaskEndEvent(name=name)
+                    event = TaskEndEvent(name=name, result=result)
                     [callback.on_task_end(event) for callback in callbacks]
 
 
@@ -223,8 +223,8 @@ async def async_execute_dag(
                     concurrent_executor, run_func, name, node["pipeline"], **kwargs
                 )
                 async with st.stream() as streamer:
-                    async for _, stats in streamer:
-                        handle_callbacks(callbacks, stats)
+                    async for result, stats in streamer:
+                        handle_callbacks(callbacks, result, stats)
         else:
             for gen in visit_node_generations(dag, resume=resume):
                 # run pipelines in the same topological generation in parallel by merging their streams
@@ -236,8 +236,8 @@ async def async_execute_dag(
                 ]
                 merged_stream = stream.merge(*streams)
                 async with merged_stream.stream() as streamer:
-                    async for _, stats in streamer:
-                        handle_callbacks(callbacks, stats)
+                    async for result, stats in streamer:
+                        handle_callbacks(callbacks, result, stats)
 
     finally:
         # don't wait for any cancelled tasks
