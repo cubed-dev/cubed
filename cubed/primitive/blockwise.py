@@ -72,6 +72,7 @@ class BlockwiseSpec:
     iterable_input_blocks: Tuple[bool, ...]
     reads_map: Dict[str, CubedArrayProxy]
     writes_list: List[CubedArrayProxy]
+    return_writes_stores: bool = False
 
 
 def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
@@ -99,6 +100,9 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
         else:
             result = backend_array_to_numpy_array(result)
             config.writes_list[i].open()[out_chunk_key] = result
+
+    if config.return_writes_stores:
+        return [write_proxy.open().store for write_proxy in config.writes_list]
 
 
 def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSpec):
@@ -267,6 +271,7 @@ def general_blockwise(
     function_nargs: Optional[int] = None,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
+    return_writes_stores: bool = False,
     **kwargs,
 ) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -365,6 +370,7 @@ def general_blockwise(
         iterable_input_blocks,
         read_proxies,
         write_proxies,
+        return_writes_stores,
     )
 
     # calculate projected memory
@@ -534,6 +540,7 @@ def fuse(
     function_nargs = pipeline1.config.function_nargs
     read_proxies = pipeline1.config.reads_map
     write_proxies = pipeline2.config.writes_list
+    return_writes_stores = pipeline2.config.return_writes_stores
     num_input_blocks = tuple(
         n * pipeline2.config.num_input_blocks[0]
         for n in pipeline1.config.num_input_blocks
@@ -547,6 +554,7 @@ def fuse(
         iterable_input_blocks,
         read_proxies,
         write_proxies,
+        return_writes_stores,
     )
 
     source_array_names = primitive_op1.source_array_names
@@ -679,6 +687,7 @@ def fuse_blockwise_specs(
     for bws in predecessor_bw_specs:
         read_proxies.update(bws.reads_map)
     write_proxies = bw_spec.writes_list
+    return_writes_stores = bw_spec.return_writes_stores
     return BlockwiseSpec(
         fused_key_func,
         fused_func,
@@ -687,6 +696,7 @@ def fuse_blockwise_specs(
         fused_iterable_input_blocks,
         read_proxies,
         write_proxies,
+        return_writes_stores,
     )
 
 
