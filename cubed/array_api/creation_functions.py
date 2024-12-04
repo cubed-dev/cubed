@@ -145,6 +145,8 @@ def full(
             dtype = nxp.int64
         elif isinstance(fill_value, float):
             dtype = nxp.float64
+        elif isinstance(fill_value, complex):
+            dtype = nxp.complex128
         else:
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
