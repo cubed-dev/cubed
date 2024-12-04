@@ -65,7 +65,7 @@ def deterministic_failure_modal_long_timeout(
 
 async def run_test(app_function, input, use_backups=False, batch_size=None, **kwargs):
     outputs = set()
-    async with app.run(show_progress=False):
+    async with app.run():
         async for output in map_unordered(
             app_function,
             input,

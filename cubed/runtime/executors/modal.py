@@ -212,7 +212,7 @@ async def async_execute_dag(
         check_runtime_memory(spec)
         if "use_backups" not in kwargs and use_backups_default(spec):
             kwargs["use_backups"] = True
-    async with app.run(show_progress=False):
+    async with app.run():
         cloud = cloud or "aws"
         if cloud == "aws":
             app_function = run_remotely
