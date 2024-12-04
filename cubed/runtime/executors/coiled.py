@@ -47,8 +47,8 @@ class CoiledExecutor(DagExecutor):
                 coiled_function.cluster.adapt(minimum=minimum_workers)
             # coiled expects a sequence (it calls `len` on it)
             input = list(pipeline.mappable)
-            for _, stats in coiled_function.map(input, config=pipeline.config):
+            for result, stats in coiled_function.map(input, config=pipeline.config):
                 if callbacks is not None:
                     if name is not None:
                         stats["name"] = name
-                    handle_callbacks(callbacks, stats)
+                    handle_callbacks(callbacks, result, stats)
