@@ -43,3 +43,8 @@ def pytest_sessionfinish():
     # To prevent the exception from being raised on pytest_sessionfinish
     # we disable exception raising in logging module
     logging.raiseExceptions = False
+
+    # Dump threads
+    import faulthandler
+
+    faulthandler.dump_traceback()
