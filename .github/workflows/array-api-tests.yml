@@ -108,6 +108,8 @@ jobs:
           # edge case failures (https://github.com/cubed-dev/cubed/issues/420)
           array_api_tests/test_linalg.py::test_tensordot
           array_api_tests/test_linalg.py::test_vecdot
+          # (getitem with negative step size is not implemented)
+          array_api_tests/test_array_object.py::test_getitem
 
           # not implemented
           array_api_tests/test_array_object.py::test_setitem
