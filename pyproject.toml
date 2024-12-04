@@ -51,8 +51,8 @@ diagnostics = [
     "seaborn",
 ]
 beam = ["apache-beam", "gcsfs"]
-dask = ["dask"]
-dask-distributed = ["distributed"]
+dask = ["dask < 2024.12.0"]
+dask-distributed = ["distributed < 2024.12.0"]
 lithops = ["lithops[aws] >= 2.7.0"]
 lithops-aws = [
     "cubed[diagnostics]",
