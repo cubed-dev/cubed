@@ -53,6 +53,7 @@ jobs:
           COVERAGE_CORE: sysmon
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
+            python -m pip uninstall -y lithops
             pytest -v
           else
             pytest -v --cov=cubed --cov-report=term-missing --cov-fail-under=90
