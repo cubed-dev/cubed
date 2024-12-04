@@ -241,7 +241,7 @@ async def async_execute_dag(
 
     finally:
         # don't wait for any cancelled tasks
-        concurrent_executor.shutdown(wait=False)
+        concurrent_executor.shutdown(wait=True)
 
 
 class ThreadsExecutor(DagExecutor):

@@ -23,7 +23,7 @@ async def run_test(function, input, retries=2, use_backups=False, batch_size=Non
         ):
             outputs.add(output)
     finally:
-        concurrent_executor.shutdown(wait=False)
+        concurrent_executor.shutdown(wait=True)
     return outputs
 
 
