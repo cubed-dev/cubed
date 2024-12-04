@@ -66,12 +66,12 @@ lithops-gcp = [
 ]
 modal = [
     "cubed[diagnostics]",
-    "modal-client",
+    "modal",
     "s3fs",
 ]
 modal-gcp = [
     "cubed[diagnostics]",
-    "modal-client",
+    "modal",
     "gcsfs",
 ]
 coiled = [
