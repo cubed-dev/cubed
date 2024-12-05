@@ -81,41 +81,9 @@ coiled = [
     "s3fs",
 ]
 test = [
-    "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
+    "cubed[diagnostics]",
     "dill",
     "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-beam = [
-    "cubed[beam,diagnostics]",
-    "dill",
-    "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-dask = [
-    "cubed[dask,diagnostics]",
-    "dill",
-    "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-dask-distributed = [
-    "cubed[dask-distributed,diagnostics]",
-    "dill",
-    "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-modal = [
-    "cubed[modal]",
-    "numpy_groupies",
-    "dill",
     "pytest",
     "pytest-cov",
     "pytest-mock",
