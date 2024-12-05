@@ -47,14 +47,16 @@ def broadcast_to(x, /, shape, *, chunks=None):
     ):
         raise ValueError(f"cannot broadcast shape {x.shape} to shape {shape}")
 
-    # TODO: fix case where shape has a dimension of size zero
-
     if chunks is None:
         # New dimensions and broadcast dimensions have chunk size 1
         # This behaviour differs from dask where it is the full dimension size
         xchunks = normalize_chunks(x.chunks, x.shape, dtype=x.dtype)
-        chunks = tuple((1,) * s for s in shape[:ndim_new]) + tuple(
-            bd if old > 1 else ((1,) * new if new > 0 else (0,))
+
+        def chunklen(shapelen):
+            return (1,) * shapelen if shapelen > 0 else (0,)
+
+        chunks = tuple(chunklen(s) for s in shape[:ndim_new]) + tuple(
+            bd if old > 1 else chunklen(new)
             for bd, old, new in zip(xchunks, x.shape, shape[ndim_new:])
         )
     else:
