@@ -46,7 +46,7 @@ __all__ = [
 
 # Array API
 
-__array_api_version__ = "2022.12"
+__array_api_version__ = "2023.12"
 
 from .array_api.inspection import __array_namespace_info__
 

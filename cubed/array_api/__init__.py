@@ -1,6 +1,6 @@
 __all__ = []
 
-__array_api_version__ = "2022.12"
+__array_api_version__ = "2023.12"
 
 from .inspection import __array_namespace_info__
 
