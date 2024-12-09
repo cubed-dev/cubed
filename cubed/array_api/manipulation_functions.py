@@ -579,6 +579,21 @@ def _read_stack_chunk(array, axis=None):
     return nxp.expand_dims(array, axis=axis)
 
 
+def tile(x, repetitions, /):
+    N = len(x.shape)
+    M = len(repetitions)
+    if N > M:
+        repetitions = (1,) * (N - M) + repetitions
+    elif N < M:
+        for _ in range(M - N):
+            x = expand_dims(x, axis=0)
+    out = x
+    for i, nrep in enumerate(repetitions):
+        if nrep > 1:
+            out = concat([out] * nrep, axis=i)
+    return out
+
+
 def unstack(x, /, *, axis=0):
     axis = validate_axis(axis, x.ndim)
 
