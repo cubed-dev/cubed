@@ -90,7 +90,7 @@ def nansum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
 
 
 @implements(np.isclose)
-def isclose(a, b, rtol=1.e-5, atol=1.e-8, equal_nan=False):
+def isclose(a, b, rtol=1.0e-5, atol=1.0e-8, equal_nan=False):
     # Note: this should only be used for testing small arrays since it
     # materialize arrays in memory
     na = nxp.asarray(a)
