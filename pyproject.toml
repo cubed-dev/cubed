@@ -53,6 +53,7 @@ diagnostics = [
 beam = ["apache-beam", "gcsfs"]
 dask = ["dask < 2024.12.0"]
 dask-distributed = ["distributed < 2024.12.0"]
+icechunk = ["icechunk"]
 lithops = ["lithops[aws] >= 2.7.0"]
 lithops-aws = [
     "cubed[diagnostics]",
@@ -81,7 +82,7 @@ coiled = [
     "s3fs",
 ]
 test = [
-    "cubed[diagnostics]",
+    "cubed[diagnostics,icechunk]",
     "dill",
     "numpy_groupies",
     "pytest",
