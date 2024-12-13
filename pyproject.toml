@@ -82,7 +82,7 @@ coiled = [
     "s3fs",
 ]
 test = [
-    "cubed[diagnostics,icechunk]",
+    "cubed[diagnostics]",
     "dill",
     "numpy_groupies",
     "pytest",
