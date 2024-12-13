@@ -32,10 +32,6 @@ def store_icechunk(
             f"Different number of sources ({len(sources)}) and targets ({len(targets)})"
         )
 
-    if isinstance(sources, CoreArray):
-        sources = [sources]
-        targets = [targets]
-
     arrays = []
     for source, target in zip(sources, targets):
         identity = lambda a: a

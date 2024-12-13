@@ -75,7 +75,9 @@ class BlockwiseSpec:
     return_writes_stores: bool = False
 
 
-def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
+def apply_blockwise(
+    out_coords: List[int], *, config: BlockwiseSpec
+) -> Optional[List[T_Store]]:
     """Stage function for blockwise."""
     # lithops needs params to be lists not tuples, so convert back
     out_coords_tuple = tuple(out_coords)
@@ -103,6 +105,7 @@ def apply_blockwise(out_coords: List[int], *, config: BlockwiseSpec) -> None:
 
     if config.return_writes_stores:
         return [write_proxy.open().store for write_proxy in config.writes_list]
+    return None
 
 
 def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSpec):
