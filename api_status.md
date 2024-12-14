@@ -66,7 +66,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `roll`              | :white_check_mark: |            |                              |
 |                          | `squeeze`           | :white_check_mark: |            |                              |
 |                          | `stack`             | :white_check_mark: |            |                              |
-|                          | `tile`              | :x:                | 2023.12    |                              |
+|                          | `tile`              | :white_check_mark: | 2023.12    |                              |
 |                          | `unstack`           | :white_check_mark: | 2023.12    |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
 |                          | `argmin`            | :white_check_mark: |            |                              |

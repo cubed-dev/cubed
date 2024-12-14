@@ -302,6 +302,7 @@ from .array_api.manipulation_functions import (
     roll,
     squeeze,
     stack,
+    tile,
     unstack,
 )
 
@@ -318,6 +319,7 @@ __all__ += [
     "roll",
     "squeeze",
     "stack",
+    "tile",
     "unstack",
 ]
 

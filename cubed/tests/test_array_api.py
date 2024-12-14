@@ -696,6 +696,16 @@ def test_stack(spec, executor):
     )
 
 
+@pytest.mark.parametrize("repetitions", [(2,), (2, 5), (2, 5, 3)])
+def test_tile(spec, repetitions):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.tile(a, repetitions)
+    assert_array_equal(
+        b.compute(),
+        np.tile(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), repetitions),
+    )
+
+
 @pytest.mark.parametrize("chunks", [(1, 2, 3), (2, 2, 3), (3, 2, 3)])
 def test_unstack(spec, executor, chunks):
     a = xp.full((4, 6), 1, chunks=(2, 3), spec=spec)
