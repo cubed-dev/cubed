@@ -29,6 +29,24 @@ ARRAY_SVG_SIZE = (
     120  # cubed doesn't have a config module like dask does so hard-code this for now
 )
 
+_HANDLED_FUNCTIONS = {}
+
+
+def implements(*numpy_functions):
+    """Register an __array_function__ implementation for cubed.Array
+
+    Note that this is **only** used for functions that are not defined in the
+    Array API Standard.
+    """
+
+    def decorator(cubed_func):
+        for numpy_function in numpy_functions:
+            _HANDLED_FUNCTIONS[numpy_function] = cubed_func
+
+        return cubed_func
+
+    return decorator
+
 
 class Array(CoreArray):
     """Chunked array backed by Zarr storage that conforms to the Python Array API standard."""
@@ -43,6 +61,12 @@ class Array(CoreArray):
         if not isinstance(x, np.ndarray):
             x = np.array(x)
         return x
+
+    def __array_function__(self, func, types, args, kwargs):
+        # Only dispatch to functions that are not defined in the Array API Standard
+        if func in _HANDLED_FUNCTIONS:
+            return _HANDLED_FUNCTIONS[func](*args, **kwargs)
+        return NotImplemented
 
     def __repr__(self):
         return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
