@@ -1,7 +1,11 @@
-# pip install virtualizarr pooch netcdf4 h5py h5netcdf icechunk 'zarr==3.0.0b2'
-# pip install -U git+https://github.com/mpiannucci/kerchunk@v3
+# pip install virtualizarr pooch netcdf4 h5py h5netcdf kerchunk zarr
 # pip install 'cubed[diagnostics]' cubed-xarray
 # pip install 'jupyter[notebook]'
+
+# For icechunk (not working)
+# pip install 'zarr==3.0.0b2' icechunk
+# pip install -U git+https://github.com/mpiannucci/kerchunk@v3
+
 
 import xarray as xr
 
