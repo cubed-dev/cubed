@@ -83,7 +83,7 @@ def _searchsorted(x, y, side):
     # 0 is only correct for the first block of a, but blockwise doesn't have a way
     # of telling which block is being operated on (unlike map_blocks),
     # so set all 0 values to a special value and set back at the end of searchsorted
-    res[res == 0] = -1
+    res = nxp.where(res == 0, -1, res)
     return res[nxp.newaxis, :]
 
 
