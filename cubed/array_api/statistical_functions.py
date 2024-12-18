@@ -7,10 +7,6 @@ from cubed.array_api.dtypes import (
     _real_numeric_dtypes,
     _signed_integer_dtypes,
     _unsigned_integer_dtypes,
-    complex64,
-    complex128,
-    float32,
-    float64,
     int64,
     uint64,
 )
@@ -128,10 +124,6 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
             dtype = int64
         elif x.dtype in _unsigned_integer_dtypes:
             dtype = uint64
-        elif x.dtype == float32:
-            dtype = float64
-        elif x.dtype == complex64:
-            dtype = complex128
         else:
             dtype = x.dtype
     extra_func_kwargs = dict(dtype=dtype)
@@ -169,10 +161,6 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
             dtype = int64
         elif x.dtype in _unsigned_integer_dtypes:
             dtype = uint64
-        elif x.dtype == float32:
-            dtype = float64
-        elif x.dtype == complex64:
-            dtype = complex128
         else:
             dtype = x.dtype
     extra_func_kwargs = dict(dtype=dtype)
