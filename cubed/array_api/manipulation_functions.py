@@ -599,8 +599,10 @@ def unstack(x, /, *, axis=0):
 
     n_arrays = x.shape[axis]
 
-    if n_arrays == 1:
-        return (x,)
+    if n_arrays == 0:
+        return ()
+    elif n_arrays == 1:
+        return (squeeze(x, axis=axis),)
 
     shape = x.shape[:axis] + x.shape[axis + 1 :]
     dtype = x.dtype
