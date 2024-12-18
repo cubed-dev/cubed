@@ -758,6 +758,37 @@ def test_argmin_axis_0(spec):
     )
 
 
+@pytest.mark.parametrize(
+    "x1, x1_chunks, x2, x2_chunks",
+    [
+        [[], 1, [], 1],
+        [[0], 1, [0], 1],
+        [[-10, 0, 10, 20, 30], 3, [11, 30], 2],
+        [[-10, 0, 10, 20, 30], 3, [11, 30, -20, 1, -10, 10, 37, 11], 5],
+        [[-10, 0, 10, 20, 30], 3, [[11, 30, -20, 1, -10, 10, 37, 11]], 5],
+        [[-10, 0, 10, 20, 30], 3, [[7, 0], [-10, 10], [11, -1], [15, 15]], (2, 2)],
+    ],
+)
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_searchsorted(x1, x1_chunks, x2, x2_chunks, side):
+    x1 = np.array(x1)
+    x2 = np.array(x2)
+
+    x1d = xp.asarray(x1, chunks=x1_chunks)
+    x2d = xp.asarray(x2, chunks=x2_chunks)
+
+    out = xp.searchsorted(x1d, x2d, side=side)
+
+    assert out.shape == x2d.shape
+    assert out.chunks == x2d.chunks
+    assert_array_equal(out.compute(), np.searchsorted(x1, x2, side=side))
+
+
+def test_searchsorted_sorter_not_implemented():
+    with pytest.raises(NotImplementedError):
+        xp.searchsorted(xp.asarray([1, 0]), xp.asarray([1]), sorter=xp.asarray([1, 0]))
+
+
 # Statistical functions
 
 

@@ -264,9 +264,9 @@ __all__ += [
     "unstack",
 ]
 
-from .searching_functions import argmax, argmin, where
+from .searching_functions import argmax, argmin, searchsorted, where
 
-__all__ += ["argmax", "argmin", "where"]
+__all__ += ["argmax", "argmin", "searchsorted", "where"]
 
 from .statistical_functions import max, mean, min, prod, std, sum, var
 

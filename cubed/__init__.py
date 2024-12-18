@@ -323,9 +323,9 @@ __all__ += [
     "unstack",
 ]
 
-from .array_api.searching_functions import argmax, argmin, where
+from .array_api.searching_functions import argmax, argmin, searchsorted, where
 
-__all__ += ["argmax", "argmin", "where"]
+__all__ += ["argmax", "argmin", "searchsorted", "where"]
 
 from .array_api.statistical_functions import max, mean, min, prod, std, sum, var
 
