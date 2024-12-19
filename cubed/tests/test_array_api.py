@@ -722,10 +722,15 @@ def test_unstack(spec, executor, chunks):
     assert_array_equal(cu, np.full((4, 6), 3))
 
 
-def test_unstack_noop(spec):
+def test_unstack_zero_arrays(spec):
+    a = xp.full((0, 4, 6), 1, chunks=(1, 2, 3), spec=spec)
+    assert xp.unstack(a) == ()
+
+
+def test_unstack_single_array(spec):
     a = xp.full((1, 4, 6), 1, chunks=(1, 2, 3), spec=spec)
     (b,) = xp.unstack(a)
-    assert a is b
+    assert_array_equal(b.compute(), np.full((4, 6), 1))
 
 
 # Searching functions
