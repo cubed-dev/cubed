@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional
 
 from networkx import MultiDiGraph
 
-from cubed.vendor.rechunker.types import Config, StageFunction
+from cubed.vendor.rechunker.types import Config
 
 
 class DagExecutor:
@@ -22,7 +22,7 @@ Executor = DagExecutor
 class CubedPipeline:
     """Generalisation of rechunker ``Pipeline`` with extra attributes."""
 
-    function: StageFunction
+    function: Callable[..., Any]
     name: str
     mappable: Iterable
     config: Config
