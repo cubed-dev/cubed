@@ -385,6 +385,9 @@ def permute_dims(x, /, axes):
 
 
 def repeat(x, repeats, /, *, axis=0):
+    if not isinstance(repeats, int):
+        raise ValueError("repeat only supports integral values for `repeats`")
+
     if axis is None:
         x = flatten(x)
         axis = 0
@@ -599,8 +602,10 @@ def unstack(x, /, *, axis=0):
 
     n_arrays = x.shape[axis]
 
-    if n_arrays == 1:
-        return (x,)
+    if n_arrays == 0:
+        return ()
+    elif n_arrays == 1:
+        return (squeeze(x, axis=axis),)
 
     shape = x.shape[:axis] + x.shape[axis + 1 :]
     dtype = x.dtype
