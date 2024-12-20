@@ -385,6 +385,9 @@ def permute_dims(x, /, axes):
 
 
 def repeat(x, repeats, /, *, axis=0):
+    if not isinstance(repeats, int):
+        raise ValueError("repeat only supports integral values for `repeats`")
+
     if axis is None:
         x = flatten(x)
         axis = 0
