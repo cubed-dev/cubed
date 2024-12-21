@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: data-apis/array-api-tests
-          ref: 'db95e67b29235249e5776ca2b6bb4e77117e0690'  # Latest commit as of 2024-08-08
+          ref: '1572b129c6682211abfe139e112592226c361a6c'  # Latest commit as of 2024-12-04
           path: array-api-tests
           submodules: "true"
       - name: Set up Python ${{ matrix.python-version }}
@@ -90,8 +90,7 @@ jobs:
           array_api_tests/test_has_names.py
 
           # signatures of items not implemented
-          array_api_tests/test_signatures.py::test_func_signature[std]
-          array_api_tests/test_signatures.py::test_func_signature[var]
+          array_api_tests/test_signatures.py::test_func_signature[cumulative_sum]
           array_api_tests/test_signatures.py::test_func_signature[unique_all]
           array_api_tests/test_signatures.py::test_func_signature[unique_counts]
           array_api_tests/test_signatures.py::test_func_signature[unique_inverse]
@@ -110,13 +109,15 @@ jobs:
           array_api_tests/test_linalg.py::test_vecdot
           # (getitem with negative step size is not implemented)
           array_api_tests/test_array_object.py::test_getitem
+          # test_searchsorted depends on sort which is not implemented
+          array_api_tests/test_searching_functions.py::test_searchsorted
 
           # not implemented
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
+          array_api_tests/test_manipulation_functions.py::test_repeat
           array_api_tests/test_sorting_functions.py
-          array_api_tests/test_statistical_functions.py::test_std
-          array_api_tests/test_statistical_functions.py::test_var
+          array_api_tests/test_statistical_functions.py::test_cumulative_sum
 
           # finfo(float32).eps returns float32 but should return float
           array_api_tests/test_data_type_functions.py::test_finfo[float32]
@@ -125,6 +126,9 @@ jobs:
 
           # https://github.com/numpy/numpy/issues/18881
           array_api_tests/test_creation_functions.py::test_linspace
+
+          # https://github.com/numpy/numpy/issues/20870
+          #array_api_tests/test_data_type_functions.py::test_can_cast
 
           EOF
 

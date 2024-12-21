@@ -2,7 +2,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import CoreArray, map_blocks
 
 
-def astype(x, dtype, /, *, copy=True):
+def astype(x, dtype, /, *, copy=True, device=None):
     if not copy and dtype == x.dtype:
         return x
     return map_blocks(_astype, x, dtype=dtype, astype_dtype=dtype)
