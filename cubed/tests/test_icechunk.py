@@ -12,6 +12,8 @@ from cubed.tests.utils import MAIN_EXECUTORS
 
 icechunk = pytest.importorskip("icechunk")
 
+from icechunk import Repository, Storage
+
 from cubed.icechunk import store_icechunk
 
 
@@ -24,7 +26,12 @@ def executor(request):
     return request.param
 
 
-def create_icechunk(a, tmp_path, /, *, dtype=None, chunks=None):
+@pytest.fixture(scope="function")
+def icechunk_storage(tmpdir) -> "Storage":
+    return Storage.new_local_filesystem(str(tmpdir))
+
+
+def create_icechunk(a, icechunk_storage, /, *, dtype=None, chunks=None):
     # from dask.asarray
     if not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
@@ -32,30 +39,28 @@ def create_icechunk(a, tmp_path, /, *, dtype=None, chunks=None):
     if dtype is None:
         dtype = a.dtype
 
-    store = icechunk.IcechunkStore.create(
-        storage=icechunk.StorageConfig.filesystem(tmp_path / "icechunk"),
-        config=icechunk.StoreConfig(inline_chunk_threshold_bytes=1),
-        read_only=False,
-    )
+    repo = Repository.create(storage=icechunk_storage)
+    session = repo.writable_session("main")
+    store = session.store
 
     group = zarr.group(store=store, overwrite=True)
-    arr = group.create_array("a", shape=a.shape, chunk_shape=chunks, dtype=dtype)
+    arr = group.create_array("a", shape=a.shape, dtype=dtype, chunks=chunks)
 
     arr[...] = a
 
-    store.commit("commit 1")
+    session.commit("commit 1")
 
 
-def test_from_zarr_icechunk(tmp_path, executor):
+def test_from_zarr_icechunk(icechunk_storage, executor):
     create_icechunk(
         [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-        tmp_path,
+        icechunk_storage,
         chunks=(2, 2),
     )
 
-    store = icechunk.IcechunkStore.open_existing(
-        storage=icechunk.StorageConfig.filesystem(tmp_path / "icechunk"),
-    )
+    repo = Repository.open(icechunk_storage)
+    session = repo.readonly_session(branch="main")
+    store = session.store
 
     a = cubed.from_zarr(store, path="a")
     assert_array_equal(
@@ -63,26 +68,23 @@ def test_from_zarr_icechunk(tmp_path, executor):
     )
 
 
-def test_store_icechunk(tmp_path, executor):
+def test_store_icechunk(icechunk_storage, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
 
-    store = icechunk.IcechunkStore.create(
-        storage=icechunk.StorageConfig.filesystem(tmp_path / "icechunk"),
-        config=icechunk.StoreConfig(inline_chunk_threshold_bytes=1),
-        read_only=False,
-    )
-    with store.preserve_read_only():
-        group = zarr.group(store=store, overwrite=True)
-        target = group.create_array(
-            "a", shape=a.shape, chunk_shape=a.chunksize, dtype=a.dtype
-        )
-        store_icechunk(store, sources=a, targets=target, executor=executor)
-        store.commit("commit 1")
+    repo = Repository.create(storage=icechunk_storage)
+    session = repo.writable_session("main")
+    store = session.store
+
+    group = zarr.group(store=store, overwrite=True)
+    target = group.create_array("a", shape=a.shape, dtype=a.dtype, chunks=a.chunksize)
+    store_icechunk(session, sources=a, targets=target, executor=executor)
+    session.commit("commit 1")
 
     # reopen store and check contents of array
-    store = icechunk.IcechunkStore.open_existing(
-        storage=icechunk.StorageConfig.filesystem(tmp_path / "icechunk"),
-    )
+    repo = Repository.open(icechunk_storage)
+    session = repo.readonly_session(branch="main")
+    store = session.store
+
     group = zarr.open_group(store=store, mode="r")
     assert_array_equal(
         cubed.from_array(group["a"])[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])

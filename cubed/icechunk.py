@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, List, Sequence, Union
 
 import zarr
-from icechunk import IcechunkStore
+from icechunk import Session
 
 from cubed import compute
 from cubed.core.array import CoreArray
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 def store_icechunk(
-    store: IcechunkStore,
+    session: Session,
     *,
     sources: Union["Array", Sequence["Array"]],
     targets: List[zarr.Array],
@@ -48,7 +48,7 @@ def store_icechunk(
         )
         arrays.append(array)
 
-    # use a callback to merge icechunk stores
+    # use a callback to merge icechunk sessions
     store_callback = IcechunkStoreCallback()
     # add to other callbacks the user may have set
     callbacks = kwargs.pop("callbacks", [])
@@ -62,21 +62,21 @@ def store_icechunk(
         **kwargs,
     )
 
-    # merge back into the store passed into this function
-    merged_store = store_callback.store
-    store.merge(merged_store.change_set_bytes())
+    # merge back into the session passed into this function
+    merged_session = store_callback.session
+    session.merge(merged_session)
 
 
 class IcechunkStoreCallback(Callback):
     def on_compute_start(self, event):
-        self.store = None
+        self.session = None
 
     def on_task_end(self, event):
         result = event.result
         if result is None:
             return
         for store in result:
-            if self.store is None:
-                self.store = store
+            if self.session is None:
+                self.session = store.session
             else:
-                self.store.merge(store.change_set_bytes())
+                self.session.merge(store.session)
