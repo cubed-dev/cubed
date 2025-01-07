@@ -15,6 +15,10 @@ tenacity
 toolz
 tqdm
 zarr
+cubed-xarray
+xarray
+pooch
+netCDF4
 
 # docs
 sphinx-book-theme
