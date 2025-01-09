@@ -62,6 +62,6 @@ def open_zarr_v3_array(
                 field,
                 shape=shape,
                 dtype=field_dtype,
-                chunk_shape=chunks,
+                chunks=chunks,
             )
     return ret
