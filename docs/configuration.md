@@ -6,16 +6,17 @@ This page covers how to specify configuration properties, and a reference with a
 
 ## Specification
 
-There are three main ways of specifying configuration in Cubed:
+There are four main ways of specifying configuration in Cubed:
 1. by instantiating a `Spec` object,
-2. by using a YAML file and setting the `CUBED_CONFIG` environment variable, or
-3. by setting environment variables for individual properties.
+2. by setting values on the `config` object in the `cubed` namespace,
+3. by using a YAML file and setting the `CUBED_CONFIG` environment variable, or
+4. by setting environment variables for individual properties.
 
 We look at each in turn.
 
 ### `Spec` object
 
-This is how you configure Cubed directly from within a Python program - by instantiating a {py:class}`Spec <cubed.Spec>` object:
+This is the most direct way to configure Cubed directly from within a Python program - by instantiating a {py:class}`Spec <cubed.Spec>` object:
 
 ```python
 import cubed
@@ -39,6 +40,38 @@ c = xp.add(a, b)
 ```
 
 All arrays in any given computation must share the same `spec` instance.
+
+### `cubed.config` object
+
+This way allows you to set configuration globally, or using a context manager for a block of code.
+
+The following sets the configuration globally:
+
+```python
+from cubed import config
+config.set({
+  "spec.work_dir": "s3://cubed-tomwhite-temp",
+  "spec.allowed_mem": "2GB",
+  "spec.executor_name": "lithops",
+  "spec.executor_options.use_backups": False,
+  "spec.executor_options.runtime": "cubed-runtime",
+  "spec.executor_options.runtime_memory": 2000,
+})
+```
+
+There is no need to pass a `spec` object to array creation functions when setting configuration this way.
+
+Use a `with` statement to limit the configuration overrides to a code block:
+
+```python
+from cubed import config
+import cubed.array_api as xp
+
+with config.set({"spec.executor_name": "single-threaded"}):
+  a = cubed.random.random((50000, 50000), chunks=(5000, 5000))
+  b = cubed.random.random((50000, 50000), chunks=(5000, 5000))
+  c = xp.add(a, b)
+```
 
 ### YAML file
 
@@ -183,3 +216,12 @@ Note that `batch_size` is not currently supported for Lithops.
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                           |
 
 Currently the Modal executor in Cubed uses a hard-coded value of 2 for retries and 300 seconds for timeouts, neither of which can be changed through configuration.
+
+## Debugging
+
+You can use Donfig's `pprint` method if you want to check which configuration settings are in effect when you code is run:
+
+```python
+from cubed import config
+config.pprint()
+```
