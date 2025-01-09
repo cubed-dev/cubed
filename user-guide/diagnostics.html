@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=351138bc"></script>
+    <script src="../_static/documentation_options.js?v=8152578f"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Scaling" href="scaling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="1bc5769
+  <meta name="docsearch:version" content="68d4a38
 " />
   </head>
   
@@ -376,8 +376,8 @@
 <p>The <a class="reference internal" href="../generated/cubed.Array.visualize.html#cubed.Array.visualize" title="cubed.Array.visualize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Array.visualize()</span></code></a> method on an array creates an image of the DAG. By default it is saved in a file called <em>cubed.svg</em> in the current working directory, but the filename and format can be changed if needed. If running in a Jupyter notebook the image will be rendered in the notebook.</p>
 <p>If you are computing multiple arrays at once, then there is a <a class="reference internal" href="../generated/cubed.visualize.html#cubed.visualize" title="cubed.visualize"><code class="xref py py-func docutils literal notranslate"><span class="pre">visualize</span></code></a> function that takes multiple array arguments.</p>
 <p>This example shows a tiny computation and the resulting plan:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
-<span class="kn">import</span> <span class="nn">cubed.random</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
@@ -398,7 +398,7 @@
 <section id="progress-bar">
 <h3>Progress bar<a class="headerlink" href="#progress-bar" title="Link to this heading">#</a></h3>
 <p>You can display a progress bar to track your computation by passing callbacks to <a class="reference internal" href="../generated/cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">cubed.diagnostics.rich</span> <span class="kn">import</span> <span class="n">RichProgressBar</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">progress</span> <span class="o">=</span> <span class="n">RichProgressBar</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress</span><span class="p">])</span>  <span class="c1"># c is the array from above</span>
   <span class="n">create</span><span class="o">-</span><span class="n">arrays</span> <span class="mi">1</span><span class="o">/</span><span class="mi">1</span> <span class="err">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="mf">100.0</span><span class="o">%</span> <span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
@@ -415,7 +415,7 @@
 <section id="history">
 <h3>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h3>
 <p>The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [<code class="docutils literal notranslate"><span class="pre">events.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">plan.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">stats.csv</span></code>] to a new directory under the current directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">cubed.diagnostics.history</span> <span class="kn">import</span> <span class="n">HistoryCallback</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.history</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistoryCallback</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">hist</span> <span class="o">=</span> <span class="n">HistoryCallback</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">hist</span><span class="p">])</span>
 </pre></div>
@@ -425,7 +425,7 @@
 <h3>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h3>
 <p>The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation. (Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.)</p>
 <p>The timeline callback will write a graphic <code class="docutils literal notranslate"><span class="pre">timeline.svg</span></code> to a directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">cubed.diagnostics.timeline</span> <span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.timeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">timeline_viz</span> <span class="o">=</span> <span class="n">TimelineVisualizationCallback</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">timeline_viz</span><span class="p">])</span>
 </pre></div>
@@ -442,8 +442,8 @@
 <p>This is not usually needed when using Cubed, but for developers writing new operations, improving projected memory sizes, or for debugging a memory issue, it can be very useful to understand how memory is actually allocated in Cubed.</p>
 <p>To enable Memray memory profiling in Cubed, simply install memray (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">memray</span></code>). Then use a local executor that runs tasks in separate processes, such as <code class="docutils literal notranslate"><span class="pre">processes</span></code> (Python 3.11 or later) or <code class="docutils literal notranslate"><span class="pre">lithops</span></code>. When you run a computation, Cubed will enable Memray for the first task in each operation (so if an array has 100 chunks it will only produce one Memray trace).</p>
 <p>Here is an example of a simple addition operation, with 200MB chunks. (It is adapted from <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/cubed/tests/test_mem_utilization.py">test_mem_utilization.py</a> in Cubed’s test suite.)</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
-<span class="kn">import</span> <span class="nn">cubed.random</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span>
     <span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span>

@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=351138bc"></script>
+    <script src="../_static/documentation_options.js?v=8152578f"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="How to run" href="how-to-run.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="1bc5769
+  <meta name="docsearch:version" content="68d4a38
 " />
   </head>
   
@@ -363,7 +363,7 @@
 <section id="adding-two-small-arrays">
 <h2>Adding two small arrays<a class="headerlink" href="#adding-two-small-arrays" title="Link to this heading">#</a></h2>
 <p>The first example adds two small 4x4 arrays together, and is useful for checking that the runtime is working.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
@@ -394,14 +394,14 @@
 <section id="adding-two-larger-arrays">
 <h2>Adding two larger arrays<a class="headerlink" href="#adding-two-larger-arrays" title="Link to this heading">#</a></h2>
 <p>The next example generates two random 20GB arrays and then adds them together.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">cubed</span>
-<span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
-<span class="kn">import</span> <span class="nn">cubed.random</span>
-<span class="kn">from</span> <span class="nn">cubed.diagnostics.history</span> <span class="kn">import</span> <span class="n">HistoryCallback</span>
-<span class="kn">from</span> <span class="nn">cubed.diagnostics.rich</span> <span class="kn">import</span> <span class="n">RichProgressBar</span>
-<span class="kn">from</span> <span class="nn">cubed.diagnostics.timeline</span> <span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.history</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistoryCallback</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.timeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
 
 <span class="c1"># suppress harmless connection pool warnings</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;urllib3.connectionpool&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
@@ -441,14 +441,14 @@
 <section id="matmul">
 <h2>Matmul<a class="headerlink" href="#matmul" title="Link to this heading">#</a></h2>
 <p>The next example generates two random 5GB arrays and then multiplies them together. This is a more intensive computation than addition, and will take a few minutes to run locally.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-<span class="kn">import</span> <span class="nn">cubed</span>
-<span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
-<span class="kn">import</span> <span class="nn">cubed.random</span>
-<span class="kn">from</span> <span class="nn">cubed.diagnostics.history</span> <span class="kn">import</span> <span class="n">HistoryCallback</span>
-<span class="kn">from</span> <span class="nn">cubed.diagnostics.rich</span> <span class="kn">import</span> <span class="n">RichProgressBar</span>
-<span class="kn">from</span> <span class="nn">cubed.diagnostics.timeline</span> <span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.history</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistoryCallback</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.timeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
 
 <span class="c1"># suppress harmless connection pool warnings</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;urllib3.connectionpool&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>

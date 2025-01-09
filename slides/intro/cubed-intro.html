@@ -30,7 +30,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=351138bc"></script>
+    <script src="../../_static/documentation_options.js?v=8152578f"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="1bc5769
+  <meta name="docsearch:version" content="68d4a38
 " />
   </head>
   
@@ -388,7 +388,7 @@
 <p>Cubed implements the <a class="reference external" href="https://data-apis.org/array-api/latest/">Python Array API standard</a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -416,8 +416,8 @@
 <span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
 <span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.10.15/x64/lib/python3.10/site-packages/cubed/core/array.py:153,</span> in <span class="ni">CoreArray.compute</span><span class="nt">(self, executor, callbacks, optimize_graph, optimize_function, resume, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">124</span> <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/core/array.py:153,</span> in <span class="ni">CoreArray.compute</span><span class="nt">(self, executor, callbacks, optimize_graph, optimize_function, resume, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">124</span> <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">125</span>     <span class="bp">self</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">126</span>     <span class="o">*</span><span class="p">,</span>
    <span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -441,7 +441,7 @@
 <span class="g g-Whitespace">    </span><span class="mi">162</span>     <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">163</span>         <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.10.15/x64/lib/python3.10/site-packages/cubed/core/array.py:282,</span> in <span class="ni">compute</span><span class="nt">(executor, callbacks, optimize_graph, optimize_function, resume, *arrays, **kwargs)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/core/array.py:282,</span> in <span class="ni">compute</span><span class="nt">(executor, callbacks, optimize_graph, optimize_function, resume, *arrays, **kwargs)</span>
 <span class="g g-Whitespace">    </span><span class="mi">279</span>         <span class="n">executor</span> <span class="o">=</span> <span class="n">ThreadsExecutor</span><span class="p">()</span>
 <span class="g g-Whitespace">    </span><span class="mi">281</span> <span class="n">_return_in_memory_array</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_return_in_memory_array&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="ne">--&gt; </span><span class="mi">282</span> <span class="n">plan</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -457,7 +457,7 @@
 <span class="g g-Whitespace">    </span><span class="mi">293</span> <span class="k">if</span> <span class="n">_return_in_memory_array</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">294</span>     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">_read_stored</span><span class="p">()</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.10.15/x64/lib/python3.10/site-packages/cubed/core/plan.py:305,</span> in <span class="ni">Plan.execute</span><span class="nt">(self, executor, callbacks, optimize_graph, optimize_function, compile_function, resume, array_names, spec, **kwargs)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/core/plan.py:305,</span> in <span class="ni">Plan.execute</span><span class="nt">(self, executor, callbacks, optimize_graph, optimize_function, compile_function, resume, array_names, spec, **kwargs)</span>
 <span class="g g-Whitespace">    </span><span class="mi">303</span>     <span class="n">event</span> <span class="o">=</span> <span class="n">ComputeStartEvent</span><span class="p">(</span><span class="n">compute_id</span><span class="p">,</span> <span class="n">dag</span><span class="p">,</span> <span class="n">resume</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">304</span>     <span class="p">[</span><span class="n">callback</span><span class="o">.</span><span class="n">on_compute_start</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">]</span>
 <span class="ne">--&gt; </span><span class="mi">305</span> <span class="n">executor</span><span class="o">.</span><span class="n">execute_dag</span><span class="p">(</span>
@@ -471,8 +471,8 @@
 <span class="g g-Whitespace">    </span><span class="mi">313</span> <span class="k">if</span> <span class="n">callbacks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">314</span>     <span class="n">event</span> <span class="o">=</span> <span class="n">ComputeEndEvent</span><span class="p">(</span><span class="n">compute_id</span><span class="p">,</span> <span class="n">dag</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.10.15/x64/lib/python3.10/site-packages/cubed/runtime/executors/local.py:274,</span> in <span class="ni">ThreadsExecutor.execute_dag</span><span class="nt">(self, dag, callbacks, resume, spec, compute_id, **kwargs)</span>
-<span class="g g-Whitespace">    </span><span class="mi">264</span> <span class="k">def</span> <span class="nf">execute_dag</span><span class="p">(</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/runtime/executors/local.py:274,</span> in <span class="ni">ThreadsExecutor.execute_dag</span><span class="nt">(self, dag, callbacks, resume, spec, compute_id, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">264</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_dag</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">265</span>     <span class="bp">self</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">266</span>     <span class="n">dag</span><span class="p">:</span> <span class="n">MultiDiGraph</span><span class="p">,</span>
    <span class="p">(</span><span class="o">...</span><span class="p">)</span>
@@ -490,7 +490,7 @@
 <span class="g g-Whitespace">    </span><span class="mi">282</span>         <span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">283</span>     <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.10.15/x64/lib/python3.10/asyncio/runners.py:33,</span> in <span class="ni">run</span><span class="nt">(main, debug)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/asyncio/runners.py:33,</span> in <span class="ni">run</span><span class="nt">(main, debug)</span>
 <span class="g g-Whitespace">      </span><span class="mi">9</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Execute the coroutine and return the result.</span>
 <span class="g g-Whitespace">     </span><span class="mi">10</span><span class="sd"> </span>
 <span class="g g-Whitespace">     </span><span class="mi">11</span><span class="sd"> This function runs the passed coroutine, taking care of</span>
@@ -573,7 +573,7 @@
 <img src="../../images/memory.svg" width="600"><p>If projected memory is more than what user specifies is allowed then an exception is raised <strong>during planning</strong></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
 <span class="n">spec</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">Spec</span><span class="p">(</span><span class="n">work_dir</span><span class="o">=</span><span class="s2">&quot;tmp&quot;</span><span class="p">,</span> <span class="n">allowed_mem</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># not enough memory!</span>
 <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">)</span>

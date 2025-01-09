@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=351138bc"></script>
+    <script src="../_static/documentation_options.js?v=8152578f"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Reliability" href="reliability.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="1bc5769
+  <meta name="docsearch:version" content="68d4a38
 " />
   </head>
   
@@ -368,7 +368,7 @@
 <h2>Map fusion<a class="headerlink" href="#map-fusion" title="Link to this heading">#</a></h2>
 <p>The simplest kind of optimization is <em>map fusion</em>, where operations that have one preceding operation with the same number of tasks are fused together. This optimization is enabled by default.</p>
 <p>You can see the effect of optimization before running any computation by using the <code class="docutils literal notranslate"><span class="pre">visualize</span></code> method on a Cubed array, such as in the following small example. We start by specifying <code class="docutils literal notranslate"><span class="pre">optimize_graph=False</span></code> to turn off optimization so we can see what the unoptimized plan looks like.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">negative</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -392,7 +392,7 @@
 <section id="multiple-input-fusion">
 <h2>Multiple-input fusion<a class="headerlink" href="#multiple-input-fusion" title="Link to this heading">#</a></h2>
 <p>Cubed supports more powerful optimizations, such as for when an array is created from multiple input arrays. Here is an example, shown first with optimization turned off.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cubed.array_api</span> <span class="k">as</span> <span class="nn">xp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
 
 <span class="n">a</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
@@ -415,7 +415,7 @@
 <h2>Debugging optimization<a class="headerlink" href="#debugging-optimization" title="Link to this heading">#</a></h2>
 <p>Sometimes it can be difficult to understand why particular operations in a computation plan have been fused together - or more commonly, why they have <em>not</em> been fused. By enabling debug logging you can get detailed information from the optimize function to help you understand which operations are being fused - or not - and the reason in either case.</p>
 <p>Here’s the previous example with logging enabled:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
@@ -439,8 +439,8 @@
 <h3>Total number of source arrays<a class="headerlink" href="#total-number-of-source-arrays" title="Link to this heading">#</a></h3>
 <p>Cubed will not fuse operations that result in more than 4 source arrays in the fused operation. In the previous example above the fused operation has three source arrays (<code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>, and <code class="docutils literal notranslate"><span class="pre">c</span></code>), which is below the maximum default allowed. On the other hand, a computation with a higher “fan-in” that exceeds the maximum will not be fused, or operations will be fused in stages.</p>
 <p>To change this, we have to specify the <code class="docutils literal notranslate"><span class="pre">optimize_function</span></code> that Cubed should use: <code class="docutils literal notranslate"><span class="pre">multiple_inputs_optimize_dag</span></code>. In addition, we use <code class="docutils literal notranslate"><span class="pre">fuctools.partial</span></code> to set the <code class="docutils literal notranslate"><span class="pre">max_total_source_arrays</span></code> argument to 8 as follows:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">from</span> <span class="nn">cubed.core.optimization</span> <span class="kn">import</span> <span class="n">multiple_inputs_optimize_dag</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.core.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">multiple_inputs_optimize_dag</span>
 
 <span class="n">opt_fn</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">multiple_inputs_optimize_dag</span><span class="p">,</span> <span class="n">max_total_source_arrays</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 <span class="n">e</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">optimize_function</span><span class="o">=</span><span class="n">opt_fn</span><span class="p">)</span>
