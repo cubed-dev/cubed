@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=8152578f"></script>
+    <script src="_static/documentation_options.js?v=9cda8ed7"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Python Array API" href="array-api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="68d4a38
+  <meta name="docsearch:version" content="58ea08b
 " />
   </head>
   
@@ -344,6 +344,7 @@
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specification">Specification</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spec-object"><code class="docutils literal notranslate"><span class="pre">Spec</span></code> object</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed-config-object"><code class="docutils literal notranslate"><span class="pre">cubed.config</span></code> object</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#yaml-file">YAML file</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment variables</a></li>
 </ul>
@@ -363,6 +364,7 @@
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging">Debugging</a></li>
 </ul>
             </nav>
         </div>
@@ -380,16 +382,17 @@
 <p>This page covers how to specify configuration properties, and a reference with all the configuration options that you can use in Cubed.</p>
 <section id="specification">
 <h2>Specification<a class="headerlink" href="#specification" title="Link to this heading">#</a></h2>
-<p>There are three main ways of specifying configuration in Cubed:</p>
+<p>There are four main ways of specifying configuration in Cubed:</p>
 <ol class="arabic simple">
 <li><p>by instantiating a <code class="docutils literal notranslate"><span class="pre">Spec</span></code> object,</p></li>
+<li><p>by setting values on the <code class="docutils literal notranslate"><span class="pre">config</span></code> object in the <code class="docutils literal notranslate"><span class="pre">cubed</span></code> namespace,</p></li>
 <li><p>by using a YAML file and setting the <code class="docutils literal notranslate"><span class="pre">CUBED_CONFIG</span></code> environment variable, or</p></li>
 <li><p>by setting environment variables for individual properties.</p></li>
 </ol>
 <p>We look at each in turn.</p>
 <section id="spec-object">
 <h3><code class="docutils literal notranslate"><span class="pre">Spec</span></code> object<a class="headerlink" href="#spec-object" title="Link to this heading">#</a></h3>
-<p>This is how you configure Cubed directly from within a Python program - by instantiating a <a class="reference internal" href="generated/cubed.Spec.html#cubed.Spec" title="cubed.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spec</span></code></a> object:</p>
+<p>This is the most direct way to configure Cubed directly from within a Python program - by instantiating a <a class="reference internal" href="generated/cubed.Spec.html#cubed.Spec" title="cubed.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spec</span></code></a> object:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
 
 <span class="n">spec</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">Spec</span><span class="p">(</span>
@@ -409,6 +412,33 @@
 </pre></div>
 </div>
 <p>All arrays in any given computation must share the same <code class="docutils literal notranslate"><span class="pre">spec</span></code> instance.</p>
+</section>
+<section id="cubed-config-object">
+<h3><code class="docutils literal notranslate"><span class="pre">cubed.config</span></code> object<a class="headerlink" href="#cubed-config-object" title="Link to this heading">#</a></h3>
+<p>This way allows you to set configuration globally, or using a context manager for a block of code.</p>
+<p>The following sets the configuration globally:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cubed</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span>
+  <span class="s2">&quot;spec.work_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://cubed-tomwhite-temp&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;spec.allowed_mem&quot;</span><span class="p">:</span> <span class="s2">&quot;2GB&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;spec.executor_name&quot;</span><span class="p">:</span> <span class="s2">&quot;lithops&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;spec.executor_options.use_backups&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+  <span class="s2">&quot;spec.executor_options.runtime&quot;</span><span class="p">:</span> <span class="s2">&quot;cubed-runtime&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;spec.executor_options.runtime_memory&quot;</span><span class="p">:</span> <span class="mi">2000</span><span class="p">,</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+<p>There is no need to pass a <code class="docutils literal notranslate"><span class="pre">spec</span></code> object to array creation functions when setting configuration this way.</p>
+<p>Use a <code class="docutils literal notranslate"><span class="pre">with</span></code> statement to limit the configuration overrides to a code block:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cubed</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
+
+<span class="k">with</span> <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">&quot;spec.executor_name&quot;</span><span class="p">:</span> <span class="s2">&quot;single-threaded&quot;</span><span class="p">}):</span>
+  <span class="n">a</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">50000</span><span class="p">,</span> <span class="mi">50000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span>
+  <span class="n">b</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">50000</span><span class="p">,</span> <span class="mi">50000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span>
+  <span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="yaml-file">
 <h3>YAML file<a class="headerlink" href="#yaml-file" title="Link to this heading">#</a></h3>
@@ -695,6 +725,14 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
 </section>
 </section>
 </section>
+<section id="debugging">
+<h2>Debugging<a class="headerlink" href="#debugging" title="Link to this heading">#</a></h2>
+<p>You can use Donfig’s <code class="docutils literal notranslate"><span class="pre">pprint</span></code> method if you want to check which configuration settings are in effect when you code is run:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cubed</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+<span class="n">config</span><span class="o">.</span><span class="n">pprint</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -745,6 +783,7 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#specification">Specification</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spec-object"><code class="docutils literal notranslate"><span class="pre">Spec</span></code> object</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cubed-config-object"><code class="docutils literal notranslate"><span class="pre">cubed.config</span></code> object</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#yaml-file">YAML file</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-variables">Environment variables</a></li>
 </ul>
@@ -764,6 +803,7 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging">Debugging</a></li>
 </ul>
   </nav></div>
 
