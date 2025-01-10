@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable, Optional
+from types import TracebackType
+from typing import Any, Callable, ClassVar, Iterable, Optional
 
 from networkx import MultiDiGraph
 
@@ -95,6 +96,26 @@ class TaskEndEvent:
 
 class Callback:
     """Object to receive callback events during array computation."""
+
+    active: ClassVar[set["Callback"]] = set()
+
+    def __enter__(self):
+        self.register()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.unregister()
+
+    def register(self) -> None:
+        Callback.active.add(self)
+
+    def unregister(self) -> None:
+        Callback.active.remove(self)
 
     def on_compute_start(self, event):
         """Called when the computation is about to start.
