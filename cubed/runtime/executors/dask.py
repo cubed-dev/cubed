@@ -22,6 +22,7 @@ from cubed.runtime.executors.asyncio import async_map_unordered
 from cubed.runtime.pipeline import visit_node_generations, visit_nodes
 from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
 from cubed.runtime.utils import (
+    asyncio_run,
     execution_stats,
     gensym,
     handle_callbacks,
@@ -170,7 +171,7 @@ class DaskExecutor(DagExecutor):
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
-        asyncio.run(
+        asyncio_run(
             async_execute_dag(
                 dag,
                 callbacks=callbacks,
