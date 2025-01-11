@@ -1,4 +1,6 @@
+import asyncio
 import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from functools import partial
 from itertools import islice
@@ -113,6 +115,19 @@ def handle_callbacks(callbacks, result, stats):
         else:
             event = TaskEndEvent(result=result, **stats)
         [callback.on_task_end(event) for callback in callbacks]
+
+
+# Like asyncio.run(), but works in a Jupyter notebook
+# Based on https://stackoverflow.com/a/75341431
+def asyncio_run(coro):
+    try:
+        asyncio.get_running_loop()  # Triggers RuntimeError if no running event loop
+    except RuntimeError:
+        return asyncio.run(coro)
+    else:
+        # Create a separate thread so we can block before returning
+        with ThreadPoolExecutor(1) as pool:
+            return pool.submit(lambda: asyncio.run(coro)).result()
 
 
 # this will be in Python 3.12 https://docs.python.org/3.12/library/itertools.html#itertools.batched
