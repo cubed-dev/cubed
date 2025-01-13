@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Memory &#8212; Cubed</title>
+    <title>Zarr &#8212; Cubed</title>
   
   
   
@@ -46,11 +46,11 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/memory';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/zarr';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Reliability" href="reliability.html" />
-    <link rel="prev" title="Storage" href="storage.html" />
+    <link rel="next" title="Xarray" href="xarray.html" />
+    <link rel="prev" title="Basic array operations" href="basic-array-ops.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="9879944
@@ -144,22 +144,22 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../getting-started.html">Getting Started</a></li>
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">User Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="executors.html">Executors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="storage.html">Storage</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Memory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reliability.html">Reliability</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optimization.html">Optimization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scaling.html">Scaling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="diagnostics.html">Diagnostics</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../user-guide/index.html">User Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/executors.html">Executors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/storage.html">Storage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/memory.html">Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/reliability.html">Reliability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/optimization.html">Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/scaling.html">Scaling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user-guide/diagnostics.html">Diagnostics</a></li>
 </ul>
 </details></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../examples/how-to-run.html">How to run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/basic-array-ops.html">Basic array operations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/zarr.html">Zarr</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/xarray.html">Xarray</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../examples/pangeo.html">Pangeo</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="how-to-run.html">How to run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic-array-ops.html">Basic array operations</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Zarr</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xarray.html">Xarray</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pangeo.html">Pangeo</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -275,7 +275,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/user-guide/memory.md" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/examples/zarr.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -292,7 +292,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fuser-guide/memory.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fexamples/zarr.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -334,7 +334,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Memory</h1>
+    <h1>Zarr</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -344,10 +344,9 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#allowed-memory">Allowed memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projected-memory">Projected memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reserved-memory">Reserved memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chunk-sizes">Chunk sizes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-to-zarr">Write to Zarr</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#read-from-zarr">Read from Zarr</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-arrays">Multiple arrays</a></li>
 </ul>
             </nav>
         </div>
@@ -359,46 +358,153 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="memory">
-<h1>Memory<a class="headerlink" href="#memory" title="Link to this heading">#</a></h1>
-<p>Cubed aims to tightly manage the amount of memory that each task uses, ensuring that it never exceeds a configured maximum.</p>
-<p>The various memory settings and values are illustrated in the following diagaram, and are discussed further below.</p>
-<p><img alt="Memory" src="../_images/memory.svg" /></p>
-<section id="allowed-memory">
-<h2>Allowed memory<a class="headerlink" href="#allowed-memory" title="Link to this heading">#</a></h2>
-<p>You should set <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> to the maximum amount of memory that is available to each executor running tasks. When running locally this is typically the amount of memory you have available on your machine divided by the number of cores. For example, on an 8 core machine with 16GB of memory, setting <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> to 2GB (which is actually the default) would be appropriate.</p>
-<p>For cloud services <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> should be the amount of memory that the container runtime is configured to use.</p>
-<p>In this example we increase the allowed memory to 4GB from the default of 2GB:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
+  <section id="zarr">
+<h1>Zarr<a class="headerlink" href="#zarr" title="Link to this heading">#</a></h1>
+<p>Cubed was designed to work seamlessly with Zarr data. The examples below demonstrate using <a class="reference internal" href="../generated/cubed.from_zarr.html#cubed.from_zarr" title="cubed.from_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.from_zarr()</span></code></a>, <a class="reference internal" href="../generated/cubed.to_zarr.html#cubed.to_zarr" title="cubed.to_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.to_zarr()</span></code></a> and <a class="reference internal" href="../generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.store()</span></code></a> to read and write Zarr data.</p>
+<section id="write-to-zarr">
+<h2>Write to Zarr<a class="headerlink" href="#write-to-zarr" title="Link to this heading">#</a></h2>
+<p>We’ll start by creating a small chunked array containing random data in Cubed and writing it to Zarr using <a class="reference internal" href="../generated/cubed.to_zarr.html#cubed.to_zarr" title="cubed.to_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.to_zarr()</span></code></a>. Note that the call to <code class="docutils literal notranslate"><span class="pre">to_zarr</span></code> executes eagerly.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
 
-<span class="n">spec</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">Spec</span><span class="p">(</span><span class="n">allowed_mem</span><span class="o">=</span><span class="s2">&quot;4GB&quot;</span><span class="p">)</span>
+<span class="c1"># 2MB chunks</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
+
+<span class="c1"># write to Zarr</span>
+<span class="n">cubed</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s2">&quot;a.zarr&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+</div>
 </section>
-<section id="projected-memory">
-<h2>Projected memory<a class="headerlink" href="#projected-memory" title="Link to this heading">#</a></h2>
-<p>The output of a Cubed computation is a chunked Zarr array (or set of arrays). Tasks are run by workers to operate on Zarr chunks, and the memory needed for each task is a function of chunk size, dtype, and the nature of the operation, which can be computed while building the plan.</p>
-<p>While it is not possible in general to compute the precise amount of memory that will be used (since it is not known ahead of time how well a Zarr chunk will compress, for example), it is possible to put a conservative upper bound on the memory usage. This upper bound is the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> for a task, and it is calculated automatically by Cubed.</p>
-<p>If the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> calculated by Cubed is greater than the value of <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> that you have set, then an exception is raised during the planning phase. This check means that you can have high confidence that the operation will run within its memory budget.</p>
+<section id="read-from-zarr">
+<h2>Read from Zarr<a class="headerlink" href="#read-from-zarr" title="Link to this heading">#</a></h2>
+<p>We can check that the Zarr file was created by loading it from disk using <a class="reference internal" href="../generated/cubed.from_zarr.html#cubed.from_zarr" title="cubed.from_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.from_zarr()</span></code></a>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cubed</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="s2">&quot;a.zarr&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+    <tr>
+        <td>
+            <table>
+                <thead>
+                    <tr>
+                        <td> </td>
+                        <th> Array </th>
+                        <th> Chunk </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <th> Bytes </th>
+                        <td> 200.0 MB </td>
+                        <td> 2.0 MB </td>
+                    </tr>
+                    
+                    <tr>
+                        <th> Shape </th>
+                        <td> (5000, 5000) </td>
+                        <td> (500, 500) </td>
+                    </tr>
+                    <tr>
+                        <th> Count </th>
+                        <td> 1 arrays in Plan </td>
+                        <td> 100 Chunks </td>
+                    </tr>
+                    <tr>
+                        <th> Type </th>
+                        <td> float64 </td>
+                        <td> np.ndarray </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+        <svg width="170" height="170" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
+  <line x1="0" y1="12" x2="120" y2="12" />
+  <line x1="0" y1="24" x2="120" y2="24" />
+  <line x1="0" y1="36" x2="120" y2="36" />
+  <line x1="0" y1="48" x2="120" y2="48" />
+  <line x1="0" y1="60" x2="120" y2="60" />
+  <line x1="0" y1="72" x2="120" y2="72" />
+  <line x1="0" y1="84" x2="120" y2="84" />
+  <line x1="0" y1="96" x2="120" y2="96" />
+  <line x1="0" y1="108" x2="120" y2="108" />
+  <line x1="0" y1="120" x2="120" y2="120" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="0" y1="0" x2="0" y2="120" style="stroke-width:2" />
+  <line x1="12" y1="0" x2="12" y2="120" />
+  <line x1="24" y1="0" x2="24" y2="120" />
+  <line x1="36" y1="0" x2="36" y2="120" />
+  <line x1="48" y1="0" x2="48" y2="120" />
+  <line x1="60" y1="0" x2="60" y2="120" />
+  <line x1="72" y1="0" x2="72" y2="120" />
+  <line x1="84" y1="0" x2="84" y2="120" />
+  <line x1="96" y1="0" x2="96" y2="120" />
+  <line x1="108" y1="0" x2="108" y2="120" />
+  <line x1="120" y1="0" x2="120" y2="120" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="0.0,0.0 120.0,0.0 120.0,120.0 0.0,120.0" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="60.000000" y="140.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" >5000</text>
+  <text x="140.000000" y="60.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(-90,140.000000,60.000000)">5000</text>
+</svg>
+        </td>
+    </tr>
+</table></div></div>
+</div>
 </section>
-<section id="reserved-memory">
-<h2>Reserved memory<a class="headerlink" href="#reserved-memory" title="Link to this heading">#</a></h2>
-<p>There is another memory setting that can help Cubed manage memory properly: <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code>. This is the amount of memory reserved on a worker for non-data use - it’s whatever is needed by the Python process for running a task.</p>
-<p>Cubed provides a utility function, <a class="reference internal" href="../generated/cubed.measure_reserved_mem.html#cubed.measure_reserved_mem" title="cubed.measure_reserved_mem"><code class="xref py py-func docutils literal notranslate"><span class="pre">measure_reserved_mem</span></code></a>, for measuring it for the runtime you are using. You can run this function first, then use the value it reports as the basis for setting <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> for your computation. Cubed will use <code class="docutils literal notranslate"><span class="pre">reserved_mem</span></code> as a baseline when calculating <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code>, in order to more accurately estimate the upper bound on memory usage, making it more likely that your computation doesn’t exceed memory bounds.</p>
-<p>Some executors have the ability to measure memory as a task is running. They can report the <code class="docutils literal notranslate"><span class="pre">peak_measured_mem</span></code>, which is the highest actual memory usage for a given task during its execution. This information is useful for analysing how well the computation ran, and if there is room for improvement (in Cubed’s algorithms for calculating <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code>).</p>
-</section>
-<section id="chunk-sizes">
-<h2>Chunk sizes<a class="headerlink" href="#chunk-sizes" title="Link to this heading">#</a></h2>
-<p>As a rule of thumb <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code> should be at least ten times as large as your Zarr chunk sizes.</p>
-<p>This because when operating on a chunk a task has to</p>
-<ol class="arabic simple">
-<li><p>read the compressed chunk from the input Zarr array,</p></li>
-<li><p>decompress the chunk,</p></li>
-<li><p>perform an operation on the decompressed chunk to produce a new array, and</p></li>
-<li><p>compress the new array to write to the output Zarr array.</p></li>
-</ol>
-<p>So a basic operation like this requires up to four times as much memory as the chunk itself. More complex operations can require more memory, and in particular reduction operations like <code class="docutils literal notranslate"><span class="pre">sum</span></code> or <code class="docutils literal notranslate"><span class="pre">mean</span></code> can work more efficiently if there is more memory available.</p>
-<p>A common container size is around 2GB, so this is a reasonable size for setting <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code>. In this case a good chunk size would be 100MB, which is a factor of 20 smaller than <code class="docutils literal notranslate"><span class="pre">allowed_mem</span></code>, allowing plenty of room for reduction operations.</p>
+<section id="multiple-arrays">
+<h2>Multiple arrays<a class="headerlink" href="#multiple-arrays" title="Link to this heading">#</a></h2>
+<p>To write multiple arrays in a single computation use <a class="reference internal" href="../generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.store()</span></code></a>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
+
+<span class="c1"># 2MB chunks</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
+
+<span class="c1"># write to Zarr</span>
+<span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span>
+<span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;a.zarr&quot;</span><span class="p">,</span> <span class="s2">&quot;b.zarr&quot;</span><span class="p">]</span>
+<span class="n">cubed</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">arrays</span><span class="p">,</span> <span class="n">paths</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Then to read the Zarr files back, we use <a class="reference internal" href="../generated/cubed.from_zarr.html#cubed.from_zarr" title="cubed.from_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.from_zarr()</span></code></a> for each array and perform whatever array operations we like on them. Only when we call <code class="docutils literal notranslate"><span class="pre">to_zarr</span></code> is the whole computation executed.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
+
+<span class="c1"># read from Zarr</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="s2">&quot;a.zarr&quot;</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="s2">&quot;b.zarr&quot;</span><span class="p">)</span>
+
+<span class="c1"># perform operation</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="c1"># write to Zarr</span>
+<span class="n">cubed</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="s2">&quot;c.zarr&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 </section>
 
@@ -414,20 +520,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="storage.html"
+       href="basic-array-ops.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Storage</p>
+        <p class="prev-next-title">Basic array operations</p>
       </div>
     </a>
     <a class="right-next"
-       href="reliability.html"
+       href="xarray.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Reliability</p>
+        <p class="prev-next-title">Xarray</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -448,10 +554,9 @@
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#allowed-memory">Allowed memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#projected-memory">Projected memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reserved-memory">Reserved memory</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chunk-sizes">Chunk sizes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-to-zarr">Write to Zarr</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#read-from-zarr">Read from Zarr</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-arrays">Multiple arrays</a></li>
 </ul>
   </nav></div>
 
