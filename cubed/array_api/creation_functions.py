@@ -12,9 +12,26 @@ from cubed.storage.virtual import (
 )
 from cubed.utils import normalize_shape, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.array_api import __array_namespace_info__
 
 if TYPE_CHECKING:
     from .array_object import Array
+
+
+def _iterable_to_default_dtype(it, device=None):
+    """Determines the default precision dtype of a collection (of collections) of scalars"""
+    w = it
+    while isinstance(w, Iterable):
+        w = next(iter(w))
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+    if nxp.issubdtype(type(w), nxp.integer):
+        return dtypes["integral"]
+    elif nxp.isreal(w):
+        return dtypes["real floating"]
+    elif nxp.iscomplex(w):
+        return dtypes["complex floating"]
+    else:
+        raise ValueError(f"there are no default data types supported for {it}.")
 
 
 def arange(
@@ -25,6 +42,10 @@ def arange(
     num = int(max(math.ceil((stop - start) / step), 0))
     if dtype is None:
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
+        # # the default nxp call does not adjust the data type to the default precision.
+        # dtype = __array_namespace_info__.dtypes(dtype.kind, device=device)
+        # dtype = to_default_precision(dtype, device=device)
+
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
@@ -62,8 +83,9 @@ def asarray(
     ):  # pragma: no cover
         return asarray(a.data)
     elif not isinstance(getattr(a, "shape", None), Iterable):
-        # ensure blocks are arrays
+        dtype = _iterable_to_default_dtype(a, device=device)
         a = nxp.asarray(a, dtype=dtype)
+
     if dtype is None:
         dtype = a.dtype
 
@@ -89,8 +111,9 @@ def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Arr
 def empty_virtual_array(
     shape, *, dtype=None, device=None, chunks="auto", spec=None, hidden=True
 ) -> "Array":
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
     if dtype is None:
-        dtype = nxp.float64
+        dtype = dtypes['real floating']
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
@@ -105,10 +128,11 @@ def empty_virtual_array(
 def eye(
     n_rows, n_cols=None, /, *, k=0, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
     if n_cols is None:
         n_cols = n_rows
     if dtype is None:
-        dtype = nxp.float64
+        dtype = dtypes['real floating']
 
     shape = (n_rows, n_cols)
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
@@ -136,17 +160,18 @@ def _eye(x, k=None, chunksize=None, block_id=None):
 def full(
     shape, fill_value, *, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
     shape = normalize_shape(shape)
     if dtype is None:
         # check bool first since True/False are instances of int and float
         if isinstance(fill_value, bool):
             dtype = nxp.bool
         elif isinstance(fill_value, int):
-            dtype = nxp.int64
+            dtype = dtypes['integral']
         elif isinstance(fill_value, float):
-            dtype = nxp.float64
+            dtype = dtypes['real floating']
         elif isinstance(fill_value, complex):
-            dtype = nxp.complex128
+            dtype = dtypes['complex floating']
         else:
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
@@ -187,13 +212,15 @@ def linspace(
     chunks="auto",
     spec=None,
 ) -> "Array":
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+
     range_ = stop - start
     div = (num - 1) if endpoint else num
     if div == 0:
         div = 1
     step = float(range_) / div
     if dtype is None:
-        dtype = nxp.float64
+        dtype = dtypes['real floating']
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
@@ -210,15 +237,21 @@ def linspace(
         step=step,
         endpoint=endpoint,
         linspace_dtype=dtype,
+        device=device,
     )
 
 
-def _linspace(x, size, start, step, endpoint, linspace_dtype, block_id=None):
+def _linspace(x, size, start, step, endpoint, linspace_dtype, device=None, block_id=None):
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+
     bs = x.shape[0]
     i = block_id[0]
     adjusted_bs = bs - 1 if endpoint else bs
-    blockstart = start + (i * size * step)
-    blockstop = blockstart + (adjusted_bs * step)
+    # While the Array API supports `nxp.astype(x, dtype)`, using this method causes precision
+    # errors with Jax.
+    float_ = dtypes['real floating'].type  # float_ is a type casting function.
+    blockstart = float_(start + (i * size * step))
+    blockstop = float_(blockstart + float_(adjusted_bs * step))
     return nxp.linspace(
         blockstart, blockstop, bs, endpoint=endpoint, dtype=linspace_dtype
     )
@@ -256,8 +289,10 @@ def meshgrid(*arrays, indexing="xy") -> List["Array"]:
 
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+
     if dtype is None:
-        dtype = nxp.float64
+        dtype = dtypes['real floating']
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -302,8 +337,10 @@ def _tri_mask(N, M, k, chunks, spec):
 
 
 def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+
     if dtype is None:
-        dtype = nxp.float64
+        dtype = dtypes['real floating']
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
