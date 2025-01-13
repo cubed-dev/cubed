@@ -473,7 +473,7 @@ class Plan:
             import IPython.display as display
 
             if format == "svg":
-                return display.SVG(filename=full_filename)
+                return display.HTML(filename=full_filename)
         except ImportError:
             # Can't return a display object if no IPython.
             pass
