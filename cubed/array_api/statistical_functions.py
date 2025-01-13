@@ -11,7 +11,7 @@ from cubed.array_api.dtypes import (
     uint64,
 )
 from cubed.array_api.elementwise_functions import sqrt
-from cubed.backend_array_api import namespace as nxp
+from cubed.backend_array_api import namespace as nxp, PRECISION
 from cubed.core import reduction
 
 
@@ -118,12 +118,14 @@ def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
         raise TypeError("Only numeric or boolean dtypes are allowed in prod")
     if dtype is None:
-        if x.dtype in _boolean_dtypes:
-            dtype = int64
-        elif x.dtype in _signed_integer_dtypes:
-            dtype = int64
+        if x.dtype in _signed_integer_dtypes:
+            dtype = int64 if PRECISION == 64 else int32
         elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
+            dtype = uint64 if PRECISION == 64 else uint32
+        elif x.dtype == float32 and PRECISION == 64:
+            dtype = float64
+        elif x.dtype == complex64 and PRECISION == 64:
+            dtype = complex128
         else:
             dtype = x.dtype
     extra_func_kwargs = dict(dtype=dtype)
@@ -155,12 +157,14 @@ def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
         raise TypeError("Only numeric or boolean dtypes are allowed in sum")
     if dtype is None:
-        if x.dtype in _boolean_dtypes:
-            dtype = int64
-        elif x.dtype in _signed_integer_dtypes:
-            dtype = int64
+        if x.dtype in _signed_integer_dtypes:
+            dtype = int64 if PRECISION == 64 else int32
         elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
+            dtype = uint64 if PRECISION == 64 else uint32
+        elif x.dtype == float32 and PRECISION == 64:
+            dtype = float64
+        elif x.dtype == complex64 and PRECISION == 64:
+            dtype = complex128
         else:
             dtype = x.dtype
     extra_func_kwargs = dict(dtype=dtype)

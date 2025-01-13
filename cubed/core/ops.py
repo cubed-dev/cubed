@@ -15,7 +15,7 @@ from tlz import concat, first, partition
 from toolz import accumulate, map
 
 from cubed import config
-from cubed.backend_array_api import backend_array_to_numpy_array
+from cubed.backend_array_api import backend_array_to_numpy_array, to_default_precision
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from cubed.array_api.array_object import Array
 
 
-def from_array(x, chunks="auto", asarray=None, spec=None) -> "Array":
+def from_array(x, chunks="auto", asarray=None, spec=None, device=None) -> "Array":
     """Create a Cubed array from an array-like object."""
 
     if isinstance(x, CoreArray):
@@ -46,9 +46,16 @@ def from_array(x, chunks="auto", asarray=None, spec=None) -> "Array":
             "Array is already a Cubed array. Use 'asarray' or 'rechunk' instead."
         )
 
+    dtype = to_default_precision(x.dtype)
+    if x.dtype != dtype:
+        if hasattr(x, 'astype'):
+            x = x.astype(dtype)
+        elif hasattr(x, '__array__'):
+            x = x.__array__(dtype)
+
     previous_chunks = getattr(x, "chunks", None)
     outchunks = normalize_chunks(
-        chunks, x.shape, dtype=x.dtype, previous_chunks=previous_chunks
+        chunks, x.shape, dtype=dtype, previous_chunks=previous_chunks
     )
 
     if isinstance(x, zarr.Array):  # zarr fast path

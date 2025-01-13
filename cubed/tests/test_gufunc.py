@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_equal
@@ -71,13 +73,17 @@ def test_apply_gufunc_elemwise_core(spec):
 
 
 def test_gufunc_two_inputs(spec):
+    dtype = int
+    if os.environ.get('CUBED_DEFAULT_PRECISION_X32', False):
+        dtype = nxp.int32
+
     def foo(x, y):
         return np.einsum("...ij,...jk->ik", x, y)
 
-    a = xp.ones((2, 3), chunks=100, dtype=int, spec=spec)
-    b = xp.ones((3, 4), chunks=100, dtype=int, spec=spec)
-    x = apply_gufunc(foo, "(i,j),(j,k)->(i,k)", a, b, output_dtypes=int)
-    assert_equal(x, 3 * np.ones((2, 4), dtype=int))
+    a = xp.ones((2, 3), chunks=100, dtype=dtype, spec=spec)
+    b = xp.ones((3, 4), chunks=100, dtype=dtype, spec=spec)
+    x = apply_gufunc(foo, "(i,j),(j,k)->(i,k)", a, b, output_dtypes=dtype)
+    assert_equal(x, 3 * np.ones((2, 4), dtype=dtype))
 
 
 def test_apply_gufunc_axes_two_kept_coredims(spec):

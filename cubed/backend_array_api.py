@@ -33,6 +33,24 @@ else:
 
     namespace = array_api_compat.numpy
 
+_DEFAULT_DTYPES = {
+    "real floating": namespace.float64,
+    "complex floating": namespace.complex128,
+    "integral": namespace.int64,
+}
+PRECISION=64
+if "CUBED_DEFAULT_PRECISION_X32" in os.environ:
+    if os.environ['CUBED_DEFAULT_PRECISION_X32']:
+        _DEFAULT_DTYPES = {
+            "real floating": namespace.float32,
+            "complex floating": namespace.complex64,
+            "integral": namespace.int32,
+        }
+        PRECISION=32
+
+
+def default_dtypes(*, device=None) -> dict:
+    return _DEFAULT_DTYPES
 
 # These functions to convert to/from backend arrays
 # assume that no extra memory is allocated, by using the
@@ -48,3 +66,12 @@ def numpy_array_to_backend_array(arr, *, dtype=None):
     if isinstance(arr, dict):
         return {k: namespace.asarray(v, dtype=dtype) for k, v in arr.items()}
     return namespace.asarray(arr, dtype=dtype)
+
+
+def to_default_precision(dtype, *, device=None):
+    """Returns a dtype of the same kind with the default precision."""
+    for k, dtype_ in default_dtypes(device=device).items():
+        if namespace.isdtype(dtype, k):
+            return dtype_
+
+
