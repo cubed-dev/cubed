@@ -2,7 +2,7 @@ __all__ = []
 
 __array_api_version__ = "2023.12"
 
-from .inspection import __array_namespace_info__, closest_default_dtype
+from .inspection import __array_namespace_info__
 
 __all__ += ["__array_api_version__", "__array_namespace_info__"]
 
@@ -29,7 +29,7 @@ from .creation_functions import (
     tril,
     triu,
     zeros,
-    zeros_like,
+    zeros_like, _closest_default_dtype,
 )
 
 __all__ += [
