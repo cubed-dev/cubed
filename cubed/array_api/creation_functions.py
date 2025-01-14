@@ -58,9 +58,8 @@ def arange(
     num = int(max(math.ceil((stop - start) / step), 0))
     if dtype is None:
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
-        # # the default nxp call does not adjust the data type to the default precision.
-        # dtype = __array_namespace_info__.dtypes(dtype.kind, device=device)
-        # dtype = to_default_precision(dtype, device=device)
+        # the default nxp call does not adjust the data type to the default precision.
+        dtype = closest_default_dtype(dtype, device=device)
 
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
