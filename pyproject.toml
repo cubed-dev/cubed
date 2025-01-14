@@ -36,7 +36,7 @@ dependencies = [
     "psutil",
     "tenacity",
     "toolz",
-    "zarr < 3",
+    "zarr",
 ]
 
 [project.optional-dependencies]

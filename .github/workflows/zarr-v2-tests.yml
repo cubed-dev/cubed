@@ -1,4 +1,4 @@
-name: Zarr v3 Tests
+name: Zarr v2 Tests
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
       - name: Install
         run: |
           python -m pip install -e .[test,lithops]
-          python -m pip install -U git+https://github.com/zarr-developers/zarr-python.git
+          python -m pip install -U zarr<3
 
       - name: Run tests
         env:
