@@ -2,7 +2,7 @@ __all__ = []
 
 __array_api_version__ = "2023.12"
 
-from .inspection import __array_namespace_info__
+from .inspection import __array_namespace_info__, closest_default_dtype
 
 __all__ += ["__array_api_version__", "__array_namespace_info__"]
 

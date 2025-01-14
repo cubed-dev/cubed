@@ -12,26 +12,42 @@ from cubed.storage.virtual import (
 )
 from cubed.utils import normalize_shape, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
-from cubed.array_api import __array_namespace_info__
+from cubed.array_api import __array_namespace_info__, closest_default_dtype
 
 if TYPE_CHECKING:
     from .array_object import Array
 
 
+def _traverse(it):
+    """Iterate over arbitrarily nested collections."""
+    stack = [it]
+
+    while stack:
+        item = stack.pop()
+        if isinstance(item, Iterable):
+            stack.extend(reversed(list(item)))  # Extend with reversed order to maintain original order
+        else:
+            yield item
+
+
 def _iterable_to_default_dtype(it, device=None):
     """Determines the default precision dtype of a collection (of collections) of scalars"""
-    w = it
-    while isinstance(w, Iterable):
-        w = next(iter(w))
     dtypes = __array_namespace_info__().default_dtypes(device=device)
-    if nxp.issubdtype(type(w), nxp.integer):
+
+    # Collect all the data types in the (arbitrarily) nested collection,
+    # and choose the highest promoted data type.
+    all_dtypes = {type(x) for x in _traverse(it)}
+    highest_type = nxp.result_type(*all_dtypes)
+
+    # TODO(alxmrs): Is there a better way to do this?
+    if nxp.issubdtype(highest_type, nxp.integer):
         return dtypes["integral"]
-    elif nxp.isreal(w):
-        return dtypes["real floating"]
-    elif nxp.iscomplex(w):
+    elif nxp.issubdtype(highest_type, nxp.complexfloating):
         return dtypes["complex floating"]
+    elif nxp.issubdtype(highest_type, nxp.floating):
+        return dtypes["real floating"]
     else:
-        raise ValueError(f"there are no default data types supported for {it}.")
+        return highest_type
 
 
 def arange(
@@ -83,11 +99,13 @@ def asarray(
     ):  # pragma: no cover
         return asarray(a.data)
     elif not isinstance(getattr(a, "shape", None), Iterable):
-        dtype = _iterable_to_default_dtype(a, device=device)
+        if dtype is None:
+            dtype = _iterable_to_default_dtype(a, device=device)
         a = nxp.asarray(a, dtype=dtype)
 
     if dtype is None:
-        dtype = a.dtype
+        dtype = closest_default_dtype(a.dtype, device=device)
+        a = a.astype(dtype)
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
     name = gensym()

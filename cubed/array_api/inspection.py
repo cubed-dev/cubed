@@ -22,3 +22,11 @@ class __array_namespace_info__:
 
     def dtypes(self, *, device=None, kind=None):
         return nxp.__array_namespace_info__().dtypes(device=device, kind=kind)
+
+
+def closest_default_dtype(dtype, *, device=None):
+    """Returns a dtype most similar to a default (likely changing percision)."""
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+    for name, default_dtype in dtypes.items():
+        if nxp.isdtype(dtype, name):
+            return default_dtype
