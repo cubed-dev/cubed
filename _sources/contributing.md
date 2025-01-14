@@ -12,3 +12,5 @@ conda activate cubed
 pip install -r requirements.txt
 pip install -e .
 ```
+
+Make sure `graphviz` is installed on your machine (see [these instructions](https://graphviz.org/download/)).
