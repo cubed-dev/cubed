@@ -27,7 +27,7 @@ def arange(
     if dtype is None:
         dtype = nxp.arange(start, stop, step * num if num else step).dtype
         # the default nxp call does not adjust the data type to the default precision.
-        dtype = closest_default_dtype(dtype, device=device)
+        dtype = _closest_default_dtype(dtype, device=device)
 
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
@@ -69,7 +69,7 @@ def asarray(
         a = nxp.asarray(a, dtype=dtype)
 
     if dtype is None:
-        dtype = closest_default_dtype(a.dtype, device=device)
+        dtype = _closest_default_dtype(a.dtype, device=device)
         a = a.astype(dtype)
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=a.shape, dtype=dtype))
@@ -339,3 +339,12 @@ def _like_args(x, dtype=None, device=None, chunks=None, spec=None):
     if spec is None:
         spec = x.spec
     return dict(shape=x.shape, dtype=dtype, device=device, chunks=chunks, spec=spec)
+
+
+def _closest_default_dtype(dtype, *, device=None):
+    """Returns a dtype most similar to a default (likely changing percision)."""
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+    for name, default_dtype in dtypes.items():
+        if name != 'indexing' and nxp.isdtype(dtype, name):
+            return default_dtype
+    return dtype
