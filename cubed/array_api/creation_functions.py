@@ -12,7 +12,7 @@ from cubed.storage.virtual import (
 )
 from cubed.utils import normalize_shape, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
-from cubed.array_api import __array_namespace_info__, closest_default_dtype
+from cubed.array_api import __array_namespace_info__
 
 if TYPE_CHECKING:
     from .array_object import Array
