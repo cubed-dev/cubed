@@ -18,38 +18,6 @@ if TYPE_CHECKING:
     from .array_object import Array
 
 
-def _traverse(it):
-    """Iterate over arbitrarily nested collections."""
-    stack = [it]
-
-    while stack:
-        item = stack.pop()
-        if isinstance(item, Iterable):
-            stack.extend(reversed(list(item)))  # Extend with reversed order to maintain original order
-        else:
-            yield item
-
-
-def _iterable_to_default_dtype(it, device=None):
-    """Determines the default precision dtype of a collection (of collections) of scalars"""
-    dtypes = __array_namespace_info__().default_dtypes(device=device)
-
-    # Collect all the data types in the (arbitrarily) nested collection,
-    # and choose the highest promoted data type.
-    all_dtypes = {type(x) for x in _traverse(it)}
-    highest_type = nxp.result_type(*all_dtypes)
-
-    # TODO(alxmrs): Is there a better way to do this?
-    if nxp.issubdtype(highest_type, nxp.integer):
-        return dtypes["integral"]
-    elif nxp.issubdtype(highest_type, nxp.complexfloating):
-        return dtypes["complex floating"]
-    elif nxp.issubdtype(highest_type, nxp.floating):
-        return dtypes["real floating"]
-    else:
-        return highest_type
-
-
 def arange(
     start, /, stop=None, step=1, *, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
@@ -98,8 +66,6 @@ def asarray(
     ):  # pragma: no cover
         return asarray(a.data)
     elif not isinstance(getattr(a, "shape", None), Iterable):
-        if dtype is None:
-            dtype = _iterable_to_default_dtype(a, device=device)
         a = nxp.asarray(a, dtype=dtype)
 
     if dtype is None:
