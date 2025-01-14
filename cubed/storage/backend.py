@@ -33,7 +33,7 @@ def open_backend_array(
     storage_name = backend_storage_name()
 
     if storage_name == "zarr-python":
-        from cubed.storage.backends.zarr_python import open_zarr_array
+        from cubed.storage.backends.zarr_python import open_zarr_array  # type: ignore
 
         open_func = open_zarr_array
 
