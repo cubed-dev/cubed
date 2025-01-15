@@ -29,7 +29,7 @@ from .creation_functions import (
     tril,
     triu,
     zeros,
-    zeros_like, _closest_default_dtype,
+    zeros_like,
 )
 
 __all__ += [

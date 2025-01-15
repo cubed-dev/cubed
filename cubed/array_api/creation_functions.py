@@ -1,6 +1,7 @@
 import math
 from typing import TYPE_CHECKING, Iterable, List
 
+from cubed.array_api import __array_namespace_info__
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import Plan, gensym
 from cubed.core.ops import map_blocks
@@ -12,7 +13,6 @@ from cubed.storage.virtual import (
 )
 from cubed.utils import normalize_shape, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
-from cubed.array_api import __array_namespace_info__
 
 if TYPE_CHECKING:
     from .array_object import Array
@@ -96,7 +96,7 @@ def empty_virtual_array(
 ) -> "Array":
     dtypes = __array_namespace_info__().default_dtypes(device=device)
     if dtype is None:
-        dtype = dtypes['real floating']
+        dtype = dtypes["real floating"]
 
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
     name = gensym()
@@ -115,7 +115,7 @@ def eye(
     if n_cols is None:
         n_cols = n_rows
     if dtype is None:
-        dtype = dtypes['real floating']
+        dtype = dtypes["real floating"]
 
     shape = (n_rows, n_cols)
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
@@ -150,11 +150,11 @@ def full(
         if isinstance(fill_value, bool):
             dtype = nxp.bool
         elif isinstance(fill_value, int):
-            dtype = dtypes['integral']
+            dtype = dtypes["integral"]
         elif isinstance(fill_value, float):
-            dtype = dtypes['real floating']
+            dtype = dtypes["real floating"]
         elif isinstance(fill_value, complex):
-            dtype = dtypes['complex floating']
+            dtype = dtypes["complex floating"]
         else:
             raise TypeError("Invalid input to full")
     chunksize = to_chunksize(normalize_chunks(chunks, shape=shape, dtype=dtype))
@@ -203,7 +203,7 @@ def linspace(
         div = 1
     step = float(range_) / div
     if dtype is None:
-        dtype = dtypes['real floating']
+        dtype = dtypes["real floating"]
     chunks = normalize_chunks(chunks, shape=(num,), dtype=dtype)
     chunksize = chunks[0][0]
 
@@ -224,7 +224,9 @@ def linspace(
     )
 
 
-def _linspace(x, size, start, step, endpoint, linspace_dtype, device=None, block_id=None):
+def _linspace(
+    x, size, start, step, endpoint, linspace_dtype, device=None, block_id=None
+):
     dtypes = __array_namespace_info__().default_dtypes(device=device)
 
     bs = x.shape[0]
@@ -232,7 +234,7 @@ def _linspace(x, size, start, step, endpoint, linspace_dtype, device=None, block
     adjusted_bs = bs - 1 if endpoint else bs
     # While the Array API supports `nxp.astype(x, dtype)`, using this method causes precision
     # errors with Jax.
-    float_ = dtypes['real floating'].type  # float_ is a type casting function.
+    float_ = dtypes["real floating"].type  # float_ is a type casting function.
     blockstart = float_(start + (i * size * step))
     blockstop = float_(blockstart + float_(adjusted_bs * step))
     return nxp.linspace(
@@ -275,7 +277,7 @@ def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array"
     dtypes = __array_namespace_info__().default_dtypes(device=device)
 
     if dtype is None:
-        dtype = dtypes['real floating']
+        dtype = dtypes["real floating"]
     return full(shape, 1, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -323,7 +325,7 @@ def zeros(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array
     dtypes = __array_namespace_info__().default_dtypes(device=device)
 
     if dtype is None:
-        dtype = dtypes['real floating']
+        dtype = dtypes["real floating"]
     return full(shape, 0, dtype=dtype, device=device, chunks=chunks, spec=spec)
 
 
@@ -345,6 +347,6 @@ def _closest_default_dtype(dtype, *, device=None):
     """Returns a dtype most similar to a default (likely changing percision)."""
     dtypes = __array_namespace_info__().default_dtypes(device=device)
     for name, default_dtype in dtypes.items():
-        if name != 'indexing' and nxp.isdtype(dtype, name):
+        if name != "indexing" and nxp.isdtype(dtype, name):
             return default_dtype
     return dtype
