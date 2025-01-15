@@ -22,5 +22,3 @@ class __array_namespace_info__:
 
     def dtypes(self, *, device=None, kind=None):
         return nxp.__array_namespace_info__().dtypes(device=device, kind=kind)
-
-
