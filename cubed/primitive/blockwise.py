@@ -16,7 +16,7 @@ from cubed.backend_array_api import (
     numpy_array_to_backend_array,
 )
 from cubed.runtime.types import CubedPipeline
-from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
+from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
 from cubed.utils import array_memory, chunk_memory, get_item, map_nested
 from cubed.utils import numblocks as compute_numblocks
@@ -321,7 +321,7 @@ def general_blockwise(
 
     write_proxies = []
     output_chunk_memory = 0
-    target_array = []
+    target_arrays = []
 
     numblocks0 = None
     for i, target_store in enumerate(target_stores):
@@ -335,6 +335,7 @@ def general_blockwise(
                 raise ValueError(
                     f"All outputs must have matching number of blocks in each dimension. Chunks specified: {chunkss}"
                 )
+        ta: Union[zarr.Array, LazyZarrArray]
         if isinstance(target_store, zarr.Array):
             ta = target_store
         else:
@@ -347,7 +348,7 @@ def general_blockwise(
                 storage_options=storage_options,
                 compressor=compressor,
             )
-        target_array.append(ta)
+        target_arrays.append(ta)
 
         write_proxies.append(CubedArrayProxy(ta, chunksize))
 
@@ -355,9 +356,6 @@ def general_blockwise(
         output_chunk_memory = max(
             output_chunk_memory, array_memory(dtypes[i], chunksize) * 2
         )
-
-    if len(target_array) == 1:
-        target_array = target_array[0]
 
     spec = BlockwiseSpec(
         key_function,
@@ -404,7 +402,7 @@ def general_blockwise(
     return PrimitiveOperation(
         pipeline=pipeline,
         source_array_names=array_names,
-        target_array=target_array,
+        target_array=target_arrays[0] if len(target_arrays) == 1 else target_arrays,
         projected_mem=projected_mem,
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,

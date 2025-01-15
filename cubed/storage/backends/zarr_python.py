@@ -1,3 +1,4 @@
+# type: ignore  # Zarr Python v2 types are different to v3
 from typing import Optional, Union
 
 import zarr
