@@ -39,6 +39,24 @@ def test_map_overlap_1d_single_chunk():
     assert_array_equal(b.compute(), np.array([0, 0, 1, 2, 3, 4, 5, 0]))
 
 
+def test_map_overlap_1d_change_dtype():
+    x = np.arange(6)
+    a = xp.asarray(x, chunks=(3,))
+
+    b = cubed.map_overlap(
+        lambda x: x.astype(np.float64),
+        a,
+        dtype=np.float64,
+        chunks=((5, 5),),
+        depth=1,
+        boundary=0,
+        trim=False,
+    )
+
+    assert b.dtype == np.float64
+    assert_array_equal(b.compute(), np.array([0, 0, 1, 2, 3, 2, 3, 4, 5, 0]))
+
+
 def test_map_overlap_2d():
     x = np.arange(36).reshape((6, 6))
     a = xp.asarray(x, chunks=(3, 3))
