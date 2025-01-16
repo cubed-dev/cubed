@@ -7,6 +7,7 @@ from itertools import product
 from numbers import Integral, Number
 from operator import add
 from typing import TYPE_CHECKING, Any, Sequence, Tuple, Union
+from warnings import warn
 
 import ndindex
 import numpy as np
@@ -982,6 +983,11 @@ def map_direct(
         Specification for the new array. If not specified, the one from the first side input
         (`args`) will be used (if any).
     """
+    warn(
+        "`map_direct` is pending deprecation, please use `map_selection` instead",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
 
     from cubed.array_api.creation_functions import empty_virtual_array
 
