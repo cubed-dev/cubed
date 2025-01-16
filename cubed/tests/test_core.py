@@ -599,9 +599,7 @@ def test_array_pickle(spec, executor):
 
 @pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
 def test_measure_reserved_mem(executor):
-    pytest.importorskip("lithops")
-
-    if executor.name != "lithops":
+    if executor.name not in ("processes", "lithops"):
         pytest.skip(f"{executor.name} executor does not support measure_reserved_mem")
 
     reserved_memory = cubed.measure_reserved_mem(executor=executor)
