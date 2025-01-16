@@ -22,7 +22,7 @@ def store_icechunk(
 ) -> None:
     if isinstance(sources, CoreArray):
         sources = [sources]
-        targets = [targets]
+        targets = [targets]  # type: ignore
 
     if any(not isinstance(s, CoreArray) for s in sources):
         raise ValueError("All sources must be cubed array objects")
