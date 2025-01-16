@@ -713,24 +713,6 @@ def _assemble_index_chunk(
     return out
 
 
-def _read_index_chunk(
-    x,
-    *arrays,
-    target_chunks=None,
-    selection=None,
-    block_id=None,
-):
-    array = arrays[0].zarray
-    idx = block_id
-    # Note that since we only have a maximum of one integer array index
-    # we don't need to use Zarr orthogonal indexing, since it is
-    # "available directly on the array" according to
-    # https://zarr.readthedocs.io/en/stable/tutorial.html#orthogonal-indexing
-    out = array[_target_chunk_selection(target_chunks, idx, selection)]
-    out = numpy_array_to_backend_array(out)
-    return out
-
-
 def _target_chunk_selection(target_chunks, idx, selection):
     # integer, integer array, and slice indexes can be interspersed in selection
     # idx is the chunk index for the output (target_chunks)
