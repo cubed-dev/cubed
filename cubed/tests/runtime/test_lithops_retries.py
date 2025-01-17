@@ -3,8 +3,8 @@ import pytest
 pytest.importorskip("lithops")
 
 from lithops.executors import LocalhostExecutor
+from lithops.retries import RetryingFunctionExecutor
 
-from cubed.runtime.executors.lithops_retries import RetryingFunctionExecutor
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 
