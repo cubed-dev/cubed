@@ -1,6 +1,13 @@
+import numpy as np
+
+from cubed.array_api.array_object import implements
 from cubed.array_api.manipulation_functions import concat
 
+# TODO: refactor once pad is standardized:
+# https://github.com/data-apis/array-api/issues/187
 
+
+@implements(np.pad)
 def pad(x, pad_width, mode=None, chunks=None):
     """Pad an array."""
     if len(pad_width) != x.ndim:
