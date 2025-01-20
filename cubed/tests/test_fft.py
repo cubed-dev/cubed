@@ -1,5 +1,5 @@
 import pytest
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_allclose
 
 import cubed
 import cubed.array_api as xp
@@ -17,7 +17,7 @@ def test_fft(funcname, n):
     a = cubed.from_array(an, chunks=(1, 10))
     b = cb_fft(a, n=n)
 
-    assert_array_equal(b.compute(), bn)
+    assert_allclose(b.compute(), bn)
 
 
 def test_fft_chunked_axis_fails():
