@@ -232,9 +232,9 @@ def _linspace(
     bs = x.shape[0]
     i = block_id[0]
     adjusted_bs = bs - 1 if endpoint else bs
-    # While the Array API supports `nxp.astype(x, dtype)`, using this method causes precision
-    # errors with Jax.
-    float_ = dtypes["real floating"].type  # float_ is a type casting function.
+
+    # float_ is a type casting function.
+    float_ = dtypes["real floating"].type
     blockstart = float_(start + (i * size * step))
     blockstop = float_(blockstart + float_(adjusted_bs * step))
     return nxp.linspace(
