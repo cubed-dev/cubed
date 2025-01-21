@@ -794,6 +794,22 @@ def test_searchsorted_sorter_not_implemented():
         xp.searchsorted(xp.asarray([1, 0]), xp.asarray([1]), sorter=xp.asarray([1, 0]))
 
 
+def test_where_scalars():
+    condition = xp.asarray(
+        [[True, False, True], [False, True, False], [True, False, True]], chunks=(2, 2)
+    )
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+
+    b = xp.where(condition, a, 0)
+    assert_array_equal(b.compute(), np.array([[1, 0, 3], [0, 5, 0], [7, 0, 9]]))
+
+    c = xp.where(condition, 0, a)
+    assert_array_equal(c.compute(), np.array([[0, 2, 0], [4, 0, 6], [0, 8, 0]]))
+
+    with pytest.raises(TypeError):
+        xp.where(condition, 0, 1)
+
+
 # Statistical functions
 
 
