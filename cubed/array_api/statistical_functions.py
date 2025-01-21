@@ -238,12 +238,12 @@ def _validate_and_define_numeric_or_bool_dtype(x, dtype=None, *, fname=None, dev
     # Choose a good default dtype, when None
     if dtype is None:
         if x.dtype in _boolean_dtypes:
-            dtype = dtypes['integral']
+            dtype = dtypes["integral"]
         elif x.dtype in _signed_integer_dtypes:
-            dtype = dtypes['integral']
+            dtype = dtypes["integral"]
         elif x.dtype in _unsigned_integer_dtypes:
-            #TODO(#658): I don't think "indexing" --> uint64; is this correct?
-            dtype = dtypes['indexing']
+            # Type arithemetic to produce an unsinged integer dtype at the same default precision.
+            dtype = nxp.dtype(dtypes["integral"].str.replace("i", "u"))
         else:
             dtype = x.dtype
 
