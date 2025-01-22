@@ -10,5 +10,6 @@ how-to-run
 basic-array-ops
 zarr
 xarray
+rechunking
 pangeo
 ```
