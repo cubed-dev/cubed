@@ -1,16 +1,6 @@
 import numpy as np
 
-from cubed.array_api.dtypes import (
-    _numeric_dtypes,
-    _signed_integer_dtypes,
-    _unsigned_integer_dtypes,
-    complex64,
-    complex128,
-    float32,
-    float64,
-    int64,
-    uint64,
-)
+from cubed.array_api.dtypes import _validate_and_define_dtype
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
@@ -60,21 +50,9 @@ def _nannumel(x, **kwargs):
     return nxp.sum(~(nxp.isnan(x)), **kwargs)
 
 
-def nansum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
+def nansum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
     """Return the sum of array elements over a given axis treating NaNs as zero."""
-    if x.dtype not in _numeric_dtypes:
-        raise TypeError("Only numeric dtypes are allowed in nansum")
-    if dtype is None:
-        if x.dtype in _signed_integer_dtypes:
-            dtype = int64
-        elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
-        elif x.dtype == float32:
-            dtype = float64
-        elif x.dtype == complex64:
-            dtype = complex128
-        else:
-            dtype = x.dtype
+    dtype = _validate_and_define_dtype(x, dtype, allowed_dtypes=("numeric",), fname="nansum", device=device)
     return reduction(
         x,
         nxp.nansum,
