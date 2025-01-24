@@ -109,7 +109,7 @@ def _validate_and_define_dtype(x, dtype=None, *, allowed_dtypes=("numeric",), fn
         elif x.dtype in _signed_integer_dtypes:
             dtype = dtypes["integral"]
         elif x.dtype in _unsigned_integer_dtypes:
-            # Type arithemetic to produce an unsinged integer dtype at the same default precision.
+            # Type arithmetic to produce an unsigned integer dtype at the same default precision.
             dtype = nxp.dtype(dtypes["integral"].str.replace("i", "u"))
         elif x.dtype == _complex_floating_dtypes:
             dtype = dtypes["complex floating"]
