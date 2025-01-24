@@ -1,6 +1,6 @@
 import numpy as np
 
-from cubed.array_api.dtypes import _validate_and_define_dtype
+from cubed.array_api.dtypes import _upcast_integral_dtypes
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
 
@@ -52,7 +52,7 @@ def _nannumel(x, **kwargs):
 
 def nansum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
     """Return the sum of array elements over a given axis treating NaNs as zero."""
-    dtype = _validate_and_define_dtype(x, dtype, allowed_dtypes=("numeric",), fname="nansum", device=device)
+    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric",), fname="nansum", device=device)
     return reduction(
         x,
         nxp.nansum,

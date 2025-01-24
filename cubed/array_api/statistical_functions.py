@@ -3,7 +3,7 @@ import math
 from cubed.array_api.dtypes import (
     _real_floating_dtypes,
     _real_numeric_dtypes,
-    _validate_and_define_dtype,
+    _upcast_integral_dtypes,
 )
 from cubed.array_api.elementwise_functions import sqrt
 from cubed.backend_array_api import namespace as nxp
@@ -110,7 +110,7 @@ def min(x, /, *, axis=None, keepdims=False, split_every=None):
 
 
 def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
-    dtype = _validate_and_define_dtype(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="prod", device=device)
+    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="prod", device=device)
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
@@ -136,7 +136,7 @@ def std(x, /, *, axis=None, correction=0.0, keepdims=False, split_every=None):
 
 
 def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
-    dtype = _validate_and_define_dtype(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="sum", device=device)
+    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="sum", device=device)
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
