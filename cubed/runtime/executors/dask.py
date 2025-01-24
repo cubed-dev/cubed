@@ -1,33 +1,13 @@
 import asyncio
-from typing import (
-    Any,
-    AsyncIterator,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, Optional, Sequence
 
-from aiostream import stream
-from aiostream.core import Stream
 from dask.distributed import Client
 from networkx import MultiDiGraph
 
+from cubed.runtime.asyncio import async_map_dag
 from cubed.runtime.backup import use_backups_default
-from cubed.runtime.executors.asyncio import async_map_unordered
-from cubed.runtime.pipeline import visit_node_generations, visit_nodes
-from cubed.runtime.types import Callback, CubedPipeline, DagExecutor
-from cubed.runtime.utils import (
-    asyncio_run,
-    execution_stats,
-    gensym,
-    handle_callbacks,
-    handle_operation_start_callbacks,
-)
+from cubed.runtime.types import Callback, DagExecutor
+from cubed.runtime.utils import asyncio_run, execution_stats, gensym
 from cubed.spec import Spec
 
 
@@ -36,68 +16,6 @@ from cubed.spec import Spec
 def run_func(input, pipeline_func=None, config=None, name=None, compute_id=None):
     result = pipeline_func(input, config=config)
     return result
-
-
-async def map_unordered(
-    client: Client,
-    map_function: Callable[..., Any],
-    map_iterdata: Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]],
-    retries: int = 2,
-    use_backups: bool = False,
-    batch_size: Optional[int] = None,
-    return_stats: bool = False,
-    name: Optional[str] = None,
-    **kwargs,
-) -> AsyncIterator[Any]:
-    def create_futures_func(input, **kwargs):
-        input = list(input)  # dask expects a sequence (it calls `len` on it)
-        key = name or gensym("map")
-        key = key.replace("-", "_")  # otherwise array number is not shown on dashboard
-        return [
-            (i, asyncio.ensure_future(f))
-            for i, f in zip(
-                input,
-                client.map(map_function, input, key=key, retries=retries, **kwargs),
-            )
-        ]
-
-    def create_backup_futures_func(input, **kwargs):
-        input = list(input)  # dask expects a sequence (it calls `len` on it)
-        key = name or gensym("backup")
-        key = key.replace("-", "_")  # otherwise array number is not shown on dashboard
-        return [
-            (i, asyncio.ensure_future(f))
-            for i, f in zip(input, client.map(map_function, input, key=key, **kwargs))
-        ]
-
-    async for result in async_map_unordered(
-        create_futures_func,
-        map_iterdata,
-        use_backups=use_backups,
-        create_backup_futures_func=create_backup_futures_func,
-        batch_size=batch_size,
-        return_stats=return_stats,
-        name=name,
-        **kwargs,
-    ):
-        yield result
-
-
-def pipeline_to_stream(
-    client: Client, name: str, pipeline: CubedPipeline, **kwargs
-) -> Stream:
-    return stream.iterate(
-        map_unordered(
-            client,
-            run_func,
-            pipeline.mappable,
-            return_stats=True,
-            name=name,
-            pipeline_func=pipeline.function,
-            config=pipeline.config,
-            **kwargs,
-        )
-    )
 
 
 def check_runtime_memory(spec, client):
@@ -114,40 +32,27 @@ def check_runtime_memory(spec, client):
             )
 
 
-async def async_execute_dag(
-    dag: MultiDiGraph,
-    callbacks: Optional[Sequence[Callback]] = None,
-    resume: Optional[bool] = None,
-    spec: Optional[Spec] = None,
-    compute_arrays_in_parallel: Optional[bool] = None,
-    compute_kwargs: Optional[Dict[str, Any]] = None,
-    **kwargs,
-) -> None:
-    compute_kwargs = compute_kwargs or {}
-    async with Client(asynchronous=True, **compute_kwargs) as client:
-        if spec is not None:
-            check_runtime_memory(spec, client)
-            if "use_backups" not in kwargs and use_backups_default(spec):
-                kwargs["use_backups"] = True
-        if not compute_arrays_in_parallel:
-            # run one pipeline at a time
-            for name, node in visit_nodes(dag, resume=resume):
-                handle_operation_start_callbacks(callbacks, name)
-                st = pipeline_to_stream(client, name, node["pipeline"], **kwargs)
-                async with st.stream() as streamer:
-                    async for result, stats in streamer:
-                        handle_callbacks(callbacks, result, stats)
-        else:
-            for gen in visit_node_generations(dag, resume=resume):
-                # run pipelines in the same topological generation in parallel by merging their streams
-                streams = [
-                    pipeline_to_stream(client, name, node["pipeline"], **kwargs)
-                    for name, node in gen
-                ]
-                merged_stream = stream.merge(*streams)
-                async with merged_stream.stream() as streamer:
-                    async for result, stats in streamer:
-                        handle_callbacks(callbacks, result, stats)
+def dask_create_futures_func(
+    client,
+    function: Callable[..., Any],
+    name: Optional[str] = None,
+    retries: Optional[str] = None,
+):
+    def create_futures_func(input, **kwargs):
+        input = list(input)  # dask expects a sequence (it calls `len` on it)
+        key = name or gensym("map")
+        key = key.replace("-", "_")  # otherwise array number is not shown on dashboard
+        if "func" in kwargs:
+            kwargs["pipeline_func"] = kwargs.pop("func")  # rename to avoid clash
+        return [
+            (i, asyncio.ensure_future(f))
+            for i, f in zip(
+                input,
+                client.map(function, input, key=key, retries=retries, **kwargs),
+            )
+        ]
+
+    return create_futures_func
 
 
 class DaskExecutor(DagExecutor):
@@ -172,7 +77,7 @@ class DaskExecutor(DagExecutor):
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
         asyncio_run(
-            async_execute_dag(
+            self._async_execute_dag(
                 dag,
                 callbacks=callbacks,
                 resume=resume,
@@ -182,3 +87,39 @@ class DaskExecutor(DagExecutor):
                 **merged_kwargs,
             )
         )
+
+    async def _async_execute_dag(
+        self,
+        dag: MultiDiGraph,
+        callbacks: Optional[Sequence[Callback]] = None,
+        resume: Optional[bool] = None,
+        spec: Optional[Spec] = None,
+        compute_kwargs: Optional[Dict[str, Any]] = None,
+        compute_arrays_in_parallel: Optional[bool] = None,
+        **kwargs,
+    ) -> None:
+        compute_kwargs = compute_kwargs or {}
+        retries = kwargs.pop("retries", 2)
+        name = kwargs.get("name", None)
+        async with Client(asynchronous=True, **compute_kwargs) as client:
+            if spec is not None:
+                check_runtime_memory(spec, client)
+                if "use_backups" not in kwargs and use_backups_default(spec):
+                    kwargs["use_backups"] = True
+
+            create_futures_func = dask_create_futures_func(
+                client, run_func, name, retries=retries
+            )
+            create_backup_futures_func = dask_create_futures_func(
+                client, run_func, name
+            )
+
+            await async_map_dag(
+                create_futures_func,
+                dag=dag,
+                callbacks=callbacks,
+                resume=resume,
+                compute_arrays_in_parallel=compute_arrays_in_parallel,
+                create_backup_futures_func=create_backup_futures_func,
+                **kwargs,
+            )

@@ -9,7 +9,8 @@ import asyncio
 import fsspec
 import modal
 
-from cubed.runtime.executors.modal import map_unordered
+from cubed.runtime.asyncio import async_map_unordered
+from cubed.runtime.executors.modal import modal_create_futures_func
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 tmp_path = "s3://cubed-unittest/map_unordered"
@@ -66,8 +67,9 @@ def deterministic_failure_modal_long_timeout(
 async def run_test(app_function, input, use_backups=False, batch_size=None, **kwargs):
     outputs = set()
     async with app.run():
-        async for output in map_unordered(
-            app_function,
+        create_futures_func = modal_create_futures_func(app_function)
+        async for output in async_map_unordered(
+            create_futures_func,
             input,
             use_backups=use_backups,
             batch_size=batch_size,

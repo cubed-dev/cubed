@@ -5,7 +5,8 @@ from functools import partial
 
 import pytest
 
-from cubed.runtime.executors.local import map_unordered
+from cubed.runtime.asyncio import async_map_unordered
+from cubed.runtime.executors.local import threads_create_futures_func
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 
@@ -13,11 +14,12 @@ async def run_test(function, input, retries=2, use_backups=False, batch_size=Non
     outputs = set()
     concurrent_executor = ThreadPoolExecutor()
     try:
-        async for output in map_unordered(
-            concurrent_executor,
-            function,
+        create_futures_func = threads_create_futures_func(
+            concurrent_executor, function, retries=retries
+        )
+        async for output in async_map_unordered(
+            create_futures_func,
             input,
-            retries=retries,
             use_backups=use_backups,
             batch_size=batch_size,
         ):
