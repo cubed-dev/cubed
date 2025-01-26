@@ -44,6 +44,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | Multi-axis          | :white_check_mark: |            |                              |
 |                          | Boolean array       | :x:                |            | Shape is data dependent, [#73](https://github.com/cubed-dev/cubed/issues/73) |
 | Indexing Functions       | `take`              | :white_check_mark: | 2022.12    |                              |
+|                          | `take_along_axis`   | :x:                | 2024.12    |                              |
 | Inspection               | `capabilities`      | :white_check_mark: | 2023.12    |                              |
 |                          | `default_device`    | :white_check_mark: | 2023.12    |                              |
 |                          | `default_dtypes`    | :white_check_mark: | 2023.12    |                              |
@@ -68,6 +69,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unstack`           | :white_check_mark: | 2023.12    |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
 |                          | `argmin`            | :white_check_mark: |            |                              |
+|                          | `count_nonzero`     | :x:                | 2024.12    |                              |
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
 |                          | `searchsorted`      | :x:                | 2023.12    |                              |
 |                          | `where`             | :white_check_mark: |            |                              |
@@ -75,9 +77,10 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unique_counts`     | :x:                |            | Shape is data dependent      |
 |                          | `unique_inverse`    | :x:                |            | Shape is data dependent      |
 |                          | `unique_values`     | :x:                |            | Shape is data dependent      |
-| Sorting Functions        | `argsort`           | :x:                |            | Not in Dask                  |
-|                          | `sort`              | :x:                |            | Not in Dask                  |
-| Statistical Functions    | `cumulative_sum`    | :x:                | 2023.12    | WIP [#531](https://github.com/cubed-dev/cubed/pull/531) |
+| Sorting Functions        | `argsort`           | :x:                |            |                              |
+|                          | `sort`              | :x:                |            |                              |
+| Statistical Functions    | `cumulative_prod`   | :x:                | 2024.12    | WIP [#531](https://github.com/cubed-dev/cubed/pull/531) |
+|                          | `cumulative_sum`    | :x:                | 2023.12    | WIP [#531](https://github.com/cubed-dev/cubed/pull/531) |
 |                          | `max`               | :white_check_mark: |            |                              |
 |                          | `mean`              | :white_check_mark: |            |                              |
 |                          | `min`               | :white_check_mark: |            |                              |
@@ -87,6 +90,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `var`               | :white_check_mark: |            |                              |
 | Utility Functions        | `all`               | :white_check_mark: |            |                              |
 |                          | `any`               | :white_check_mark: |            |                              |
+|                          | `diff`              | :x:                | 2024.12    |                              |
 
 ### Linear Algebra Extension
 
