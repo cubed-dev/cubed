@@ -1,14 +1,9 @@
 import math
 
 from cubed.array_api.dtypes import (
-    _boolean_dtypes,
-    _numeric_dtypes,
     _real_floating_dtypes,
     _real_numeric_dtypes,
-    _signed_integer_dtypes,
-    _unsigned_integer_dtypes,
-    int64,
-    uint64,
+    _upcast_integral_dtypes,
 )
 from cubed.array_api.elementwise_functions import sqrt
 from cubed.backend_array_api import namespace as nxp
@@ -35,6 +30,7 @@ def mean(x, /, *, axis=None, keepdims=False, split_every=None):
     # pair of fields needed to keep per-chunk counts and totals for computing
     # the mean.
     dtype = x.dtype
+    #TODO(#658): Should these be default dtypes?
     intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype)
     return reduction(
@@ -113,19 +109,8 @@ def min(x, /, *, axis=None, keepdims=False, split_every=None):
     )
 
 
-def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
-    # boolean is allowed by numpy
-    if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
-        raise TypeError("Only numeric or boolean dtypes are allowed in prod")
-    if dtype is None:
-        if x.dtype in _boolean_dtypes:
-            dtype = int64
-        elif x.dtype in _signed_integer_dtypes:
-            dtype = int64
-        elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
-        else:
-            dtype = x.dtype
+def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
+    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="prod", device=device)
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
@@ -150,19 +135,8 @@ def std(x, /, *, axis=None, correction=0.0, keepdims=False, split_every=None):
     )
 
 
-def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
-    # boolean is allowed by numpy
-    if x.dtype not in _numeric_dtypes and x.dtype not in _boolean_dtypes:
-        raise TypeError("Only numeric or boolean dtypes are allowed in sum")
-    if dtype is None:
-        if x.dtype in _boolean_dtypes:
-            dtype = int64
-        elif x.dtype in _signed_integer_dtypes:
-            dtype = int64
-        elif x.dtype in _unsigned_integer_dtypes:
-            dtype = uint64
-        else:
-            dtype = x.dtype
+def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
+    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="sum", device=device)
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
@@ -189,6 +163,7 @@ def var(
     if x.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in var")
     dtype = x.dtype
+    #TODO(#658): Should these be default dtypes?
     intermediate_dtype = [("n", nxp.int64), ("mu", nxp.float64), ("M2", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype, correction=correction)
     return reduction(
