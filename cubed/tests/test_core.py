@@ -1,4 +1,3 @@
-import platform
 import random
 from functools import partial
 
@@ -597,7 +596,6 @@ def test_array_pickle(spec, executor):
     assert_array_equal(c.compute(executor=executor), expected)
 
 
-@pytest.mark.skipif(platform.system() == "Windows", reason="does not run on windows")
 def test_measure_reserved_mem(executor):
     if executor.name not in ("processes", "lithops"):
         pytest.skip(f"{executor.name} executor does not support measure_reserved_mem")

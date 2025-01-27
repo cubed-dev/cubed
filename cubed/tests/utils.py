@@ -1,4 +1,3 @@
-import platform
 from typing import Iterable
 
 import networkx as nx
@@ -18,18 +17,14 @@ LITHOPS_LOCAL_CONFIG = {
     "localhost": {"version": 1},
 }
 
-ALL_EXECUTORS = [create_executor("single-threaded")]
+ALL_EXECUTORS = [
+    create_executor("single-threaded"),
+    create_executor("threads"),
+    create_executor("processes"),
+]
 
 # don't run all tests on every executor as it's too slow, so just have a subset
-MAIN_EXECUTORS = [create_executor("single-threaded")]
-
-
-if platform.system() != "Windows":
-    # ThreadsExecutor calls `peak_measured_mem` which is not supported on Windows
-    ALL_EXECUTORS.append(create_executor("threads"))
-
-    ALL_EXECUTORS.append(create_executor("processes"))
-    MAIN_EXECUTORS.append(create_executor("processes"))
+MAIN_EXECUTORS = [create_executor("single-threaded"), create_executor("processes")]
 
 try:
     ALL_EXECUTORS.append(create_executor("beam"))
