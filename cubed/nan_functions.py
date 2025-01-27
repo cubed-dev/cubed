@@ -8,9 +8,9 @@ from cubed.core import reduction
 # https://github.com/data-apis/array-api/issues/621
 
 
-def nanmean(x, /, *, axis=None, keepdims=False, split_every=None):
+def nanmean(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None):
     """Compute the arithmetic mean along the specified axis, ignoring NaNs."""
-    dtype = x.dtype
+    dtype = dtype or x.dtype
     intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     return reduction(
         x,
