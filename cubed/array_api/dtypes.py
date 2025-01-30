@@ -90,7 +90,9 @@ _dtype_categories = {
 
 
 # A Cubed-specific utility.
-def _upcast_integral_dtypes(x, dtype=None, *, allowed_dtypes=("numeric",), fname=None, device=None):
+def _upcast_integral_dtypes(
+    x, dtype=None, *, allowed_dtypes=("numeric",), fname=None, device=None
+):
     """Ensure the input dtype is allowed. If it's None, provide a good default dtype."""
     dtypes = __array_namespace_info__().default_dtypes(device=device)
 
@@ -116,3 +118,16 @@ def _upcast_integral_dtypes(x, dtype=None, *, allowed_dtypes=("numeric",), fname
             dtype = x.dtype
 
     return dtype
+
+
+def _promote_scalars(x1, x2, op):
+    """Promote at most one of x1 or x2 to an array from a Python scalar"""
+    x1_is_scalar = isinstance(x1, (int, float, complex, bool))
+    x2_is_scalar = isinstance(x2, (int, float, complex, bool))
+    if x1_is_scalar and x2_is_scalar:
+        raise TypeError(f"At least one of x1 and x2 must be an array in {op}")
+    elif x1_is_scalar:
+        x1 = x2._promote_scalar(x1)
+    elif x2_is_scalar:
+        x2 = x1._promote_scalar(x2)
+    return x1, x2

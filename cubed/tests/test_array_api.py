@@ -194,6 +194,19 @@ def test_add_different_chunks_fail(spec, executor):
     assert_array_equal(c.compute(executor=executor), np.ones((10,)) + np.ones((10,)))
 
 
+def test_add_scalars():
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+
+    b = xp.add(a, 1)
+    assert_array_equal(b.compute(), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]))
+
+    c = xp.add(2, a)
+    assert_array_equal(c.compute(), np.array([[3, 4, 5], [6, 7, 8], [9, 10, 11]]))
+
+    with pytest.raises(TypeError):
+        xp.add(1, 2)
+
+
 @pytest.mark.parametrize(
     "min, max",
     [
