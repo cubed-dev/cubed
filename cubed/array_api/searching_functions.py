@@ -1,6 +1,6 @@
 from cubed.array_api.creation_functions import asarray, zeros_like
 from cubed.array_api.data_type_functions import result_type
-from cubed.array_api.dtypes import _real_numeric_dtypes
+from cubed.array_api.dtypes import _promote_scalars, _real_numeric_dtypes
 from cubed.array_api.manipulation_functions import reshape
 from cubed.array_api.statistical_functions import max
 from cubed.backend_array_api import namespace as nxp
@@ -88,13 +88,6 @@ def _searchsorted(x, y, side):
 
 
 def where(condition, x1, x2, /):
-    x1_is_scalar = isinstance(x1, (int, float, complex, bool))
-    x2_is_scalar = isinstance(x2, (int, float, complex, bool))
-    if x1_is_scalar and x2_is_scalar:
-        raise TypeError("At least one of x1 and x2 must be an array in where")
-    elif x1_is_scalar:
-        x1 = x2._promote_scalar(x1)
-    elif x2_is_scalar:
-        x2 = x1._promote_scalar(x2)
+    x1, x2 = _promote_scalars(x1, x2, "where")
     dtype = result_type(x1, x2)
     return elemwise(nxp.where, condition, x1, x2, dtype=dtype)
