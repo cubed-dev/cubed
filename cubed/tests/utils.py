@@ -1,3 +1,4 @@
+import os
 import platform
 from typing import Iterable
 
@@ -41,6 +42,13 @@ except ImportError:
 try:
     ALL_EXECUTORS.append(create_executor("dask"))
     MAIN_EXECUTORS.append(create_executor("dask"))
+except ImportError:
+    pass
+
+try:
+    executor_options = dict(endpoint_id=os.getenv("ENDPOINT_ID", None))
+    ALL_EXECUTORS.append(create_executor("globus-compute", executor_options))
+    MAIN_EXECUTORS.append(create_executor("globus-compute", executor_options))
 except ImportError:
     pass
 
