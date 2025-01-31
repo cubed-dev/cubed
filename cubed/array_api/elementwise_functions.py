@@ -8,6 +8,7 @@ from cubed.array_api.dtypes import (
     _integer_dtypes,
     _integer_or_boolean_dtypes,
     _numeric_dtypes,
+    _promote_scalars,
     _real_floating_dtypes,
     _real_numeric_dtypes,
     complex64,
@@ -44,6 +45,7 @@ def acosh(x, /):
 
 
 def add(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "add")
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in add")
     return elemwise(nxp.add, x1, x2, dtype=result_type(x1, x2))
@@ -68,6 +70,7 @@ def atan(x, /):
 
 
 def atan2(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "atan2")
     if x1.dtype not in _real_floating_dtypes or x2.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in atan2")
     return elemwise(nxp.atan2, x1, x2, dtype=result_type(x1, x2))
@@ -80,6 +83,7 @@ def atanh(x, /):
 
 
 def bitwise_and(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "bitwise_and")
     if (
         x1.dtype not in _integer_or_boolean_dtypes
         or x2.dtype not in _integer_or_boolean_dtypes
@@ -95,12 +99,14 @@ def bitwise_invert(x, /):
 
 
 def bitwise_left_shift(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "bitwise_left_shift")
     if x1.dtype not in _integer_dtypes or x2.dtype not in _integer_dtypes:
         raise TypeError("Only integer dtypes are allowed in bitwise_left_shift")
     return elemwise(nxp.bitwise_left_shift, x1, x2, dtype=result_type(x1, x2))
 
 
 def bitwise_or(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "bitwise_or")
     if (
         x1.dtype not in _integer_or_boolean_dtypes
         or x2.dtype not in _integer_or_boolean_dtypes
@@ -110,12 +116,14 @@ def bitwise_or(x1, x2, /):
 
 
 def bitwise_right_shift(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "bitwise_right_shift")
     if x1.dtype not in _integer_dtypes or x2.dtype not in _integer_dtypes:
         raise TypeError("Only integer dtypes are allowed in bitwise_right_shift")
     return elemwise(nxp.bitwise_right_shift, x1, x2, dtype=result_type(x1, x2))
 
 
 def bitwise_xor(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "bitwise_xor")
     if (
         x1.dtype not in _integer_or_boolean_dtypes
         or x2.dtype not in _integer_or_boolean_dtypes
@@ -172,6 +180,7 @@ def conj(x, /):
 
 
 def copysign(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "copysign")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in copysign")
     return elemwise(nxp.copysign, x1, x2, dtype=result_type(x1, x2))
@@ -190,6 +199,7 @@ def cosh(x, /):
 
 
 def divide(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "divide")
     if x1.dtype not in _floating_dtypes or x2.dtype not in _floating_dtypes:
         raise TypeError("Only floating-point dtypes are allowed in divide")
     return elemwise(nxp.divide, x1, x2, dtype=result_type(x1, x2))
@@ -208,6 +218,7 @@ def expm1(x, /):
 
 
 def equal(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "equal")
     return elemwise(nxp.equal, x1, x2, dtype=nxp.bool)
 
 
@@ -221,20 +232,24 @@ def floor(x, /):
 
 
 def floor_divide(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "floor_divide")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in floor_divide")
     return elemwise(nxp.floor_divide, x1, x2, dtype=result_type(x1, x2))
 
 
 def greater(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "greater")
     return elemwise(nxp.greater, x1, x2, dtype=nxp.bool)
 
 
 def greater_equal(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "greater_equal")
     return elemwise(nxp.greater_equal, x1, x2, dtype=nxp.bool)
 
 
 def hypot(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "hypot")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in hypot")
     return elemwise(nxp.hypot, x1, x2, dtype=result_type(x1, x2))
@@ -269,10 +284,12 @@ def isnan(x, /):
 
 
 def less(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "less")
     return elemwise(nxp.less, x1, x2, dtype=nxp.bool)
 
 
 def less_equal(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "less_equal")
     return elemwise(nxp.less_equal, x1, x2, dtype=nxp.bool)
 
 
@@ -301,12 +318,14 @@ def log10(x, /):
 
 
 def logaddexp(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "logaddexp")
     if x1.dtype not in _real_floating_dtypes or x2.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in logaddexp")
     return elemwise(nxp.logaddexp, x1, x2, dtype=result_type(x1, x2))
 
 
 def logical_and(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "logical_and")
     if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_and")
     return elemwise(nxp.logical_and, x1, x2, dtype=nxp.bool)
@@ -319,30 +338,35 @@ def logical_not(x, /):
 
 
 def logical_or(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "logical_or")
     if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_or")
     return elemwise(nxp.logical_or, x1, x2, dtype=nxp.bool)
 
 
 def logical_xor(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "logical_xor")
     if x1.dtype not in _boolean_dtypes or x2.dtype not in _boolean_dtypes:
         raise TypeError("Only boolean dtypes are allowed in logical_xor")
     return elemwise(nxp.logical_xor, x1, x2, dtype=nxp.bool)
 
 
 def maximum(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "maximum")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in maximum")
     return elemwise(nxp.maximum, x1, x2, dtype=result_type(x1, x2))
 
 
 def minimum(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "minimum")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in minimum")
     return elemwise(nxp.minimum, x1, x2, dtype=result_type(x1, x2))
 
 
 def multiply(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "multiply")
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in multiply")
     return elemwise(nxp.multiply, x1, x2, dtype=result_type(x1, x2))
@@ -355,6 +379,7 @@ def negative(x, /):
 
 
 def not_equal(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "not_equal")
     return elemwise(nxp.not_equal, x1, x2, dtype=nxp.bool)
 
 
@@ -365,6 +390,7 @@ def positive(x, /):
 
 
 def pow(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "pow")
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in pow")
     return elemwise(nxp.pow, x1, x2, dtype=result_type(x1, x2))
@@ -381,6 +407,7 @@ def real(x, /):
 
 
 def remainder(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "remainder")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in remainder")
     return elemwise(nxp.remainder, x1, x2, dtype=result_type(x1, x2))
@@ -429,6 +456,7 @@ def square(x, /):
 
 
 def subtract(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "subtract")
     if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in subtract")
     return elemwise(nxp.subtract, x1, x2, dtype=result_type(x1, x2))
