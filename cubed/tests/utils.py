@@ -27,6 +27,7 @@ MAIN_EXECUTORS = [create_executor("single-threaded")]
 if platform.system() != "Windows":
     # ThreadsExecutor calls `peak_measured_mem` which is not supported on Windows
     ALL_EXECUTORS.append(create_executor("threads"))
+    MAIN_EXECUTORS.append(create_executor("threads"))
 
     ALL_EXECUTORS.append(create_executor("processes"))
     MAIN_EXECUTORS.append(create_executor("processes"))
