@@ -1,13 +1,16 @@
 from numbers import Integral
-from typing import Any
+from typing import TYPE_CHECKING, Any, Tuple
 
 import numpy as np
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.storage.types import ArrayMetadata
-from cubed.types import T_DType, T_RegularChunks, T_Shape
+from cubed.types import T_DType, T_RegularChunks, T_Shape, T_StandardArray
 from cubed.utils import array_memory, broadcast_trick, memory_repr
+
+if TYPE_CHECKING:
+    from zarr.core.indexing import Selection
 
 
 class VirtualArray(ArrayMetadata):
@@ -25,7 +28,7 @@ class VirtualEmptyArray(VirtualArray):
     ):
         super().__init__(shape, dtype, chunks)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: "Selection") -> T_StandardArray:
         from ndindex import ndindex  # import as needed to avoid slow 'import cubed'
 
         idx = ndindex[key]
@@ -34,7 +37,7 @@ class VirtualEmptyArray(VirtualArray):
         return broadcast_trick(nxp.empty)(newshape, dtype=self.dtype)
 
     @property
-    def chunkmem(self):
+    def chunkmem(self) -> int:
         # take broadcast trick into account
         return array_memory(self.dtype, (1,))
 
@@ -52,7 +55,7 @@ class VirtualFullArray(VirtualArray):
         super().__init__(shape, dtype, chunks)
         self.fill_value = fill_value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: "Selection") -> T_StandardArray:
         from ndindex import ndindex  # import as needed to avoid slow 'import cubed'
 
         idx = ndindex[key]
@@ -63,7 +66,7 @@ class VirtualFullArray(VirtualArray):
         )
 
     @property
-    def chunkmem(self):
+    def chunkmem(self) -> int:
         # take broadcast trick into account
         return array_memory(self.dtype, (1,))
 
@@ -76,11 +79,12 @@ class VirtualOffsetsArray(VirtualArray):
         chunks = (1,) * len(shape)
         super().__init__(shape, dtype, chunks)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: "Selection") -> T_StandardArray:
         if key == () and self.shape == ():
             return nxp.asarray(0, dtype=self.dtype)
         return numpy_array_to_backend_array(
-            np.ravel_multi_index(_key_to_index_tuple(key), self.shape), dtype=self.dtype
+            np.ravel_multi_index(_key_to_index_tuple(key), self.shape),
+            dtype=self.dtype,  # type: ignore[arg-type]
         )
 
 
@@ -89,7 +93,7 @@ class VirtualInMemoryArray(VirtualArray):
 
     def __init__(
         self,
-        array: np.ndarray,  # TODO: generalise to array API type
+        array: T_StandardArray,
         chunks: T_RegularChunks,
         max_nbytes: int = 10**6,
     ):
@@ -101,18 +105,18 @@ class VirtualInMemoryArray(VirtualArray):
         self.array = array
         super().__init__(array.shape, array.dtype, chunks)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: "Selection") -> T_StandardArray:
         return self.array.__getitem__(key)
 
 
-def _key_to_index_tuple(selection):
-    if isinstance(selection, slice):
+def _key_to_index_tuple(selection: "Selection") -> Tuple[int, ...]:
+    if isinstance(selection, (slice, Integral)):
         selection = (selection,)
-    assert all(isinstance(s, (slice, Integral)) for s in selection)
+    assert all(isinstance(s, (slice, Integral)) for s in selection)  # type: ignore[union-attr]
     sel = []
-    for s in selection:
+    for s in selection:  # type: ignore[union-attr]
         if isinstance(s, Integral):
-            sel.append(s)
+            sel.append(int(s))
         elif (
             isinstance(s, slice)
             and s.stop == s.start + 1
@@ -125,7 +129,7 @@ def _key_to_index_tuple(selection):
 
 
 def virtual_empty(
-    shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, **kwargs
+    shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, **kwargs: Any
 ) -> VirtualEmptyArray:
     return VirtualEmptyArray(shape, dtype, chunks, **kwargs)
 
@@ -136,7 +140,7 @@ def virtual_full(
     *,
     dtype: T_DType,
     chunks: T_RegularChunks,
-    **kwargs,
+    **kwargs: Any,
 ) -> VirtualFullArray:
     return VirtualFullArray(shape, dtype, chunks, fill_value, **kwargs)
 
@@ -146,7 +150,7 @@ def virtual_offsets(shape: T_Shape) -> VirtualOffsetsArray:
 
 
 def virtual_in_memory(
-    array: np.ndarray,
+    array: T_StandardArray,
     chunks: T_RegularChunks,
 ) -> VirtualInMemoryArray:
     return VirtualInMemoryArray(array, chunks)

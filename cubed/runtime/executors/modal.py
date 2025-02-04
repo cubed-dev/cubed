@@ -140,7 +140,7 @@ def modal_create_futures_func(function: Callable[..., Any]):
 class ModalExecutor(DagExecutor):
     """An execution engine that uses Modal's async API."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     @property

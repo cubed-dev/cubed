@@ -24,7 +24,7 @@ class DagExecutor:
     def name(self) -> str:
         raise NotImplementedError  # pragma: no cover
 
-    def execute_dag(self, dag: MultiDiGraph, **kwargs) -> None:
+    def execute_dag(self, dag: MultiDiGraph, **kwargs: Any) -> None:
         raise NotImplementedError  # pragma: no cover
 
 
@@ -37,7 +37,7 @@ class CubedPipeline:
 
     function: Callable[..., Any]
     name: str
-    mappable: Iterable
+    mappable: Iterable[Any]
     config: Config
 
 
@@ -134,7 +134,7 @@ class Callback:
     def unregister(self) -> None:
         Callback.active.remove(self)
 
-    def on_compute_start(self, event):
+    def on_compute_start(self, event: ComputeStartEvent) -> None:
         """Called when the computation is about to start.
 
         Parameters
@@ -144,7 +144,7 @@ class Callback:
         """
         pass  # pragma: no cover
 
-    def on_compute_end(self, ComputeEndEvent):
+    def on_compute_end(self, event: ComputeEndEvent) -> None:
         """Called when the computation has finished.
 
         Parameters
@@ -154,13 +154,13 @@ class Callback:
         """
         pass  # pragma: no cover
 
-    def on_operation_start(self, event):
+    def on_operation_start(self, event: OperationStartEvent) -> None:
         pass
 
-    def on_operation_end(self, event):
+    def on_operation_end(self, event: OperationEndEvent) -> None:
         pass
 
-    def on_task_end(self, event):
+    def on_task_end(self, event: TaskEndEvent) -> None:
         """Called when the a task ends.
 
         Parameters

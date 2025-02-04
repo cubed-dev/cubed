@@ -39,7 +39,7 @@ async def async_map_unordered(
     batch_size: Optional[int] = None,
     return_stats: bool = False,
     name: Optional[str] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> AsyncIterator[Any]:
     """
     Asynchronous parallel map over an iterable input, with support for backups and batching.
@@ -128,7 +128,7 @@ async def async_map_dag(
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     """
     Asynchronous parallel map over multiple pipelines from a DAG, with support for backups and batching.
@@ -170,7 +170,7 @@ def pipeline_to_stream(
     create_futures_func: Callable,
     name: str,
     pipeline: CubedPipeline,
-    **kwargs,
+    **kwargs: Any,
 ) -> Stream:
     """
     Turn a pipeline into an asynchronous stream of results.

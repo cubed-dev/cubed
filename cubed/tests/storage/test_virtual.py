@@ -4,7 +4,8 @@ from math import prod
 import numpy as np
 import pytest
 
-from cubed.storage.virtual import virtual_empty, virtual_offsets
+from cubed._testing import assert_array_equal
+from cubed.storage.virtual import virtual_empty, virtual_full, virtual_offsets
 
 
 @pytest.mark.parametrize(
@@ -26,6 +27,23 @@ def test_virtual_empty(shape, chunks, index):
     assert v_empty[...].shape == empty[...].shape
 
 
+@pytest.mark.parametrize(
+    ("shape", "chunks", "index"),
+    [
+        ((3,), (2,), 2),
+        ((3, 2), (2, 1), (2, 1)),
+        ((3, 2), (2, 1), (2, slice(0, 1))),
+        ((3, 2), (2, 1), (slice(1, 3), 1)),
+        ((3, 2), (2, 1), (slice(1, 3), slice(0, 1))),
+    ],
+)
+def test_virtual_full(shape, chunks, index):
+    v_full = virtual_full(shape, fill_value=7, dtype=np.int32, chunks=chunks)
+    full = np.full(shape, fill_value=7, dtype=np.int32)
+    assert_array_equal(v_full[index], full[index])
+    assert_array_equal(v_full[...], full[...])
+
+
 @pytest.mark.parametrize("shape", [(), (3,), (3, 2)])
 def test_virtual_offsets(shape):
     v_offsets = virtual_offsets(shape)
@@ -35,6 +53,7 @@ def test_virtual_offsets(shape):
 
     # test some length 1 slices
     if len(shape) == 1:
+        assert v_offsets[1] == offsets[1]
         assert v_offsets[1:2] == offsets[1:2]
     elif len(shape) == 2:
         assert v_offsets[1:2, 0:1] == offsets[1:2, 0:1]

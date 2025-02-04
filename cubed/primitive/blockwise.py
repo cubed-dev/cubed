@@ -5,7 +5,7 @@ import math
 from collections.abc import Iterator
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import toolz
 import zarr
@@ -355,7 +355,7 @@ def general_blockwise(
     output_chunk_memory = 0
     target_arrays = []
 
-    numblocks0 = None
+    numblocks0: Optional[Tuple[int, ...]] = None
     for i, target_store in enumerate(target_stores):
         chunks_normal = normalize_chunks(chunkss[i], shape=shapes[i], dtype=dtypes[i])
         chunksize = to_chunksize(chunks_normal)
@@ -465,7 +465,7 @@ def can_fuse_primitive_ops(
 def can_fuse_multiple_primitive_ops(
     name: str,
     primitive_op: PrimitiveOperation,
-    predecessor_primitive_ops: List[PrimitiveOperation],
+    predecessor_primitive_ops: List[Optional[PrimitiveOperation]],
     *,
     max_total_num_input_blocks: Optional[int] = None,
 ) -> bool:
@@ -531,7 +531,7 @@ def can_fuse_multiple_primitive_ops(
     return False
 
 
-def peak_projected_mem(primitive_ops):
+def peak_projected_mem(primitive_ops: Iterable[Optional[PrimitiveOperation]]) -> int:
     """Calculate the peak projected memory for running a series of primitive ops
     and retaining their return values in memory."""
     memory_modeller = MemoryModeller()
@@ -612,7 +612,8 @@ def fuse(
 
 
 def fuse_multiple(
-    primitive_op: PrimitiveOperation, *predecessor_primitive_ops: PrimitiveOperation
+    primitive_op: PrimitiveOperation,
+    *predecessor_primitive_ops: Optional[PrimitiveOperation],
 ) -> PrimitiveOperation:
     """
     Fuse a blockwise operation and its predecessors into a single operation, avoiding writing to (or reading from) the targets of the predecessor operations.

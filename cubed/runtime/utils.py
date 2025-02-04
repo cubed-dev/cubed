@@ -5,14 +5,22 @@ from contextlib import nullcontext
 from functools import partial
 from itertools import islice
 from pathlib import Path
+from typing import Any, Coroutine, Dict, Iterable, Optional, TypeVar
 
-from cubed.runtime.types import OperationEndEvent, OperationStartEvent, TaskEndEvent
+from cubed.runtime.types import (
+    Callback,
+    OperationEndEvent,
+    OperationStartEvent,
+    TaskEndEvent,
+)
 from cubed.utils import peak_measured_mem
 
 try:
     import memray
 except ImportError:
     memray = None  # type: ignore
+
+T = TypeVar("T")
 
 sym_counter = 0
 
@@ -99,19 +107,27 @@ def profile_memray(func):
     return partial(execute_with_memray, func)
 
 
-def handle_operation_start_callbacks(callbacks, name):
+def handle_operation_start_callbacks(
+    callbacks: Optional[Iterable[Callback]], name: str
+) -> None:
     if callbacks is not None:
         event = OperationStartEvent(name)
-        [callback.on_operation_start(event) for callback in callbacks]
+        for callback in callbacks:
+            callback.on_operation_start(event)
 
 
-def handle_operation_end_callbacks(callbacks, name):
+def handle_operation_end_callbacks(callbacks, name) -> None:
     if callbacks is not None:
         event = OperationEndEvent(name)
-        [callback.on_operation_end(event) for callback in callbacks]
+        for callback in callbacks:
+            callback.on_operation_end(event)
 
 
-def handle_callbacks(callbacks, result, stats):
+def handle_callbacks(
+    callbacks: Optional[Iterable[Callback]],
+    result: Optional[Any],
+    stats: Dict[str, Any],
+) -> None:
     """Construct a TaskEndEvent from stats and send to all callbacks."""
 
     if callbacks is not None:
@@ -124,7 +140,8 @@ def handle_callbacks(callbacks, result, stats):
             )
         else:
             event = TaskEndEvent(result=result, **stats)
-        [callback.on_task_end(event) for callback in callbacks]
+        for callback in callbacks:
+            callback.on_task_end(event)
 
 
 def raise_if_computes():
@@ -137,7 +154,7 @@ def raise_if_computes():
 
 # Like asyncio.run(), but works in a Jupyter notebook
 # Based on https://stackoverflow.com/a/75341431
-def asyncio_run(coro):
+def asyncio_run(coro: Coroutine[Any, Any, T]) -> T:
     try:
         asyncio.get_running_loop()  # Triggers RuntimeError if no running event loop
     except RuntimeError:

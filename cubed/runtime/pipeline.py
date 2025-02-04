@@ -1,9 +1,9 @@
-from typing import Any, Dict
+from typing import Any, Dict, Iterator, List, Tuple
 
 import networkx as nx
 
 
-def skip_node(name, dag, nodes: Dict[str, Any]) -> bool:
+def skip_node(name: str, dag: nx.MultiDiGraph, nodes: Dict[str, Any]) -> bool:
     """
     Return True if the array for a node doesn't have a pipeline to compute it,
     or if it is marked as already computed.
@@ -15,7 +15,7 @@ def skip_node(name, dag, nodes: Dict[str, Any]) -> bool:
     return nodes[name].get("computed", False)
 
 
-def visit_nodes(dag):
+def visit_nodes(dag: nx.MultiDiGraph) -> Iterator[Tuple[Any, Any]]:
     """Return a generator that visits the nodes in the DAG in topological order."""
     nodes = {n: d for (n, d) in dag.nodes(data=True)}
     for name in list(nx.topological_sort(dag)):
@@ -24,7 +24,7 @@ def visit_nodes(dag):
         yield name, nodes[name]
 
 
-def visit_node_generations(dag):
+def visit_node_generations(dag: nx.MultiDiGraph) -> Iterator[List[Tuple[Any, Any]]]:
     """Return a generator that visits the nodes in the DAG in groups of topological generations."""
     nodes = {n: d for (n, d) in dag.nodes(data=True)}
     for names in nx.topological_generations(dag):

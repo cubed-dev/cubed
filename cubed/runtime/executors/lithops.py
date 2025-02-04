@@ -256,7 +256,7 @@ def standardise_lithops_stats(name: str, future: RetryingFuture) -> Dict[str, An
 class LithopsExecutor(DagExecutor):
     """An execution engine that uses Lithops."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     @property

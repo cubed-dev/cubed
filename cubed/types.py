@@ -19,3 +19,6 @@ T_Chunks = Union[
 ]
 
 T_Store = Any  # TODO: improve this
+
+# Use https://github.com/data-apis/array-api-typing when ready
+T_StandardArray = Any

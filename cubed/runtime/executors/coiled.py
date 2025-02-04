@@ -21,7 +21,7 @@ def make_coiled_function(func, name, coiled_kwargs):
 class CoiledExecutor(DagExecutor):
     """An execution engine that uses Coiled Functions."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     @property
