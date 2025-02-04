@@ -73,11 +73,13 @@ def test_store_icechunk(icechunk_storage, executor):
 
     repo = Repository.create(storage=icechunk_storage)
     session = repo.writable_session("main")
-    store = session.store
-
-    group = zarr.group(store=store, overwrite=True)
-    target = group.create_array("a", shape=a.shape, dtype=a.dtype, chunks=a.chunksize)
-    store_icechunk(session, sources=a, targets=target, executor=executor)
+    with session.allow_pickling():
+        store = session.store
+        group = zarr.group(store=store, overwrite=True)
+        target = group.create_array(
+            "a", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
+        )
+        store_icechunk(session, sources=a, targets=target, executor=executor)
     session.commit("commit 1")
 
     # reopen store and check contents of array
