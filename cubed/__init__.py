@@ -13,12 +13,12 @@ config = Config(
     defaults=[{"spec": {"allowed_mem": "2GB", "reserved_mem": "100MB"}}],
 )
 
+from .array.nan_functions import nanmean, nansum
+from .array.overlap import map_overlap
+from .array.pad import pad
 from .core.array import compute, measure_reserved_mem, visualize
 from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, rechunk, store, to_zarr
-from .nan_functions import nanmean, nansum
-from .overlap import map_overlap
-from .pad import pad
 from .runtime.types import Callback, TaskEndEvent
 from .spec import Spec
 

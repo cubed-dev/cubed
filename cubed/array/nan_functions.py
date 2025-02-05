@@ -50,9 +50,13 @@ def _nannumel(x, **kwargs):
     return nxp.sum(~(nxp.isnan(x)), **kwargs)
 
 
-def nansum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
+def nansum(
+    x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None
+):
     """Return the sum of array elements over a given axis treating NaNs as zero."""
-    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric",), fname="nansum", device=device)
+    dtype = _upcast_integral_dtypes(
+        x, dtype, allowed_dtypes=("numeric",), fname="nansum", device=device
+    )
     return reduction(
         x,
         nxp.nansum,
