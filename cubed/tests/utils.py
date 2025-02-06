@@ -51,6 +51,12 @@ try:
 except ImportError:
     pass
 
+try:
+    ALL_EXECUTORS.append(create_executor("ray"))
+    MAIN_EXECUTORS.append(create_executor("ray"))
+except ImportError:
+    pass
+
 MODAL_EXECUTORS = []
 
 try:
