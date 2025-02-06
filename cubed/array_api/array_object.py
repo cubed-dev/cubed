@@ -367,9 +367,9 @@ class Array(CoreArray):
             "2023.12",
         ):
             raise ValueError(f"Unrecognized array API version: {api_version!r}")
-        import cubed.array_api as array_api
+        import cubed
 
-        return array_api
+        return cubed
 
     def __bool__(self, /):
         if self.ndim != 0:
