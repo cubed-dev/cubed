@@ -95,22 +95,22 @@ File [0;32m/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages
 [1;32m    221[0m [43m        [49m[43mshow_hidden[49m[38;5;241;43m=[39;49m[43mshow_hidden[49m[43m,[49m
 [1;32m    222[0m [43m    [49m[43m)[49m
 
-File [0;32m/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/core/array.py:333[0m, in [0;36mvisualize[0;34m(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)[0m
-[1;32m    305[0m [38;5;250m[39m[38;5;124;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
-[1;32m    306[0m 
-[1;32m    307[0m [38;5;124;03mParameters[39;00m
+File [0;32m/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/core/array.py:341[0m, in [0;36mvisualize[0;34m(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)[0m
+[1;32m    313[0m [38;5;250m[39m[38;5;124;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
+[1;32m    314[0m 
+[1;32m    315[0m [38;5;124;03mParameters[39;00m
 [0;32m   (...)[0m
-[1;32m    330[0m [38;5;124;03m    in a notebook), otherwise None.[39;00m
-[1;32m    331[0m [38;5;124;03m"""[39;00m
-[1;32m    332[0m plan [38;5;241m=[39m arrays_to_plan([38;5;241m*[39marrays)
-[0;32m--> 333[0m [38;5;28;01mreturn[39;00m [43mplan[49m[38;5;241;43m.[39;49m[43mvisualize[49m[43m([49m
-[1;32m    334[0m [43m    [49m[43mfilename[49m[38;5;241;43m=[39;49m[43mfilename[49m[43m,[49m
-[1;32m    335[0m [43m    [49m[38;5;28;43mformat[39;49m[38;5;241;43m=[39;49m[38;5;28;43mformat[39;49m[43m,[49m
-[1;32m    336[0m [43m    [49m[43moptimize_graph[49m[38;5;241;43m=[39;49m[43moptimize_graph[49m[43m,[49m
-[1;32m    337[0m [43m    [49m[43moptimize_function[49m[38;5;241;43m=[39;49m[43moptimize_function[49m[43m,[49m
-[1;32m    338[0m [43m    [49m[43mshow_hidden[49m[38;5;241;43m=[39;49m[43mshow_hidden[49m[43m,[49m
-[1;32m    339[0m [43m    [49m[43marray_names[49m[38;5;241;43m=[39;49m[38;5;28;43mtuple[39;49m[43m([49m[43ma[49m[38;5;241;43m.[39;49m[43mname[49m[43m [49m[38;5;28;43;01mfor[39;49;00m[43m [49m[43ma[49m[43m [49m[38;5;129;43;01min[39;49;00m[43m [49m[43marrays[49m[43m)[49m[43m,[49m
-[1;32m    340[0m [43m[49m[43m)[49m
+[1;32m    338[0m [38;5;124;03m    in a notebook), otherwise None.[39;00m
+[1;32m    339[0m [38;5;124;03m"""[39;00m
+[1;32m    340[0m plan [38;5;241m=[39m arrays_to_plan([38;5;241m*[39marrays)
+[0;32m--> 341[0m [38;5;28;01mreturn[39;00m [43mplan[49m[38;5;241;43m.[39;49m[43mvisualize[49m[43m([49m
+[1;32m    342[0m [43m    [49m[43mfilename[49m[38;5;241;43m=[39;49m[43mfilename[49m[43m,[49m
+[1;32m    343[0m [43m    [49m[38;5;28;43mformat[39;49m[38;5;241;43m=[39;49m[38;5;28;43mformat[39;49m[43m,[49m
+[1;32m    344[0m [43m    [49m[43moptimize_graph[49m[38;5;241;43m=[39;49m[43moptimize_graph[49m[43m,[49m
+[1;32m    345[0m [43m    [49m[43moptimize_function[49m[38;5;241;43m=[39;49m[43moptimize_function[49m[43m,[49m
+[1;32m    346[0m [43m    [49m[43mshow_hidden[49m[38;5;241;43m=[39;49m[43mshow_hidden[49m[43m,[49m
+[1;32m    347[0m [43m    [49m[43marray_names[49m[38;5;241;43m=[39;49m[38;5;28;43mtuple[39;49m[43m([49m[43ma[49m[38;5;241;43m.[39;49m[43mname[49m[43m [49m[38;5;28;43;01mfor[39;49;00m[43m [49m[43ma[49m[43m [49m[38;5;129;43;01min[39;49;00m[43m [49m[43marrays[49m[43m)[49m[43m,[49m
+[1;32m    348[0m [43m[49m[43m)[49m
 
 File [0;32m/opt/hostedtoolcache/Python/3.10.16/x64/lib/python3.10/site-packages/cubed/core/plan.py:470[0m, in [0;36mPlan.visualize[0;34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[0m
 [1;32m    468[0m     [38;5;28mformat[39m [38;5;241m=[39m [38;5;124m"[39m[38;5;124msvg[39m[38;5;124m"[39m

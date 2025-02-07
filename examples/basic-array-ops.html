@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=6135e97e"></script>
+    <script src="../_static/documentation_options.js?v=329c7677"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="How to run" href="how-to-run.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="da45902
+  <meta name="docsearch:version" content="4f8ed38
 " />
   </head>
   
@@ -402,8 +402,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.history</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistoryCallback</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.timeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
 
 <span class="c1"># suppress harmless connection pool warnings</span>
@@ -415,15 +415,9 @@
     <span class="n">b</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">50000</span><span class="p">,</span> <span class="mi">50000</span><span class="p">),</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span>
     <span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
-    <span class="n">progress</span> <span class="o">=</span> <span class="n">RichProgressBar</span><span class="p">()</span>
-    <span class="n">hist</span> <span class="o">=</span> <span class="n">HistoryCallback</span><span class="p">()</span>
-    <span class="n">timeline_viz</span> <span class="o">=</span> <span class="n">TimelineVisualizationCallback</span><span class="p">()</span>
     <span class="c1"># use store=None to write to temporary zarr</span>
-    <span class="n">cubed</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span>
-        <span class="n">c</span><span class="p">,</span>
-        <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">timeline_viz</span><span class="p">],</span>
-    <span class="p">)</span>
+    <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">(),</span> <span class="n">HistoryCallback</span><span class="p">(),</span> <span class="n">TimelineVisualizationCallback</span><span class="p">():</span>
+        <span class="n">cubed</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Paste the code into a file called <code class="docutils literal notranslate"><span class="pre">add-random.py</span></code>, or <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/add-random.py">download</a> from GitHub, then run with:</p>
