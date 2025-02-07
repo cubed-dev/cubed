@@ -278,10 +278,18 @@ def compute(
 
             executor = ThreadsExecutor()
 
+    # combine any callbacks specified as args with any active callbacks from the context manager
+    if callbacks is None and len(Callback.active) == 0:
+        all_callbacks = None
+    else:
+        all_callbacks = list(Callback.active)
+        if callbacks is not None:
+            all_callbacks.extend(callbacks)
+
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
     plan.execute(
         executor=executor,
-        callbacks=callbacks,
+        callbacks=all_callbacks,
         optimize_graph=optimize_graph,
         optimize_function=optimize_function,
         resume=resume,
