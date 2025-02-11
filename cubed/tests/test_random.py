@@ -29,8 +29,22 @@ def test_random(spec, executor):
 
     assert a.shape == (10, 10)
     assert a.chunks == ((4, 4, 2), (5, 5))
+    assert a.dtype == xp.float64
 
     x = nxp.unique_values(a.compute(executor=executor))
+    assert x.dtype == xp.float64
+    assert len(x) > 90
+
+
+def test_random_dtype(spec, executor):
+    a = cubed.random.random((10, 10), dtype=xp.float32, chunks=(4, 5), spec=spec)
+
+    assert a.shape == (10, 10)
+    assert a.chunks == ((4, 4, 2), (5, 5))
+    assert a.dtype == xp.float32
+
+    x = nxp.unique_values(a.compute(executor=executor))
+    assert x.dtype == xp.float32
     assert len(x) > 90
 
 
