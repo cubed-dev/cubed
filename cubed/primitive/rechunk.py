@@ -236,6 +236,6 @@ def spec_to_primitive_op(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=False,
+        fusable_with_predecessors=False,
         write_chunks=spec.write.chunks,
     )

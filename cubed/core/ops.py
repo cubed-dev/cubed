@@ -285,7 +285,8 @@ def blockwise(
 
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
-    fusable = kwargs.pop("fusable", True)
+    fusable_with_predecessors = kwargs.pop("fusable_with_predecessors", True)
+    fusable_with_successors = kwargs.pop("fusable_with_successors", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
     iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
@@ -311,7 +312,8 @@ def blockwise(
         in_names=in_names,
         out_name=name,
         extra_func_kwargs=extra_func_kwargs,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
         iterable_input_blocks=iterable_input_blocks,
         **kwargs,
@@ -1011,7 +1013,7 @@ def map_direct(
         chunks=chunks,
         extra_source_arrays=args,
         extra_projected_mem=extra_projected_mem,
-        fusable=False,  # don't allow fusion with predecessors since side inputs are not accounted for
+        fusable_with_predecessors=False,  # don't allow fusion with predecessors since side inputs are not accounted for
         **kwargs,
     )
 
