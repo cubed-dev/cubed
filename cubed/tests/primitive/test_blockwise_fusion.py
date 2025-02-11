@@ -110,6 +110,7 @@ def make_blockwise_spec(
     function,
     function_nargs=1,
     num_input_blocks=(1,),
+    num_output_blocks=(1,),
     iterable_input_blocks=(False,),
 ):
     return BlockwiseSpec(
@@ -117,6 +118,7 @@ def make_blockwise_spec(
         function=function,
         function_nargs=function_nargs,
         num_input_blocks=num_input_blocks,
+        num_output_blocks=num_output_blocks,
         iterable_input_blocks=iterable_input_blocks,
         reads_map={},  # unused
         writes_list=[],  # unused
