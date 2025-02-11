@@ -160,7 +160,8 @@ def blockwise(
     out_name: Optional[str] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
-    fusable: bool = True,
+    fusable_with_predecessors: bool = True,
+    fusable_with_successors: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
@@ -247,7 +248,8 @@ def blockwise(
         in_names=in_names,
         extra_projected_mem=extra_projected_mem,
         extra_func_kwargs=extra_func_kwargs,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
         iterable_input_blocks=iterable_input_blocks,
         **kwargs,
@@ -270,7 +272,8 @@ def general_blockwise(
     in_names: Optional[List[str]] = None,
     extra_projected_mem: int = 0,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
-    fusable: bool = True,
+    fusable_with_predecessors: bool = True,
+    fusable_with_successors: bool = True,
     function_nargs: Optional[int] = None,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
@@ -411,7 +414,9 @@ def general_blockwise(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
+        write_chunks=chunksize,
     )
 
 
@@ -422,7 +427,9 @@ def is_fuse_candidate(primitive_op: PrimitiveOperation) -> bool:
     """
     Return True if a primitive operation is a candidate for blockwise fusion.
     """
-    return primitive_op.pipeline.function == apply_blockwise
+    return primitive_op.pipeline.function == apply_blockwise and (
+        primitive_op.fusable_with_predecessors or primitive_op.fusable_with_successors
+    )
 
 
 def can_fuse_primitive_ops(
@@ -576,7 +583,7 @@ def fuse(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=True,
+        fusable_with_predecessors=True,
     )
 
 
@@ -636,7 +643,7 @@ def fuse_multiple(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=True,
+        fusable_with_predecessors=True,
     )
 
 
