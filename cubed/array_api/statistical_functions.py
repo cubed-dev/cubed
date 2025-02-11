@@ -30,7 +30,7 @@ def mean(x, /, *, axis=None, keepdims=False, split_every=None):
     # pair of fields needed to keep per-chunk counts and totals for computing
     # the mean.
     dtype = x.dtype
-    #TODO(#658): Should these be default dtypes?
+    # TODO(#658): Should these be default dtypes?
     intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype)
     return reduction(
@@ -110,7 +110,16 @@ def min(x, /, *, axis=None, keepdims=False, split_every=None):
 
 
 def prod(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
-    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="prod", device=device)
+    dtype = _upcast_integral_dtypes(
+        x,
+        dtype,
+        allowed_dtypes=(
+            "numeric",
+            "boolean",
+        ),
+        fname="prod",
+        device=device,
+    )
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
@@ -136,7 +145,16 @@ def std(x, /, *, axis=None, correction=0.0, keepdims=False, split_every=None):
 
 
 def sum(x, /, *, axis=None, dtype=None, keepdims=False, split_every=None, device=None):
-    dtype = _upcast_integral_dtypes(x, dtype, allowed_dtypes=("numeric", "boolean",), fname="sum", device=device)
+    dtype = _upcast_integral_dtypes(
+        x,
+        dtype,
+        allowed_dtypes=(
+            "numeric",
+            "boolean",
+        ),
+        fname="sum",
+        device=device,
+    )
     extra_func_kwargs = dict(dtype=dtype)
     return reduction(
         x,
@@ -163,7 +181,7 @@ def var(
     if x.dtype not in _real_floating_dtypes:
         raise TypeError("Only real floating-point dtypes are allowed in var")
     dtype = x.dtype
-    #TODO(#658): Should these be default dtypes?
+    # TODO(#658): Should these be default dtypes?
     intermediate_dtype = [("n", nxp.int64), ("mu", nxp.float64), ("M2", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype, correction=correction)
     return reduction(
