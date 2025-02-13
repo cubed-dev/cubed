@@ -454,6 +454,8 @@ class Plan:
                 tooltip += f"chunk memory: {chunkmem}\n"
                 if hasattr(target, "nbytes"):
                     tooltip += f"nbytes: {memory_repr(target.nbytes)}\n"
+                if hasattr(target, "nchunks"):
+                    tooltip += f"nchunks: {target.nchunks}\n"
 
                 del d["target"]
 

@@ -6,11 +6,12 @@ from ndindex import ndindex
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
+from cubed.storage.types import ArrayMetadata
 from cubed.types import T_DType, T_RegularChunks, T_Shape
 from cubed.utils import array_memory, broadcast_trick, memory_repr
 
 
-class VirtualEmptyArray:
+class VirtualEmptyArray(ArrayMetadata):
     """An array that is never materialized (in memory or on disk) and contains empty values."""
 
     def __init__(
@@ -19,9 +20,7 @@ class VirtualEmptyArray:
         dtype: T_DType,
         chunks: T_RegularChunks,
     ):
-        self.shape = shape
-        self.dtype = np.dtype(dtype)
-        self.chunks = chunks
+        super().__init__(shape, dtype, chunks)
 
     def __getitem__(self, key):
         idx = ndindex[key]
@@ -35,7 +34,7 @@ class VirtualEmptyArray:
         return array_memory(self.dtype, (1,))
 
 
-class VirtualFullArray:
+class VirtualFullArray(ArrayMetadata):
     """An array that is never materialized (in memory or on disk) and contains a single fill value."""
 
     def __init__(
@@ -45,9 +44,7 @@ class VirtualFullArray:
         chunks: T_RegularChunks,
         fill_value: Any = None,
     ):
-        self.shape = shape
-        self.dtype = np.dtype(dtype)
-        self.chunks = chunks
+        super().__init__(shape, dtype, chunks)
         self.fill_value = fill_value
 
     def __getitem__(self, key):
@@ -64,15 +61,13 @@ class VirtualFullArray:
         return array_memory(self.dtype, (1,))
 
 
-class VirtualOffsetsArray:
+class VirtualOffsetsArray(ArrayMetadata):
     """An array that is never materialized (in memory or on disk) and contains sequentially incrementing integers."""
 
     def __init__(self, shape: T_Shape):
         dtype = nxp.int32
         chunks = (1,) * len(shape)
-        self.shape = shape
-        self.dtype = np.dtype(dtype)
-        self.chunks = chunks
+        super().__init__(shape, dtype, chunks)
 
     def __getitem__(self, key):
         if key == () and self.shape == ():
@@ -82,7 +77,7 @@ class VirtualOffsetsArray:
         )
 
 
-class VirtualInMemoryArray:
+class VirtualInMemoryArray(ArrayMetadata):
     """A small array that is held in memory but never materialized on disk."""
 
     def __init__(
@@ -96,9 +91,7 @@ class VirtualInMemoryArray:
                 f"Size of in memory array is {memory_repr(array.nbytes)} which exceeds maximum of {memory_repr(max_nbytes)}. Consider loading the array from storage using `from_array`."
             )
         self.array = array
-        self.shape = array.shape
-        self.dtype = array.dtype
-        self.chunks = chunks
+        super().__init__(array.shape, array.dtype, chunks)
 
     def __getitem__(self, key):
         return self.array.__getitem__(key)
