@@ -16,7 +16,7 @@ from cubed.tests.runtime.utils import check_invocation_counts, deterministic_fai
 tmp_path = "s3://cubed-unittest/map_unordered"
 
 
-app = modal.App("cubed-test-app")
+app = modal.App("cubed-test-app", include_source=True)
 
 image = modal.Image.debian_slim().pip_install(
     [

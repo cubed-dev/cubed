@@ -16,7 +16,7 @@ from cubed.spec import Spec
 
 RUNTIME_MEMORY_MIB = 2000
 
-app = modal.App("cubed-app")
+app = modal.App("cubed-app", include_source=True)
 
 requirements_file = os.getenv("CUBED_MODAL_REQUIREMENTS_FILE")
 
