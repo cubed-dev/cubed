@@ -700,7 +700,7 @@ def _assemble_index_chunk(
     out = np.empty(shape, dtype=dtype)
 
     if array_size(shape) > 0:
-        _, lchunk_selection, lout_selection = zip(*indexer)
+        _, lchunk_selection, lout_selection, *_ = zip(*indexer)
         for ai, chunk_select, out_select in zip(
             arrays, lchunk_selection, lout_selection
         ):
@@ -787,9 +787,7 @@ def map_selection(
         # use a Zarr indexer to convert selection to input coordinates
         indexer = _create_zarr_indexer(in_sel, x.shape, x.chunksize)
 
-        return (
-            iter(tuple((x.name,) + chunk_coords for (chunk_coords, _, _) in indexer)),
-        )
+        return (iter(tuple((x.name,) + cp.chunk_coords for cp in indexer)),)
 
     num_input_blocks = (max_num_input_blocks,)
     iterable_input_blocks = (True,)
