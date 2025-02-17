@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=4e3e6bf0"></script>
+    <script src="../../_static/documentation_options.js?v=cc014b39"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -51,7 +51,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="745f564
+  <meta name="docsearch:version" content="bec11b2
 " />
   </head>
   
@@ -464,7 +464,7 @@
 <div class="cell_output docutils container">
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
 <span class="ne">FileNotFoundError</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:1923,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1923,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1922</span> <span class="k">try</span><span class="p">:</span>
 <span class="ne">-&gt; </span><span class="mi">1923</span>     <span class="n">stdout_data</span><span class="p">,</span> <span class="n">stderr_data</span><span class="p">,</span> <span class="n">process</span> <span class="o">=</span> <span class="n">call_graphviz</span><span class="p">(</span>
 <span class="g g-Whitespace">   </span><span class="mi">1924</span>         <span class="n">program</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
@@ -473,7 +473,7 @@
 <span class="g g-Whitespace">   </span><span class="mi">1927</span>     <span class="p">)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1928</span> <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:132,</span> in <span class="ni">call_graphviz</span><span class="nt">(program, arguments, working_dir, **kwargs)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:132,</span> in <span class="ni">call_graphviz</span><span class="nt">(program, arguments, working_dir, **kwargs)</span>
 <span class="g g-Whitespace">    </span><span class="mi">130</span> <span class="n">program_with_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">program</span><span class="p">,</span> <span class="p">]</span> <span class="o">+</span> <span class="n">arguments</span>
 <span class="ne">--&gt; </span><span class="mi">132</span> <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">133</span>     <span class="n">program_with_args</span><span class="p">,</span>
@@ -486,25 +486,25 @@
 <span class="g g-Whitespace">    </span><span class="mi">140</span> <span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">141</span> <span class="n">stdout_data</span><span class="p">,</span> <span class="n">stderr_data</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/subprocess.py:1026,</span> in <span class="ni">Popen.__init__</span><span class="nt">(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, user, group, extra_groups, encoding, errors, text, umask, pipesize, process_group)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1023</span>             <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">TextIOWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1024</span>                     <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">1026</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_execute_child</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">executable</span><span class="p">,</span> <span class="n">preexec_fn</span><span class="p">,</span> <span class="n">close_fds</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1027</span>                         <span class="n">pass_fds</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1028</span>                         <span class="n">startupinfo</span><span class="p">,</span> <span class="n">creationflags</span><span class="p">,</span> <span class="n">shell</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1029</span>                         <span class="n">p2cread</span><span class="p">,</span> <span class="n">p2cwrite</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1030</span>                         <span class="n">c2pread</span><span class="p">,</span> <span class="n">c2pwrite</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1031</span>                         <span class="n">errread</span><span class="p">,</span> <span class="n">errwrite</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1032</span>                         <span class="n">restore_signals</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1033</span>                         <span class="n">gid</span><span class="p">,</span> <span class="n">gids</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">umask</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1034</span>                         <span class="n">start_new_session</span><span class="p">,</span> <span class="n">process_group</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1035</span> <span class="k">except</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">1036</span>     <span class="c1"># Cleanup if the child failed starting.</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/subprocess.py:1028,</span> in <span class="ni">Popen.__init__</span><span class="nt">(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, user, group, extra_groups, encoding, errors, text, umask, pipesize, process_group)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1025</span>             <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">TextIOWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1026</span>                     <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">)</span>
+<span class="ne">-&gt; </span><span class="mi">1028</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_execute_child</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">executable</span><span class="p">,</span> <span class="n">preexec_fn</span><span class="p">,</span> <span class="n">close_fds</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1029</span>                         <span class="n">pass_fds</span><span class="p">,</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1030</span>                         <span class="n">startupinfo</span><span class="p">,</span> <span class="n">creationflags</span><span class="p">,</span> <span class="n">shell</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1031</span>                         <span class="n">p2cread</span><span class="p">,</span> <span class="n">p2cwrite</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1032</span>                         <span class="n">c2pread</span><span class="p">,</span> <span class="n">c2pwrite</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1033</span>                         <span class="n">errread</span><span class="p">,</span> <span class="n">errwrite</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1034</span>                         <span class="n">restore_signals</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1035</span>                         <span class="n">gid</span><span class="p">,</span> <span class="n">gids</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">umask</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1036</span>                         <span class="n">start_new_session</span><span class="p">,</span> <span class="n">process_group</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1037</span> <span class="k">except</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1038</span>     <span class="c1"># Cleanup if the child failed starting.</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/subprocess.py:1955,</span> in <span class="ni">Popen._execute_child</span><span class="nt">(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, gid, gids, uid, umask, start_new_session, process_group)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1954</span> <span class="k">if</span> <span class="n">err_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="ne">-&gt; </span><span class="mi">1955</span>     <span class="k">raise</span> <span class="n">child_exception_type</span><span class="p">(</span><span class="n">errno_num</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">,</span> <span class="n">err_filename</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1956</span> <span class="k">else</span><span class="p">:</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/subprocess.py:1963,</span> in <span class="ni">Popen._execute_child</span><span class="nt">(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, gid, gids, uid, umask, start_new_session, process_group)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1962</span> <span class="k">if</span> <span class="n">err_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1963</span>     <span class="k">raise</span> <span class="n">child_exception_type</span><span class="p">(</span><span class="n">errno_num</span><span class="p">,</span> <span class="n">err_msg</span><span class="p">,</span> <span class="n">err_filename</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1964</span> <span class="k">else</span><span class="p">:</span>
 
 <span class="ne">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;dot&#39;
 
@@ -515,7 +515,7 @@
 <span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 <span class="ne">----&gt; </span><span class="mi">2</span> <span class="n">c</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/cubed/core/array.py:215,</span> in <span class="ni">CoreArray.visualize</span><span class="nt">(self, filename, format, optimize_graph, optimize_function, show_hidden)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/array.py:215,</span> in <span class="ni">CoreArray.visualize</span><span class="nt">(self, filename, format, optimize_graph, optimize_function, show_hidden)</span>
 <span class="g g-Whitespace">    </span><span class="mi">182</span> <span class="k">def</span><span class="w"> </span><span class="nf">visualize</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">183</span>     <span class="bp">self</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">184</span>     <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;cubed&quot;</span><span class="p">,</span>
@@ -537,7 +537,7 @@
 <span class="g g-Whitespace">    </span><span class="mi">221</span>         <span class="n">show_hidden</span><span class="o">=</span><span class="n">show_hidden</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">222</span>     <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/cubed/core/array.py:341,</span> in <span class="ni">visualize</span><span class="nt">(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/array.py:341,</span> in <span class="ni">visualize</span><span class="nt">(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)</span>
 <span class="g g-Whitespace">    </span><span class="mi">313</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Produce a visualization of the computation graph for multiple arrays.</span>
 <span class="g g-Whitespace">    </span><span class="mi">314</span><span class="sd"> </span>
 <span class="g g-Whitespace">    </span><span class="mi">315</span><span class="sd"> Parameters</span>
@@ -554,21 +554,21 @@
 <span class="g g-Whitespace">    </span><span class="mi">347</span>     <span class="n">array_names</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">),</span>
 <span class="g g-Whitespace">    </span><span class="mi">348</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/cubed/core/plan.py:470,</span> in <span class="ni">Plan.visualize</span><span class="nt">(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/plan.py:470,</span> in <span class="ni">Plan.visualize</span><span class="nt">(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)</span>
 <span class="g g-Whitespace">    </span><span class="mi">468</span>     <span class="nb">format</span> <span class="o">=</span> <span class="s2">&quot;svg&quot;</span>
 <span class="g g-Whitespace">    </span><span class="mi">469</span> <span class="n">full_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="nb">format</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="ne">--&gt; </span><span class="mi">470</span> <span class="n">gv</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">full_filename</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">472</span> <span class="k">try</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
 <span class="g g-Whitespace">    </span><span class="mi">473</span>     <span class="kn">import</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">display</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:1828,</span> in <span class="ni">Dot.write</span><span class="nt">(self, path, prog, format, encoding)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1828,</span> in <span class="ni">Dot.write</span><span class="nt">(self, path, prog, format, encoding)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1826</span>         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1827</span> <span class="k">else</span><span class="p">:</span>
 <span class="ne">-&gt; </span><span class="mi">1828</span>     <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">prog</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1829</span>     <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <span class="g g-Whitespace">   </span><span class="mi">1830</span>         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:1933,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1933,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1930</span>     <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
 <span class="g g-Whitespace">   </span><span class="mi">1931</span>     <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">{prog}</span><span class="s1">&quot; not found in path.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
 <span class="g g-Whitespace">   </span><span class="mi">1932</span>         <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">)</span>

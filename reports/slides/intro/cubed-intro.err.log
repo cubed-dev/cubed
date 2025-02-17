@@ -1,20 +1,20 @@
 Traceback (most recent call last):
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
     executenb(
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/nbclient/client.py", line 1319, in execute
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/nbclient/client.py", line 1319, in execute
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
     return loop.run_until_complete(inner)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/asyncio/base_events.py", line 686, in run_until_complete
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
     return future.result()
            ^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
     await self.async_execute_cell(
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
     await self._check_raise_for_error(cell, cell_index, exec_reply)
-  File "/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+  File "/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
     raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
 ------------------
@@ -25,7 +25,7 @@ c.visualize()
 
 [0;31m---------------------------------------------------------------------------[0m
 [0;31mFileNotFoundError[0m                         Traceback (most recent call last)
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:1923[0m, in [0;36mDot.create[0;34m(self, prog, format, encoding)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1923[0m, in [0;36mDot.create[0;34m(self, prog, format, encoding)[0m
 [1;32m   1922[0m [38;5;28;01mtry[39;00m:
 [0;32m-> 1923[0m     stdout_data, stderr_data, process [38;5;241m=[39m [43mcall_graphviz[49m[43m([49m
 [1;32m   1924[0m [43m        [49m[43mprogram[49m[38;5;241;43m=[39;49m[43mprog[49m[43m,[49m
@@ -34,7 +34,7 @@ File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/
 [1;32m   1927[0m [43m    [49m[43m)[49m
 [1;32m   1928[0m [38;5;28;01mexcept[39;00m [38;5;167;01mOSError[39;00m [38;5;28;01mas[39;00m e:
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:132[0m, in [0;36mcall_graphviz[0;34m(program, arguments, working_dir, **kwargs)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:132[0m, in [0;36mcall_graphviz[0;34m(program, arguments, working_dir, **kwargs)[0m
 [1;32m    130[0m program_with_args [38;5;241m=[39m [program, ] [38;5;241m+[39m arguments
 [0;32m--> 132[0m process [38;5;241m=[39m [43msubprocess[49m[38;5;241;43m.[39;49m[43mPopen[49m[43m([49m
 [1;32m    133[0m [43m    [49m[43mprogram_with_args[49m[43m,[49m
@@ -47,25 +47,25 @@ File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/
 [1;32m    140[0m [43m[49m[43m)[49m
 [1;32m    141[0m stdout_data, stderr_data [38;5;241m=[39m process[38;5;241m.[39mcommunicate()
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/subprocess.py:1026[0m, in [0;36mPopen.__init__[0;34m(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, user, group, extra_groups, encoding, errors, text, umask, pipesize, process_group)[0m
-[1;32m   1023[0m             [38;5;28mself[39m[38;5;241m.[39mstderr [38;5;241m=[39m io[38;5;241m.[39mTextIOWrapper([38;5;28mself[39m[38;5;241m.[39mstderr,
-[1;32m   1024[0m                     encoding[38;5;241m=[39mencoding, errors[38;5;241m=[39merrors)
-[0;32m-> 1026[0m     [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43m_execute_child[49m[43m([49m[43margs[49m[43m,[49m[43m [49m[43mexecutable[49m[43m,[49m[43m [49m[43mpreexec_fn[49m[43m,[49m[43m [49m[43mclose_fds[49m[43m,[49m
-[1;32m   1027[0m [43m                        [49m[43mpass_fds[49m[43m,[49m[43m [49m[43mcwd[49m[43m,[49m[43m [49m[43menv[49m[43m,[49m
-[1;32m   1028[0m [43m                        [49m[43mstartupinfo[49m[43m,[49m[43m [49m[43mcreationflags[49m[43m,[49m[43m [49m[43mshell[49m[43m,[49m
-[1;32m   1029[0m [43m                        [49m[43mp2cread[49m[43m,[49m[43m [49m[43mp2cwrite[49m[43m,[49m
-[1;32m   1030[0m [43m                        [49m[43mc2pread[49m[43m,[49m[43m [49m[43mc2pwrite[49m[43m,[49m
-[1;32m   1031[0m [43m                        [49m[43merrread[49m[43m,[49m[43m [49m[43merrwrite[49m[43m,[49m
-[1;32m   1032[0m [43m                        [49m[43mrestore_signals[49m[43m,[49m
-[1;32m   1033[0m [43m                        [49m[43mgid[49m[43m,[49m[43m [49m[43mgids[49m[43m,[49m[43m [49m[43muid[49m[43m,[49m[43m [49m[43mumask[49m[43m,[49m
-[1;32m   1034[0m [43m                        [49m[43mstart_new_session[49m[43m,[49m[43m [49m[43mprocess_group[49m[43m)[49m
-[1;32m   1035[0m [38;5;28;01mexcept[39;00m:
-[1;32m   1036[0m     [38;5;66;03m# Cleanup if the child failed starting.[39;00m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/subprocess.py:1028[0m, in [0;36mPopen.__init__[0;34m(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, user, group, extra_groups, encoding, errors, text, umask, pipesize, process_group)[0m
+[1;32m   1025[0m             [38;5;28mself[39m[38;5;241m.[39mstderr [38;5;241m=[39m io[38;5;241m.[39mTextIOWrapper([38;5;28mself[39m[38;5;241m.[39mstderr,
+[1;32m   1026[0m                     encoding[38;5;241m=[39mencoding, errors[38;5;241m=[39merrors)
+[0;32m-> 1028[0m     [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43m_execute_child[49m[43m([49m[43margs[49m[43m,[49m[43m [49m[43mexecutable[49m[43m,[49m[43m [49m[43mpreexec_fn[49m[43m,[49m[43m [49m[43mclose_fds[49m[43m,[49m
+[1;32m   1029[0m [43m                        [49m[43mpass_fds[49m[43m,[49m[43m [49m[43mcwd[49m[43m,[49m[43m [49m[43menv[49m[43m,[49m
+[1;32m   1030[0m [43m                        [49m[43mstartupinfo[49m[43m,[49m[43m [49m[43mcreationflags[49m[43m,[49m[43m [49m[43mshell[49m[43m,[49m
+[1;32m   1031[0m [43m                        [49m[43mp2cread[49m[43m,[49m[43m [49m[43mp2cwrite[49m[43m,[49m
+[1;32m   1032[0m [43m                        [49m[43mc2pread[49m[43m,[49m[43m [49m[43mc2pwrite[49m[43m,[49m
+[1;32m   1033[0m [43m                        [49m[43merrread[49m[43m,[49m[43m [49m[43merrwrite[49m[43m,[49m
+[1;32m   1034[0m [43m                        [49m[43mrestore_signals[49m[43m,[49m
+[1;32m   1035[0m [43m                        [49m[43mgid[49m[43m,[49m[43m [49m[43mgids[49m[43m,[49m[43m [49m[43muid[49m[43m,[49m[43m [49m[43mumask[49m[43m,[49m
+[1;32m   1036[0m [43m                        [49m[43mstart_new_session[49m[43m,[49m[43m [49m[43mprocess_group[49m[43m)[49m
+[1;32m   1037[0m [38;5;28;01mexcept[39;00m:
+[1;32m   1038[0m     [38;5;66;03m# Cleanup if the child failed starting.[39;00m
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/subprocess.py:1955[0m, in [0;36mPopen._execute_child[0;34m(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, gid, gids, uid, umask, start_new_session, process_group)[0m
-[1;32m   1954[0m [38;5;28;01mif[39;00m err_filename [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
-[0;32m-> 1955[0m     [38;5;28;01mraise[39;00m child_exception_type(errno_num, err_msg, err_filename)
-[1;32m   1956[0m [38;5;28;01melse[39;00m:
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/subprocess.py:1963[0m, in [0;36mPopen._execute_child[0;34m(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, gid, gids, uid, umask, start_new_session, process_group)[0m
+[1;32m   1962[0m [38;5;28;01mif[39;00m err_filename [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
+[0;32m-> 1963[0m     [38;5;28;01mraise[39;00m child_exception_type(errno_num, err_msg, err_filename)
+[1;32m   1964[0m [38;5;28;01melse[39;00m:
 
 [0;31mFileNotFoundError[0m: [Errno 2] No such file or directory: 'dot'
 
@@ -76,7 +76,7 @@ Cell [0;32mIn[4], line 2[0m
 [1;32m      1[0m c [38;5;241m=[39m xp[38;5;241m.[39madd(a, b)
 [0;32m----> 2[0m [43mc[49m[38;5;241;43m.[39;49m[43mvisualize[49m[43m([49m[43m)[49m
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/cubed/core/array.py:215[0m, in [0;36mCoreArray.visualize[0;34m(self, filename, format, optimize_graph, optimize_function, show_hidden)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/array.py:215[0m, in [0;36mCoreArray.visualize[0;34m(self, filename, format, optimize_graph, optimize_function, show_hidden)[0m
 [1;32m    182[0m [38;5;28;01mdef[39;00m[38;5;250m [39m[38;5;21mvisualize[39m(
 [1;32m    183[0m     [38;5;28mself[39m,
 [1;32m    184[0m     filename[38;5;241m=[39m[38;5;124m"[39m[38;5;124mcubed[39m[38;5;124m"[39m,
@@ -98,7 +98,7 @@ File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/
 [1;32m    221[0m [43m        [49m[43mshow_hidden[49m[38;5;241;43m=[39;49m[43mshow_hidden[49m[43m,[49m
 [1;32m    222[0m [43m    [49m[43m)[49m
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/cubed/core/array.py:341[0m, in [0;36mvisualize[0;34m(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/array.py:341[0m, in [0;36mvisualize[0;34m(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)[0m
 [1;32m    313[0m [38;5;250m[39m[38;5;124;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
 [1;32m    314[0m 
 [1;32m    315[0m [38;5;124;03mParameters[39;00m
@@ -115,21 +115,21 @@ File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/
 [1;32m    347[0m [43m    [49m[43marray_names[49m[38;5;241;43m=[39;49m[38;5;28;43mtuple[39;49m[43m([49m[43ma[49m[38;5;241;43m.[39;49m[43mname[49m[43m [49m[38;5;28;43;01mfor[39;49;00m[43m [49m[43ma[49m[43m [49m[38;5;129;43;01min[39;49;00m[43m [49m[43marrays[49m[43m)[49m[43m,[49m
 [1;32m    348[0m [43m[49m[43m)[49m
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/cubed/core/plan.py:470[0m, in [0;36mPlan.visualize[0;34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/plan.py:470[0m, in [0;36mPlan.visualize[0;34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[0m
 [1;32m    468[0m     [38;5;28mformat[39m [38;5;241m=[39m [38;5;124m"[39m[38;5;124msvg[39m[38;5;124m"[39m
 [1;32m    469[0m full_filename [38;5;241m=[39m [38;5;124mf[39m[38;5;124m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[38;5;124m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[38;5;124m"[39m
 [0;32m--> 470[0m [43mgv[49m[38;5;241;43m.[39;49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[38;5;241;43m=[39;49m[38;5;28;43mformat[39;49m[43m)[49m
 [1;32m    472[0m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
 [1;32m    473[0m     [38;5;28;01mimport[39;00m[38;5;250m [39m[38;5;21;01mIPython[39;00m[38;5;21;01m.[39;00m[38;5;21;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[38;5;21;01mdisplay[39;00m
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:1828[0m, in [0;36mDot.write[0;34m(self, path, prog, format, encoding)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1828[0m, in [0;36mDot.write[0;34m(self, path, prog, format, encoding)[0m
 [1;32m   1826[0m         f[38;5;241m.[39mwrite(s)
 [1;32m   1827[0m [38;5;28;01melse[39;00m:
 [0;32m-> 1828[0m     s [38;5;241m=[39m [38;5;28;43mself[39;49m[38;5;241;43m.[39;49m[43mcreate[49m[43m([49m[43mprog[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m,[49m[43m [49m[43mencoding[49m[38;5;241;43m=[39;49m[43mencoding[49m[43m)[49m
 [1;32m   1829[0m     [38;5;28;01mwith[39;00m io[38;5;241m.[39mopen(path, mode[38;5;241m=[39m[38;5;124m'[39m[38;5;124mwb[39m[38;5;124m'[39m) [38;5;28;01mas[39;00m f:
 [1;32m   1830[0m         f[38;5;241m.[39mwrite(s)
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.8/x64/lib/python3.12/site-packages/pydot.py:1933[0m, in [0;36mDot.create[0;34m(self, prog, format, encoding)[0m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1933[0m, in [0;36mDot.create[0;34m(self, prog, format, encoding)[0m
 [1;32m   1930[0m     args [38;5;241m=[39m [38;5;28mlist[39m(e[38;5;241m.[39margs)
 [1;32m   1931[0m     args[[38;5;241m1[39m] [38;5;241m=[39m [38;5;124m'[39m[38;5;124m"[39m[38;5;132;01m{prog}[39;00m[38;5;124m"[39m[38;5;124m not found in path.[39m[38;5;124m'[39m[38;5;241m.[39mformat(
 [1;32m   1932[0m         prog[38;5;241m=[39mprog)
