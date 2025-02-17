@@ -19,6 +19,7 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.11"]
+        zarr: ["<3"]
 
     steps:
       - name: Checkout source
@@ -41,6 +42,10 @@ jobs:
       - name: Install
         run: |
           python -m pip install -e .[test] memray
+
+      - name: Install zarr${{ matrix.zarr }}
+        run: |
+          python -m pip install -U 'zarr${{ matrix.zarr }}'
 
       - name: Run tests
         run: |
