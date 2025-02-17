@@ -160,9 +160,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
             a = arrays[ai]
             indexer = _create_zarr_indexer(key, a.shape, a.chunksize)
 
-            in_keys.extend(
-                [(a.name,) + chunk_coords for (chunk_coords, _, _) in indexer]
-            )
+            in_keys.extend([(a.name,) + cp.chunk_coords for cp in indexer])
 
         return (iter(tuple(in_key for in_key in in_keys)),)
 
@@ -248,16 +246,16 @@ def _chunk_slices(
     for ai, sl in _array_slices(offsets, start, stop):
         key = tuple(sl if i == axis else k for i, k in enumerate(key))
         indexer = _create_zarr_indexer(key, in_shapes[ai], chunksize)
-        for _, lchunk_selection, lout_selection in indexer:
+        for cp in indexer:
             lout_selection_with_offset = tuple(
                 sl
                 if ax != axis
                 else slice(sl.start + arr_sel_offset, sl.stop + arr_sel_offset)
-                for ax, sl in enumerate(lout_selection)
+                for ax, sl in enumerate(cp.out_selection)
             )
-            yield lchunk_selection, lout_selection_with_offset
+            yield cp.chunk_selection, lout_selection_with_offset
 
-        arr_sel_offset += lout_selection[axis].stop
+        arr_sel_offset += cp.out_selection[axis].stop
 
 
 def expand_dims(x, /, *, axis):
