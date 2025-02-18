@@ -115,12 +115,12 @@ File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/
 [1;32m    347[0m [43m    [49m[43marray_names[49m[38;5;241;43m=[39;49m[38;5;28;43mtuple[39;49m[43m([49m[43ma[49m[38;5;241;43m.[39;49m[43mname[49m[43m [49m[38;5;28;43;01mfor[39;49;00m[43m [49m[43ma[49m[43m [49m[38;5;129;43;01min[39;49;00m[43m [49m[43marrays[49m[43m)[49m[43m,[49m
 [1;32m    348[0m [43m[49m[43m)[49m
 
-File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/plan.py:470[0m, in [0;36mPlan.visualize[0;34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[0m
-[1;32m    468[0m     [38;5;28mformat[39m [38;5;241m=[39m [38;5;124m"[39m[38;5;124msvg[39m[38;5;124m"[39m
-[1;32m    469[0m full_filename [38;5;241m=[39m [38;5;124mf[39m[38;5;124m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[38;5;124m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[38;5;124m"[39m
-[0;32m--> 470[0m [43mgv[49m[38;5;241;43m.[39;49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[38;5;241;43m=[39;49m[38;5;28;43mformat[39;49m[43m)[49m
-[1;32m    472[0m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
-[1;32m    473[0m     [38;5;28;01mimport[39;00m[38;5;250m [39m[38;5;21;01mIPython[39;00m[38;5;21;01m.[39;00m[38;5;21;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[38;5;21;01mdisplay[39;00m
+File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/cubed/core/plan.py:472[0m, in [0;36mPlan.visualize[0;34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[0m
+[1;32m    470[0m     [38;5;28mformat[39m [38;5;241m=[39m [38;5;124m"[39m[38;5;124msvg[39m[38;5;124m"[39m
+[1;32m    471[0m full_filename [38;5;241m=[39m [38;5;124mf[39m[38;5;124m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[38;5;124m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[38;5;124m"[39m
+[0;32m--> 472[0m [43mgv[49m[38;5;241;43m.[39;49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[38;5;241;43m=[39;49m[38;5;28;43mformat[39;49m[43m)[49m
+[1;32m    474[0m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
+[1;32m    475[0m     [38;5;28;01mimport[39;00m[38;5;250m [39m[38;5;21;01mIPython[39;00m[38;5;21;01m.[39;00m[38;5;21;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[38;5;21;01mdisplay[39;00m
 
 File [0;32m/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/pydot.py:1828[0m, in [0;36mDot.write[0;34m(self, path, prog, format, encoding)[0m
 [1;32m   1826[0m         f[38;5;241m.[39mwrite(s)
