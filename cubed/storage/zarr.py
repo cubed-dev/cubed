@@ -1,15 +1,13 @@
-from operator import mul
 from typing import Optional, Union
 
-import numpy as np
 import zarr
-from toolz import reduce
 
 from cubed.storage.backend import open_backend_array
+from cubed.storage.types import ArrayMetadata
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
-class LazyZarrArray:
+class LazyZarrArray(ArrayMetadata):
     """A Zarr array that may not have been written to storage yet.
 
     On creation, a normal Zarr array's metadata is immediately written to storage,
@@ -27,22 +25,10 @@ class LazyZarrArray:
         **kwargs,
     ):
         """Create a Zarr array lazily in memory."""
-        self.shape = shape
-        self.dtype = np.dtype(dtype)
-        self.chunks = chunks
+        super().__init__(shape, dtype, chunks)
         self.store = store
         self.path = path
         self.kwargs = kwargs
-
-    @property
-    def size(self):
-        """Number of elements in the array."""
-        return reduce(mul, self.shape, 1)
-
-    @property
-    def nbytes(self) -> int:
-        """Number of bytes in array"""
-        return self.size * self.dtype.itemsize
 
     def create(self, mode: str = "w-") -> zarr.Array:
         """Create the Zarr array in storage.
