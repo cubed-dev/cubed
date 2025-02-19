@@ -4,3 +4,4 @@ spec:
   executor_name: "modal"
   executor_options:
     cloud: "gcp"
+    region: "europe-west2"  # change to match the work_dir bucket

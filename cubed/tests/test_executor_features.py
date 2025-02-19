@@ -303,7 +303,7 @@ def test_check_runtime_memory_modal(spec, modal_executor):
     c = xp.add(a, b)
     with pytest.raises(
         ValueError,
-        match=r"Runtime memory \(2097152000\) is less than allowed_mem \(4000000000\)",
+        match=r"Runtime memory \(2000000000\) is less than allowed_mem \(4000000000\)",
     ):
         c.compute(executor=modal_executor)
 

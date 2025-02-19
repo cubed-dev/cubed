@@ -1,7 +1,5 @@
 # Examples running Cubed on Modal
 
-**Warning: Modal does not guarantee that functions run in any particular cloud region, so it is not currently recommended that you run large computations since excessive data transfer fees are likely.**
-
 ## Pre-requisites
 
 1. A [Modal account](https://modal.com/)
@@ -10,14 +8,15 @@
 ## Set up
 
 1. Add a new [Modal secret](https://modal.com/secrets), by following the Google Cloud wizard. This will prompt you to fill in values for `SERVICE_ACCOUNT_JSON` (it has instructions on how to create it, make sure you add the "Storage Admin" role). Call the secret `my-googlecloud-secret`.
-2. Create a new GCS bucket (called `cubed-<username>-temp`, for example) in the `us-east-1` region. This will be used for intermediate data.
-3. Install a Python environment by running the following from this directory:
+2. Create a new GCS bucket (called `cubed-<username>-temp`, for example) in a [region supported by Modal](https://modal.com/docs/guide/region-selection). This will be used for intermediate data.
+3. Edit the file `cubed.yaml` and change the `spec.executor_options.region` key to be the region that you created the GCS bucket in.
+4. Install a Python environment by running the following from this directory:
 
 ```shell
 conda create --name cubed-modal-gcp-examples -y python=3.11
 conda activate cubed-modal-gcp-examples
 pip install 'cubed[modal-gcp]'
-export CUBED_MODAL_REQUIREMENTS_FILE=$(pwd)/requirements.txt
+export CUBED_SPEC__EXECUTOR_OPTIONS__REQUIREMENTS_FILE=$(pwd)/requirements.txt
 ```
 
 ## Examples
