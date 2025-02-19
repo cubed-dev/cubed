@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from typing import Optional, Union
 
 import donfig
@@ -60,14 +60,9 @@ class Spec:
         else:
             self._allowed_mem = convert_to_bytes(allowed_mem)
 
-        self._executor: Optional[Executor]
-        if executor is not None:
-            self._executor = executor
-        elif executor_name is not None:
-            self._executor = create_executor(executor_name, executor_options)
-        else:
-            self._executor = None
-
+        self._executor = executor
+        self._executor_name = executor_name
+        self._executor_options = executor_options
         self._storage_options = storage_options
         self._zarr_compressor = zarr_compressor
 
@@ -96,10 +91,22 @@ class Spec:
         """
         return self._reserved_mem
 
-    @property
+    @cached_property
     def executor(self) -> Optional[Executor]:
         """The default executor for running computations."""
-        return self._executor
+        if self._executor is not None:
+            return self._executor
+        elif self.executor_name is not None:
+            return create_executor(self.executor_name, self.executor_options)
+        return None
+
+    @property
+    def executor_name(self) -> Optional[str]:
+        return self._executor_name
+
+    @property
+    def executor_options(self) -> Optional[dict]:
+        return self._executor_options
 
     @property
     def storage_options(self) -> Optional[dict]:
