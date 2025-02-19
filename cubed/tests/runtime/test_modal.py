@@ -14,7 +14,7 @@ from cubed.runtime.executors.modal import modal_create_futures_func
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 tmp_path = "s3://cubed-unittest/map_unordered"
-
+region = "us-east-1"  # S3 region for above bucket
 
 app = modal.App("cubed-test-app", include_source=True)
 
@@ -40,13 +40,19 @@ image = modal.Image.debian_slim().pip_install(
     secrets=[modal.Secret.from_name("my-aws-secret")],
     retries=2,
     timeout=10,
+    cloud="aws",
+    region=region,
 )
 def deterministic_failure_modal(i, path=None, timing_map=None, *, name=None):
     return deterministic_failure(path, timing_map, i, name=name)
 
 
 @app.function(
-    image=image, secrets=[modal.Secret.from_name("my-aws-secret")], timeout=10
+    image=image,
+    secrets=[modal.Secret.from_name("my-aws-secret")],
+    timeout=10,
+    cloud="aws",
+    region=region,
 )
 def deterministic_failure_modal_no_retries(i, path=None, timing_map=None, *, name=None):
     return deterministic_failure(path, timing_map, i, name=name)
@@ -57,6 +63,8 @@ def deterministic_failure_modal_no_retries(i, path=None, timing_map=None, *, nam
     secrets=[modal.Secret.from_name("my-aws-secret")],
     retries=2,
     timeout=300,
+    cloud="aws",
+    region=region,
 )
 def deterministic_failure_modal_long_timeout(
     i, path=None, timing_map=None, *, name=None
@@ -66,16 +74,17 @@ def deterministic_failure_modal_long_timeout(
 
 async def run_test(app_function, input, use_backups=False, batch_size=None, **kwargs):
     outputs = set()
-    async with app.run():
-        create_futures_func = modal_create_futures_func(app_function)
-        async for output in async_map_unordered(
-            create_futures_func,
-            input,
-            use_backups=use_backups,
-            batch_size=batch_size,
-            **kwargs,
-        ):
-            outputs.add(output)
+    with modal.enable_output():
+        async with app.run():
+            create_futures_func = modal_create_futures_func(app_function)
+            async for output in async_map_unordered(
+                create_futures_func,
+                input,
+                use_backups=use_backups,
+                batch_size=batch_size,
+                **kwargs,
+            ):
+                outputs.add(output)
     return outputs
 
 

@@ -16,13 +16,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.storage.backend import open_backend_array
-from cubed.tests.utils import (
-    ALL_EXECUTORS,
-    MAIN_EXECUTORS,
-    MODAL_EXECUTORS,
-    TaskCounter,
-    create_zarr,
-)
+from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
 
 
 @pytest.fixture()
@@ -45,15 +39,6 @@ def executor(request):
     ids=[executor.name for executor in ALL_EXECUTORS],
 )
 def any_executor(request):
-    return request.param
-
-
-@pytest.fixture(
-    scope="module",
-    params=MODAL_EXECUTORS,
-    ids=[executor.name for executor in MODAL_EXECUTORS],
-)
-def modal_executor(request):
     return request.param
 
 
