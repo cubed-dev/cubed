@@ -25,6 +25,8 @@
    
       ~Spec.allowed_mem
       ~Spec.executor
+      ~Spec.executor_name
+      ~Spec.executor_options
       ~Spec.reserved_mem
       ~Spec.storage_options
       ~Spec.work_dir
