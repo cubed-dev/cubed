@@ -1060,7 +1060,7 @@ def rechunk(x, chunks, *, min_mem=None):
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
     # input and output array chunk/selection, so adjust appropriately
-    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // 4
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // 5
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
     stages = multistage_rechunking_plan(
