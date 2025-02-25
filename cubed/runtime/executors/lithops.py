@@ -35,7 +35,9 @@ logger = logging.getLogger(__name__)
 
 
 @profile_memray
-def run_func(input, func=None, config=None, name=None, compute_id=None):
+def run_func(
+    input, func=None, config=None, name=None, context_dir=None, compute_id=None
+):
     result = func(input, config=config)
     return result
 
@@ -174,6 +176,7 @@ def execute_dag(
 ) -> None:
     use_backups = kwargs.pop("use_backups", use_backups_default(spec))
     wait_dur_sec = kwargs.pop("wait_dur_sec", None)
+    context_dir = kwargs.pop("context_dir")
     compute_id = kwargs.pop("compute_id")
     allowed_mem = spec.allowed_mem if spec is not None else None
     function_executor = FunctionExecutor(**kwargs)
@@ -203,6 +206,7 @@ def execute_dag(
                     func=pipeline.function,
                     config=pipeline.config,
                     name=name,
+                    context_dir=context_dir,
                     compute_id=compute_id,
                 ):
                     handle_callbacks(callbacks, result, stats)
@@ -264,6 +268,7 @@ class LithopsExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
+        context_dir: Optional[str] = None,
         compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
@@ -273,6 +278,7 @@ class LithopsExecutor(DagExecutor):
             callbacks=callbacks,
             resume=resume,
             spec=spec,
+            context_dir=context_dir,
             compute_id=compute_id,
             **merged_kwargs,
         )

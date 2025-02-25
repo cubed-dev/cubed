@@ -15,6 +15,7 @@ import cubed.random
 from cubed.diagnostics import ProgressBar
 from cubed.diagnostics.history import HistoryCallback
 from cubed.diagnostics.mem_warn import MemoryWarningCallback
+from cubed.diagnostics.memray import MemrayCallback
 from cubed.diagnostics.rich import RichProgressBar
 from cubed.diagnostics.timeline import TimelineVisualizationCallback
 from cubed.diagnostics.tqdm import TqdmProgressBar
@@ -185,6 +186,22 @@ def test_mem_warn(tmp_path, executor):
         UserWarning, match="Peak memory usage exceeded allowed_mem when running tasks"
     ):
         b.compute(executor=executor, callbacks=[mem_warn])
+
+
+@pytest.mark.skipif(
+    platform.system() == "Windows", reason="measuring memory does not run on windows"
+)
+def test_memray(tmp_path, executor):
+    if executor.name not in ("processes", "lithops"):
+        pytest.skip(f"{executor.name} executor does not support MemrayCallback")
+
+    with MemrayCallback():
+        a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+        b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2))
+        c = xp.add(a, b)
+        assert_array_equal(
+            c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+        )
 
 
 def test_resume(spec, executor):

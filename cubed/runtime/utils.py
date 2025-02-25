@@ -1,13 +1,14 @@
 import asyncio
+import shutil
+import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import nullcontext
 from functools import partial
 from itertools import islice
 from pathlib import Path
 
 from cubed.runtime.types import OperationStartEvent, TaskEndEvent
-from cubed.utils import peak_measured_mem
+from cubed.utils import is_local_path, join_path, peak_measured_mem
 
 try:
     import memray
@@ -73,21 +74,47 @@ def execute_with_memray(function, input, **kwargs):
     # only run memray if installed, and only for first input (for operations that run on block locations)
     if (
         memray is not None
+        and "context_dir" in kwargs
         and "compute_id" in kwargs
         and isinstance(input, list)
         and all(isinstance(i, int) for i in input)
         and sum(input) == 0
     ):
+        print("execute_with_memray", function, input, kwargs)
+        context_dir = kwargs["context_dir"]
+        print("context_dir", context_dir)
         compute_id = kwargs["compute_id"]
         name = kwargs["name"]
-        memray_dir = Path(f"history/{compute_id}/memray")
+        memray_dir = Path(tempfile.mkdtemp())
         memray_dir.mkdir(parents=True, exist_ok=True)
-        cm = memray.Tracker(memray_dir / f"{name}.bin")
+        memray_file = memray_dir / f"{name}.bin"
+        print("memray_file", memray_file)
+        try:
+            with memray.Tracker(memray_file):
+                return function(input, **kwargs)
+        finally:
+            try:
+                copy_from_local(
+                    memray_file.as_posix(),
+                    join_path(context_dir, f"history/{compute_id}/memray/{name}.bin"),
+                )
+            except Exception as e:
+                # don't fail task if error copying memray file
+                print(e)
     else:
-        cm = nullcontext()
-    with cm:
-        result = result = function(input, **kwargs)
-        return result
+        return function(input, **kwargs)
+
+
+def copy_from_local(local_src: str, remote_dst: str) -> None:
+    if is_local_path(remote_dst):
+        Path(remote_dst).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(local_src, remote_dst)
+    else:
+        import fsspec
+
+        # dst can be any fsspec filesystem
+        fs, _, _ = fsspec.get_fs_token_paths(remote_dst)
+        fs.put_file(local_src, remote_dst)
 
 
 def profile_memray(func):

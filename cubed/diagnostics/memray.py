@@ -9,6 +9,7 @@ from memray._stats import Stats
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback
+from cubed.utils import join_path
 
 
 class AllocationType(Enum):
@@ -42,6 +43,12 @@ class MemrayCallback(Callback):
         self.stats: Dict[str, Stats] = {}
 
     def on_compute_end(self, event):
+        # copy memray profiles from context dir (which may be remote) to local history dir
+        remote_src = join_path(event.context_dir, f"history/{event.compute_id}/memray/")
+        local_dst = f"history/{event.compute_id}/memray/"
+        copy_from_remote(remote_src, local_dst)
+
+        # print large allocations
         for name, _ in visit_nodes(event.dag):
             memray_result_file = f"history/{event.compute_id}/memray/{name}.bin"
             if not Path(memray_result_file).is_file():
@@ -62,6 +69,14 @@ class MemrayCallback(Callback):
 
             self.allocations[name] = allocations
             self.stats[name] = stats
+
+
+def copy_from_remote(remote_src: str, local_dst: str) -> None:
+    import fsspec
+
+    # dst can be any fsspec filesystem
+    fs, _, _ = fsspec.get_fs_token_paths(remote_src)
+    fs.put(remote_src, local_dst, recursive=True)
 
 
 def get_allocations_over_threshold(result_file, mem_threshold):

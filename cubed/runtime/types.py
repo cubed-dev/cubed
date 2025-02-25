@@ -33,6 +33,9 @@ class CubedPipeline:
 class ComputeStartEvent:
     """Callback information about a computation that is about to start."""
 
+    context_dir: str
+    """The context directory path for the computation."""
+
     compute_id: str
     """ID of the computation."""
 
@@ -46,6 +49,9 @@ class ComputeStartEvent:
 @dataclass
 class ComputeEndEvent:
     """Callback information about a computation that has finished."""
+
+    context_dir: str
+    """The context directory path for the computation."""
 
     compute_id: str
     """ID of the computation."""
