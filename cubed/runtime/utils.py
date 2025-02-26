@@ -85,7 +85,7 @@ def execute_with_memray(function, input, **kwargs):
         print("context_dir", context_dir)
         compute_id = kwargs["compute_id"]
         name = kwargs["name"]
-        memray_dir = Path(tempfile.mkdtemp())
+        memray_dir = Path("memray")
         memray_dir.mkdir(parents=True, exist_ok=True)
         memray_file = memray_dir / f"{name}.bin"
         print("memray_file", memray_file)
