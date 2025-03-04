@@ -1217,6 +1217,62 @@ def _rechunk(x, copy_chunks, target_chunks):
     )
 
 
+def rechunk_plan(x, chunks, *, min_mem=None):
+    if isinstance(chunks, dict):
+        chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
+        for i in range(x.ndim):
+            if i not in chunks:
+                chunks[i] = x.chunks[i]
+            elif chunks[i] is None:
+                chunks[i] = x.chunks[i]
+    if isinstance(chunks, (tuple, list)):
+        chunks = tuple(lc if lc is not None else rc for lc, rc in zip(chunks, x.chunks))
+
+    normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+    if x.chunks == normalized_chunks:
+        return x
+    # normalizing takes care of dict args for chunks
+    target_chunks = to_chunksize(normalized_chunks)
+
+    # merge chunks special case
+    if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
+        return merge_chunks(x, target_chunks)
+
+    spec = x.spec
+    source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
+
+    # rechunker doesn't take account of uncompressed and compressed copies of the
+    # input and output array chunk/selection, so adjust appropriately
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // 5
+    if min_mem is None:
+        min_mem = min(rechunker_max_mem // 20, x.nbytes)
+    stages = multistage_rechunking_plan(
+        shape=x.shape,
+        source_chunks=source_chunks,
+        target_chunks=target_chunks,
+        itemsize=x.dtype.itemsize,
+        min_mem=min_mem,
+        max_mem=rechunker_max_mem,
+    )
+
+    source_chunks = x.chunksize
+    for i, stage in enumerate(stages):
+        last_stage = i == len(stages) - 1
+        read_chunks, int_chunks, write_chunks = stage
+
+        # Use target chunks for last stage
+        target_chunks_ = target_chunks if last_stage else write_chunks
+
+        if read_chunks == write_chunks:
+            yield source_chunks, read_chunks, target_chunks_
+            source_chunks = target_chunks_
+        else:
+            yield source_chunks, read_chunks, int_chunks
+            source_chunks = int_chunks
+            yield source_chunks, write_chunks, target_chunks_
+            source_chunks = target_chunks_
+
+
 def merge_chunks(x, chunks):
     """Merge multiple chunks into one."""
     target_chunksize = chunks
