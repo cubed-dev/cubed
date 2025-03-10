@@ -61,18 +61,3 @@ class CubedCopySpec:
 
     read: CubedArrayProxy
     write: CubedArrayProxy
-
-
-class MemoryModeller:
-    """Models peak memory usage for a series of operations."""
-
-    current_mem: int = 0
-    peak_mem: int = 0
-
-    def allocate(self, num_bytes):
-        self.current_mem += num_bytes
-        self.peak_mem = max(self.peak_mem, self.current_mem)
-
-    def free(self, num_bytes):
-        self.current_mem -= num_bytes
-        self.peak_mem = max(self.peak_mem, self.current_mem)
