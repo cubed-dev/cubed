@@ -60,7 +60,7 @@ def test_rechunk_era5_chunk_sizes():
     source_chunks = (31, 721, 1440)
     target_chunks = (350640, 10, 10)
 
-    spec = cubed.Spec(allowed_mem="2.5GB")
+    spec = cubed.Spec(allowed_mem="3.5GB")
 
     a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
 

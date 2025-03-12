@@ -1158,9 +1158,9 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
     # input and output array chunk/selection, so adjust appropriately
-    # note the factor is 5 (not 4) since there is a extra (unnecessary) copy
+    # note the factor is 7 (3 input copies, 1 copy for the intermediate array, 3 output copies)
     # made when writing out to Zarr
-    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // 5
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // 7
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
     stages = multistage_rechunking_plan(

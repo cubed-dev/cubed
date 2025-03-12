@@ -389,7 +389,7 @@ def general_blockwise(
     )
 
     # assumes a single buffer copy for reading and writing, compare https://github.com/tomwhite/memray-array
-    buffer_copies = BufferCopies(read=1, write=1)
+    buffer_copies = BufferCopies(read=2, write=2)
     projected_mem = calculate_projected_mem(
         reserved_mem=reserved_mem,
         inputs=[array_memory(array.dtype, array.chunks) for array in arrays],
