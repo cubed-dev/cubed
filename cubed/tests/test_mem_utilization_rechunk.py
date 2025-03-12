@@ -66,10 +66,10 @@ def test_rechunk_era5(tmp_path, spec, executor):
 
     x = cubed.random.random(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
 
-    from cubed.core.ops import rechunk_plan
+    from cubed.core.ops import _rechunk_plan
 
     i = 0
-    for source_chunks, copy_chunks, target_chunks in rechunk_plan(x, target_chunks):
+    for copy_chunks, target_chunks in _rechunk_plan(x, target_chunks):
         # Find the smallest shape that contains the three chunk sizes
         # This will be a lot less than the full ERA5 shape (350640, 721, 1440),
         # making it suitable for running in a test
@@ -85,4 +85,5 @@ def test_rechunk_era5(tmp_path, spec, executor):
 
         run_operation(tmp_path, executor, f"rechunk_era5_stage_{i}", b)
 
+        source_chunks = target_chunks
         i += 1
