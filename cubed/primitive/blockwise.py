@@ -15,6 +15,8 @@ from cubed.backend_array_api import (
     backend_array_to_numpy_array,
     numpy_array_to_backend_array,
 )
+from cubed.primitive.memory import BufferCopies, MemoryModeller, calculate_projected_mem
+from cubed.primitive.types import CubedArrayProxy, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
@@ -24,8 +26,6 @@ from cubed.utils import split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
-
-from .types import CubedArrayProxy, MemoryModeller, PrimitiveOperation
 
 logger = logging.getLogger(__name__)
 
@@ -362,7 +362,7 @@ def general_blockwise(
 
         # only one output chunk is read into memory at a time, so we find the largest
         output_chunk_memory = max(
-            output_chunk_memory, array_memory(dtypes[i], chunksize) * 2
+            output_chunk_memory, array_memory(dtypes[i], chunksize)
         )
 
     spec = BlockwiseSpec(
@@ -376,20 +376,15 @@ def general_blockwise(
         return_writes_stores,
     )
 
-    # calculate projected memory
-    projected_mem = reserved_mem + extra_projected_mem
-    # inputs
-    for array in arrays:  # inputs
-        # memory for a compressed and an uncompressed input array chunk
-        # - we assume compression has no effect (so it's an overestimate)
-        # - ideally we'd be able to look at nbytes_stored,
-        #   but this is not possible in general since the array has not been written yet
-        projected_mem += array_memory(array.dtype, array.chunks) * 2
-    # output
-    # memory for a compressed and an uncompressed output array chunk
-    # - this assumes the blockwise function creates a new array)
-    # - numcodecs uses a working output buffer that's the size of the array being compressed
-    projected_mem += output_chunk_memory
+    # assumes a single buffer copy for reading and writing, compare https://github.com/tomwhite/memray-array
+    buffer_copies = BufferCopies(read=1, write=1)
+    projected_mem = calculate_projected_mem(
+        reserved_mem=reserved_mem,
+        inputs=[array_memory(array.dtype, array.chunks) for array in arrays],
+        operation=extra_projected_mem,
+        output=output_chunk_memory,
+        buffer_copies=buffer_copies,
+    )
 
     if projected_mem > allowed_mem:
         raise ValueError(
