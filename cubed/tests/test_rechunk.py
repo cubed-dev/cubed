@@ -52,3 +52,25 @@ def test_rechunk_era5(
         d["pipeline"].config.num_output_blocks[0] for _, d in rechunks
     )
     assert max_output_blocks == expected_max_output_blocks
+
+
+def test_rechunk_era5_chunk_sizes():
+    # from https://github.com/pangeo-data/rechunker/pull/89
+    shape = (350640, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (350640, 10, 10)
+
+    spec = cubed.Spec(allowed_mem="2.5GB")
+
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    from cubed.core.ops import _rechunk_plan
+
+    assert list(_rechunk_plan(a, target_chunks)) == [
+        ((93, 721, 1440), (93, 173, 396)),
+        ((1447, 173, 396), (1447, 173, 396)),
+        ((1447, 173, 396), (1447, 41, 109)),
+        ((22528, 41, 109), (22528, 41, 109)),
+        ((22528, 41, 109), (22528, 10, 30)),
+        ((350640, 10, 30), (350640, 10, 10)),
+    ]
