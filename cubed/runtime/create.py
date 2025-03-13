@@ -18,6 +18,10 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
         from cubed.runtime.executors.dask import DaskExecutor
 
         return DaskExecutor(**executor_options)
+    elif name == "globus-compute":
+        from cubed.runtime.executors.globus_compute import GlobusComputeExecutor
+
+        return GlobusComputeExecutor(**executor_options)
     elif name == "lithops":
         from cubed.runtime.executors.lithops import LithopsExecutor
 
