@@ -23,6 +23,7 @@ from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
+from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
@@ -293,6 +294,7 @@ def blockwise(
 
     name = gensym()
     spec = check_array_specs(arrays)
+    buffer_copies = get_buffer_copies(spec)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
     op = primitive_blockwise(
@@ -312,6 +314,7 @@ def blockwise(
         new_axes=new_axes,
         in_names=in_names,
         out_name=name,
+        buffer_copies=buffer_copies,
         extra_func_kwargs=extra_func_kwargs,
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
@@ -442,6 +445,7 @@ def _general_blockwise(
     op_name = kwargs.pop("op_name", "blockwise")
 
     spec = check_array_specs(arrays)
+    buffer_copies = get_buffer_copies(spec)
 
     if isinstance(target_stores, list):  # multiple outputs
         name = [gensym() for _ in range(len(target_stores))]
@@ -461,6 +465,7 @@ def _general_blockwise(
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
+        buffer_copies=buffer_copies,
         target_stores=target_stores,
         target_paths=target_paths,
         storage_options=spec.storage_options,
@@ -1157,10 +1162,13 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
     source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
 
     # rechunker doesn't take account of uncompressed and compressed copies of the
-    # input and output array chunk/selection, so adjust appropriately
-    # note the factor is 5 (not 4) since there is a extra (unnecessary) copy
-    # made when writing out to Zarr
-    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // 5
+    # input and output array chunk/selection, so adjust appropriately:
+    #  1 input array plus copies to read that array from storage,
+    #  1 array for processing,
+    #  1 output array plus copies to write that array to storage
+    buffer_copies = get_buffer_copies(spec)
+    total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
     stages = multistage_rechunking_plan(

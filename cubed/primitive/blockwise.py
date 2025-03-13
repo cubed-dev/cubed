@@ -162,6 +162,7 @@ def blockwise(
     in_names: Optional[List[str]] = None,
     out_name: Optional[str] = None,
     extra_projected_mem: int = 0,
+    buffer_copies: Optional[BufferCopies] = None,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
@@ -199,6 +200,8 @@ def blockwise(
     extra_projected_mem : int
         Extra memory projected to be needed (in bytes) in addition to the memory used reading
         the input arrays and writing the output.
+    buffer_copies: BufferCopies
+        The the number of buffer copies incurred for array storage operations.
     extra_func_kwargs : dict
         Extra keyword arguments to pass to function that can't be passed as regular keyword arguments
         since they clash with other blockwise arguments (such as dtype).
@@ -250,6 +253,7 @@ def blockwise(
         chunkss=[chunks],
         in_names=in_names,
         extra_projected_mem=extra_projected_mem,
+        buffer_copies=buffer_copies,
         extra_func_kwargs=extra_func_kwargs,
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
@@ -274,6 +278,7 @@ def general_blockwise(
     chunkss: List[T_Chunks],
     in_names: Optional[List[str]] = None,
     extra_projected_mem: int = 0,
+    buffer_copies: Optional[BufferCopies] = None,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
@@ -312,6 +317,8 @@ def general_blockwise(
     extra_projected_mem : int
         Extra memory projected to be needed (in bytes) in addition to the memory used reading
         the input arrays and writing the output.
+    buffer_copies: BufferCopies
+        The the number of buffer copies incurred for array storage operations.
     extra_func_kwargs : dict
         Extra keyword arguments to pass to function that can't be passed as regular keyword arguments
         since they clash with other blockwise arguments (such as dtype).
@@ -388,8 +395,7 @@ def general_blockwise(
         return_writes_stores,
     )
 
-    # assumes a single buffer copy for reading and writing, compare https://github.com/tomwhite/memray-array
-    buffer_copies = BufferCopies(read=1, write=1)
+    buffer_copies = buffer_copies or BufferCopies(read=1, write=1)
     projected_mem = calculate_projected_mem(
         reserved_mem=reserved_mem,
         inputs=[array_memory(array.dtype, array.chunks) for array in arrays],
