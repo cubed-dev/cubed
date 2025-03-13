@@ -54,13 +54,19 @@ def test_rechunk_era5(
     assert max_output_blocks == expected_max_output_blocks
 
 
-def test_rechunk_era5_chunk_sizes():
+@pytest.mark.parametrize(
+    "spec",
+    [
+        cubed.Spec(allowed_mem="2.5GB"),
+        # cloud stores use extra buffer copies, so need more memory for same rechunk plan
+        cubed.Spec("s3://cubed-unittest/rechunk-era5", allowed_mem="3.5GB"),
+    ],
+)
+def test_rechunk_era5_chunk_sizes(spec):
     # from https://github.com/pangeo-data/rechunker/pull/89
     shape = (350640, 721, 1440)
     source_chunks = (31, 721, 1440)
     target_chunks = (350640, 10, 10)
-
-    spec = cubed.Spec(allowed_mem="2.5GB")
 
     a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
 

@@ -1,5 +1,8 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
+
+from cubed.spec import Spec
+from cubed.utils import is_cloud_storage_path
 
 
 @dataclass
@@ -11,6 +14,25 @@ class BufferCopies:
 
     write: int
     """The number of copies made when writing an array to storage."""
+
+
+def get_buffer_copies(spec: Optional[Spec]):
+    """Return the number of buffer copies to use, based on the spec.
+
+    Using cloud storage will result in more buffer copies being accounted for.
+    """
+
+    # See https://github.com/tomwhite/memray-array
+    # More factors (e.g. compression) could be taken into account in the future.
+
+    if (
+        spec is not None
+        and spec.work_dir is not None
+        and is_cloud_storage_path(spec.work_dir)
+    ):
+        return BufferCopies(read=2, write=2)
+
+    return BufferCopies(read=1, write=1)
 
 
 def calculate_projected_mem(
