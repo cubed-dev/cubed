@@ -1,4 +1,4 @@
-name: Mypy
+name: Spark tests
 
 on:
   push:
@@ -26,24 +26,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2
 
       - name: Install
         run: |
-          python -m pip install -e .[test] xarray
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[test]' 'pyspark'
 
-      - name: Install mypy
+      - name: Run tests
         run: |
-          python -m pip install mypy pyspark
-
-      - name: Run mypy
-        run: |
-          python -m mypy cubed
+          pytest -vs

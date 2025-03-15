@@ -34,6 +34,10 @@ def create_executor(name: str, executor_options: Optional[dict] = None) -> Execu
         from cubed.runtime.executors.ray import RayExecutor
 
         return RayExecutor(**executor_options)
+    elif name == "spark":
+        from cubed.runtime.executors.spark import SparkExecutor
+
+        return SparkExecutor(**executor_options)
     elif name == "single-threaded":
         from cubed.runtime.executors.local import SingleThreadedExecutor
 

@@ -137,3 +137,6 @@ dmypy.json
 # Cubed
 .lithops_config
 examples/cubed.svg
+
+# Pytest artefacts
+history/
