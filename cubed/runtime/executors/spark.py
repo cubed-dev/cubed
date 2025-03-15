@@ -1,7 +1,6 @@
 from typing import Any, Optional, Sequence, List, Tuple, Dict, Union
 from networkx import MultiDiGraph
 from pyspark.sql import SparkSession
-
 from cubed.runtime.pipeline import visit_nodes 
 from cubed.runtime.types import Callback, DagExecutor 
 from cubed.runtime.utils import handle_operation_start_callbacks, handle_callbacks  
@@ -76,45 +75,28 @@ class SparkExecutor(DagExecutor):
             spark_builder = spark_builder.config("spark.speculation", "true")
             
         # Create a Spark session
-        self._spark_session = spark_builder.getOrCreate()
+        spark = spark_builder.getOrCreate()
 
         for name, node in visit_nodes(dag, resume=resume):
-            # Store operation info for lazy execution
+            handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
-            self._lazy_operations.append({
-                "name": name,
-                "pipeline": pipeline
-            })
+            # Create an RDD from pipeline.mappable.
+            rdd = spark.sparkContext.parallelize(pipeline.mappable)
+            # Define the transformation; note that this is lazy.
+            lazy_rdd = rdd.map(lambda x: pipeline.function(x, config=pipeline.config))
+            results = lazy_rdd.collect()  # <-- Trigger computation immediately
+            if callbacks is not None:
+                for result in results:
+                    handle_callbacks(callbacks, result, {"name": name})
             
-def compute(self):
-    """Execute all stored operations."""
-    if not self._spark_session or not self._lazy_operations:
-        return
-        
-    for op in self._lazy_operations:
-        name = op["name"]
-        pipeline = op["pipeline"]
-        
-        # Signal start of operation to callbacks
-        handle_operation_start_callbacks(self._callbacks, name)
-        
-        # Extract the function and configuration before creating the RDD
-        task_function = pipeline.function
-        task_config = pipeline.config
-        
-        # Define a standalone worker function to avoid capturing SparkContext
-        def worker_function(item):
-            # This function is serialized and sent to workers
-            # It must not reference anything from the outer scope that contains SparkContext
-            return task_function(item, config=task_config)
-        
-        # Create an RDD from pipeline.mappable
-        rdd = self._spark_session.sparkContext.parallelize(pipeline.mappable)
-        
-        # Use the isolated worker function
-        results = rdd.map(worker_function).collect()
-        
-        # Handle callbacks with results
-        if self._callbacks is not None:
-            for result in results:
-                handle_callbacks(self._callbacks, result, {"name": name})
+        """Clean up resources."""
+        if self._spark_session:
+            try:
+                self._spark_session.stop()
+                self._logger.info("Spark session stopped")
+            except Exception as e:
+                self._logger.error(f"Error stopping Spark session: {str(e)}")
+            finally:
+                self._spark_session = None
+                self._lazy_operations = []
+                self._callbacks = None
