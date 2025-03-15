@@ -23,6 +23,7 @@ from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
+from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
@@ -34,6 +35,7 @@ from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
 from cubed.vendor.dask.utils import has_keyword
+from cubed.vendor.rechunker.algorithm import multistage_rechunking_plan
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array
@@ -285,12 +287,14 @@ def blockwise(
 
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
-    fusable = kwargs.pop("fusable", True)
+    fusable_with_predecessors = kwargs.pop("fusable_with_predecessors", True)
+    fusable_with_successors = kwargs.pop("fusable_with_successors", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
     iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
+    buffer_copies = get_buffer_copies(spec)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
     op = primitive_blockwise(
@@ -310,8 +314,10 @@ def blockwise(
         new_axes=new_axes,
         in_names=in_names,
         out_name=name,
+        buffer_copies=buffer_copies,
         extra_func_kwargs=extra_func_kwargs,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
         iterable_input_blocks=iterable_input_blocks,
         **kwargs,
@@ -436,7 +442,10 @@ def _general_blockwise(
     num_input_blocks = kwargs.pop("num_input_blocks", None)
     iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
+    op_name = kwargs.pop("op_name", "blockwise")
+
     spec = check_array_specs(arrays)
+    buffer_copies = get_buffer_copies(spec)
 
     if isinstance(target_stores, list):  # multiple outputs
         name = [gensym() for _ in range(len(target_stores))]
@@ -456,6 +465,7 @@ def _general_blockwise(
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
+        buffer_copies=buffer_copies,
         target_stores=target_stores,
         target_paths=target_paths,
         storage_options=spec.storage_options,
@@ -471,7 +481,7 @@ def _general_blockwise(
     )
     plan = Plan._new(
         name,
-        "blockwise",
+        op_name,
         op.target_array,
         op,
         False,
@@ -1011,12 +1021,12 @@ def map_direct(
         chunks=chunks,
         extra_source_arrays=args,
         extra_projected_mem=extra_projected_mem,
-        fusable=False,  # don't allow fusion with predecessors since side inputs are not accounted for
+        fusable_with_predecessors=False,  # don't allow fusion with predecessors since side inputs are not accounted for
         **kwargs,
     )
 
 
-def rechunk(x, chunks, target_store=None):
+def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=False):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -1029,6 +1039,9 @@ def rechunk(x, chunks, target_store=None):
     cubed.Array
         An array with the desired chunks.
     """
+    if use_new_impl:
+        return rechunk_new(x, chunks, min_mem=min_mem)
+
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
@@ -1103,6 +1116,117 @@ def rechunk(x, chunks, target_store=None):
             x_int,
         )
         return Array(name, op2.target_array, spec, plan2)
+
+
+def rechunk_new(x, chunks, *, min_mem=None):
+    """Change the chunking of an array without changing its shape or data.
+
+    Parameters
+    ----------
+    chunks : tuple
+        The desired chunks of the array after rechunking.
+
+    Returns
+    -------
+    cubed.Array
+        An array with the desired chunks.
+    """
+    out = x
+    for copy_chunks, target_chunks in _rechunk_plan(x, chunks, min_mem=min_mem):
+        out = _rechunk(out, copy_chunks, target_chunks)
+    return out
+
+
+def _rechunk_plan(x, chunks, *, min_mem=None):
+    if isinstance(chunks, dict):
+        chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
+        for i in range(x.ndim):
+            if i not in chunks:
+                chunks[i] = x.chunks[i]
+            elif chunks[i] is None:
+                chunks[i] = x.chunks[i]
+    if isinstance(chunks, (tuple, list)):
+        chunks = tuple(lc if lc is not None else rc for lc, rc in zip(chunks, x.chunks))
+
+    normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+    if x.chunks == normalized_chunks:
+        return x
+    # normalizing takes care of dict args for chunks
+    target_chunks = to_chunksize(normalized_chunks)
+
+    # merge chunks special case
+    if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
+        return merge_chunks(x, target_chunks)
+
+    spec = x.spec
+    source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
+
+    # rechunker doesn't take account of uncompressed and compressed copies of the
+    # input and output array chunk/selection, so adjust appropriately:
+    #  1 input array plus copies to read that array from storage,
+    #  1 array for processing,
+    #  1 output array plus copies to write that array to storage
+    buffer_copies = get_buffer_copies(spec)
+    total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
+    if min_mem is None:
+        min_mem = min(rechunker_max_mem // 20, x.nbytes)
+    stages = multistage_rechunking_plan(
+        shape=x.shape,
+        source_chunks=source_chunks,
+        target_chunks=target_chunks,
+        itemsize=x.dtype.itemsize,
+        min_mem=min_mem,
+        max_mem=rechunker_max_mem,
+    )
+
+    for i, stage in enumerate(stages):
+        last_stage = i == len(stages) - 1
+        read_chunks, int_chunks, write_chunks = stage
+
+        # Use target chunks for last stage
+        target_chunks_ = target_chunks if last_stage else write_chunks
+
+        if read_chunks == write_chunks:
+            yield read_chunks, target_chunks_
+        else:
+            yield read_chunks, int_chunks
+            yield write_chunks, target_chunks_
+
+
+def _rechunk(x, copy_chunks, target_chunks):
+    # rechunk x so that its target store has target_chunks, using copy_chunks as the size of chunks for copying from source to target
+
+    normalized_copy_chunks = normalize_chunks(copy_chunks, x.shape, dtype=x.dtype)
+    copy_chunks = to_chunksize(normalized_copy_chunks)
+
+    copy_chunks_mem = array_memory(x.dtype, copy_chunks)
+
+    target_chunks = normalize_chunks(target_chunks, x.shape, dtype=x.dtype)
+    target_chunks = to_chunksize(target_chunks)
+
+    def selection_function(out_key):
+        out_coords = out_key[1:]
+        return get_item(normalized_copy_chunks, out_coords)
+
+    max_num_input_blocks = math.prod(
+        math.ceil(c1 / c0) for c0, c1 in zip(x.chunksize, copy_chunks)
+    )
+
+    return map_selection(
+        None,  # no function to apply after selection
+        selection_function,
+        x,
+        x.shape,
+        x.dtype,
+        normalized_copy_chunks,
+        max_num_input_blocks=max_num_input_blocks,
+        target_chunks_=target_chunks,
+        fusable_with_predecessors=False,
+        fusable_with_successors=False,
+        op_name="rechunk",
+        extra_projected_mem=copy_chunks_mem,
+    )
 
 
 def merge_chunks(x, chunks):

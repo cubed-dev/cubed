@@ -408,6 +408,9 @@ class Plan:
                         tooltip += (
                             f"\nnum input blocks: {pipeline.config.num_input_blocks}"
                         )
+                        tooltip += (
+                            f"\nnum output blocks: {pipeline.config.num_output_blocks}"
+                        )
                     del d["pipeline"]
 
                 if "stack_summaries" in d and d["stack_summaries"] is not None:
@@ -584,5 +587,5 @@ def create_zarr_arrays(lazy_zarr_arrays, allowed_mem, reserved_mem):
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=False,
+        fusable_with_predecessors=False,
     )

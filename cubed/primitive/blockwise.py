@@ -15,17 +15,17 @@ from cubed.backend_array_api import (
     backend_array_to_numpy_array,
     numpy_array_to_backend_array,
 )
+from cubed.primitive.memory import BufferCopies, MemoryModeller, calculate_projected_mem
+from cubed.primitive.types import CubedArrayProxy, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
-from cubed.types import T_Chunks, T_DType, T_Shape, T_Store
+from cubed.types import T_Chunks, T_DType, T_RegularChunks, T_Shape, T_Store
 from cubed.utils import array_memory, chunk_memory, get_item, map_nested
 from cubed.utils import numblocks as compute_numblocks
 from cubed.utils import split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
-
-from .types import CubedArrayProxy, MemoryModeller, PrimitiveOperation
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,8 @@ class BlockwiseSpec:
         arrays that the operation depends on.
     num_input_blocks: Tuple[int, ...]
         The number of input blocks read from each input array.
+    num_output_blocks: Tuple[int, ...]
+        The number of output blocks written to each output array.
     iterable_input_blocks: Tuple[int, ...]
         Whether the input blocks read from each input array are supplied as an iterable or not.
     reads_map : Dict[str, CubedArrayProxy]
@@ -69,6 +71,7 @@ class BlockwiseSpec:
     function: Callable[..., Any]
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
+    num_output_blocks: Tuple[int, ...]
     iterable_input_blocks: Tuple[bool, ...]
     reads_map: Dict[str, CubedArrayProxy]
     writes_list: List[CubedArrayProxy]
@@ -159,8 +162,10 @@ def blockwise(
     in_names: Optional[List[str]] = None,
     out_name: Optional[str] = None,
     extra_projected_mem: int = 0,
+    buffer_copies: Optional[BufferCopies] = None,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
-    fusable: bool = True,
+    fusable_with_predecessors: bool = True,
+    fusable_with_successors: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
@@ -195,6 +200,8 @@ def blockwise(
     extra_projected_mem : int
         Extra memory projected to be needed (in bytes) in addition to the memory used reading
         the input arrays and writing the output.
+    buffer_copies: BufferCopies
+        The the number of buffer copies incurred for array storage operations.
     extra_func_kwargs : dict
         Extra keyword arguments to pass to function that can't be passed as regular keyword arguments
         since they clash with other blockwise arguments (such as dtype).
@@ -246,8 +253,10 @@ def blockwise(
         chunkss=[chunks],
         in_names=in_names,
         extra_projected_mem=extra_projected_mem,
+        buffer_copies=buffer_copies,
         extra_func_kwargs=extra_func_kwargs,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
         iterable_input_blocks=iterable_input_blocks,
         **kwargs,
@@ -269,11 +278,14 @@ def general_blockwise(
     chunkss: List[T_Chunks],
     in_names: Optional[List[str]] = None,
     extra_projected_mem: int = 0,
+    buffer_copies: Optional[BufferCopies] = None,
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
-    fusable: bool = True,
+    fusable_with_predecessors: bool = True,
+    fusable_with_successors: bool = True,
     function_nargs: Optional[int] = None,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
+    target_chunks_: Optional[T_RegularChunks] = None,
     return_writes_stores: bool = False,
     **kwargs,
 ) -> PrimitiveOperation:
@@ -305,6 +317,8 @@ def general_blockwise(
     extra_projected_mem : int
         Extra memory projected to be needed (in bytes) in addition to the memory used reading
         the input arrays and writing the output.
+    buffer_copies: BufferCopies
+        The the number of buffer copies incurred for array storage operations.
     extra_func_kwargs : dict
         Extra keyword arguments to pass to function that can't be passed as regular keyword arguments
         since they clash with other blockwise arguments (such as dtype).
@@ -351,7 +365,7 @@ def general_blockwise(
                 target_store,
                 shapes[i],
                 dtype=dtypes[i],
-                chunks=chunksize,
+                chunks=target_chunks_ or chunksize,
                 path=target_paths[i] if target_paths is not None else None,
                 storage_options=storage_options,
                 compressor=compressor,
@@ -362,34 +376,33 @@ def general_blockwise(
 
         # only one output chunk is read into memory at a time, so we find the largest
         output_chunk_memory = max(
-            output_chunk_memory, array_memory(dtypes[i], chunksize) * 2
+            output_chunk_memory, array_memory(dtypes[i], chunksize)
         )
+
+    # the number of blocks written to each target array is currently the same
+    nb = math.prod(chunksize) // math.prod(target_chunks_ or chunksize)
+    num_output_blocks = (nb,) * len(target_arrays)
 
     spec = BlockwiseSpec(
         key_function,
         func_with_kwargs,
         function_nargs,
         num_input_blocks,
+        num_output_blocks,
         iterable_input_blocks,
         read_proxies,
         write_proxies,
         return_writes_stores,
     )
 
-    # calculate projected memory
-    projected_mem = reserved_mem + extra_projected_mem
-    # inputs
-    for array in arrays:  # inputs
-        # memory for a compressed and an uncompressed input array chunk
-        # - we assume compression has no effect (so it's an overestimate)
-        # - ideally we'd be able to look at nbytes_stored,
-        #   but this is not possible in general since the array has not been written yet
-        projected_mem += array_memory(array.dtype, array.chunks) * 2
-    # output
-    # memory for a compressed and an uncompressed output array chunk
-    # - this assumes the blockwise function creates a new array)
-    # - numcodecs uses a working output buffer that's the size of the array being compressed
-    projected_mem += output_chunk_memory
+    buffer_copies = buffer_copies or BufferCopies(read=1, write=1)
+    projected_mem = calculate_projected_mem(
+        reserved_mem=reserved_mem,
+        inputs=[array_memory(array.dtype, array.chunks) for array in arrays],
+        operation=extra_projected_mem,
+        output=output_chunk_memory,
+        buffer_copies=buffer_copies,
+    )
 
     if projected_mem > allowed_mem:
         raise ValueError(
@@ -416,7 +429,9 @@ def general_blockwise(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
+        write_chunks=chunksize,
     )
 
 
@@ -427,7 +442,9 @@ def is_fuse_candidate(primitive_op: PrimitiveOperation) -> bool:
     """
     Return True if a primitive operation is a candidate for blockwise fusion.
     """
-    return primitive_op.pipeline.function == apply_blockwise
+    return primitive_op.pipeline.function == apply_blockwise and (
+        primitive_op.fusable_with_predecessors or primitive_op.fusable_with_successors
+    )
 
 
 def can_fuse_primitive_ops(
@@ -548,12 +565,14 @@ def fuse(
         n * pipeline2.config.num_input_blocks[0]
         for n in pipeline1.config.num_input_blocks
     )
+    num_output_blocks = pipeline2.config.num_output_blocks
     iterable_input_blocks = pipeline1.config.iterable_input_blocks
     spec = BlockwiseSpec(
         fused_key_func,
         fused_func,
         function_nargs,
         num_input_blocks,
+        num_output_blocks,
         iterable_input_blocks,
         read_proxies,
         write_proxies,
@@ -581,7 +600,7 @@ def fuse(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=True,
+        fusable_with_predecessors=True,
     )
 
 
@@ -599,6 +618,7 @@ def fuse_multiple(
         function=lambda x: x,
         function_nargs=1,
         num_input_blocks=(1,),
+        num_output_blocks=(1,),
         iterable_input_blocks=(False,),
         reads_map={},
         writes_list=[],
@@ -641,7 +661,7 @@ def fuse_multiple(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=True,
+        fusable_with_predecessors=True,
     )
 
 
@@ -679,6 +699,7 @@ def fuse_blockwise_specs(
             )
         )
     )
+    fused_num_output_blocks = bw_spec.num_output_blocks
     predecessor_iterable_input_blocks = [
         bws.iterable_input_blocks for bws in predecessor_bw_specs
     ]
@@ -696,6 +717,7 @@ def fuse_blockwise_specs(
         fused_func,
         fused_function_nargs,
         fused_num_input_blocks,
+        fused_num_output_blocks,
         fused_iterable_input_blocks,
         read_proxies,
         write_proxies,

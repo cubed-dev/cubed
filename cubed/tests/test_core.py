@@ -294,18 +294,19 @@ def test_rechunk_same_chunks(spec):
 
 # see also test_rechunk.py
 def test_rechunk_intermediate(tmp_path):
-    spec = cubed.Spec(tmp_path, allowed_mem=4 * 8 * 4)
-    a = xp.ones((4, 4), chunks=(1, 4), spec=spec)
-    b = a.rechunk((4, 1))
-    assert_array_equal(b.compute(), np.ones((4, 4)))
-    intermediates = [n for (n, d) in b.plan.dag.nodes(data=True) if "-int" in d["name"]]
-    assert len(intermediates) == 1
+    # factor of 4 is for chunks copies, extra 8 is for map_selection
+    spec = cubed.Spec(tmp_path, allowed_mem=5 * 8 * 4 + 8)
+    a = xp.ones((5, 5), chunks=(1, 5), spec=spec)
+    b = a.rechunk((5, 1))
+    assert_array_equal(b.compute(), np.ones((5, 5)))
+    # intermediates = [n for (n, d) in b.plan.dag.nodes(data=True) if "-int" in d["name"]]
+    # assert len(intermediates) == 1
     rechunks = [
         n
         for (n, d) in b.plan.dag.nodes(data=True)
         if d.get("op_name", None) == "rechunk"
     ]
-    assert len(rechunks) > 0
+    assert len(rechunks) == 2  # two ops due to intermediate store
 
 
 def test_rechunk_merge_chunks_optimization():

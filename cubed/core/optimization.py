@@ -134,9 +134,12 @@ def is_primitive_op(node_dict):
     return "primitive_op" in node_dict
 
 
-def is_fusable(node_dict):
+def is_fusable_with_predecessors(node_dict):
     """Return True if a node is a primitive op and can be fused with its predecessors."""
-    return is_primitive_op(node_dict) and node_dict["primitive_op"].fusable
+    return (
+        is_primitive_op(node_dict)
+        and node_dict["primitive_op"].fusable_with_predecessors
+    )
 
 
 def num_source_arrays(dag, name):
@@ -165,7 +168,7 @@ def can_fuse_predecessors(
     nodes = dict(dag.nodes(data=True))
 
     # if node itself can't be fused then there is nothing to fuse
-    if not is_fusable(nodes[name]):
+    if not is_fusable_with_predecessors(nodes[name]):
         logger.debug(
             "can't fuse %s since it is not a primitive operation, or it uses an operation that can't be fused (concat or stack)",
             name,

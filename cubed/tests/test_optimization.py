@@ -245,9 +245,9 @@ def create_dag():
     return nx.MultiDiGraph()
 
 
-def add_op(dag, func, inputs, outputs, fusable=True):
+def add_op(dag, func, inputs, outputs, fusable_with_predecessors=True):
     name = gensym(func.__name__)
-    dag.add_node(name, func=func, fusable=fusable)
+    dag.add_node(name, func=func, fusable_with_predecessors=fusable_with_predecessors)
     for n in inputs:
         dag.add_edge(n, name)
     for n in outputs:
@@ -1171,7 +1171,7 @@ def test_fuse_only_optimize_dag(spec):
     d = xp.negative(c)
 
     # only fuse d (with c)
-    # b should remain un-fused, even though it is fusable
+    # b should remain un-fused, even though it is fusable with predecessors
     op_name = next(d.plan.dag.predecessors(d.name))
     opt_fn = partial(fuse_only_optimize_dag, only_fuse=[op_name])
 
@@ -1192,7 +1192,7 @@ def test_fuse_only_optimize_dag(spec):
 
 
 def test_optimize_stack(spec):
-    # This test fails if stack's general_blockwise call doesn't have fusable=False
+    # This test fails if stack's general_blockwise call doesn't have fusable_with_predecessors=False
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     c = xp.stack((a, b), axis=0)
@@ -1202,7 +1202,7 @@ def test_optimize_stack(spec):
 
 
 def test_optimize_concat(spec):
-    # This test fails if concat's general_blockwise call doesn't have fusable=False
+    # This test fails if concat's general_blockwise call doesn't have fusable_with_predecessors=False
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     c = xp.concat((a, b), axis=0)

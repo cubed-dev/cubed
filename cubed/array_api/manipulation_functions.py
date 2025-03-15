@@ -167,7 +167,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
     num_input_blocks = (1,) * len(arrays)
     iterable_input_blocks = (True,) * len(arrays)
 
-    # We have to mark this as fusable=False since the number of input args to
+    # We have to mark this as fusable_with_predecessors=False since the number of input args to
     # the _read_concat_chunk function is *not* the same as the number of
     # predecessor nodes in the DAG, and the fusion functions in blockwise
     # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
@@ -188,7 +188,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
         offsets=offsets,
         in_shapes=in_shapes,
         function_nargs=1,
-        fusable=False,
+        fusable_with_predecessors=False,
     )
 
 
@@ -559,7 +559,7 @@ def stack(arrays, /, *, axis=0):
         in_name = array_names[out_coords[axis]]
         return ((in_name, *(out_coords[:axis] + out_coords[(axis + 1) :])),)
 
-    # We have to mark this as fusable=False since the number of input args to
+    # We have to mark this as fusable_with_predecessors=False since the number of input args to
     # the _read_stack_chunk function is *not* the same as the number of
     # predecessor nodes in the DAG, and the fusion functions in blockwise
     # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
@@ -572,7 +572,7 @@ def stack(arrays, /, *, axis=0):
         chunkss=[chunks],
         axis=axis,
         function_nargs=1,
-        fusable=False,
+        fusable_with_predecessors=False,
     )
 
 

@@ -37,8 +37,11 @@ class PrimitiveOperation:
     num_tasks: int
     """The number of tasks needed to run this operation."""
 
-    fusable: bool = True
+    fusable_with_predecessors: bool = True
     """Whether this operation can be fused with predecessor operations."""
+
+    fusable_with_successors: bool = True
+    """Whether this operation can be fused with successor operations."""
 
     write_chunks: Optional[T_RegularChunks] = None
     """The chunk size used by this operation."""
@@ -61,18 +64,3 @@ class CubedCopySpec:
 
     read: CubedArrayProxy
     write: CubedArrayProxy
-
-
-class MemoryModeller:
-    """Models peak memory usage for a series of operations."""
-
-    current_mem: int = 0
-    peak_mem: int = 0
-
-    def allocate(self, num_bytes):
-        self.current_mem += num_bytes
-        self.peak_mem = max(self.peak_mem, self.current_mem)
-
-    def free(self, num_bytes):
-        self.current_mem -= num_bytes
-        self.peak_mem = max(self.peak_mem, self.current_mem)
