@@ -88,15 +88,3 @@ class SparkExecutor(DagExecutor):
             if callbacks is not None:
                 for result in results:
                     handle_callbacks(callbacks, result, {"name": name})
-            
-        """Clean up resources."""
-        if self._spark_session:
-            try:
-                self._spark_session.stop()
-                self._logger.info("Spark session stopped")
-            except Exception as e:
-                self._logger.error(f"Error stopping Spark session: {str(e)}")
-            finally:
-                self._spark_session = None
-                self._lazy_operations = []
-                self._callbacks = None
