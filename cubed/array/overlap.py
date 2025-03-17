@@ -85,6 +85,7 @@ def map_overlap(
         boundary=boundary,
         numblocks=x.numblocks,
         has_block_id_kw=has_block_id_kw,
+        **kwargs,
     )
 
 
