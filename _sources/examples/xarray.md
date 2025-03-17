@@ -51,7 +51,7 @@ This will run a computation that loads the input data and writes it out to a Zar
 We can also use Xarray's API to run computations on the dataset using Cubed. Here we find the mean air temperature over time, for each location:
 
 ```{code-cell} ipython3
-mean = ds.air.mean("time", skipna=False)
+mean = ds.air.mean("time")
 mean
 ```
 
