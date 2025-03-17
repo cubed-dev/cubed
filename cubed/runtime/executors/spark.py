@@ -32,8 +32,8 @@ class SparkExecutor(DagExecutor):
             mem_bytes: Memory value in bytes
 
         Returns:
-            String memory setting suitable for Spark config 
-            with a size unit suffix ("k", "m", "g" or "t") 
+            String memory setting suitable for Spark config
+            with a size unit suffix ("k", "m", "g" or "t")
             (e.g. 512m, 2g).
         """
         # Try to convert to bytes if it's a number
@@ -61,10 +61,8 @@ class SparkExecutor(DagExecutor):
         spark_builder = SparkSession.builder
         if spec is not None and hasattr(spec, "allowed_mem") and spec.allowed_mem:
             mem_setting = self._parse_memory_setting(spec.allowed_mem)
-            spark_builder = spark_builder.config(
-                "spark.executor.memory", mem_setting)
-            spark_builder = spark_builder.config(
-                "spark.driver.memory", mem_setting)
+            spark_builder = spark_builder.config("spark.executor.memory", mem_setting)
+            spark_builder = spark_builder.config("spark.driver.memory", mem_setting)
             spark_builder = spark_builder.config("spark.speculation", "true")
 
         # Create a Spark session
@@ -76,8 +74,7 @@ class SparkExecutor(DagExecutor):
             # Create an RDD from pipeline.mappable.
             rdd = spark.sparkContext.parallelize(pipeline.mappable)
             # Define the transformation; note that this is lazy.
-            lazy_rdd = rdd.map(lambda x: pipeline.function(
-                x, config=pipeline.config))
+            lazy_rdd = rdd.map(lambda x: pipeline.function(x, config=pipeline.config))
             results = lazy_rdd.collect()  # <-- Trigger computation immediately
             if callbacks is not None:
                 for result in results:
