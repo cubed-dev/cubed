@@ -58,6 +58,12 @@ try:
 except ImportError:
     pass
 
+try:
+    ALL_EXECUTORS.append(create_executor("spark"))
+    MAIN_EXECUTORS.append(create_executor("spark"))
+except ImportError:
+    pass
+
 
 MODAL_EXECUTORS = []
 
