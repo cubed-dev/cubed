@@ -13,6 +13,8 @@ config = Config(
     defaults=[{"spec": {"allowed_mem": "2GB", "reserved_mem": "100MB"}}],
 )
 
+import cubed.random  # noqa: F401
+
 from .array.nan_functions import nanmean, nansum
 from .array.overlap import map_overlap
 from .array.pad import pad
@@ -38,6 +40,7 @@ __all__ = [
     "nanmean",
     "nansum",
     "pad",
+    "random",
     "rechunk",
     "store",
     "to_zarr",

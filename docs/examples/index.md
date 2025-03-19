@@ -11,5 +11,6 @@ basic-array-ops
 zarr
 xarray
 rechunking
+icechunk
 pangeo
 ```
