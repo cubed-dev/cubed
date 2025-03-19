@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Pangeo &#8212; Cubed</title>
+    <title>Icechunk &#8212; Cubed</title>
   
   
   
@@ -43,11 +43,11 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/pangeo';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/icechunk';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api.html" />
-    <link rel="prev" title="Icechunk" href="icechunk.html" />
+    <link rel="next" title="Pangeo" href="pangeo.html" />
+    <link rel="prev" title="Rechunking" href="rechunking.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -170,8 +170,8 @@
 <li class="toctree-l2"><a class="reference internal" href="zarr.html">Zarr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xarray.html">Xarray</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rechunking.html">Rechunking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="icechunk.html">Icechunk</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Pangeo</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Icechunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pangeo.html">Pangeo</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -282,7 +282,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/edit/main/examples/pangeo.md" target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/edit/main/examples/icechunk.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -299,7 +299,7 @@
       
       
       
-      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fexamples/pangeo.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/cubed-dev/cubed/issues/new?title=Issue%20on%20page%20%2Fexamples/icechunk.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -349,7 +349,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Pangeo</h1>
+    <h1>Icechunk</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -359,8 +359,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebook-examples">Running the notebook examples</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-to-icechunk">Write to Icechunk</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#read-from-icechunk">Read from Icechunk</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributed-writes">Distributed writes</a></li>
 </ul>
             </nav>
         </div>
@@ -372,26 +373,227 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="pangeo">
-<h1>Pangeo<a class="headerlink" href="#pangeo" title="Link to this heading">#</a></h1>
-<section id="notebooks">
-<h2>Notebooks<a class="headerlink" href="#notebooks" title="Link to this heading">#</a></h2>
-<p>The following example notebooks demonstrate the use of Cubed with Xarray to tackle some challenging Pangeo workloads:</p>
-<ol class="arabic simple">
-<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-1-vorticity.ipynb">Pangeo Vorticity Workload</a></p></li>
-<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-2-quadratic-means.ipynb">Pangeo Quadratic Means Workload</a></p></li>
-<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-3-tem.ipynb">Pangeo Transformed Eulerian Mean Workload</a></p></li>
-<li><p><a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/examples/pangeo-4-climatological-anomalies.ipynb">Pangeo Climatological Anomalies Workload</a></p></li>
-</ol>
+  <section id="icechunk">
+<h1>Icechunk<a class="headerlink" href="#icechunk" title="Link to this heading">#</a></h1>
+<p>This example shows how to perform large-scale distributed writes to Icechunk using Cubed
+(based on the examples for using <a class="reference external" href="https://icechunk.io/en/latest/icechunk-python/dask/">Icechunk with Dask</a>).</p>
+<p>Install the package pre-requisites by running the following:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>cubed<span class="w"> </span>icechunk
+</pre></div>
+</div>
+<p>Start by creating an Icechunk store.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">icechunk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="c1"># initialize the icechunk store</span>
+<span class="n">storage</span> <span class="o">=</span> <span class="n">icechunk</span><span class="o">.</span><span class="n">local_filesystem_storage</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">icechunk_repo</span> <span class="o">=</span> <span class="n">icechunk</span><span class="o">.</span><span class="n">Repository</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">storage</span><span class="p">)</span>
+<span class="n">icechunk_session</span> <span class="o">=</span> <span class="n">icechunk_repo</span><span class="o">.</span><span class="n">writable_session</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="write-to-icechunk">
+<h2>Write to Icechunk<a class="headerlink" href="#write-to-icechunk" title="Link to this heading">#</a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">cubed.icechunk.store_icechunk</span></code> to write a Cubed array to an Icechunk store.
+The API follows that of <a class="reference internal" href="../generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.store()</span></code></a>.</p>
+<p>First create a Cubed array to write:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed</span>
+<span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">cubed_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">cubed_array</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">cubed_chunks</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now create the Zarr array you will write to.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">zarr</span>
+
+<span class="n">zarr_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">group</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">icechunk_session</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">zarray</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">create_array</span><span class="p">(</span>
+    <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+    <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+    <span class="n">chunks</span><span class="o">=</span><span class="n">zarr_chunks</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">,</span>
+    <span class="n">fill_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Note that the chunks in the store are a divisor of the Cubed chunks. This means each individual write task is independent, and will not conflict. It is your responsibility to ensure that such conflicts are avoided.</p>
+<p>Now write</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cubed.icechunk</span><span class="w"> </span><span class="kn">import</span> <span class="n">store_icechunk</span>
+
+<span class="n">store_icechunk</span><span class="p">(</span>
+    <span class="n">icechunk_session</span><span class="p">,</span>
+    <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="n">cubed_array</span><span class="p">],</span>
+    <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="n">zarray</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Finally commit your changes!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">icechunk_session</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="s2">&quot;wrote a cubed array!&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Y6EFZQXRH9NA1Z8T75X0
+</pre></div>
+</div>
+</div>
+</div>
 </section>
-<section id="running-the-notebook-examples">
-<h2>Running the notebook examples<a class="headerlink" href="#running-the-notebook-examples" title="Link to this heading">#</a></h2>
-<p>Before running these notebook examples, you will need to install some additional dependencies (besides Cubed).</p>
-<p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">rich</span> <span class="pre">pydot</span> <span class="pre">flox</span> <span class="pre">cubed-xarray</span></code></p>
-<p><code class="docutils literal notranslate"><span class="pre">cubed-xarray</span></code> is necessary to wrap Cubed arrays as Xarray DataArrays or Xarray Datasets.
-<code class="docutils literal notranslate"><span class="pre">flox</span></code> is for supporting efficient groupby operations in Xarray.
-<code class="docutils literal notranslate"><span class="pre">pydot</span></code> allows plotting the Cubed execution plan.
-<code class="docutils literal notranslate"><span class="pre">rich</span></code> is for showing progress of array operations within callbacks applied to Cubed plan operations.</p>
+<section id="read-from-icechunk">
+<h2>Read from Icechunk<a class="headerlink" href="#read-from-icechunk" title="Link to this heading">#</a></h2>
+<p>Use <a class="reference internal" href="../generated/cubed.from_zarr.html#cubed.from_zarr" title="cubed.from_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">cubed.from_zarr()</span></code></a> to read from Icechunk - note that no special Icechunk-specific function is needed in this case.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cubed</span><span class="o">.</span><span class="n">from_zarr</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="n">icechunk_session</span><span class="o">.</span><span class="n">store</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+    <tr>
+        <td>
+            <table>
+                <thead>
+                    <tr>
+                        <td> </td>
+                        <th> Array </th>
+                        <th> Chunk </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <tr>
+                        <th> Bytes </th>
+                        <td> 80.0 KB </td>
+                        <td> 800 bytes </td>
+                    </tr>
+                    
+                    <tr>
+                        <th> Shape </th>
+                        <td> (100, 100) </td>
+                        <td> (10, 10) </td>
+                    </tr>
+                    <tr>
+                        <th> Count </th>
+                        <td> 1 arrays in Plan </td>
+                        <td> 100 Chunks </td>
+                    </tr>
+                    <tr>
+                        <th> Type </th>
+                        <td> float64 </td>
+                        <td> np.ndarray </td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+        <td>
+        <svg width="170" height="170" style="stroke:rgb(0,0,0);stroke-width:1" >
+
+  <!-- Horizontal lines -->
+  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
+  <line x1="0" y1="12" x2="120" y2="12" />
+  <line x1="0" y1="24" x2="120" y2="24" />
+  <line x1="0" y1="36" x2="120" y2="36" />
+  <line x1="0" y1="48" x2="120" y2="48" />
+  <line x1="0" y1="60" x2="120" y2="60" />
+  <line x1="0" y1="72" x2="120" y2="72" />
+  <line x1="0" y1="84" x2="120" y2="84" />
+  <line x1="0" y1="96" x2="120" y2="96" />
+  <line x1="0" y1="108" x2="120" y2="108" />
+  <line x1="0" y1="120" x2="120" y2="120" style="stroke-width:2" />
+
+  <!-- Vertical lines -->
+  <line x1="0" y1="0" x2="0" y2="120" style="stroke-width:2" />
+  <line x1="12" y1="0" x2="12" y2="120" />
+  <line x1="24" y1="0" x2="24" y2="120" />
+  <line x1="36" y1="0" x2="36" y2="120" />
+  <line x1="48" y1="0" x2="48" y2="120" />
+  <line x1="60" y1="0" x2="60" y2="120" />
+  <line x1="72" y1="0" x2="72" y2="120" />
+  <line x1="84" y1="0" x2="84" y2="120" />
+  <line x1="96" y1="0" x2="96" y2="120" />
+  <line x1="108" y1="0" x2="108" y2="120" />
+  <line x1="120" y1="0" x2="120" y2="120" style="stroke-width:2" />
+
+  <!-- Colored Rectangle -->
+  <polygon points="0.0,0.0 120.0,0.0 120.0,120.0 0.0,120.0" style="fill:#ECB172A0;stroke-width:0"/>
+
+  <!-- Text -->
+  <text x="60.000000" y="140.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" >100</text>
+  <text x="140.000000" y="60.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(-90,140.000000,60.000000)">100</text>
+</svg>
+        </td>
+    </tr>
+</table></div></div>
+</div>
+</section>
+<section id="distributed-writes">
+<h2>Distributed writes<a class="headerlink" href="#distributed-writes" title="Link to this heading">#</a></h2>
+<p>In distributed contexts where the Session, and Zarr Array objects are sent across the network, you must opt-in to successful pickling of a writable store.
+<code class="docutils literal notranslate"><span class="pre">cubed.icechunk.store_icechunk</span></code> takes care of the hard bit of merging Sessions but it is required that you opt-in to pickling prior to creating the target Zarr array objects.</p>
+<p>Here is an example:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cubed</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span>
+
+<span class="c1"># start a new session. Old session is readonly after committing</span>
+
+<span class="n">icechunk_session</span> <span class="o">=</span> <span class="n">icechunk_repo</span><span class="o">.</span><span class="n">writable_session</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">zarr_chunks</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># use the Cubed processes executor which requires pickling</span>
+<span class="k">with</span> <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">({</span><span class="s2">&quot;spec.executor_name&quot;</span><span class="p">:</span> <span class="s2">&quot;processes&quot;</span><span class="p">}):</span>
+    <span class="k">with</span> <span class="n">icechunk_session</span><span class="o">.</span><span class="n">allow_pickling</span><span class="p">():</span>
+        <span class="n">cubed_array</span> <span class="o">=</span> <span class="n">cubed</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="n">cubed_chunks</span><span class="p">)</span>
+
+        <span class="n">group</span> <span class="o">=</span> <span class="n">zarr</span><span class="o">.</span><span class="n">group</span><span class="p">(</span>
+            <span class="n">store</span><span class="o">=</span><span class="n">icechunk_session</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="n">zarray</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">create_array</span><span class="p">(</span>
+            <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">chunks</span><span class="o">=</span><span class="n">zarr_chunks</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;f8&quot;</span><span class="p">,</span>
+            <span class="n">fill_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">store_icechunk</span><span class="p">(</span>
+            <span class="n">icechunk_session</span><span class="p">,</span>
+            <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="n">cubed_array</span><span class="p">],</span>
+            <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="n">zarray</span><span class="p">]</span>
+        <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">icechunk_session</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="s2">&quot;wrote a cubed array!&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>FBVX4BSD5258BR6KVJ0G
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 </section>
 
@@ -407,20 +609,20 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="icechunk.html"
+       href="rechunking.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Icechunk</p>
+        <p class="prev-next-title">Rechunking</p>
       </div>
     </a>
     <a class="right-next"
-       href="../api.html"
+       href="pangeo.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Pangeo</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -440,8 +642,9 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebook-examples">Running the notebook examples</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-to-icechunk">Write to Icechunk</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#read-from-icechunk">Read from Icechunk</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#distributed-writes">Distributed writes</a></li>
 </ul>
   </nav></div>
 
