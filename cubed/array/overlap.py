@@ -56,6 +56,9 @@ def map_overlap(
 
     depth = coerce(args, depth, coerce_depth)
     boundary = coerce(args, boundary, coerce_boundary)
+    new_axis = kwargs.pop("new_axis", None)
+    if new_axis is not None:
+        raise NotImplementedError("new_axis is not supported in map_overlap")
 
     x = args[0]  # TODO: support multiple input arrays
 
