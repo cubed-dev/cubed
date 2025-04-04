@@ -1,0 +1,11 @@
+boto3
+cftime
+cubed
+cubed-xarray
+h5netcdf
+h5py
+kerchunk
+lithops
+s3fs
+virtualizarr
+xarray
