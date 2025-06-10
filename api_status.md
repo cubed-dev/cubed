@@ -71,7 +71,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `argmin`            | :white_check_mark: |            |                              |
 |                          | `count_nonzero`     | :x:                | 2024.12    |                              |
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
-|                          | `searchsorted`      | :x:                | 2023.12    |                              |
+|                          | `searchsorted`      | :white_check_mark: | 2023.12    |                              |
 |                          | `where`             | :white_check_mark: |            |                              |
 | Set Functions            | `unique_all`        | :x:                |            | Shape is data dependent      |
 |                          | `unique_counts`     | :x:                |            | Shape is data dependent      |
