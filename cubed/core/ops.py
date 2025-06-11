@@ -1691,6 +1691,10 @@ def _scan_binop(
     axis: int,
     identity: Any,
 ) -> "Array":
+    # Get the underlying Zarr arrays so we can access directly
+    left = left.zarray
+    right = right.zarray
+
     left_slicer = key_to_slices(block_id, left)
     right_slicer = list(left_slicer)
 
