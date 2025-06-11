@@ -2,16 +2,36 @@ import asyncio
 import copy
 import time
 from asyncio import Future
-from typing import Any, AsyncIterator, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import (
+    Any,
+    AsyncIterator,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
+
+from aiostream import stream
+from aiostream.core import Stream
+from networkx import MultiDiGraph
 
 from cubed.runtime.backup import should_launch_backup
-from cubed.runtime.utils import batched
+from cubed.runtime.pipeline import visit_node_generations, visit_nodes
+from cubed.runtime.types import Callback, CubedPipeline
+from cubed.runtime.utils import (
+    batched,
+    handle_callbacks,
+    handle_operation_start_callbacks,
+)
 
 
 async def async_map_unordered(
     create_futures_func: Callable[..., List[Tuple[Any, Future]]],
     input: Iterable[Any],
-    use_backups: bool = True,
+    use_backups: bool = False,
     create_backup_futures_func: Optional[
         Callable[..., List[Tuple[Any, Future]]]
     ] = None,
@@ -81,8 +101,8 @@ async def async_map_unordered(
                     task, now, start_times, end_times
                 ):
                     # launch backup task
-                    print("Launching backup task")
                     i = tasks[task]
+                    print(f"Launching backup task for input {i} at time {now}")
                     i, new_task = create_backup_futures_func([i], **kwargs)[0]
                     tasks[new_task] = i
                     start_times[new_task] = time.monotonic()
@@ -100,3 +120,61 @@ async def async_map_unordered(
                 pending.update(new_tasks.keys())
                 t = time.monotonic()
                 start_times = {f: t for f in new_tasks.keys()}
+
+
+async def async_map_dag(
+    create_futures_func: Callable,
+    dag: MultiDiGraph,
+    callbacks: Optional[Sequence[Callback]] = None,
+    resume: Optional[bool] = None,
+    compute_arrays_in_parallel: Optional[bool] = None,
+    **kwargs,
+) -> None:
+    """
+    Asynchronous parallel map over multiple pipelines from a DAG, with support for backups and batching.
+    """
+    if not compute_arrays_in_parallel:
+        # run one pipeline at a time
+        for name, node in visit_nodes(dag, resume=resume):
+            handle_operation_start_callbacks(callbacks, name)
+            st = pipeline_to_stream(
+                create_futures_func, name, node["pipeline"], **kwargs
+            )
+            async with st.stream() as streamer:
+                async for result, stats in streamer:
+                    handle_callbacks(callbacks, result, stats)
+    else:
+        for gen in visit_node_generations(dag, resume=resume):
+            # run pipelines in the same topological generation in parallel by merging their streams
+            streams = [
+                pipeline_to_stream(
+                    create_futures_func, name, node["pipeline"], **kwargs
+                )
+                for name, node in gen
+            ]
+            merged_stream = stream.merge(*streams)
+            async with merged_stream.stream() as streamer:
+                async for result, stats in streamer:
+                    handle_callbacks(callbacks, result, stats)
+
+
+def pipeline_to_stream(
+    create_futures_func: Callable,
+    name: str,
+    pipeline: CubedPipeline,
+    **kwargs,
+) -> Stream:
+    """
+    Turn a pipeline into an asynchronous stream of results.
+    """
+    return stream.iterate(
+        async_map_unordered(
+            create_futures_func,
+            pipeline.mappable,
+            return_stats=True,
+            name=name,
+            func=pipeline.function,
+            config=pipeline.config,
+            **kwargs,
+        )
+    )

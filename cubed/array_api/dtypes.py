@@ -1,4 +1,5 @@
 # Copied from numpy.array_api
+from cubed.array_api.inspection import __array_namespace_info__
 from cubed.backend_array_api import namespace as nxp
 
 int8 = nxp.int8
@@ -86,3 +87,47 @@ _dtype_categories = {
     "complex floating-point": _complex_floating_dtypes,
     "floating-point": _floating_dtypes,
 }
+
+
+# A Cubed-specific utility.
+def _upcast_integral_dtypes(
+    x, dtype=None, *, allowed_dtypes=("numeric",), fname=None, device=None
+):
+    """Ensure the input dtype is allowed. If it's None, provide a good default dtype."""
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+
+    # Validate.
+    is_invalid = all(x.dtype not in _dtype_categories[a] for a in allowed_dtypes)
+    if is_invalid:
+        errmsg = f"Only {' or '.join(allowed_dtypes)} dtypes are allowed"
+        if fname:
+            errmsg += f" in {fname}"
+        raise TypeError(errmsg)
+
+    # Choose a good default dtype, when None
+    if dtype is None:
+        if x.dtype in _boolean_dtypes:
+            dtype = dtypes["integral"]
+        elif x.dtype in _signed_integer_dtypes:
+            dtype = dtypes["integral"]
+        elif x.dtype in _unsigned_integer_dtypes:
+            # Type arithmetic to produce an unsigned integer dtype at the same default precision.
+            default_bits = nxp.iinfo(dtypes["integral"]).bits
+            dtype = nxp.dtype(f"u{default_bits // 8}")
+        else:
+            dtype = x.dtype
+
+    return dtype
+
+
+def _promote_scalars(x1, x2, op):
+    """Promote at most one of x1 or x2 to an array from a Python scalar"""
+    x1_is_scalar = isinstance(x1, (int, float, complex, bool))
+    x2_is_scalar = isinstance(x2, (int, float, complex, bool))
+    if x1_is_scalar and x2_is_scalar:
+        raise TypeError(f"At least one of x1 and x2 must be an array in {op}")
+    elif x1_is_scalar:
+        x1 = x2._promote_scalar(x1)
+    elif x2_is_scalar:
+        x2 = x1._promote_scalar(x2)
+    return x1, x2

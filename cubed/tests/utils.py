@@ -4,6 +4,7 @@ from typing import Iterable
 import networkx as nx
 import numpy as np
 
+from cubed import config
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
 from cubed.storage.backend import open_backend_array
@@ -27,6 +28,7 @@ MAIN_EXECUTORS = [create_executor("single-threaded")]
 if platform.system() != "Windows":
     # ThreadsExecutor calls `peak_measured_mem` which is not supported on Windows
     ALL_EXECUTORS.append(create_executor("threads"))
+    MAIN_EXECUTORS.append(create_executor("threads"))
 
     ALL_EXECUTORS.append(create_executor("processes"))
     MAIN_EXECUTORS.append(create_executor("processes"))
@@ -50,10 +52,35 @@ try:
 except ImportError:
     pass
 
+try:
+    ALL_EXECUTORS.append(create_executor("ray"))
+    MAIN_EXECUTORS.append(create_executor("ray"))
+except ImportError:
+    pass
+
+try:
+    ALL_EXECUTORS.append(create_executor("spark"))
+    MAIN_EXECUTORS.append(create_executor("spark"))
+except ImportError:
+    pass
+
+
 MODAL_EXECUTORS = []
 
 try:
-    MODAL_EXECUTORS.append(create_executor("modal"))
+    # only set global config below if modal can be imported
+    import modal  # noqa: F401
+
+    # need to set global config for testing modal since these options
+    # are read at the top level of modal.py to create remote functions
+    config.set(
+        {
+            "spec.executor_options.cloud": "aws",
+            "spec.executor_options.region": "us-east-1",
+        }
+    )
+    executor_options = dict(enable_output=True)
+    MODAL_EXECUTORS.append(create_executor("modal", executor_options))
 except ImportError:
     pass
 

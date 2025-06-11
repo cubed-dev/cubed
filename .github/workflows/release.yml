@@ -11,6 +11,10 @@ jobs:
   build-artifacts:
     if: github.repository == 'cubed-dev/cubed'
     runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing
+      id-token: write
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
@@ -19,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install pypa/build
         run: >-
           python3 -m
@@ -35,7 +39,7 @@ jobs:
           --outdir dist/
           .
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: releases
           path: dist
@@ -43,20 +47,24 @@ jobs:
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
 
   upload-to-pypi:
     needs: build-artifacts
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing
+      id-token: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: releases
           path: dist
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true

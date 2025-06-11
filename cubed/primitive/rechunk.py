@@ -1,7 +1,7 @@
 import itertools
 import math
 from math import ceil, prod
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
 
 import numpy as np
 
@@ -68,10 +68,9 @@ def rechunk(
         storage_options=storage_options,
     )
 
-    intermediate = int_proxy.array
     target = write_proxy.array
 
-    if intermediate is None:
+    if int_proxy is None:
         copy_spec = CubedCopySpec(read_proxy, write_proxy)
         num_tasks = total_chunks(write_proxy.array.shape, write_proxy.chunks)
         return [
@@ -88,6 +87,7 @@ def rechunk(
 
     else:
         # break spec into two if there's an intermediate
+        intermediate = int_proxy.array
         copy_spec1 = CubedCopySpec(read_proxy, int_proxy)
         num_tasks = total_chunks(copy_spec1.write.array.shape, copy_spec1.write.chunks)
         op1 = spec_to_primitive_op(
@@ -123,7 +123,7 @@ def _setup_array_rechunk(
     target_store: T_Store,
     temp_store: Optional[T_Store] = None,
     storage_options: Optional[Dict[str, Any]] = None,
-) -> Tuple[CubedArrayProxy, CubedArrayProxy, CubedArrayProxy]:
+) -> Tuple[CubedArrayProxy, Optional[CubedArrayProxy], CubedArrayProxy]:
     shape = source_array.shape
     source_chunks = source_array.chunks
     dtype = source_array.dtype
@@ -162,7 +162,9 @@ def _setup_array_rechunk(
         )
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
-    int_proxy = CubedArrayProxy(int_array, int_chunks)
+    int_proxy = (
+        CubedArrayProxy(int_array, int_chunks) if int_array is not None else None
+    )
     write_proxy = CubedArrayProxy(target_array, write_chunks)
     return read_proxy, int_proxy, write_proxy
 
@@ -200,7 +202,7 @@ class ChunkKeys(Iterable[Tuple[slice, ...]]):
         return chunk_keys(self.shape, self.chunks)
 
 
-def copy_read_to_write(chunk_key: Sequence[slice], *, config: CubedCopySpec) -> None:
+def copy_read_to_write(chunk_key: Tuple[slice], *, config: CubedCopySpec) -> None:
     # workaround limitation of lithops.utils.verify_args
     if isinstance(chunk_key, list):
         chunk_key = tuple(chunk_key)
@@ -234,6 +236,6 @@ def spec_to_primitive_op(
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=False,
+        fusable_with_predecessors=False,
         write_chunks=spec.write.chunks,
     )

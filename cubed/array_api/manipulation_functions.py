@@ -9,7 +9,13 @@ from cubed.array_api.creation_functions import empty
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import squeeze  # noqa: F401
 from cubed.core import blockwise, rechunk, unify_chunks
-from cubed.core.ops import elemwise, general_blockwise, map_blocks, map_direct
+from cubed.core.ops import (
+    _create_zarr_indexer,
+    elemwise,
+    general_blockwise,
+    map_blocks,
+    map_selection,
+)
 from cubed.utils import block_id_to_offset, get_item, offset_to_block_id, to_chunksize
 from cubed.vendor.dask.array.core import broadcast_chunks, normalize_chunks
 from cubed.vendor.dask.array.reshape import reshape_rechunk
@@ -41,14 +47,16 @@ def broadcast_to(x, /, shape, *, chunks=None):
     ):
         raise ValueError(f"cannot broadcast shape {x.shape} to shape {shape}")
 
-    # TODO: fix case where shape has a dimension of size zero
-
     if chunks is None:
         # New dimensions and broadcast dimensions have chunk size 1
         # This behaviour differs from dask where it is the full dimension size
         xchunks = normalize_chunks(x.chunks, x.shape, dtype=x.dtype)
-        chunks = tuple((1,) * s for s in shape[:ndim_new]) + tuple(
-            bd if old > 1 else ((1,) * new if new > 0 else (0,))
+
+        def chunklen(shapelen):
+            return (1,) * shapelen if shapelen > 0 else (0,)
+
+        chunks = tuple(chunklen(s) for s in shape[:ndim_new]) + tuple(
+            bd if old > 1 else chunklen(new)
             for bd, old, new in zip(xchunks, x.shape, shape[ndim_new:])
         )
     else:
@@ -77,68 +85,143 @@ def concat(arrays, /, *, axis=0, chunks=None):
     if not arrays:
         raise ValueError("Need array(s) to concat")
 
+    if len({a.dtype for a in arrays}) > 1:
+        raise ValueError("concat inputs must all have the same dtype")
+
     if axis is None:
         arrays = [flatten(array) for array in arrays]
         axis = 0
 
-    # TODO: check arrays all have same shape (except in the dimension specified by axis)
-    # TODO: type promotion
-    # TODO: unify chunks
+    if len(arrays) == 1:
+        return arrays[0]
 
     a = arrays[0]
 
+    # check arrays all have same shape (except in the dimension specified by axis)
+    ndim = a.ndim
+    if not all(
+        i == axis or all(x.shape[i] == arrays[0].shape[i] for x in arrays)
+        for i in range(ndim)
+    ):
+        raise ValueError(
+            f"all the input array dimensions except for the concatenation axis must match exactly: {[x.shape for x in arrays]}"
+        )
+
+    # check arrays all have the same chunk size along axis (if more than one chunk)
+    if len({a.chunksize[axis] for a in arrays if a.numblocks[axis] > 1}) > 1:
+        raise ValueError(
+            f"all the input array chunk sizes must match along the concatenation axis: {[x.chunksize[axis] for x in arrays]}"
+        )
+
+    # unify chunks (except in the dimension specified by axis)
+    inds = [list(range(x.ndim)) for x in arrays]
+    for i, ind in enumerate(inds):
+        ind[axis] = -(i + 1)
+    uc_args = tlz.concat(zip(arrays, inds))
+    chunkss, arrays = unify_chunks(*uc_args, warn=False)
+
     # offsets along axis for the start of each array
     offsets = [0] + list(tlz.accumulate(add, [a.shape[axis] for a in arrays]))
+    in_shapes = tuple(array.shape for array in arrays)
 
-    axis = validate_axis(axis, a.ndim)
+    axis = validate_axis(axis, ndim)
     shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
     dtype = a.dtype
     if chunks is None:
-        chunks = normalize_chunks(to_chunksize(a.chunks), shape=shape, dtype=dtype)
+        # use unified chunks except for dimension specified by axis
+        axis_chunksize = max(a.chunksize[axis] for a in arrays)
+        chunksize = tuple(
+            axis_chunksize if i == axis else chunkss[i] for i in range(ndim)
+        )
+        chunks = normalize_chunks(chunksize, shape=shape, dtype=dtype)
     else:
         chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    # memory allocated by reading one chunk from input array
-    # note that although the output chunk will overlap multiple input chunks,
-    # the chunks are read in series, reusing memory
-    extra_projected_mem = a.chunkmem
+    def key_function(out_key):
+        out_coords = out_key[1:]
+        block_id = out_coords
 
-    return map_direct(
+        # determine the start and stop indexes for this block along the axis dimension
+        chunksize = to_chunksize(chunks)
+        start = block_id[axis] * chunksize[axis]
+        stop = start + chunksize[axis]
+        stop = min(stop, shape[axis])
+
+        # produce a key that has slices (except for axis dimension, which is replaced below)
+        idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
+        key = get_item(chunks, idx)
+
+        # find slices of the arrays
+        in_keys = []
+        for ai, sl in _array_slices(offsets, start, stop):
+            key = tuple(sl if i == axis else k for i, k in enumerate(key))
+
+            # use a Zarr BasicIndexer to convert this to input coordinates
+            a = arrays[ai]
+            indexer = _create_zarr_indexer(key, a.shape, a.chunksize)
+
+            in_keys.extend([(a.name,) + cp.chunk_coords for cp in indexer])
+
+        return (iter(tuple(in_key for in_key in in_keys)),)
+
+    num_input_blocks = (1,) * len(arrays)
+    iterable_input_blocks = (True,) * len(arrays)
+
+    # We have to mark this as fusable_with_predecessors=False since the number of input args to
+    # the _read_concat_chunk function is *not* the same as the number of
+    # predecessor nodes in the DAG, and the fusion functions in blockwise
+    # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
+    # This also affects stack.
+    return general_blockwise(
         _read_concat_chunk,
+        key_function,
         *arrays,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
-        extra_projected_mem=extra_projected_mem,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
+        num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
+        extra_func_kwargs=dict(dtype=dtype),
+        target_shape=shape,
         target_chunks=chunks,
         axis=axis,
         offsets=offsets,
+        in_shapes=in_shapes,
+        function_nargs=1,
+        fusable_with_predecessors=False,
     )
 
 
 def _read_concat_chunk(
-    x, *arrays, target_chunks=None, axis=None, offsets=None, block_id=None
+    arrays,
+    dtype=None,
+    target_shape=None,
+    target_chunks=None,
+    axis=None,
+    offsets=None,
+    in_shapes=None,
+    block_id=None,
 ):
     # determine the start and stop indexes for this block along the axis dimension
-    chunks = target_chunks
-    chunksize = to_chunksize(chunks)
+    chunksize = to_chunksize(target_chunks)
     start = block_id[axis] * chunksize[axis]
-    stop = start + x.shape[axis]
+    stop = start + chunksize[axis]
+    stop = min(stop, target_shape[axis])
 
-    # produce a key that has slices (except for axis dimension, which is replaced below)
-    idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
-    key = get_item(chunks, idx)
-
-    # concatenate slices of the arrays
-    parts = []
-    for ai, sl in _array_slices(offsets, start, stop):
-        key = tuple(sl if i == axis else k for i, k in enumerate(key))
-        parts.append(arrays[ai].zarray[key])
-    return nxp.concat(parts, axis=axis)
+    chunk_shape = tuple(ch[bi] for ch, bi in zip(target_chunks, block_id))
+    out = np.empty(chunk_shape, dtype=dtype)
+    for array, (lchunk_selection, lout_selection) in zip(
+        arrays,
+        _chunk_slices(
+            offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
+        ),
+    ):
+        out[lout_selection] = array[lchunk_selection]
+    return out
 
 
 def _array_slices(offsets, start, stop):
-    """Return pairs of array index and slice to slice from start to stop in the concatenated array."""
+    """Return pairs of array index and array slice to slice from start to stop in the concatenated array."""
     slice_start = start
     while slice_start < stop:
         # find array that slice_start falls in
@@ -146,6 +229,33 @@ def _array_slices(offsets, start, stop):
         slice_stop = min(stop, offsets[i + 1])
         yield i, slice(slice_start - offsets[i], slice_stop - offsets[i])
         slice_start = slice_stop
+
+
+def _chunk_slices(
+    offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
+):
+    """Return pairs of chunk slices to slice input array chunks and output concatenated chunk."""
+
+    # an output chunk may have selections from more than one array, so we need an offset per array
+    arr_sel_offset = 0  # offset along axis
+
+    # produce a key that has slices (except for axis dimension, which is replaced below)
+    idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
+    key = get_item(target_chunks, idx)
+
+    for ai, sl in _array_slices(offsets, start, stop):
+        key = tuple(sl if i == axis else k for i, k in enumerate(key))
+        indexer = _create_zarr_indexer(key, in_shapes[ai], chunksize)
+        for cp in indexer:
+            lout_selection_with_offset = tuple(
+                sl
+                if ax != axis
+                else slice(sl.start + arr_sel_offset, sl.stop + arr_sel_offset)
+                for ax, sl in enumerate(cp.out_selection)
+            )
+            yield cp.chunk_selection, lout_selection_with_offset
+
+        arr_sel_offset += cp.out_selection[axis].stop
 
 
 def expand_dims(x, /, *, axis):
@@ -170,6 +280,58 @@ def _expand_dims(a, *args, **kwargs):
 
 def flatten(x):
     return reshape(x, (-1,))
+
+
+def flip(x, /, *, axis=None):
+    if axis is None:
+        axis = tuple(range(x.ndim))  # all axes
+    if not isinstance(axis, tuple):
+        axis = (axis,)
+    axis = validate_axis(axis, x.ndim)
+
+    def selection_function(out_key):
+        out_coords = out_key[1:]
+        block_id = out_coords
+
+        # produce a key that has slices (except for axis dimensions, which are replaced below)
+        idx = tuple(0 if i == axis else v for i, v in enumerate(block_id))
+        key = list(get_item(x.chunks, idx))
+
+        for ax in axis:
+            # determine the start and stop indexes for this block along the axis dimension
+            start = block_id[ax] * x.chunksize[ax]
+            stop = start + x.chunksize[ax]
+            stop = min(stop, x.shape[ax])
+
+            # flip start and stop
+            axis_len = x.shape[ax]
+            start, stop = axis_len - stop, axis_len - start
+
+            # replace with slice
+            key[ax] = slice(start, stop)
+
+        return tuple(key)
+
+    max_num_input_blocks = _flip_num_input_blocks(axis, x.shape, x.chunksize)
+
+    return map_selection(
+        nxp.flip,
+        selection_function,
+        x,
+        shape=x.shape,
+        dtype=x.dtype,
+        chunks=x.chunks,
+        max_num_input_blocks=max_num_input_blocks,
+        axis=axis,
+    )
+
+
+def _flip_num_input_blocks(axis, shape, chunksizes):
+    num = 1
+    for ax in axis:
+        if shape[ax] % chunksizes[ax] != 0:
+            num *= 2
+    return num
 
 
 def moveaxis(
@@ -218,6 +380,53 @@ def permute_dims(x, /, axes):
         axes=axes,
         extra_projected_mem=extra_projected_mem,
     )
+
+
+def repeat(x, repeats, /, *, axis=0):
+    if not isinstance(repeats, int):
+        raise ValueError("repeat only supports integral values for `repeats`")
+
+    if axis is None:
+        x = flatten(x)
+        axis = 0
+
+    shape = x.shape[:axis] + (x.shape[axis] * repeats,) + x.shape[axis + 1 :]
+    chunks = normalize_chunks(x.chunksize, shape=shape, dtype=x.dtype)
+
+    # This implementation calls nxp.repeat in every output block, which is 'repeats' times
+    # more than necessary than if we had a primitive op that could write multiple blocks.
+
+    def key_function(out_key):
+        out_coords = out_key[1:]
+        in_coords = tuple(
+            bi // repeats if i == axis else bi for i, bi in enumerate(out_coords)
+        )
+        return ((x.name, *in_coords),)
+
+    # extra memory from calling 'nxp.repeat' on a chunk
+    extra_projected_mem = x.chunkmem * repeats
+    return general_blockwise(
+        _repeat,
+        key_function,
+        x,
+        shapes=[shape],
+        dtypes=[x.dtype],
+        chunkss=[chunks],
+        extra_projected_mem=extra_projected_mem,
+        repeats=repeats,
+        axis=axis,
+        chunksize=x.chunksize,
+    )
+
+
+def _repeat(x, repeats, axis=None, chunksize=None, block_id=None):
+    out = nxp.repeat(x, repeats, axis=axis)
+    bi = block_id[axis] % repeats
+    ind = tuple(
+        slice(bi * chunksize[i], (bi + 1) * chunksize[i]) if i == axis else slice(None)
+        for i in range(x.ndim)
+    )
+    return out[ind]
 
 
 def reshape(x, /, shape, *, copy=None):
@@ -277,9 +486,9 @@ def reshape_chunks(x, shape, chunks):
         key_function,
         x,
         template,
-        shape=shape,
-        dtype=x.dtype,
-        chunks=outchunks,
+        shapes=[shape],
+        dtypes=[x.dtype],
+        chunkss=[outchunks],
     )
 
 
@@ -350,7 +559,7 @@ def stack(arrays, /, *, axis=0):
         in_name = array_names[out_coords[axis]]
         return ((in_name, *(out_coords[:axis] + out_coords[(axis + 1) :])),)
 
-    # We have to mark this as fusable=False since the number of input args to
+    # We have to mark this as fusable_with_predecessors=False since the number of input args to
     # the _read_stack_chunk function is *not* the same as the number of
     # predecessor nodes in the DAG, and the fusion functions in blockwise
     # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
@@ -358,13 +567,70 @@ def stack(arrays, /, *, axis=0):
         _read_stack_chunk,
         key_function,
         *arrays,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
         axis=axis,
-        fusable=False,
+        function_nargs=1,
+        fusable_with_predecessors=False,
     )
 
 
 def _read_stack_chunk(array, axis=None):
     return nxp.expand_dims(array, axis=axis)
+
+
+def tile(x, repetitions, /):
+    N = len(x.shape)
+    M = len(repetitions)
+    if N > M:
+        repetitions = (1,) * (N - M) + repetitions
+    elif N < M:
+        for _ in range(M - N):
+            x = expand_dims(x, axis=0)
+    out = x
+    for i, nrep in enumerate(repetitions):
+        if nrep > 1:
+            out = concat([out] * nrep, axis=i)
+    return out
+
+
+def unstack(x, /, *, axis=0):
+    axis = validate_axis(axis, x.ndim)
+
+    n_arrays = x.shape[axis]
+
+    if n_arrays == 0:
+        return ()
+    elif n_arrays == 1:
+        return (squeeze(x, axis=axis),)
+
+    shape = x.shape[:axis] + x.shape[axis + 1 :]
+    dtype = x.dtype
+    chunks = x.chunks[:axis] + x.chunks[axis + 1 :]
+
+    def key_function(out_key):
+        out_coords = out_key[1:]
+        all_in_coords = tuple(
+            out_coords[:axis] + (i,) + out_coords[axis:]
+            for i in range(x.numblocks[axis])
+        )
+        return tuple((x.name,) + in_coords for in_coords in all_in_coords)
+
+    return general_blockwise(
+        _unstack_chunk,
+        key_function,
+        x,
+        shapes=[shape] * n_arrays,
+        dtypes=[dtype] * n_arrays,
+        chunkss=[chunks] * n_arrays,
+        target_stores=[None] * n_arrays,  # filled in by general_blockwise
+        axis=axis,
+    )
+
+
+def _unstack_chunk(*arrs, axis=0):
+    # unstack each array in arrs and yield all in turn
+    for arr in arrs:
+        for a in nxp.unstack(arr, axis=axis):
+            yield a

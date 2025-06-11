@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from types import TracebackType
+from typing import Any, Callable, ClassVar, Iterable, Optional
 
 from networkx import MultiDiGraph
 
-from cubed.vendor.rechunker.types import Config, StageFunction
+from cubed.vendor.rechunker.types import Config
 
 
 class DagExecutor:
@@ -22,7 +23,7 @@ Executor = DagExecutor
 class CubedPipeline:
     """Generalisation of rechunker ``Pipeline`` with extra attributes."""
 
-    function: StageFunction
+    function: Callable[..., Any]
     name: str
     mappable: Iterable
     config: Config
@@ -71,6 +72,9 @@ class TaskEndEvent:
     num_tasks: int = 1
     """Number of tasks that this event applies to (default 1)."""
 
+    result: Optional[Any] = None
+    """Return value of the task."""
+
     task_create_tstamp: Optional[float] = None
     """Timestamp of when the task was created by the client."""
 
@@ -92,6 +96,26 @@ class TaskEndEvent:
 
 class Callback:
     """Object to receive callback events during array computation."""
+
+    active: ClassVar[set["Callback"]] = set()
+
+    def __enter__(self):
+        self.register()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        self.unregister()
+
+    def register(self) -> None:
+        Callback.active.add(self)
+
+    def unregister(self) -> None:
+        Callback.active.remove(self)
 
     def on_compute_start(self, event):
         """Called when the computation is about to start.

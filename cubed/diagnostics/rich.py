@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 from contextlib import contextmanager
 
 from rich.console import RenderableType
@@ -17,6 +18,8 @@ from rich.text import Text
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback
+
+REFRESH_PER_SECOND = 10
 
 
 class RichProgressBar(Callback):
@@ -50,6 +53,7 @@ class RichProgressBar(Callback):
         self.logger_aware_progress = logger_aware_progress
         self.progress = progress
         self.progress_tasks = progress_tasks
+        self.last_updated = time.time()
 
     def on_compute_end(self, event):
         self.logger_aware_progress.__exit__(None, None, None)
@@ -58,8 +62,11 @@ class RichProgressBar(Callback):
         self.progress.start_task(self.progress_tasks[event.name])
 
     def on_task_end(self, event):
+        now = time.time()
+        refresh = now - self.last_updated > (1.0 / REFRESH_PER_SECOND)
+        self.last_updated = now
         self.progress.update(
-            self.progress_tasks[event.name], advance=event.num_tasks, refresh=True
+            self.progress_tasks[event.name], advance=event.num_tasks, refresh=refresh
         )
 
 

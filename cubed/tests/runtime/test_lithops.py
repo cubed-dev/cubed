@@ -8,9 +8,9 @@ from cubed.tests.runtime.utils import check_invocation_counts, deterministic_fai
 pytest.importorskip("lithops")
 
 from lithops.executors import LocalhostExecutor
+from lithops.retries import RetryingFunctionExecutor
 
 from cubed.runtime.executors.lithops import map_unordered
-from cubed.runtime.executors.lithops_retries import RetryingFunctionExecutor
 
 
 def run_test(function, input, retries, timeout=10, use_backups=False):

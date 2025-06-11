@@ -12,11 +12,12 @@ from numpy.testing import assert_array_equal
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.extensions.history import HistoryCallback
-from cubed.extensions.mem_warn import MemoryWarningCallback
-from cubed.extensions.rich import RichProgressBar
-from cubed.extensions.timeline import TimelineVisualizationCallback
-from cubed.extensions.tqdm import TqdmProgressBar
+from cubed.diagnostics import ProgressBar
+from cubed.diagnostics.history import HistoryCallback
+from cubed.diagnostics.mem_warn import MemoryWarningCallback
+from cubed.diagnostics.rich import RichProgressBar
+from cubed.diagnostics.timeline import TimelineVisualizationCallback
+from cubed.diagnostics.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.create import create_executor
 from cubed.tests.utils import (
@@ -115,6 +116,21 @@ def test_callbacks(spec, executor):
     assert task_counter.value == num_created_arrays + 4
 
 
+def test_callbacks_as_context_managers(spec, executor):
+    with TaskCounter() as task_counter, ProgressBar():
+        assert task_counter is not None
+        a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+        b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+        c = xp.add(a, b)
+        assert_array_equal(
+            c.compute(executor=executor),
+            np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+        )
+
+        num_created_arrays = 1
+        assert task_counter.value == num_created_arrays + 4
+
+
 def test_rich_progress_bar(spec, executor):
     # test indirectly by checking it doesn't cause a failure
     progress = RichProgressBar()
@@ -181,7 +197,7 @@ def test_resume(spec, executor):
     d = xp.negative(c)
 
     num_created_arrays = 2  # c, d
-    assert d.plan.num_tasks(optimize_graph=False) == num_created_arrays + 8
+    assert d.plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 8
 
     task_counter = TaskCounter()
     c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)
@@ -287,7 +303,7 @@ def test_check_runtime_memory_modal(spec, modal_executor):
     c = xp.add(a, b)
     with pytest.raises(
         ValueError,
-        match=r"Runtime memory \(2097152000\) is less than allowed_mem \(4000000000\)",
+        match=r"Runtime memory \(2000000000\) is less than allowed_mem \(4000000000\)",
     ):
         c.compute(executor=modal_executor)
 
@@ -315,3 +331,60 @@ def test_check_runtime_memory_processes(spec, executor):
 
     # OK if we use fewer workers
     c.compute(executor=executor, max_workers=max_workers // 2)
+
+
+COMPILE_FUNCTIONS = [lambda fn: fn]
+
+try:
+    from numba import jit as numba_jit
+
+    COMPILE_FUNCTIONS.append(numba_jit)
+except ModuleNotFoundError:
+    pass
+
+try:
+    if "jax" in os.environ.get("CUBED_BACKEND_ARRAY_API_MODULE", ""):
+        from jax import jit as jax_jit
+
+        COMPILE_FUNCTIONS.append(jax_jit)
+except ModuleNotFoundError:
+    pass
+
+
+@pytest.mark.parametrize("compile_function", COMPILE_FUNCTIONS)
+def test_check_compilation(spec, executor, compile_function):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=executor, compile_function=compile_function),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+    )
+
+
+def test_compilation_can_fail(spec, executor):
+    def compile_function(func):
+        raise NotImplementedError(f"Cannot compile {func}")
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(NotImplementedError) as excinfo:
+        c.compute(executor=executor, compile_function=compile_function)
+
+    assert "add" in str(excinfo.value), "Compile function was applied to add operation."
+
+
+def test_compilation_with_config_can_fail(spec, executor):
+    def compile_function(func, *, config=None):
+        raise NotImplementedError(f"Cannot compile {func} with {config}")
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    with pytest.raises(NotImplementedError) as excinfo:
+        c.compute(executor=executor, compile_function=compile_function)
+
+    assert "BlockwiseSpec" in str(
+        excinfo.value
+    ), "Compile function was applied with a config argument."

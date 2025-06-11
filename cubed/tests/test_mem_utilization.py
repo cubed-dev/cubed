@@ -4,7 +4,10 @@ import shutil
 import sys
 from functools import partial, reduce
 
+import pandas as pd
 import pytest
+
+pytest.importorskip("memray")
 
 import cubed
 import cubed.array_api as xp
@@ -12,10 +15,15 @@ import cubed.random
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import partial_reduce
 from cubed.core.optimization import multiple_inputs_optimize_dag
-from cubed.extensions.history import HistoryCallback
-from cubed.extensions.mem_warn import MemoryWarningCallback
+from cubed.diagnostics.history import HistoryCallback
+from cubed.diagnostics.mem_warn import MemoryWarningCallback
+from cubed.diagnostics.memray import MemrayCallback
 from cubed.runtime.create import create_executor
+from cubed.tests.test_core import sqrts
 from cubed.tests.utils import LITHOPS_LOCAL_CONFIG
+
+pd.set_option("display.max_columns", None)
+
 
 ALLOWED_MEM = 2_000_000_000
 
@@ -77,10 +85,29 @@ def test_index(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
-def test_index_step(tmp_path, spec, executor):
+def test_index_chunk_aligned(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
+    b = a[0:5000, :]
+    run_operation(tmp_path, executor, "index_chunk_aligned", b)
+
+
+@pytest.mark.slow
+def test_index_multiple_axes(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = a[1:, 1:]
+    run_operation(tmp_path, executor, "index_multiple_axes", b)
+
+
+@pytest.mark.slow
+def test_index_step(tmp_path, spec, executor):
+    # use 400MB chunks so that intermediate after indexing has 200MB chunks
+    a = cubed.random.random(
+        (20000, 10000), chunks=(10000, 5000), spec=spec
+    )  # 400MB chunks
     b = a[::2, :]
     run_operation(tmp_path, executor, "index_step", b)
 
@@ -107,7 +134,8 @@ def test_tril(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
-def test_add(tmp_path, spec, executor):
+@pytest.mark.parametrize("optimize_graph", [False, True])
+def test_add(tmp_path, spec, executor, optimize_graph):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
@@ -115,7 +143,7 @@ def test_add(tmp_path, spec, executor):
         (10000, 10000), chunks=(5000, 5000), spec=spec
     )  # 200MB chunks
     c = xp.add(a, b)
-    run_operation(tmp_path, executor, "add", c)
+    run_operation(tmp_path, executor, "add", c, optimize_graph=optimize_graph)
 
 
 @pytest.mark.slow
@@ -238,6 +266,35 @@ def test_concat(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+def test_flip(tmp_path, spec, executor):
+    # Note 'a' has one fewer element in axis=0 to force chunking to cross array boundaries
+    a = cubed.random.random(
+        (9999, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.flip(a, axis=0)
+    run_operation(tmp_path, executor, "flip", b)
+
+
+@pytest.mark.slow
+def test_flip_multiple_axes(tmp_path, spec, executor):
+    # Note 'a' has one fewer element in both axes to force chunking to cross array boundaries
+    a = cubed.random.random(
+        (9999, 9999), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.flip(a)
+    run_operation(tmp_path, executor, "flip_multiple_axes", b)
+
+
+@pytest.mark.slow
+def test_repeat(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.repeat(a, 3, axis=0)
+    run_operation(tmp_path, executor, "repeat", b)
+
+
+@pytest.mark.slow
 def test_reshape(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec
@@ -258,6 +315,15 @@ def test_stack(tmp_path, spec, executor):
     )  # 200MB chunks
     c = xp.stack((a, b), axis=0)
     run_operation(tmp_path, executor, "stack", c)
+
+
+@pytest.mark.slow
+def test_unstack(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (2, 10000, 10000), chunks=(2, 5000, 5000), spec=spec
+    )  # 400MB chunks
+    b, c = xp.unstack(a)
+    run_operation(tmp_path, executor, "unstack", b, c)
 
 
 # Searching Functions
@@ -302,20 +368,59 @@ def test_sum_partial_reduce(tmp_path, spec, executor):
     run_operation(tmp_path, executor, "sum_partial_reduce", b)
 
 
+# Linear algebra extension
+
+
+@pytest.mark.slow
+def test_qr(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (40000, 1000), chunks=(5000, 1000), spec=spec
+    )  # 40MB chunks
+    q, r = xp.linalg.qr(a)
+    # don't optimize graph so we use as much memory as possible (reading from Zarr)
+    run_operation(tmp_path, executor, "qr", q, r, optimize_graph=False)
+
+
+# Multiple outputs
+
+
+@pytest.mark.slow
+def test_sqrts(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (10000, 10000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b, c = sqrts(a)
+    # don't optimize graph so we use as much memory as possible (reading from Zarr)
+    run_operation(tmp_path, executor, "sqrts", b, c, optimize_graph=False)
+
+
 # Internal functions
 
 
-def run_operation(tmp_path, executor, name, result_array, *, optimize_function=None):
-    # result_array.visualize(f"cubed-{name}-unoptimized", optimize_graph=False)
-    # result_array.visualize(f"cubed-{name}", optimize_function=optimize_function)
+def run_operation(
+    tmp_path,
+    executor,
+    name,
+    *results,
+    optimize_graph=True,
+    optimize_function=None,
+):
+    # cubed.visualize(
+    #     *results, filename=f"cubed-{name}-unoptimized", optimize_graph=False, show_hidden=True
+    # )
+    # cubed.visualize(
+    #     *results, filename=f"cubed-{name}", optimize_function=optimize_function
+    # )
     hist = HistoryCallback()
     mem_warn = MemoryWarningCallback()
-    # use store=None to write to temporary zarr
-    cubed.to_zarr(
-        result_array,
-        store=None,
+    memray = MemrayCallback(mem_threshold=30_000_000)
+    # use None for each store to write to temporary zarr
+    cubed.store(
+        results,
+        (None,) * len(results),
         executor=executor,
-        callbacks=[hist, mem_warn],
+        callbacks=[hist, mem_warn, memray],
+        optimize_graph=optimize_graph,
         optimize_function=optimize_function,
     )
 
@@ -327,6 +432,13 @@ def run_operation(tmp_path, executor, name, result_array, *, optimize_function=N
 
     # check change in peak memory is no more than projected mem
     assert (df["peak_measured_mem_delta_mb_max"] <= df["projected_mem_mb"]).all()
+
+    # check memray peak memory allocated is no more than projected mem
+    for op_name, stats in memray.stats.items():
+        assert (
+            stats.peak_memory_allocated
+            <= df.query(f"name=='{op_name}'")["projected_mem_mb"].item() * 1_000_000
+        ), f"projected mem exceeds memray's peak allocated for {op_name}"
 
     # check projected_mem_utilization does not exceed 1
     # except on processes executor that runs multiple tasks in a process

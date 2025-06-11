@@ -12,6 +12,8 @@ from cubed.utils import (
     block_id_to_offset,
     broadcast_trick,
     extract_stack_summaries,
+    is_cloud_storage_path,
+    is_local_path,
     join_path,
     map_nested,
     memory_repr,
@@ -67,6 +69,26 @@ def test_join_path():
         join_path("http://host/a%20path", "subpath") == "http://host/a%20path/subpath"
     )
     assert join_path("http://host/a path", "subpath") == "http://host/a%20path/subpath"
+
+
+def test_is_local_path():
+    assert is_local_path("relative_path/path")
+    assert is_local_path("/absolute_path/path")
+    assert is_local_path("file:relative_path/path")
+    assert is_local_path("file://absolute_path/path")
+    assert is_local_path("file:///absolute_path/path")
+    assert not is_local_path("s3://host/path")
+    assert not is_local_path("gs://host/path")
+
+
+def test_is_cloud_storage_path():
+    assert not is_cloud_storage_path("relative_path/path")
+    assert not is_cloud_storage_path("/absolute_path/path")
+    assert not is_cloud_storage_path("file:relative_path/path")
+    assert not is_cloud_storage_path("file://absolute_path/path")
+    assert not is_cloud_storage_path("file:///absolute_path/path")
+    assert is_cloud_storage_path("s3://host/path")
+    assert is_cloud_storage_path("gs://host/path")
 
 
 def test_memory_repr():
@@ -125,7 +147,9 @@ def test_map_nested_iterators():
     out = map_nested(inc, iter([1, 2]))
     assert isinstance(out, map)
     assert count == 0
-    assert list(out) == [2, 3]
+    assert next(out) == 2
+    assert count == 1
+    assert next(out) == 3
     assert count == 2
 
     # reset count
@@ -138,7 +162,9 @@ def test_map_nested_iterators():
     out = out[0]
     assert isinstance(out, map)
     assert count == 0
-    assert list(out) == [2, 3]
+    assert next(out) == 2
+    assert count == 1
+    assert next(out) == 3
     assert count == 2
 
     # reset count
@@ -151,12 +177,16 @@ def test_map_nested_iterators():
     out0 = out[0]
     assert isinstance(out0, map)
     assert count == 0
-    assert list(out0) == [2, 3]
+    assert next(out0) == 2
+    assert count == 1
+    assert next(out0) == 3
     assert count == 2
     out1 = out[1]
     assert isinstance(out1, map)
     assert count == 2
-    assert list(out1) == [4, 5]
+    assert next(out1) == 4
+    assert count == 3
+    assert next(out1) == 5
     assert count == 4
 
 

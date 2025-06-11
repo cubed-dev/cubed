@@ -4,23 +4,25 @@ from functools import partial
 
 import pytest
 
+from cubed.runtime.asyncio import async_map_unordered
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
 pytest.importorskip("dask.distributed")
 
 from dask.distributed import Client
 
-from cubed.runtime.executors.dask import map_unordered
+from cubed.runtime.executors.dask import dask_create_futures_func
 
 
 async def run_test(function, input, retries, use_backups=False, batch_size=None):
     outputs = set()
     async with Client(asynchronous=True) as client:
-        async for output in map_unordered(
-            client,
-            function,
+        create_futures_func = dask_create_futures_func(
+            client, function, retries=retries
+        )
+        async for output in async_map_unordered(
+            create_futures_func,
             input,
-            retries=retries,
             use_backups=use_backups,
             batch_size=batch_size,
         ):

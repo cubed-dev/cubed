@@ -1,6 +1,6 @@
 import dataclasses
 import math
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import tensorstore
@@ -73,7 +73,7 @@ def encode_dtype(d):
         return d.descr
 
 
-def get_metadata(dtype, chunks):
+def get_metadata(dtype, chunks, compressor):
     metadata = {}
     if dtype is not None:
         dtype = np.dtype(dtype)
@@ -82,6 +82,8 @@ def get_metadata(dtype, chunks):
         if isinstance(chunks, int):
             chunks = (chunks,)
         metadata["chunks"] = chunks
+    if compressor != "default":
+        metadata["compressor"] = compressor
     return metadata
 
 
@@ -93,6 +95,7 @@ def open_tensorstore_array(
     dtype: Optional[T_DType] = None,
     chunks: Optional[T_RegularChunks] = None,
     path: Optional[str] = None,
+    compressor: Union[dict, str, None] = "default",
     **kwargs,
 ):
     store = str(store)  # TODO: check if Path or str
@@ -121,7 +124,7 @@ def open_tensorstore_array(
         raise ValueError(f"Mode not supported: {mode}")
 
     if dtype is None or not hasattr(dtype, "fields") or dtype.fields is None:
-        metadata = get_metadata(dtype, chunks)
+        metadata = get_metadata(dtype, chunks, compressor)
         if metadata:
             spec["metadata"] = metadata
 
@@ -140,7 +143,7 @@ def open_tensorstore_array(
             spec["path"] = field_path
 
             field_dtype, _ = dtype.fields[field]
-            metadata = get_metadata(field_dtype, chunks)
+            metadata = get_metadata(field_dtype, chunks, compressor)
             if metadata:
                 spec["metadata"] = metadata
 

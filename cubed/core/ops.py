@@ -1,11 +1,12 @@
 import builtins
 import math
 import numbers
+from dataclasses import dataclass
 from functools import partial
 from itertools import product
 from numbers import Integral, Number
 from operator import add
-from typing import TYPE_CHECKING, Any, Callable, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Sequence, Tuple, Union
 from warnings import warn
 
 import ndindex
@@ -23,20 +24,19 @@ from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.blockwise import key_to_slices
+from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
-from cubed.utils import (
-    _concatenate2,
-    array_memory,
-    get_item,
-    offset_to_block_id,
-    to_chunksize,
-)
+from cubed.types import T_RegularChunks, T_Shape
+from cubed.utils import array_memory, array_size, get_item
+from cubed.utils import numblocks as compute_numblocks
+from cubed.utils import offset_to_block_id, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
-from cubed.vendor.dask.blockwise import broadcast_dimensions, lol_product
+from cubed.vendor.dask.blockwise import broadcast_dimensions
 from cubed.vendor.dask.utils import has_keyword
+from cubed.vendor.rechunker.algorithm import multistage_rechunking_plan
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array
@@ -288,11 +288,14 @@ def blockwise(
 
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
-    fusable = kwargs.pop("fusable", True)
+    fusable_with_predecessors = kwargs.pop("fusable_with_predecessors", True)
+    fusable_with_successors = kwargs.pop("fusable_with_successors", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
+    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
+    buffer_copies = get_buffer_copies(spec)
     if target_store is None:
         target_store = new_temp_path(name=name, spec=spec)
     op = primitive_blockwise(
@@ -305,15 +308,19 @@ def blockwise(
         target_store=target_store,
         target_path=target_path,
         storage_options=spec.storage_options,
+        compressor=spec.zarr_compressor,
         shape=shape,
         dtype=dtype,
         chunks=_chunks,
         new_axes=new_axes,
         in_names=in_names,
         out_name=name,
+        buffer_copies=buffer_copies,
         extra_func_kwargs=extra_func_kwargs,
-        fusable=fusable,
+        fusable_with_predecessors=fusable_with_predecessors,
+        fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -333,14 +340,95 @@ def general_blockwise(
     func,
     key_function,
     *arrays,
-    shape,
-    dtype,
-    chunks,
-    target_store=None,
-    target_path=None,
+    shapes,
+    dtypes,
+    chunkss,
+    target_stores=None,
+    target_paths=None,
     extra_func_kwargs=None,
     **kwargs,
-) -> "Array":
+) -> Union["Array", Tuple["Array", ...]]:
+    if has_keyword(func, "block_id"):
+        from cubed.array_api.creation_functions import offsets_virtual_array
+
+        # Create an array of index offsets with the same chunk structure as the args,
+        # which we convert to block ids (chunk coordinates) later.
+        array0 = arrays[0]
+        # note that primitive general_blockwise checks that all chunkss have same numblocks
+        numblocks = compute_numblocks(chunkss[0])
+        offsets = offsets_virtual_array(numblocks, array0.spec)
+        new_arrays = arrays + (offsets,)
+
+        def key_function_with_offset(key_function):
+            def wrap(out_key):
+                out_coords = out_key[1:]
+                offset_in_key = ((offsets.name,) + out_coords,)
+                return key_function(out_key) + offset_in_key
+
+            return wrap
+
+        def func_with_block_id(func):
+            def wrap(*a, **kw):
+                offset = int(a[-1])  # convert from 0-d array
+                block_id = offset_to_block_id(offset, numblocks)
+                return func(*a[:-1], block_id=block_id, **kw)
+
+            return wrap
+
+        function_nargs = kwargs.pop("function_nargs", None)
+        if function_nargs is not None:
+            function_nargs = function_nargs + 1  # for offsets array
+        num_input_blocks = kwargs.pop("num_input_blocks", None)
+        if num_input_blocks is not None:
+            num_input_blocks = num_input_blocks + (1,)  # for offsets array
+        iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
+        if iterable_input_blocks is not None:
+            iterable_input_blocks = iterable_input_blocks + (
+                False,
+            )  # for offsets array
+
+        return _general_blockwise(
+            func_with_block_id(func),
+            key_function_with_offset(key_function),
+            *new_arrays,
+            shapes=shapes,
+            dtypes=dtypes,
+            chunkss=chunkss,
+            target_stores=target_stores,
+            target_paths=target_paths,
+            extra_func_kwargs=extra_func_kwargs,
+            function_nargs=function_nargs,
+            num_input_blocks=num_input_blocks,
+            iterable_input_blocks=iterable_input_blocks,
+            **kwargs,
+        )
+
+    return _general_blockwise(
+        func,
+        key_function,
+        *arrays,
+        shapes=shapes,
+        dtypes=dtypes,
+        chunkss=chunkss,
+        target_stores=target_stores,
+        target_paths=target_paths,
+        extra_func_kwargs=extra_func_kwargs,
+        **kwargs,
+    )
+
+
+def _general_blockwise(
+    func,
+    key_function,
+    *arrays,
+    shapes,
+    dtypes,
+    chunkss,
+    target_stores=None,
+    target_paths=None,
+    extra_func_kwargs=None,
+    **kwargs,
+) -> Union["Array", Tuple["Array", ...]]:
     assert len(arrays) > 0
 
     # replace arrays with zarr arrays
@@ -353,11 +441,24 @@ def general_blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     num_input_blocks = kwargs.pop("num_input_blocks", None)
+    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
-    name = gensym()
+    op_name = kwargs.pop("op_name", "blockwise")
+
     spec = check_array_specs(arrays)
-    if target_store is None:
-        target_store = new_temp_path(name=name, spec=spec)
+    buffer_copies = get_buffer_copies(spec)
+
+    if isinstance(target_stores, list):  # multiple outputs
+        name = [gensym() for _ in range(len(target_stores))]
+        target_stores = [
+            ts if ts is not None else new_temp_path(name=n, spec=spec)
+            for n, ts in zip(name, target_stores)
+        ]
+    else:  # single output
+        name = gensym()
+        if target_stores is None:
+            target_stores = [new_temp_path(name=name, spec=spec)]
+
     op = primitive_general_blockwise(
         func,
         key_function,
@@ -365,20 +466,23 @@ def general_blockwise(
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         extra_projected_mem=extra_projected_mem,
-        target_store=target_store,
-        target_path=target_path,
+        buffer_copies=buffer_copies,
+        target_stores=target_stores,
+        target_paths=target_paths,
         storage_options=spec.storage_options,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        compressor=spec.zarr_compressor,
+        shapes=shapes,
+        dtypes=dtypes,
+        chunkss=chunkss,
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
         name,
-        "blockwise",
+        op_name,
         op.target_array,
         op,
         False,
@@ -386,7 +490,10 @@ def general_blockwise(
     )
     from cubed.array_api import Array
 
-    return Array(name, op.target_array, spec, plan)
+    if isinstance(op.target_array, list):  # multiple outputs
+        return tuple(Array(n, ta, spec, plan) for n, ta in zip(name, op.target_array))
+    else:  # single output
+        return Array(name, op.target_array, spec, plan)
 
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
@@ -467,43 +574,60 @@ def index(x, key):
         return (c // ia.step) * ia.step
 
     shape = idx.newshape(x.shape)
+
     if shape == x.shape:
-        # no op case
-        return x
-    dtype = x.dtype
-    chunks = tuple(
-        chunk_len_for_indexer(ia, c)
-        for ia, c in zip(idx.args, x.chunksize)
-        if not isinstance(ia, ndindex.Integer)
-    )
+        # no op case (except possibly newaxis applied below)
+        out = x
+    elif array_size(shape) == 0:
+        # empty output case
+        from cubed.array_api.creation_functions import empty
 
-    target_chunks = normalize_chunks(chunks, shape, dtype=dtype)
+        out = empty(shape, dtype=x.dtype, spec=x.spec)
+    else:
+        dtype = x.dtype
+        chunks = tuple(
+            chunk_len_for_indexer(ia, c)
+            for ia, c in zip(idx.args, x.chunksize)
+            if not isinstance(ia, ndindex.Integer)
+        )
 
-    # memory allocated by reading one chunk from input array
-    # note that although the output chunk will overlap multiple input chunks, zarr will
-    # read the chunks in series, reusing the buffer
-    extra_projected_mem = x.chunkmem
+        # this is the same as chunks, except it has the same number of dimensions as the input
+        out_chunksizes = tuple(
+            chunk_len_for_indexer(ia, c) if not isinstance(ia, ndindex.Integer) else 1
+            for ia, c in zip(idx.args, x.chunksize)
+        )
 
-    out = map_direct(
-        _read_index_chunk,
-        x,
-        shape=shape,
-        dtype=dtype,
-        chunks=target_chunks,
-        extra_projected_mem=extra_projected_mem,
-        target_chunks=target_chunks,
-        selection=selection,
-    )
+        target_chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
-    # merge chunks for any dims with step > 1 so they are
-    # the same size as the input (or slightly smaller due to rounding)
-    merged_chunks = tuple(
-        merged_chunk_len_for_indexer(ia, c)
-        for ia, c in zip(idx.args, x.chunksize)
-        if not isinstance(ia, ndindex.Integer)
-    )
-    if chunks != merged_chunks:
-        out = merge_chunks(out, merged_chunks)
+        # use map_selection (which uses general_blockwise) to allow more opportunities for optimization than map_direct
+
+        def selection_function(out_key):
+            out_coords = out_key[1:]
+            return _target_chunk_selection(target_chunks, out_coords, selection)
+
+        max_num_input_blocks = _index_num_input_blocks(
+            idx, x.chunksize, out_chunksizes, x.numblocks
+        )
+
+        out = map_selection(
+            None,  # no function to apply after selection
+            selection_function,
+            x,
+            shape,
+            x.dtype,
+            target_chunks,
+            max_num_input_blocks=max_num_input_blocks,
+        )
+
+        # merge chunks for any dims with step > 1 so they are
+        # the same size as the input (or slightly smaller due to rounding)
+        merged_chunks = tuple(
+            merged_chunk_len_for_indexer(ia, c)
+            for ia, c in zip(idx.args, x.chunksize)
+            if not isinstance(ia, ndindex.Integer)
+        )
+        if chunks != merged_chunks:
+            out = merge_chunks(out, merged_chunks)
 
     for axis in where_newaxis:
         from cubed.array_api.manipulation_functions import expand_dims
@@ -513,21 +637,91 @@ def index(x, key):
     return out
 
 
-def _read_index_chunk(
-    x,
-    *arrays,
-    target_chunks=None,
-    selection=None,
-    block_id=None,
+def _index_num_input_blocks(
+    idx: ndindex.Tuple, in_chunksizes, out_chunksizes, numblocks
 ):
-    array = arrays[0].zarray
-    idx = block_id
-    # Note that since we only have a maximum of one integer array index
-    # we don't need to use Zarr orthogonal indexing, since it is
-    # "available directly on the array" according to
-    # https://zarr.readthedocs.io/en/stable/tutorial.html#orthogonal-indexing
-    out = array[_target_chunk_selection(target_chunks, idx, selection)]
-    out = numpy_array_to_backend_array(out)
+    num = 1
+    for ia, c, oc, nb in zip(idx.args, in_chunksizes, out_chunksizes, numblocks):
+        if isinstance(ia, ndindex.Integer) or nb == 1:
+            pass  # single block
+        elif isinstance(ia, ndindex.Slice):
+            if (ia.start // c) == ((ia.stop - 1) // c):
+                pass  # within same block
+            elif ia.start % c != 0:
+                num *= 2  # doesn't start on chunk boundary
+            elif ia.step is not None and c % ia.step != 0 and oc > 1:
+                # step is not a multiple of chunk size, and output chunks have more than one element
+                # so some output chunks will access two input chunks
+                num *= 2
+        elif isinstance(ia, ndindex.IntegerArray):
+            # in the worse case, elements could be retrieved from all blocks
+            # TODO: improve to calculate the actual max input blocks
+            num *= nb
+        else:
+            raise NotImplementedError(
+                "Only integer, slice, or int array indexes are supported."
+            )
+    return num
+
+
+def _create_zarr_indexer(selection, shape, chunks):
+    if zarr.__version__[0] == "3":
+        from zarr.core.chunk_grids import RegularChunkGrid
+        from zarr.core.indexing import OrthogonalIndexer
+
+        return OrthogonalIndexer(selection, shape, RegularChunkGrid(chunk_shape=chunks))
+    else:
+        from zarr.indexing import OrthogonalIndexer
+
+        return OrthogonalIndexer(selection, ZarrArrayIndexingAdaptor(shape, chunks))
+
+
+@dataclass
+class ZarrArrayIndexingAdaptor:
+    _shape: T_Shape
+    _chunks: T_RegularChunks
+
+    @classmethod
+    def from_zarr_array(cls, zarray):
+        return cls(zarray.shape, zarray.chunks)
+
+
+def _assemble_index_chunk(
+    arrays,
+    dtype=None,
+    func=None,
+    selection_function=None,
+    in_shape=None,
+    in_chunksize=None,
+    block_id=None,
+    **kwargs,
+):
+    assert not isinstance(
+        arrays, list
+    ), "index expects an iterator of array blocks, not a list"
+
+    # compute the selection on x required to get the relevant chunk for out_coords
+    out_coords = block_id
+    in_sel = selection_function(("out",) + out_coords)
+
+    # use a Zarr indexer to convert this to input coordinates
+    indexer = _create_zarr_indexer(in_sel, in_shape, in_chunksize)
+
+    shape = indexer.shape
+    out = np.empty(shape, dtype=dtype)
+
+    if array_size(shape) > 0:
+        _, lchunk_selection, lout_selection, *_ = zip(*indexer)
+        for ai, chunk_select, out_select in zip(
+            arrays, lchunk_selection, lout_selection
+        ):
+            out[out_select] = ai[chunk_select]
+
+    if func is not None:
+        if has_keyword(func, "block_id"):
+            out = func(out, block_id=block_id, **kwargs)
+        else:
+            out = func(out, **kwargs)
     return out
 
 
@@ -565,6 +759,71 @@ def _target_chunk_selection(target_chunks, idx, selection):
     return tuple(sel)
 
 
+def map_selection(
+    func,
+    selection_function,
+    x,
+    shape,
+    dtype,
+    chunks,
+    max_num_input_blocks,
+    **kwargs,
+) -> "Array":
+    """
+    Apply a function to selected subsets of an input array using standard NumPy indexing notation.
+
+    Parameters
+    ----------
+    func : callable
+        Function to apply to every block to produce the output array.
+        Must accept ``block_id`` as a keyword argument (with same meaning as for ``map_blocks``).
+    selection_function : callable
+        A function that maps an output chunk key to one or more selections on the input array.
+    x: Array
+        The input array.
+    shape : tuple
+        Shape of the output array.
+    dtype : np.dtype
+        The ``dtype`` of the output array.
+    chunks : tuple
+        Chunk shape of blocks in the output array.
+    max_num_input_blocks : int
+        The maximum number of input blocks read from the input array.
+    """
+
+    def key_function(out_key):
+        # compute the selection on x required to get the relevant chunk for out_key
+        in_sel = selection_function(out_key)
+
+        # use a Zarr indexer to convert selection to input coordinates
+        indexer = _create_zarr_indexer(in_sel, x.shape, x.chunksize)
+
+        return (iter(tuple((x.name,) + cp.chunk_coords for cp in indexer)),)
+
+    num_input_blocks = (max_num_input_blocks,)
+    iterable_input_blocks = (True,)
+
+    out = general_blockwise(
+        _assemble_index_chunk,
+        key_function,
+        x,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
+        extra_func_kwargs=dict(func=func, dtype=x.dtype),
+        num_input_blocks=num_input_blocks,
+        iterable_input_blocks=iterable_input_blocks,
+        selection_function=selection_function,
+        in_shape=x.shape,
+        in_chunksize=x.chunksize,
+        **kwargs,
+    )
+    from cubed import Array
+
+    assert isinstance(out, Array)  # single output
+    return out
+
+
 def map_blocks(
     func,
     *args: "Array",
@@ -576,6 +835,13 @@ def map_blocks(
     **kwargs,
 ) -> "Array":
     """Apply a function to corresponding blocks from multiple input arrays."""
+
+    from cubed.array_api.creation_functions import asarray
+
+    # Coerce all args to Cubed arrays
+    specs = [a.spec for a in args if hasattr(a, "spec")]
+    spec0 = specs[0] if len(specs) > 0 else spec
+    args = tuple(asarray(a, spec=spec0) for a in args)
 
     # Handle the case where an array is created by calling `map_blocks` with no input arrays
     if len(args) == 0:
@@ -726,6 +992,11 @@ def map_direct(
         Specification for the new array. If not specified, the one from the first side input
         (`args`) will be used (if any).
     """
+    warn(
+        "`map_direct` is pending deprecation, please use `map_selection` instead",
+        PendingDeprecationWarning,
+        stacklevel=2,
+    )
 
     from cubed.array_api.creation_functions import empty_virtual_array
 
@@ -751,17 +1022,47 @@ def map_direct(
         chunks=chunks,
         extra_source_arrays=args,
         extra_projected_mem=extra_projected_mem,
-        fusable=False,  # don't allow fusion with predecessors since side inputs are not accounted for
+        fusable_with_predecessors=False,  # don't allow fusion with predecessors since side inputs are not accounted for
         **kwargs,
     )
 
 
-def rechunk(x, chunks, target_store=None):
+def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=False):
+    """Change the chunking of an array without changing its shape or data.
+
+    Parameters
+    ----------
+    chunks : tuple
+        The desired chunks of the array after rechunking.
+
+    Returns
+    -------
+    cubed.Array
+        An array with the desired chunks.
+    """
+    if use_new_impl:
+        return rechunk_new(x, chunks, min_mem=min_mem)
+
+    if isinstance(chunks, dict):
+        chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
+        for i in range(x.ndim):
+            if i not in chunks:
+                chunks[i] = x.chunks[i]
+            elif chunks[i] is None:
+                chunks[i] = x.chunks[i]
+    if isinstance(chunks, (tuple, list)):
+        chunks = tuple(lc if lc is not None else rc for lc, rc in zip(chunks, x.chunks))
+
     normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
     if x.chunks == normalized_chunks:
         return x
     # normalizing takes care of dict args for chunks
     target_chunks = to_chunksize(normalized_chunks)
+
+    # merge chunks special case
+    if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
+        return merge_chunks(x, target_chunks)
+
     name = gensym()
     spec = x.spec
     if target_store is None:
@@ -818,6 +1119,117 @@ def rechunk(x, chunks, target_store=None):
         return Array(name, op2.target_array, spec, plan2)
 
 
+def rechunk_new(x, chunks, *, min_mem=None):
+    """Change the chunking of an array without changing its shape or data.
+
+    Parameters
+    ----------
+    chunks : tuple
+        The desired chunks of the array after rechunking.
+
+    Returns
+    -------
+    cubed.Array
+        An array with the desired chunks.
+    """
+    out = x
+    for copy_chunks, target_chunks in _rechunk_plan(x, chunks, min_mem=min_mem):
+        out = _rechunk(out, copy_chunks, target_chunks)
+    return out
+
+
+def _rechunk_plan(x, chunks, *, min_mem=None):
+    if isinstance(chunks, dict):
+        chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
+        for i in range(x.ndim):
+            if i not in chunks:
+                chunks[i] = x.chunks[i]
+            elif chunks[i] is None:
+                chunks[i] = x.chunks[i]
+    if isinstance(chunks, (tuple, list)):
+        chunks = tuple(lc if lc is not None else rc for lc, rc in zip(chunks, x.chunks))
+
+    normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+    if x.chunks == normalized_chunks:
+        return x
+    # normalizing takes care of dict args for chunks
+    target_chunks = to_chunksize(normalized_chunks)
+
+    # merge chunks special case
+    if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
+        return merge_chunks(x, target_chunks)
+
+    spec = x.spec
+    source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
+
+    # rechunker doesn't take account of uncompressed and compressed copies of the
+    # input and output array chunk/selection, so adjust appropriately:
+    #  1 input array plus copies to read that array from storage,
+    #  1 array for processing,
+    #  1 output array plus copies to write that array to storage
+    buffer_copies = get_buffer_copies(spec)
+    total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
+    if min_mem is None:
+        min_mem = min(rechunker_max_mem // 20, x.nbytes)
+    stages = multistage_rechunking_plan(
+        shape=x.shape,
+        source_chunks=source_chunks,
+        target_chunks=target_chunks,
+        itemsize=x.dtype.itemsize,
+        min_mem=min_mem,
+        max_mem=rechunker_max_mem,
+    )
+
+    for i, stage in enumerate(stages):
+        last_stage = i == len(stages) - 1
+        read_chunks, int_chunks, write_chunks = stage
+
+        # Use target chunks for last stage
+        target_chunks_ = target_chunks if last_stage else write_chunks
+
+        if read_chunks == write_chunks:
+            yield read_chunks, target_chunks_
+        else:
+            yield read_chunks, int_chunks
+            yield write_chunks, target_chunks_
+
+
+def _rechunk(x, copy_chunks, target_chunks):
+    # rechunk x so that its target store has target_chunks, using copy_chunks as the size of chunks for copying from source to target
+
+    normalized_copy_chunks = normalize_chunks(copy_chunks, x.shape, dtype=x.dtype)
+    copy_chunks = to_chunksize(normalized_copy_chunks)
+
+    copy_chunks_mem = array_memory(x.dtype, copy_chunks)
+
+    target_chunks = normalize_chunks(target_chunks, x.shape, dtype=x.dtype)
+    target_chunks = to_chunksize(target_chunks)
+
+    def selection_function(out_key):
+        out_coords = out_key[1:]
+        return get_item(normalized_copy_chunks, out_coords)
+
+    max_num_input_blocks = math.prod(
+        math.ceil(c1 / c0) for c0, c1 in zip(x.chunksize, copy_chunks)
+    )
+
+    return map_selection(
+        None,  # no function to apply after selection
+        selection_function,
+        x,
+        x.shape,
+        x.dtype,
+        normalized_copy_chunks,
+        max_num_input_blocks=max_num_input_blocks,
+        target_chunks_=target_chunks,
+        fusable_with_predecessors=False,
+        fusable_with_successors=False,
+        op_name="rechunk",
+        extra_projected_mem=copy_chunks_mem,
+    )
+
+
 def merge_chunks(x, chunks):
     """Merge multiple chunks into one."""
     target_chunksize = chunks
@@ -831,203 +1243,27 @@ def merge_chunks(x, chunks):
         )
 
     target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
-    return map_direct(
-        _copy_chunk,
-        x,
-        shape=x.shape,
-        dtype=x.dtype,
-        chunks=target_chunks,
-        extra_projected_mem=0,
-        target_chunks=target_chunks,
-    )
 
-
-def _copy_chunk(e, x, target_chunks=None, block_id=None):
-    if isinstance(x.zarray, dict):
-        return {
-            k: numpy_array_to_backend_array(v[get_item(target_chunks, block_id)])
-            for k, v in x.zarray.items()
-        }
-    out = x.zarray[get_item(target_chunks, block_id)]
-    out = numpy_array_to_backend_array(out)
-    return out
-
-
-def merge_chunks_new(x, chunks):
-    # new implementation that uses general_blockwise rather than map_direct
-    target_chunksize = chunks
-    if len(target_chunksize) != x.ndim:
-        raise ValueError(
-            f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
-        )
-    if not all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunksize)):
-        raise ValueError(
-            f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
-        )
-
-    target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
-    axes = [
-        i for (i, (c0, c1)) in enumerate(zip(x.chunksize, target_chunksize)) if c0 != c1
-    ]
-
-    def key_function(out_key):
+    def selection_function(out_key):
         out_coords = out_key[1:]
+        return get_item(target_chunks, out_coords)
 
-        in_keys = []
-        for i, (c0, c1) in enumerate(zip(x.chunksize, target_chunksize)):
-            k = c1 // c0  # number of blocks to merge in axis i
-            if k == 1:
-                in_keys.append(out_coords[i])
-            else:
-                start = out_coords[i] * k
-                stop = min(start + k, x.numblocks[i])
-                in_keys.append(list(range(start, stop)))
-
-        # return a tuple with a single item that is the list of input keys to be merged
-        return (lol_product((x.name,), in_keys),)
-
-    num_input_blocks = int(
-        np.prod([c1 // c0 for (c0, c1) in zip(x.chunksize, target_chunksize)])
+    max_num_input_blocks = math.prod(
+        c1 // c0 for c0, c1 in zip(x.chunksize, target_chunksize)
     )
 
-    return general_blockwise(
-        _concatenate2,
-        key_function,
+    return map_selection(
+        None,  # no function to apply after selection
+        selection_function,
         x,
-        shape=x.shape,
-        dtype=x.dtype,
-        chunks=target_chunks,
-        extra_projected_mem=0,
-        num_input_blocks=(num_input_blocks,),
-        axes=axes,
+        x.shape,
+        x.dtype,
+        target_chunks,
+        max_num_input_blocks=max_num_input_blocks,
     )
 
 
 def reduction(
-    x: "Array",
-    func,
-    combine_func=None,
-    aggegrate_func=None,  # typo, will removed in next release
-    aggregate_func=None,
-    axis=None,
-    intermediate_dtype=None,
-    dtype=None,
-    keepdims=False,
-    use_new_impl=True,
-    split_every=None,
-    extra_func_kwargs=None,
-) -> "Array":
-    """Apply a function to reduce an array along one or more axes."""
-    if aggegrate_func is not None and aggregate_func is None:
-        warn(
-            "`aggegrate_func` is deprecated, please use `aggregate_func` instead",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        aggregate_func = aggegrate_func
-    if use_new_impl:
-        return reduction_new(
-            x,
-            func,
-            combine_func=combine_func,
-            aggregate_func=aggregate_func,
-            axis=axis,
-            intermediate_dtype=intermediate_dtype,
-            dtype=dtype,
-            keepdims=keepdims,
-            split_every=split_every,
-            extra_func_kwargs=extra_func_kwargs,
-        )
-    if combine_func is None:
-        combine_func = func
-    if axis is None:
-        axis = tuple(range(x.ndim))
-    if isinstance(axis, Integral):
-        axis = (axis,)
-    axis = validate_axis(axis, x.ndim)
-    if intermediate_dtype is None:
-        intermediate_dtype = dtype
-
-    inds = tuple(range(x.ndim))
-
-    result = x
-    allowed_mem = x.spec.allowed_mem
-    max_mem = allowed_mem - x.spec.reserved_mem
-
-    # reduce initial chunks
-    args = (result, inds)
-    adjust_chunks = {
-        i: (1,) * len(c) if i in axis else c for i, c in enumerate(result.chunks)
-    }
-    result = blockwise(
-        func,
-        inds,
-        *args,
-        axis=axis,
-        keepdims=True,
-        dtype=intermediate_dtype,
-        adjust_chunks=adjust_chunks,
-        extra_func_kwargs=extra_func_kwargs,
-    )
-
-    # merge/reduce along axis in multiple rounds until there's a single block in each reduction axis
-    while any(n > 1 for i, n in enumerate(result.numblocks) if i in axis):
-        # merge along axis
-        target_chunks = list(result.chunksize)
-        chunk_mem = array_memory(intermediate_dtype, result.chunksize)
-        for i, s in enumerate(result.shape):
-            if i in axis:
-                assert result.chunksize[i] == 1  # result of reduction
-                if len(axis) > 1:
-                    # multi-axis: don't exceed original chunksize in any reduction axis
-                    # TODO: improve to use up to max_mem
-                    target_chunks[i] = min(s, x.chunksize[i])
-                else:
-                    # single axis: see how many result chunks fit in max_mem
-                    # factor of 4 is memory for {compressed, uncompressed} x {input, output}
-                    target_chunk_size = (max_mem - chunk_mem) // (chunk_mem * 4)
-                    if target_chunk_size <= 1:
-                        raise ValueError(
-                            f"Not enough memory for reduction. Increase allowed_mem ({allowed_mem}) or decrease chunk size"
-                        )
-                    target_chunks[i] = min(s, target_chunk_size)
-        _target_chunks = tuple(target_chunks)
-        result = merge_chunks(result, _target_chunks)
-
-        # reduce chunks (if any axis chunksize is > 1)
-        if any(s > 1 for i, s in enumerate(result.chunksize) if i in axis):
-            args = (result, inds)
-            adjust_chunks = {
-                i: (1,) * len(c) if i in axis else c
-                for i, c in enumerate(result.chunks)
-            }
-            result = blockwise(
-                combine_func,
-                inds,
-                *args,
-                axis=axis,
-                keepdims=True,
-                dtype=intermediate_dtype,
-                adjust_chunks=adjust_chunks,
-                extra_func_kwargs=extra_func_kwargs,
-            )
-
-    if aggregate_func is not None:
-        result = map_blocks(aggregate_func, result, dtype=dtype)
-
-    if not keepdims:
-        axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)
-        if len(axis_to_squeeze) > 0:
-            result = squeeze(result, axis_to_squeeze)
-
-    from cubed.array_api import astype
-
-    result = astype(result, dtype, copy=False)
-
-    return result
-
-
-def reduction_new(
     x: "Array",
     func,
     combine_func=None,
@@ -1118,7 +1354,9 @@ def reduction_new(
 
     # aggregate final chunks
     if aggregate_func is not None:
-        result = map_blocks(aggregate_func, result, dtype=dtype)
+        result = map_blocks(
+            partial(aggregate_func, **(extra_func_kwargs or {})), result, dtype=dtype
+        )
 
     if not keepdims:
         axis_to_squeeze = tuple(i for i in axis if result.shape[i] == 1)
@@ -1209,12 +1447,12 @@ def partial_reduce(
     axis = tuple(ax for ax in split_every.keys())
     combine_sizes = combine_sizes or {}
     combine_sizes = {k: combine_sizes.get(k, 1) for k in axis}
-    chunks = [
+    chunks = tuple(
         (combine_sizes[i],) * math.ceil(len(c) / split_every[i])
         if i in split_every
         else c
         for (i, c) in enumerate(x.chunks)
-    ]
+    )
     shape = tuple(map(sum, chunks))
 
     def key_function(out_key):
@@ -1243,11 +1481,12 @@ def partial_reduce(
         _partial_reduce,
         key_function,
         x,
-        shape=shape,
-        dtype=dtype,
-        chunks=chunks,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
         extra_projected_mem=extra_projected_mem,
         num_input_blocks=(sum(split_every.values()),),
+        iterable_input_blocks=(True,),
         reduce_func=func,
         initial_func=initial_func,
         axis=axis,
@@ -1282,9 +1521,7 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
     return result
 
 
-def arg_reduction(
-    x, /, arg_func, axis=None, *, keepdims=False, use_new_impl=True, split_every=None
-):
+def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None):
     """A reduction that returns the array indexes, not the values."""
     dtype = nxp.int64  # index data type
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
@@ -1310,7 +1547,6 @@ def arg_reduction(
         intermediate_dtype=intermediate_dtype,
         dtype=dtype,
         keepdims=keepdims,
-        use_new_impl=use_new_impl,
         split_every=split_every,
     )
 
@@ -1411,7 +1647,7 @@ def unify_chunks(*args: "Array", **kwargs):
             if chunks != a.chunks and all(a.chunks):
                 # this will raise if chunks are not regular
                 # but this should never happen with smallest_blockdim
-                chunksize = to_chunksize(chunks)
+                chunksize = to_chunksize(chunks)  # type: ignore
                 arrays.append(rechunk(a, chunksize))
             else:
                 arrays.append(a)

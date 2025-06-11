@@ -1,8 +1,10 @@
 __all__ = []
 
-__array_api_version__ = "2022.12"
+__array_api_version__ = "2023.12"
 
-__all__ += ["__array_api_version__"]
+from .inspection import __array_namespace_info__
+
+__all__ += ["__array_api_version__", "__array_namespace_info__"]
 
 from .array_object import Array
 
@@ -101,7 +103,9 @@ from .elementwise_functions import (
     bitwise_right_shift,
     bitwise_xor,
     ceil,
+    clip,
     conj,
+    copysign,
     cos,
     cosh,
     divide,
@@ -112,6 +116,7 @@ from .elementwise_functions import (
     floor_divide,
     greater,
     greater_equal,
+    hypot,
     imag,
     isfinite,
     isinf,
@@ -127,6 +132,8 @@ from .elementwise_functions import (
     logical_not,
     logical_or,
     logical_xor,
+    maximum,
+    minimum,
     multiply,
     negative,
     not_equal,
@@ -136,6 +143,7 @@ from .elementwise_functions import (
     remainder,
     round,
     sign,
+    signbit,
     sin,
     sinh,
     sqrt,
@@ -163,7 +171,9 @@ __all__ += [
     "bitwise_right_shift",
     "bitwise_xor",
     "ceil",
+    "clip",
     "conj",
+    "copysign",
     "cos",
     "cosh",
     "divide",
@@ -174,6 +184,7 @@ __all__ += [
     "floor_divide",
     "greater",
     "greater_equal",
+    "hypot",
     "imag",
     "isfinite",
     "isinf",
@@ -189,6 +200,8 @@ __all__ += [
     "logical_not",
     "logical_or",
     "logical_xor",
+    "maximum",
+    "minimum",
     "multiply",
     "negative",
     "not_equal",
@@ -198,6 +211,7 @@ __all__ += [
     "remainder",
     "round",
     "sign",
+    "signbit",
     "sin",
     "sinh",
     "sqrt",
@@ -212,21 +226,25 @@ from .indexing_functions import take
 
 __all__ += ["take"]
 
-from .linear_algebra_functions import matmul, matrix_transpose, outer, tensordot, vecdot
+from .linear_algebra_functions import matmul, matrix_transpose, tensordot, vecdot
 
-__all__ += ["matmul", "matrix_transpose", "outer", "tensordot", "vecdot"]
+__all__ += ["matmul", "matrix_transpose", "tensordot", "vecdot"]
 
 from .manipulation_functions import (
     broadcast_arrays,
     broadcast_to,
     concat,
     expand_dims,
+    flip,
     moveaxis,
     permute_dims,
+    repeat,
     reshape,
     roll,
     squeeze,
     stack,
+    tile,
+    unstack,
 )
 
 __all__ += [
@@ -234,21 +252,25 @@ __all__ += [
     "broadcast_to",
     "concat",
     "expand_dims",
+    "flip",
     "moveaxis",
     "permute_dims",
+    "repeat",
     "reshape",
     "roll",
     "squeeze",
     "stack",
+    "tile",
+    "unstack",
 ]
 
-from .searching_functions import argmax, argmin, where
+from .searching_functions import argmax, argmin, searchsorted, where
 
-__all__ += ["argmax", "argmin", "where"]
+__all__ += ["argmax", "argmin", "searchsorted", "where"]
 
-from .statistical_functions import max, mean, min, prod, sum
+from .statistical_functions import max, mean, min, prod, std, sum, var
 
-__all__ += ["max", "mean", "min", "prod", "sum"]
+__all__ += ["max", "mean", "min", "prod", "std", "sum", "var"]
 
 from .utility_functions import all, any
 

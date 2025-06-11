@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9"]
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout Cubed
@@ -32,6 +32,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: data-apis/array-api-tests
+          ref: '1572b129c6682211abfe139e112592226c361a6c'  # Latest commit as of 2024-12-04
           path: array-api-tests
           submodules: "true"
       - name: Set up Python ${{ matrix.python-version }}
@@ -79,27 +80,44 @@ jobs:
           array_api_tests/test_operators_and_elementwise_functions.py::test_subtract[__isub__(x1, x2)]
           array_api_tests/test_operators_and_elementwise_functions.py::test_subtract[__isub__(x, s)]
 
-          # don't run special cases yet
-          array_api_tests/test_special_cases.py
+          # special cases not implemented
+          array_api_tests/test_special_cases.py::test_empty_arrays[std]
+          array_api_tests/test_special_cases.py::test_empty_arrays[var]
+          array_api_tests/test_special_cases.py::test_nan_propagation[std]
+          array_api_tests/test_special_cases.py::test_nan_propagation[var]
 
-          # don't test signatures or names yet as some are not implemented
-          array_api_tests/test_signatures.py
+          # don't test names yet as some are not implemented
           array_api_tests/test_has_names.py
 
-          # very slow
-          array_api_tests/test_creation_functions.py::test_eye
+          # signatures of items not implemented
+          array_api_tests/test_signatures.py::test_func_signature[cumulative_sum]
+          array_api_tests/test_signatures.py::test_func_signature[unique_all]
+          array_api_tests/test_signatures.py::test_func_signature[unique_counts]
+          array_api_tests/test_signatures.py::test_func_signature[unique_inverse]
+          array_api_tests/test_signatures.py::test_func_signature[unique_values]
+          array_api_tests/test_signatures.py::test_func_signature[nonzero]
+          array_api_tests/test_signatures.py::test_func_signature[from_dlpack]
+          array_api_tests/test_signatures.py::test_func_signature[argsort]
+          array_api_tests/test_signatures.py::test_func_signature[sort]
+          array_api_tests/test_signatures.py::test_array_method_signature[__dlpack__]
+          array_api_tests/test_signatures.py::test_array_method_signature[__dlpack_device__]
+          array_api_tests/test_signatures.py::test_array_method_signature[__setitem__]
+          array_api_tests/test_signatures.py::test_array_method_signature[to_device]
 
           # edge case failures (https://github.com/cubed-dev/cubed/issues/420)
           array_api_tests/test_linalg.py::test_tensordot
           array_api_tests/test_linalg.py::test_vecdot
+          # (getitem with negative step size is not implemented)
+          array_api_tests/test_array_object.py::test_getitem
+          # test_searchsorted depends on sort which is not implemented
+          array_api_tests/test_searching_functions.py::test_searchsorted
 
           # not implemented
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
-          array_api_tests/test_manipulation_functions.py::test_flip
+          array_api_tests/test_manipulation_functions.py::test_repeat
           array_api_tests/test_sorting_functions.py
-          array_api_tests/test_statistical_functions.py::test_std
-          array_api_tests/test_statistical_functions.py::test_var
+          array_api_tests/test_statistical_functions.py::test_cumulative_sum
 
           # finfo(float32).eps returns float32 but should return float
           array_api_tests/test_data_type_functions.py::test_finfo[float32]
@@ -109,6 +127,9 @@ jobs:
           # https://github.com/numpy/numpy/issues/18881
           array_api_tests/test_creation_functions.py::test_linspace
 
+          # https://github.com/numpy/numpy/issues/20870
+          #array_api_tests/test_data_type_functions.py::test_can_cast
+
           EOF
 
-          pytest -v -rxXfEA --hypothesis-max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --hypothesis-disable-deadline --cov=cubed.array_api --cov-report=term-missing
+          pytest -v -rxXfEA --hypothesis-max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --hypothesis-disable-deadline

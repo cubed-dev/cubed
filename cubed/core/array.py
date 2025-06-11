@@ -162,7 +162,9 @@ class CoreArray:
         if result:
             return result[0]
 
-    def rechunk(self: T_ChunkedArray, chunks) -> T_ChunkedArray:
+    def rechunk(
+        self: T_ChunkedArray, chunks, *, min_mem=None, use_new_impl=False
+    ) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
         Parameters
@@ -177,7 +179,7 @@ class CoreArray:
         """
         from cubed.core.ops import rechunk
 
-        return rechunk(self, chunks)
+        return rechunk(self, chunks, min_mem=min_mem, use_new_impl=use_new_impl)
 
     def visualize(
         self,
@@ -274,17 +276,26 @@ def compute(
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
-            from cubed.runtime.executors.local import SingleThreadedExecutor
+            from cubed.runtime.executors.local import ThreadsExecutor
 
-            executor = SingleThreadedExecutor()
+            executor = ThreadsExecutor()
+
+    # combine any callbacks specified as args with any active callbacks from the context manager
+    if callbacks is None and len(Callback.active) == 0:
+        all_callbacks = None
+    else:
+        all_callbacks = list(Callback.active)
+        if callbacks is not None:
+            all_callbacks.extend(callbacks)
 
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
     plan.execute(
         executor=executor,
-        callbacks=callbacks,
+        callbacks=all_callbacks,
         optimize_graph=optimize_graph,
         optimize_function=optimize_function,
         resume=resume,
+        array_names=tuple(a.name for a in arrays),
         spec=spec,
         **kwargs,
     )
@@ -335,6 +346,7 @@ def visualize(
         optimize_graph=optimize_graph,
         optimize_function=optimize_function,
         show_hidden=show_hidden,
+        array_names=tuple(a.name for a in arrays),
     )
 
 

@@ -65,7 +65,7 @@ class Array(CoreArray):
             grid=grid,
             nbytes=nbytes,
             cbytes=cbytes,
-            arrs_in_plan=f"{self.plan.num_arrays()} arrays in Plan",
+            arrs_in_plan=f"{self.plan._finalize().num_arrays()} arrays in Plan",
             arrtype="np.ndarray",
         )
 
@@ -361,11 +361,15 @@ class Array(CoreArray):
         return elemwise(nxp.abs, self, dtype=dtype)
 
     def __array_namespace__(self, /, *, api_version=None):
-        if api_version is not None and api_version not in ("2021.12", "2022.12"):
+        if api_version is not None and api_version not in (
+            "2021.12",
+            "2022.12",
+            "2023.12",
+        ):
             raise ValueError(f"Unrecognized array API version: {api_version!r}")
-        import cubed.array_api as array_api
+        import cubed
 
-        return array_api
+        return cubed
 
     def __bool__(self, /):
         if self.ndim != 0:
@@ -399,12 +403,18 @@ class Array(CoreArray):
     # Utility methods
 
     def _check_allowed_dtypes(self, other, dtype_category, op):
-        if self.dtype not in _dtype_categories[dtype_category]:
+        if (
+            dtype_category != "all"
+            and self.dtype not in _dtype_categories[dtype_category]
+        ):
             raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
         if isinstance(other, (int, complex, float, bool)):
             other = self._promote_scalar(other)
         elif isinstance(other, CoreArray):
-            if other.dtype not in _dtype_categories[dtype_category]:
+            if (
+                dtype_category != "all"
+                and other.dtype not in _dtype_categories[dtype_category]
+            ):
                 raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
         else:
             return NotImplemented

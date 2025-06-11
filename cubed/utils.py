@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import islice
 from math import prod
-from operator import add
+from operator import add, mul
 from pathlib import Path
 from posixpath import join
 from typing import Dict, Tuple, Union, cast
@@ -18,6 +18,7 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
 import tlz as toolz
+from toolz import reduce
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
@@ -39,6 +40,11 @@ def chunk_memory(arr) -> int:
         arr.dtype,
         to_chunksize(normalize_chunks(arr.chunks, shape=arr.shape, dtype=arr.dtype)),
     )
+
+
+def array_size(shape: T_Shape) -> int:
+    """Number of elements in an array."""
+    return reduce(mul, shape, 1)
 
 
 def offset_to_block_id(offset: int, numblocks: Tuple[int, ...]) -> Tuple[int, ...]:
@@ -72,6 +78,16 @@ def join_path(dir_url: PathType, child_path: str) -> str:
     new_path = quote(join(unquote(parts.path), child_path))
     split_parts = (parts.scheme, parts.netloc, new_path, parts.query, parts.fragment)
     return urlunsplit(split_parts)
+
+
+def is_local_path(path: PathType):
+    """Determine if a path string is for the local filesystem."""
+    return urlsplit(str(path)).scheme in ("", "file")
+
+
+def is_cloud_storage_path(path: PathType):
+    """Determine if a path string is for cloud storage."""
+    return urlsplit(str(path)).scheme in ("gs", "s3")
 
 
 def memory_repr(num: int) -> str:
@@ -134,6 +150,10 @@ def to_chunksize(chunkset: T_RectangularChunks) -> T_RegularChunks:
         raise ValueError(f"Array must have regular chunks, but found chunks={chunkset}")
 
     return tuple(max(c[0], 1) for c in chunkset)
+
+
+def numblocks(chunks: T_RectangularChunks) -> Tuple[int, ...]:
+    return tuple(map(len, chunks))
 
 
 @dataclass
@@ -321,71 +341,6 @@ def broadcast_trick(func):
     inner.__doc__ = func.__doc__
     inner.__name__ = func.__name__
     return inner
-
-
-# From dask.array.core, but changed to use nxp namespace
-def _concatenate2(arrays, axes=None):
-    """Recursively concatenate nested lists of arrays along axes
-
-    Each entry in axes corresponds to each level of the nested list.  The
-    length of axes should correspond to the level of nesting of arrays.
-    If axes is an empty list or tuple, return arrays, or arrays[0] if
-    arrays is a list.
-
-    >>> x = np.array([[1, 2], [3, 4]])
-    >>> _concatenate2([x, x], axes=[0])
-    array([[1, 2],
-           [3, 4],
-           [1, 2],
-           [3, 4]])
-
-    >>> _concatenate2([x, x], axes=[1])
-    array([[1, 2, 1, 2],
-           [3, 4, 3, 4]])
-
-    >>> _concatenate2([[x, x], [x, x]], axes=[0, 1])
-    array([[1, 2, 1, 2],
-           [3, 4, 3, 4],
-           [1, 2, 1, 2],
-           [3, 4, 3, 4]])
-
-    Supports Iterators
-    >>> _concatenate2(iter([x, x]), axes=[1])
-    array([[1, 2, 1, 2],
-           [3, 4, 3, 4]])
-
-    Special Case
-    >>> _concatenate2([x, x], axes=())
-    array([[1, 2],
-           [3, 4]])
-    """
-    if axes is None:
-        axes = []
-
-    if axes == ():
-        if isinstance(arrays, list):
-            return arrays[0]
-        else:
-            return arrays
-
-    if isinstance(arrays, Iterator):
-        arrays = list(arrays)
-    if not isinstance(arrays, (list, tuple)):
-        return arrays
-    if len(axes) > 1:
-        arrays = [_concatenate2(a, axes=axes[1:]) for a in arrays]
-    concatenate = nxp.concat
-    if isinstance(arrays[0], dict):
-        # Handle concatenation of `dict`s, used as a replacement for structured
-        # arrays when that's not supported by the array library (e.g., CuPy).
-        keys = list(arrays[0].keys())
-        assert all(list(a.keys()) == keys for a in arrays)
-        ret = dict()
-        for k in keys:
-            ret[k] = concatenate(list(a[k] for a in arrays), axis=axes[0])
-        return ret
-    else:
-        return concatenate(arrays, axis=axes[0])
 
 
 def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> Tuple[int, ...]:

@@ -12,7 +12,7 @@
 ```shell
 conda create --name cubed-lithops-aws-examples -y python=3.11
 conda activate cubed-lithops-aws-examples
-pip install -r requirements.txt  # use requirements file from same directory as this readme
+pip install 'cubed[lithops-aws]'
 ```
 
 2. Configure Lithops with an [AWS Lambda compute backend](https://lithops-cloud.github.io/docs/source/compute_config/aws_lambda.html), and an [AWS S3 storage backend](https://lithops-cloud.github.io/docs/source/storage_config/aws_s3.html).
@@ -41,7 +41,7 @@ Before running the examples, first change to the top-level examples directory (`
 export CUBED_CONFIG=$(pwd)/lithops/aws
 ```
 
-Then you can run the examples described [there](../../README.md).
+Then you can run the examples in the [docs](https://cubed-dev.github.io/cubed/examples/index.html).
 
 ## Cleaning up
 

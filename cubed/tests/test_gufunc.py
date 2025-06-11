@@ -22,7 +22,7 @@ def test_apply_reduction(spec, vectorize):
     r = np.random.normal(size=(10, 20, 30))
     a = cubed.from_array(r, chunks=(5, 5, 30), spec=spec)
     actual = apply_gufunc(stats, "(i)->()", a, output_dtypes="f", vectorize=vectorize)
-    expected = np.mean(r, axis=-1, dtype=np.float32)
+    expected = nxp.mean(r, axis=-1, dtype=np.float32)
 
     assert actual.compute().shape == expected.shape
     assert_allclose(actual.compute(), expected)
@@ -34,6 +34,16 @@ def test_apply_gufunc_elemwise_01(spec):
 
     a = cubed.from_array(np.array([1, 2, 3]), chunks=2, spec=spec)
     b = cubed.from_array(np.array([1, 2, 3]), chunks=2, spec=spec)
+    z = apply_gufunc(add, "(),()->()", a, b, output_dtypes=a.dtype)
+    assert_equal(z, np.array([2, 4, 6]))
+
+
+def test_apply_gufunc_elemwise_01_non_cubed_input(spec):
+    def add(x, y):
+        return x + y
+
+    a = cubed.from_array(np.array([1, 2, 3]), chunks=3, spec=spec)
+    b = np.array([1, 2, 3])
     z = apply_gufunc(add, "(),()->()", a, b, output_dtypes=a.dtype)
     assert_equal(z, np.array([2, 4, 6]))
 

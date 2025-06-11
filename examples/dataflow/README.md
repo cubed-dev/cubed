@@ -9,7 +9,7 @@
 1. Install a Python environment with the basic package requirements:
 
 ```shell
-conda create --name cubed-dataflow-examples -y python=3.9
+conda create --name cubed-dataflow-examples -y python=3.10
 conda activate cubed-dataflow-examples
 pip install -r requirements.txt
 ```

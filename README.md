@@ -1,20 +1,14 @@
 # Cubed
 
-## Bounded-memory serverless distributed N-dimensional array processing
+## Scalable array processing with bounded memory
 
-Cubed is a distributed N-dimensional array library implemented in Python using bounded-memory serverless processing and Zarr for storage.
+Cubed is a Python library for scalable out-of-core multi-dimensional array processing with bounded memory.
 
-- Implements the [Python Array API standard](https://data-apis.org/array-api/latest/) (see [coverage status](./api_status.md))
-- Guaranteed maximum memory usage for standard array functions
-- Follows [Dask Array](https://docs.dask.org/en/stable/array.html)'s chunked array API (`map_blocks`, `map_overlap`, `rechunk`, `apply_gufunc`, etc)
-- [Zarr](https://zarr.readthedocs.io/en/stable/) for persistent and intermediate storage
-- Multiple serverless runtimes: Python (in-process), [Lithops](https://lithops-cloud.github.io/), [Modal](https://modal.com/), [Apache Beam](https://beam.apache.org/)
-- Integration with [Xarray](https://xarray.dev/) via [cubed-xarray](https://github.com/xarray-contrib/cubed-xarray)
+- Cubed provides NumPy and Xarray APIs for processing your multi-dimensional array data
+- Cubed is a drop-in replacement for Dask's Array API
+- Cubed will tell you if your computation would run out of memory *before* running it
+- Cubed is designed to be robust to failures and will reliably complete a computation
+- Cubed can process hundreds of GB of array data on your laptop using all available cores
+- Cubed is horizontally scalable and stateless, and can scale to multi-TB datasets in the cloud
 
 [Documentation](https://cubed-dev.github.io/cubed/)
-
-### Articles
-
-[Cubed: Bounded-memory serverless array processing in xarray](https://xarray.dev/blog/cubed-xarray)
-
-[Optimizing Cubed](https://medium.com/pangeo/optimizing-cubed-7a0b8f65f5b7)

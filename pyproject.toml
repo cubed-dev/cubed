@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cubed"
-version = "0.15.0"
+version = "0.21.0"
 authors = [
     {name = "Tom White", email = "tom.e.white@gmail.com"},
 ]
 license = {text = "Apache License 2.0"}
-description = "Bounded-memory serverless distributed N-dimensional array processing"
+description = "Scalable array processing with bounded memory"
 readme = {file = "README.md", content-type = "text/markdown"}
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -17,12 +17,12 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "aiostream",
     "array-api-compat",
@@ -51,17 +51,28 @@ diagnostics = [
     "seaborn",
 ]
 beam = ["apache-beam", "gcsfs"]
-dask = ["dask"]
-dask-distributed = ["distributed"]
-lithops = ["lithops[aws] >= 2.7.0"]
+dask = ["dask < 2024.12.0"]
+dask-distributed = ["distributed < 2024.12.0"]
+icechunk = ["icechunk"]
+lithops = ["lithops[aws] >= 3.3.0"]
+lithops-aws = [
+    "cubed[diagnostics]",
+    "lithops[aws] >= 3.3.0",
+    "s3fs",
+]
+lithops-gcp = [
+    "cubed[diagnostics]",
+    "lithops[gcp] >= 3.3.0",
+    "gcsfs",
+]
 modal = [
     "cubed[diagnostics]",
-    "modal-client",
+    "modal",
     "s3fs",
 ]
 modal-gcp = [
     "cubed[diagnostics]",
-    "modal-client",
+    "modal",
     "gcsfs",
 ]
 coiled = [
@@ -71,41 +82,9 @@ coiled = [
     "s3fs",
 ]
 test = [
-    "cubed[diagnostics,lithops]",  # modal tests separate due to conflicting package reqs
+    "cubed[diagnostics]",
     "dill",
     "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-beam = [
-    "cubed[beam,diagnostics]",
-    "dill",
-    "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-dask = [
-    "cubed[dask,diagnostics]",
-    "dill",
-    "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-dask-distributed = [
-    "cubed[dask-distributed,diagnostics]",
-    "dill",
-    "numpy_groupies",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-]
-test-modal = [
-    "cubed[modal]",
-    "numpy_groupies",
-    "dill",
     "pytest",
     "pytest-cov",
     "pytest-mock",
@@ -120,3 +99,4 @@ repository = "https://github.com/cubed-dev/cubed"
 filterwarnings = [
     "error::UserWarning",
 ]
+testpaths = "cubed/tests"

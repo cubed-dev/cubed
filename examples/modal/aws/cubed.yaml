@@ -4,3 +4,4 @@ spec:
   executor_name: "modal"
   executor_options:
     cloud: "aws"
+    region: "eu-west-1"  # change to match the work_dir bucket

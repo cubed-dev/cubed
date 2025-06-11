@@ -1,6 +1,7 @@
 name: JAX tests
 
 on:
+  pull_request:
   schedule:
     # Every weekday at 03:53 UTC, see https://crontab.guru/
     - cron: "53 3 * * 1-5"
@@ -17,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.9"]
+        python-version: ["3.10"]
 
     steps:
       - name: Checkout source
@@ -42,8 +43,8 @@ jobs:
 
       - name: Run tests
         run: |
-          # exclude tests that rely on structured types since JAX doesn't support these
-          pytest -k "not argmax and not argmin and not mean and not apply_reduction and not broadcast_trick and not groupby"
+          # exclude a few tests that don't work on JAX
+          pytest -k "not broadcast_trick and not object_dtype"
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
           JAX_ENABLE_X64: True

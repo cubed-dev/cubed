@@ -1,11 +1,12 @@
 import atexit
+import dataclasses
 import inspect
 import shutil
 import tempfile
 import uuid
 from datetime import datetime
 from functools import lru_cache
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 import networkx as nx
 import zarr
@@ -16,7 +17,13 @@ from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
 from cubed.storage.zarr import LazyZarrArray
-from cubed.utils import chunk_memory, extract_stack_summaries, join_path, memory_repr
+from cubed.utils import (
+    chunk_memory,
+    extract_stack_summaries,
+    is_local_path,
+    join_path,
+    memory_repr,
+)
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -24,9 +31,11 @@ CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
 # Delete local context dirs when Python exits
 CONTEXT_DIRS = set()
 
+Decorator = Callable
+
 
 def delete_on_exit(context_dir: str) -> None:
-    if context_dir not in CONTEXT_DIRS and context_dir.startswith("/"):
+    if context_dir not in CONTEXT_DIRS and is_local_path(context_dir):
         atexit.register(lambda: shutil.rmtree(context_dir, ignore_errors=True))
         CONTEXT_DIRS.add(context_dir)
 
@@ -64,7 +73,7 @@ class Plan:
     def __init__(self, dag):
         self.dag = dag
 
-    # args from pipeline onwards are omitted for creation functions when no computation is needed
+    # args from primitive_op onwards are omitted for creation functions when no computation is needed
     @classmethod
     def _new(
         cls,
@@ -101,15 +110,26 @@ class Plan:
                 op_display_name=f"{op_name_unique}\n{first_cubed_summary.name}",
                 hidden=hidden,
             )
-            # array (when multiple outputs are supported there could be more than one)
-            dag.add_node(
-                name,
-                name=name,
-                type="array",
-                target=target,
-                hidden=hidden,
-            )
-            dag.add_edge(op_name_unique, name)
+            # array
+            if isinstance(name, list):  # multiple outputs
+                for n, t in zip(name, target):
+                    dag.add_node(
+                        n,
+                        name=n,
+                        type="array",
+                        target=t,
+                        hidden=hidden,
+                    )
+                    dag.add_edge(op_name_unique, n)
+            else:  # single output
+                dag.add_node(
+                    name,
+                    name=name,
+                    type="array",
+                    target=target,
+                    hidden=hidden,
+                )
+                dag.add_edge(op_name_unique, name)
         else:
             # op
             dag.add_node(
@@ -123,15 +143,26 @@ class Plan:
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
             )
-            # array (when multiple outputs are supported there could be more than one)
-            dag.add_node(
-                name,
-                name=name,
-                type="array",
-                target=target,
-                hidden=hidden,
-            )
-            dag.add_edge(op_name_unique, name)
+            # array
+            if isinstance(name, list):  # multiple outputs
+                for n, t in zip(name, target):
+                    dag.add_node(
+                        n,
+                        name=n,
+                        type="array",
+                        target=t,
+                        hidden=hidden,
+                    )
+                    dag.add_edge(op_name_unique, n)
+            else:  # single output
+                dag.add_node(
+                    name,
+                    name=name,
+                    type="array",
+                    target=target,
+                    hidden=hidden,
+                )
+                dag.add_edge(op_name_unique, name)
         for x in source_arrays:
             if hasattr(x, "name"):
                 dag.add_edge(x.name, op_name_unique)
@@ -145,10 +176,11 @@ class Plan:
     def optimize(
         self,
         optimize_function: Optional[Callable[..., nx.MultiDiGraph]] = None,
+        array_names: Optional[Tuple[str]] = None,
     ):
         if optimize_function is None:
             optimize_function = multiple_inputs_optimize_dag
-        dag = optimize_function(self.dag)
+        dag = optimize_function(self.dag, array_names=array_names)
         return Plan(dag)
 
     def _create_lazy_zarr_arrays(self, dag):
@@ -194,15 +226,59 @@ class Plan:
 
         return dag
 
+    def _compile_blockwise(self, dag, compile_function: Decorator) -> nx.MultiDiGraph:
+        """Compiles functions from all blockwise ops by mutating the input dag."""
+        # Recommended: make a copy of the dag before calling this function.
+
+        compile_with_config = (
+            "config" in inspect.getfullargspec(compile_function).kwonlyargs
+        )
+
+        for n in dag.nodes:
+            node = dag.nodes[n]
+
+            if "primitive_op" not in node:
+                continue
+
+            if not isinstance(node["pipeline"].config, BlockwiseSpec):
+                continue
+
+            if compile_with_config:
+                compiled = compile_function(
+                    node["pipeline"].config.function, config=node["pipeline"].config
+                )
+            else:
+                compiled = compile_function(node["pipeline"].config.function)
+
+            # node is a blockwise primitive_op.
+            # maybe we should investigate some sort of optics library for frozen dataclasses...
+            new_pipeline = dataclasses.replace(
+                node["pipeline"],
+                config=dataclasses.replace(node["pipeline"].config, function=compiled),
+            )
+            node["pipeline"] = new_pipeline
+
+        return dag
+
     @lru_cache
-    def _finalize_dag(
-        self, optimize_graph: bool = True, optimize_function=None
-    ) -> nx.MultiDiGraph:
-        dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
+    def _finalize(
+        self,
+        optimize_graph: bool = True,
+        optimize_function=None,
+        compile_function: Optional[Decorator] = None,
+        array_names=None,
+    ) -> "FinalizedPlan":
+        dag = (
+            self.optimize(optimize_function, array_names).dag
+            if optimize_graph
+            else self.dag
+        )
         # create a copy since _create_lazy_zarr_arrays mutates the dag
         dag = dag.copy()
+        if callable(compile_function):
+            dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
-        return nx.freeze(dag)
+        return FinalizedPlan(nx.freeze(dag))
 
     def execute(
         self,
@@ -210,11 +286,16 @@ class Plan:
         callbacks=None,
         optimize_graph=True,
         optimize_function=None,
+        compile_function=None,
         resume=None,
+        array_names=None,
         spec=None,
         **kwargs,
     ):
-        dag = self._finalize_dag(optimize_graph, optimize_function)
+        finalized_plan = self._finalize(
+            optimize_graph, optimize_function, compile_function, array_names=array_names
+        )
+        dag = finalized_plan.dag
 
         compute_id = f"compute-{datetime.now().strftime('%Y%m%dT%H%M%S.%f')}"
 
@@ -233,43 +314,6 @@ class Plan:
             event = ComputeEndEvent(compute_id, dag)
             [callback.on_compute_end(event) for callback in callbacks]
 
-    def num_tasks(self, optimize_graph=True, optimize_function=None, resume=None):
-        """Return the number of tasks needed to execute this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        tasks = 0
-        for _, node in visit_nodes(dag, resume=resume):
-            tasks += node["primitive_op"].num_tasks
-        return tasks
-
-    def num_arrays(self, optimize_graph: bool = True, optimize_function=None) -> int:
-        """Return the number of arrays in this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        return sum(d.get("type") == "array" for _, d in dag.nodes(data=True))
-
-    def max_projected_mem(
-        self, optimize_graph=True, optimize_function=None, resume=None
-    ):
-        """Return the maximum projected memory across all tasks to execute this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        projected_mem_values = [
-            node["primitive_op"].projected_mem
-            for _, node in visit_nodes(dag, resume=resume)
-        ]
-        return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
-
-    def total_nbytes_written(
-        self, optimize_graph: bool = True, optimize_function=None
-    ) -> int:
-        """Return the total number of bytes written for all materialized arrays in this plan."""
-        dag = self._finalize_dag(optimize_graph, optimize_function)
-        nbytes = 0
-        for _, d in dag.nodes(data=True):
-            if d.get("type") == "array":
-                target = d["target"]
-                if isinstance(target, LazyZarrArray):
-                    nbytes += target.nbytes
-        return nbytes
-
     def visualize(
         self,
         filename="cubed",
@@ -278,8 +322,12 @@ class Plan:
         optimize_graph=True,
         optimize_function=None,
         show_hidden=False,
+        array_names=None,
     ):
-        dag = self._finalize_dag(optimize_graph, optimize_function)
+        finalized_plan = self._finalize(
+            optimize_graph, optimize_function, array_names=array_names
+        )
+        dag = finalized_plan.dag
         dag = dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
@@ -294,9 +342,9 @@ class Plan:
             "rankdir": rankdir,
             "label": (
                 # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
-                rf"num tasks: {self.num_tasks(optimize_graph, optimize_function)}\l"
-                rf"max projected memory: {memory_repr(self.max_projected_mem(optimize_graph, optimize_function))}\l"
-                rf"total nbytes written: {memory_repr(self.total_nbytes_written(optimize_graph, optimize_function))}\l"
+                rf"num tasks: {finalized_plan.num_tasks()}\l"
+                rf"max projected memory: {memory_repr(finalized_plan.max_projected_mem())}\l"
+                rf"total nbytes written: {memory_repr(finalized_plan.total_nbytes_written())}\l"
                 rf"optimized: {optimize_graph}\l"
             ),
             "labelloc": "bottom",
@@ -360,6 +408,9 @@ class Plan:
                         tooltip += (
                             f"\nnum input blocks: {pipeline.config.num_input_blocks}"
                         )
+                        tooltip += (
+                            f"\nnum output blocks: {pipeline.config.num_output_blocks}"
+                        )
                     del d["pipeline"]
 
                 if "stack_summaries" in d and d["stack_summaries"] is not None:
@@ -406,6 +457,8 @@ class Plan:
                 tooltip += f"chunk memory: {chunkmem}\n"
                 if hasattr(target, "nbytes"):
                     tooltip += f"nbytes: {memory_repr(target.nbytes)}\n"
+                if hasattr(target, "nchunks"):
+                    tooltip += f"nchunks: {target.nchunks}\n"
 
                 del d["target"]
 
@@ -425,11 +478,58 @@ class Plan:
             import IPython.display as display
 
             if format == "svg":
-                return display.SVG(filename=full_filename)
+                return display.HTML(filename=full_filename)
         except ImportError:
             # Can't return a display object if no IPython.
             pass
         return None
+
+
+class FinalizedPlan:
+    """A plan that is ready to be run.
+
+    Finalizing a plan involves the following steps:
+    1. optimization (optional)
+    2. adding housekeping nodes to create arrays
+    3. compiling functions (optional)
+    4. freezing the final DAG so it can't be changed
+    """
+
+    def __init__(self, dag):
+        self.dag = dag
+
+    def max_projected_mem(self, resume=None):
+        """Return the maximum projected memory across all tasks to execute this plan."""
+        projected_mem_values = [
+            node["primitive_op"].projected_mem
+            for _, node in visit_nodes(self.dag, resume=resume)
+        ]
+        return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
+
+    def num_arrays(self) -> int:
+        """Return the number of arrays in this plan."""
+        return sum(d.get("type") == "array" for _, d in self.dag.nodes(data=True))
+
+    def num_primitive_ops(self) -> int:
+        """Return the number of primitive operations in this plan."""
+        return len(list(visit_nodes(self.dag)))
+
+    def num_tasks(self, resume=None):
+        """Return the number of tasks needed to execute this plan."""
+        tasks = 0
+        for _, node in visit_nodes(self.dag, resume=resume):
+            tasks += node["primitive_op"].num_tasks
+        return tasks
+
+    def total_nbytes_written(self) -> int:
+        """Return the total number of bytes written for all materialized arrays in this plan."""
+        nbytes = 0
+        for _, d in self.dag.nodes(data=True):
+            if d.get("type") == "array":
+                target = d["target"]
+                if isinstance(target, LazyZarrArray):
+                    nbytes += target.nbytes
+        return nbytes
 
 
 def arrays_to_dag(*arrays):
@@ -487,5 +587,5 @@ def create_zarr_arrays(lazy_zarr_arrays, allowed_mem, reserved_mem):
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         num_tasks=num_tasks,
-        fusable=False,
+        fusable_with_predecessors=False,
     )

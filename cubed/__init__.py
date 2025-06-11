@@ -9,16 +9,18 @@ from donfig import Config
 
 config = Config(
     "cubed",
-    # default spec is local temp dir and a modest amount of memory (200MB, of which 100MB is reserved)
-    defaults=[{"spec": {"allowed_mem": 200_000_000, "reserved_mem": 100_000_000}}],
+    # default spec is local temp dir and a reasonable amount of memory (2GB, of which 100MB is reserved)
+    defaults=[{"spec": {"allowed_mem": "2GB", "reserved_mem": "100MB"}}],
 )
 
+import cubed.random  # noqa: F401
+
+from .array.nan_functions import nanmean, nansum
+from .array.overlap import map_overlap
+from .array.pad import pad
 from .core.array import compute, measure_reserved_mem, visualize
 from .core.gufunc import apply_gufunc
-from .core.ops import from_array, from_zarr, map_blocks, store, to_zarr
-from .nan_functions import nanmean, nansum
-from .overlap import map_overlap
-from .pad import pad
+from .core.ops import from_array, from_zarr, map_blocks, rechunk, store, to_zarr
 from .runtime.types import Callback, TaskEndEvent
 from .spec import Spec
 
@@ -38,6 +40,8 @@ __all__ = [
     "nanmean",
     "nansum",
     "pad",
+    "random",
+    "rechunk",
     "store",
     "to_zarr",
     "visualize",
@@ -45,9 +49,12 @@ __all__ = [
 
 # Array API
 
-__array_api_version__ = "2022.12"
+__array_api_version__ = "2023.12"
 
-__all__ += ["__array_api_version__"]
+from .array_api.inspection import __array_namespace_info__
+
+__all__ += ["__array_api_version__", "__array_namespace_info__"]
+
 
 from .array_api.array_object import Array
 
@@ -153,7 +160,9 @@ from .array_api.elementwise_functions import (
     bitwise_right_shift,
     bitwise_xor,
     ceil,
+    clip,
     conj,
+    copysign,
     cos,
     cosh,
     divide,
@@ -164,6 +173,7 @@ from .array_api.elementwise_functions import (
     floor_divide,
     greater,
     greater_equal,
+    hypot,
     imag,
     isfinite,
     isinf,
@@ -179,6 +189,8 @@ from .array_api.elementwise_functions import (
     logical_not,
     logical_or,
     logical_xor,
+    maximum,
+    minimum,
     multiply,
     negative,
     not_equal,
@@ -188,6 +200,7 @@ from .array_api.elementwise_functions import (
     remainder,
     round,
     sign,
+    signbit,
     sin,
     sinh,
     sqrt,
@@ -215,7 +228,9 @@ __all__ += [
     "bitwise_right_shift",
     "bitwise_xor",
     "ceil",
+    "clip",
     "conj",
+    "copysign",
     "cos",
     "cosh",
     "divide",
@@ -226,6 +241,7 @@ __all__ += [
     "floor_divide",
     "greater",
     "greater_equal",
+    "hypot",
     "imag",
     "isfinite",
     "isinf",
@@ -241,6 +257,8 @@ __all__ += [
     "logical_not",
     "logical_or",
     "logical_xor",
+    "maximum",
+    "minimum",
     "multiply",
     "negative",
     "not_equal",
@@ -250,6 +268,7 @@ __all__ += [
     "remainder",
     "round",
     "sign",
+    "signbit",
     "sin",
     "sinh",
     "sqrt",
@@ -267,24 +286,27 @@ __all__ += ["take"]
 from .array_api.linear_algebra_functions import (
     matmul,
     matrix_transpose,
-    outer,
     tensordot,
     vecdot,
 )
 
-__all__ += ["matmul", "matrix_transpose", "outer", "tensordot", "vecdot"]
+__all__ += ["matmul", "matrix_transpose", "tensordot", "vecdot"]
 
 from .array_api.manipulation_functions import (
     broadcast_arrays,
     broadcast_to,
     concat,
     expand_dims,
+    flip,
     moveaxis,
     permute_dims,
+    repeat,
     reshape,
     roll,
     squeeze,
     stack,
+    tile,
+    unstack,
 )
 
 __all__ += [
@@ -292,22 +314,32 @@ __all__ += [
     "broadcast_to",
     "concat",
     "expand_dims",
+    "flip",
     "moveaxis",
     "permute_dims",
+    "repeat",
     "reshape",
     "roll",
     "squeeze",
     "stack",
+    "tile",
+    "unstack",
 ]
 
-from .array_api.searching_functions import argmax, argmin, where
+from .array_api.searching_functions import argmax, argmin, searchsorted, where
 
-__all__ += ["argmax", "argmin", "where"]
+__all__ += ["argmax", "argmin", "searchsorted", "where"]
 
-from .array_api.statistical_functions import max, mean, min, prod, sum
+from .array_api.statistical_functions import max, mean, min, prod, std, sum, var
 
-__all__ += ["max", "mean", "min", "prod", "sum"]
+__all__ += ["max", "mean", "min", "prod", "std", "sum", "var"]
 
 from .array_api.utility_functions import all, any
 
 __all__ += ["all", "any"]
+
+# extensions
+
+from .array_api import linalg
+
+__all__ += ["linalg"]
