@@ -826,6 +826,25 @@ def test_where_scalars():
 # Statistical functions
 
 
+@pytest.mark.parametrize("axis", [0, 1])
+def test_cumulative_sum_2d(axis):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    b = xp.cumulative_sum(a, axis=axis)
+    assert_array_equal(
+        b.compute(),
+        np.cumulative_sum(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), axis=axis),
+    )
+
+
+def test_cumulative_sum_1d():
+    a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=(4,))
+    b = xp.cumulative_sum(a, axis=0)
+    assert_array_equal(
+        b.compute(),
+        np.cumulative_sum(np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), axis=0),
+    )
+
+
 def test_mean_axis_0(spec, executor):
     a = xp.asarray(
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], chunks=(2, 2), spec=spec

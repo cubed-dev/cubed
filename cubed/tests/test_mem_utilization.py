@@ -342,6 +342,15 @@ def test_argmax(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+def test_cumulative_sum(tmp_path, spec, executor):
+    a = cubed.random.random(
+        (50000, 5000), chunks=(5000, 5000), spec=spec
+    )  # 200MB chunks
+    b = xp.cumulative_sum(a, axis=0)
+    run_operation(tmp_path, executor, "cumulative_sum", b)
+
+
+@pytest.mark.slow
 def test_max(tmp_path, spec, executor):
     a = cubed.random.random(
         (10000, 10000), chunks=(5000, 5000), spec=spec

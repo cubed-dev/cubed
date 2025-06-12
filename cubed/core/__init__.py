@@ -9,6 +9,7 @@ from .ops import (
     map_blocks,
     rechunk,
     reduction,
+    scan,
     squeeze,
     store,
     to_zarr,

@@ -7,7 +7,23 @@ from cubed.array_api.dtypes import (
 )
 from cubed.array_api.elementwise_functions import sqrt
 from cubed.backend_array_api import namespace as nxp
-from cubed.core import reduction
+from cubed.core import reduction, scan
+
+
+def cumulative_sum(x, /, *, axis=None, dtype=None, include_initial=False, device=None):
+    dtype = _upcast_integral_dtypes(
+        x,
+        dtype,
+        allowed_dtypes=(
+            "numeric",
+            "boolean",
+        ),
+        fname="cumulative_sum",
+        device=device,
+    )
+    return scan(
+        x, preop=nxp.sum, func=nxp.cumulative_sum, binop=nxp.add, identity=0, axis=axis
+    )
 
 
 def max(x, /, *, axis=None, keepdims=False, split_every=None):
