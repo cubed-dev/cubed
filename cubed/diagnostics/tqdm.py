@@ -21,13 +21,13 @@ class TqdmProgressBar(Callback):
         max_op_display_name = (
             max(
                 len(node["op_display_name"].replace("\n", " "))
-                for _, node in visit_nodes(event.dag, event.resume)
+                for _, node in visit_nodes(event.dag)
             )
             + 1  # for the colon
         )
 
         self.pbars = {}
-        for i, (name, node) in enumerate(visit_nodes(event.dag, event.resume)):
+        for i, (name, node) in enumerate(visit_nodes(event.dag)):
             num_tasks = node["primitive_op"].num_tasks
             op_display_name = node["op_display_name"].replace("\n", " ") + ":"
             # note double curlies to get literal { and } for tqdm bar format

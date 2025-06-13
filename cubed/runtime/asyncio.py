@@ -126,7 +126,6 @@ async def async_map_dag(
     create_futures_func: Callable,
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
-    resume: Optional[bool] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
 ) -> None:
@@ -135,7 +134,7 @@ async def async_map_dag(
     """
     if not compute_arrays_in_parallel:
         # run one pipeline at a time
-        for name, node in visit_nodes(dag, resume=resume):
+        for name, node in visit_nodes(dag):
             handle_operation_start_callbacks(callbacks, name)
             st = pipeline_to_stream(
                 create_futures_func, name, node["pipeline"], **kwargs
@@ -144,7 +143,7 @@ async def async_map_dag(
                 async for result, stats in streamer:
                     handle_callbacks(callbacks, result, stats)
     else:
-        for gen in visit_node_generations(dag, resume=resume):
+        for gen in visit_node_generations(dag):
             # run pipelines in the same topological generation in parallel by merging their streams
             streams = [
                 pipeline_to_stream(

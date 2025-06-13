@@ -149,7 +149,6 @@ class ModalExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **kwargs,
@@ -162,7 +161,6 @@ class ModalExecutor(DagExecutor):
             self._async_execute_dag(
                 dag,
                 callbacks=callbacks,
-                resume=resume,
                 spec=spec,
                 compute_id=compute_id,
                 **merged_kwargs,
@@ -179,7 +177,6 @@ class ModalExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         cloud: Optional[str] = None,
         compute_arrays_in_parallel: Optional[bool] = None,
@@ -202,7 +199,6 @@ class ModalExecutor(DagExecutor):
                     create_futures_func,
                     dag=dag,
                     callbacks=callbacks,
-                    resume=resume,
                     compute_arrays_in_parallel=compute_arrays_in_parallel,
                     **kwargs,
                 )

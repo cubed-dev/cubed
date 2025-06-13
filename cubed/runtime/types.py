@@ -39,9 +39,6 @@ class ComputeStartEvent:
     dag: MultiDiGraph
     """The computation DAG."""
 
-    resume: bool
-    """If the computation has been resumed."""
-
 
 @dataclass
 class ComputeEndEvent:

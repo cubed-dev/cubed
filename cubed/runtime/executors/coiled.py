@@ -31,7 +31,6 @@ class CoiledExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **coiled_kwargs: Mapping[str, Any],
@@ -39,7 +38,7 @@ class CoiledExecutor(DagExecutor):
         merged_kwargs = {**self.kwargs, **coiled_kwargs}
         minimum_workers = merged_kwargs.pop("minimum_workers", None)
         # Note this currently only builds the task graph for each stage once it gets to that stage in computation
-        for name, node in visit_nodes(dag, resume=resume):
+        for name, node in visit_nodes(dag):
             handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
             coiled_function = make_coiled_function(pipeline.function, merged_kwargs)
