@@ -1036,7 +1036,7 @@ def map_direct(
     )
 
 
-def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=False):
+def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
