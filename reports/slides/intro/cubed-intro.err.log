@@ -119,12 +119,12 @@ During handling of the above exception, another exception occurred:
 [32m    349[39m [43m    [49m[43marray_names[49m[43m=[49m[38;5;28;43mtuple[39;49m[43m([49m[43ma[49m[43m.[49m[43mname[49m[43m [49m[38;5;28;43;01mfor[39;49;00m[43m [49m[43ma[49m[43m [49m[38;5;129;43;01min[39;49;00m[43m [49m[43marrays[49m[43m)[49m[43m,[49m
 [32m    350[39m [43m[49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/cubed/core/plan.py:475[39m, in [36mPlan.visualize[39m[34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[39m
-[32m    473[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
-[32m    474[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
-[32m--> [39m[32m475[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
-[32m    477[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
-[32m    478[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/cubed/core/plan.py:486[39m, in [36mPlan.visualize[39m[34m(self, filename, format, rankdir, optimize_graph, optimize_function, show_hidden, array_names)[39m
+[32m    484[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
+[32m    485[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
+[32m--> [39m[32m486[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
+[32m    488[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
+[32m    489[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1732[39m, in [36mDot.write[39m[34m(self, path, prog, format, encoding)[39m
 [32m   1730[39m         f.write(s)
