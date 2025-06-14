@@ -86,13 +86,11 @@ class BeamExecutor(DagExecutor):
     def name(self) -> str:
         return "beam"
 
-    def execute_dag(
-        self, dag, callbacks=None, resume=None, spec=None, compute_id=None, **kwargs
-    ):
+    def execute_dag(self, dag, callbacks=None, spec=None, compute_id=None, **kwargs):
         dag = dag.copy()
         pipeline = beam.Pipeline(**kwargs)
 
-        for name, node in visit_nodes(dag, resume=resume):
+        for name, node in visit_nodes(dag):
             cubed_pipeline = node["pipeline"]
 
             inputs = list(dag.predecessors(name))

@@ -9,7 +9,7 @@ class MemoryWarningCallback(Callback):
     def on_compute_start(self, event):
         # store ops keyed by name
         self.ops = {}
-        for name, node in visit_nodes(event.dag, event.resume):
+        for name, node in visit_nodes(event.dag):
             primitive_op = node["primitive_op"]
             self.ops[name] = primitive_op
 

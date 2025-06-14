@@ -6,7 +6,7 @@ import tempfile
 import uuid
 from datetime import datetime
 from functools import lru_cache
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import networkx as nx
 import zarr
@@ -16,7 +16,7 @@ from cubed.primitive.blockwise import BlockwiseSpec
 from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
-from cubed.storage.zarr import LazyZarrArray
+from cubed.storage.zarr import LazyZarrArray, open_if_lazy_zarr_array
 from cubed.utils import (
     chunk_memory,
     extract_stack_summaries,
@@ -24,6 +24,11 @@ from cubed.utils import (
     join_path,
     memory_repr,
 )
+
+try:
+    from zarr.errors import ArrayNotFoundError  # type: ignore
+except ImportError:
+    ArrayNotFoundError = FileNotFoundError  # zarr-python 3
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
@@ -297,16 +302,22 @@ class Plan:
         )
         dag = finalized_plan.dag
 
+        if resume:
+            # mark nodes as computed so they are not visited by visit_nodes
+            dag = dag.copy()
+            nodes = {n: d for (n, d) in dag.nodes(data=True)}
+            for name in list(nx.topological_sort(dag)):
+                dag.nodes[name]["computed"] = already_computed(name, dag, nodes)
+
         compute_id = f"compute-{datetime.now().strftime('%Y%m%dT%H%M%S.%f')}"
 
         if callbacks is not None:
-            event = ComputeStartEvent(compute_id, dag, resume)
+            event = ComputeStartEvent(compute_id, dag)
             [callback.on_compute_start(event) for callback in callbacks]
         executor.execute_dag(
             dag,
             compute_id=compute_id,
             callbacks=callbacks,
-            resume=resume,
             spec=spec,
             **kwargs,
         )
@@ -498,11 +509,10 @@ class FinalizedPlan:
     def __init__(self, dag):
         self.dag = dag
 
-    def max_projected_mem(self, resume=None):
+    def max_projected_mem(self):
         """Return the maximum projected memory across all tasks to execute this plan."""
         projected_mem_values = [
-            node["primitive_op"].projected_mem
-            for _, node in visit_nodes(self.dag, resume=resume)
+            node["primitive_op"].projected_mem for _, node in visit_nodes(self.dag)
         ]
         return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
@@ -514,10 +524,10 @@ class FinalizedPlan:
         """Return the number of primitive operations in this plan."""
         return len(list(visit_nodes(self.dag)))
 
-    def num_tasks(self, resume=None):
+    def num_tasks(self):
         """Return the number of tasks needed to execute this plan."""
         tasks = 0
-        for _, node in visit_nodes(self.dag, resume=resume):
+        for _, node in visit_nodes(self.dag):
             tasks += node["primitive_op"].num_tasks
         return tasks
 
@@ -589,3 +599,35 @@ def create_zarr_arrays(lazy_zarr_arrays, allowed_mem, reserved_mem):
         num_tasks=num_tasks,
         fusable_with_predecessors=False,
     )
+
+
+def already_computed(name, dag, nodes: Dict[str, Any]) -> bool:
+    """
+    Return True if the array for a node doesn't have a pipeline to compute it,
+    or if all its outputs have already been computed (all chunks are present).
+    """
+    pipeline = nodes[name].get("pipeline", None)
+    if pipeline is None:
+        return True
+
+    # if no outputs have targets then need to compute (this is the create-arrays case)
+    if all(
+        [nodes[output].get("target", None) is None for output in dag.successors(name)]
+    ):
+        return False
+
+    for output in dag.successors(name):
+        target = nodes[output].get("target", None)
+        if target is not None:
+            try:
+                target = open_if_lazy_zarr_array(target)
+                if not hasattr(target, "nchunks_initialized"):
+                    raise NotImplementedError(
+                        f"Zarr array type {type(target)} does not support resume since it doesn't have a 'nchunks_initialized' property"
+                    )
+                # this check can be expensive since it has to list the directory to find nchunks_initialized
+                if target.ndim == 0 or target.nchunks_initialized != target.nchunks:
+                    return False
+            except ArrayNotFoundError:
+                return False
+    return True

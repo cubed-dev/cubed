@@ -167,7 +167,6 @@ def map_unordered(
 def execute_dag(
     dag: MultiDiGraph,
     callbacks: Optional[Sequence[Callback]] = None,
-    resume: Optional[bool] = None,
     spec: Optional[Spec] = None,
     compute_arrays_in_parallel: Optional[bool] = None,
     **kwargs,
@@ -188,7 +187,7 @@ def execute_dag(
             )
     with RetryingFunctionExecutor(function_executor) as executor:
         if not compute_arrays_in_parallel:
-            for name, node in visit_nodes(dag, resume=resume):
+            for name, node in visit_nodes(dag):
                 handle_operation_start_callbacks(callbacks, name)
                 pipeline = node["pipeline"]
                 for result, stats in map_unordered(
@@ -207,7 +206,7 @@ def execute_dag(
                 ):
                     handle_callbacks(callbacks, result, stats)
         else:
-            for gen in visit_node_generations(dag, resume=resume):
+            for gen in visit_node_generations(dag):
                 group_map_functions = []
                 group_map_iterdata = []
                 group_names = []
@@ -262,7 +261,6 @@ class LithopsExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **kwargs,
@@ -271,7 +269,6 @@ class LithopsExecutor(DagExecutor):
         execute_dag(
             dag,
             callbacks=callbacks,
-            resume=resume,
             spec=spec,
             compute_id=compute_id,
             **merged_kwargs,

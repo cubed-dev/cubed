@@ -10,7 +10,7 @@ from cubed.runtime.types import Callback
 class HistoryCallback(Callback):
     def on_compute_start(self, event):
         plan = []
-        for name, node in visit_nodes(event.dag, event.resume):
+        for name, node in visit_nodes(event.dag):
             primitive_op = node["primitive_op"]
             plan.append(
                 dict(

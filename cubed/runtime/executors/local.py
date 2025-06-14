@@ -39,12 +39,11 @@ class SingleThreadedExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **kwargs,
     ) -> None:
-        for name, node in visit_nodes(dag, resume=resume):
+        for name, node in visit_nodes(dag):
             handle_operation_start_callbacks(callbacks, name)
             pipeline: CubedPipeline = node["pipeline"]
             for m in pipeline.mappable:
@@ -130,7 +129,6 @@ class ThreadsExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **kwargs,
@@ -140,7 +138,6 @@ class ThreadsExecutor(DagExecutor):
             self._async_execute_dag(
                 dag,
                 callbacks=callbacks,
-                resume=resume,
                 spec=spec,
                 compute_id=compute_id,
                 **merged_kwargs,
@@ -151,7 +148,6 @@ class ThreadsExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_arrays_in_parallel: Optional[bool] = None,
         **kwargs,
@@ -171,7 +167,6 @@ class ThreadsExecutor(DagExecutor):
                 create_futures_func,
                 dag=dag,
                 callbacks=callbacks,
-                resume=resume,
                 compute_arrays_in_parallel=compute_arrays_in_parallel,
                 **kwargs,
             )
@@ -224,7 +219,6 @@ class ProcessesExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **kwargs,
@@ -234,7 +228,6 @@ class ProcessesExecutor(DagExecutor):
             self._async_execute_dag(
                 dag,
                 callbacks=callbacks,
-                resume=resume,
                 spec=spec,
                 compute_id=compute_id,
                 **merged_kwargs,
@@ -245,7 +238,6 @@ class ProcessesExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_arrays_in_parallel: Optional[bool] = None,
         **kwargs,
@@ -282,7 +274,6 @@ class ProcessesExecutor(DagExecutor):
                 create_futures_func,
                 dag=dag,
                 callbacks=callbacks,
-                resume=resume,
                 compute_arrays_in_parallel=compute_arrays_in_parallel,
                 **kwargs,
             )

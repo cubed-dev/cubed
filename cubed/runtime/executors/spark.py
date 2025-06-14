@@ -49,7 +49,6 @@ class SparkExecutor(DagExecutor):
         self,
         dag: MultiDiGraph,
         callbacks: Optional[Sequence[Callback]] = None,
-        resume: Optional[bool] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
         **kwargs: Any,
@@ -68,7 +67,7 @@ class SparkExecutor(DagExecutor):
         # Create a Spark session
         spark = spark_builder.getOrCreate()
 
-        for name, node in visit_nodes(dag, resume=resume):
+        for name, node in visit_nodes(dag):
             handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
             # Create an RDD from pipeline.mappable.
