@@ -11,6 +11,8 @@ from cubed.core import reduction, scan
 
 
 def cumulative_sum(x, /, *, axis=None, dtype=None, include_initial=False, device=None):
+    if include_initial:
+        raise NotImplementedError("include_initial is not supported in cumulative_sum")
     dtype = _upcast_integral_dtypes(
         x,
         dtype,
@@ -21,9 +23,18 @@ def cumulative_sum(x, /, *, axis=None, dtype=None, include_initial=False, device
         fname="cumulative_sum",
         device=device,
     )
-    return scan(
-        x, preop=nxp.sum, func=nxp.cumulative_sum, binop=nxp.add, identity=0, axis=axis
-    )
+    return scan(x, preop=nxp.sum, func=_cumulative_sum_func, binop=nxp.add, axis=axis)
+
+
+def _cumulative_sum_func(a, /, *, axis=None, dtype=None, include_initial=False):
+    out = nxp.cumulative_sum(a, axis=axis, dtype=dtype, include_initial=include_initial)
+    if include_initial:
+        # we don't yet support including the final element as it complicates chunk sizing
+        ind = tuple(
+            slice(a.shape[i]) if i == axis else slice(None) for i in range(a.ndim)
+        )
+        out = out[ind]
+    return out
 
 
 def max(x, /, *, axis=None, keepdims=False, split_every=None):

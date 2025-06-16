@@ -23,7 +23,6 @@ from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
-from cubed.primitive.blockwise import key_to_slices
 from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
@@ -1684,40 +1683,16 @@ def smallest_blockdim(blockdims):
     return out
 
 
-def _scan_binop(
-    out: np.ndarray,
-    left: "Array",
-    right: "Array",
-    *,
-    binop: Callable,
-    block_id: tuple[int, ...],
-    axis: int,
-    identity: Any,
-) -> "Array":
-    # Get the underlying Zarr arrays so we can access directly
-    left = left.zarray
-    right = right.zarray
-
-    left_slicer = key_to_slices(block_id, left)
-    right_slicer = list(left_slicer)
-
-    # For the first block, we add the identity element
-    # For all other blocks `k`, we add the `k-1` element along `axis`
-    right_slicer[axis] = slice(block_id[axis] - 1, block_id[axis])
-    right_slicer = tuple(right_slicer)
-    right_ = right[right_slicer] if block_id[axis] > 0 else identity
-    return binop(left[left_slicer], right_)
-
-
 def scan(
     array: "Array",
     func: Callable,
     *,
     preop: Callable,
     binop: Callable,
-    identity: Any,
     axis: int,
     dtype=None,
+    include_initial=False,
+    split_every: int = 5,
 ) -> "Array":
     """
     Generic parallel scan.
@@ -1732,10 +1707,10 @@ def scan(
         along ``axis``. For ``np.cumsum`` this is ``np.sum`` and for ``np.cumprod`` this is ``np.prod``.
     binop: callable
         Associated binary operator like ``np.cumsum->add`` or ``np.cumprod->mul``
-    identity: Any
-        Associated identity element more scan like 0 for ``np.cumsum`` and 1 for ``np.cumprod``.
     axis: int
     dtype: dtype
+    include_initial: bool
+        Whether to include the identity value as the first value in the output.
 
     Notes
     -----
@@ -1750,17 +1725,22 @@ def scan(
     cumsum
     cumprod
     """
+
+    # Note that if include_initial=True the final value is *not* included in the output.
+    # To include the final value is tricky with constant chunk sizes, since if the last
+    # chunk is full then a new chunk of size one needs to be added for the final value.
+    # TODO: add an include_final argument (default True)
+
     axis = validate_axis(axis, array.ndim)
 
     # Blelloch (1990) out-of-core algorithm.
     # 1. First, scan blockwise
-    scanned = map_blocks(func, array, axis=axis)
+    scanned = map_blocks(func, array, axis=axis, include_initial=include_initial)
     # If there is only a single chunk, we can be done
     if array.numblocks[axis] == 1:
         return scanned
 
     # 2. Calculate the blockwise reduction using `preop`
-    # TODO: could also merge(1,2) by returning {"scan": np.cumsum(array), "preop": np.sum(array)} in `scanned`
     reduced_chunks = tuple(
         (1,) * array.numblocks[i] if i == axis else c
         for i, c in enumerate(array.chunks)
@@ -1771,7 +1751,7 @@ def scan(
     #    Here we diverge from Blelloch, who runs a balanced tree algorithm to calculate the scan.
     #    Instead we generalize recursively apply the scan to `reduced`.
     # 3a. First we merge to a decent intermediate chunksize since reduced.chunksize[axis] == 1
-    new_chunksize = min(reduced.shape[axis], reduced.chunksize[axis] * 5)
+    new_chunksize = min(reduced.shape[axis], reduced.chunksize[axis] * split_every)
     new_chunks = (
         reduced.chunksize[:axis] + (new_chunksize,) + reduced.chunksize[axis + 1 :]
     )
@@ -1779,20 +1759,48 @@ def scan(
     merged = merge_chunks(reduced, new_chunks)
 
     # 3b. Recursively scan this merged array to generate the increment for each block of `scanned`
+    #     Note we always want to include the initial identity value (but not the final value)
+    #     so blocks line up correctly.
     increment = scan(
-        merged, func, preop=preop, binop=binop, identity=identity, axis=axis
+        merged,
+        func,
+        preop=preop,
+        binop=binop,
+        axis=axis,
+        include_initial=True,
     )
 
     # 4. Back to Blelloch. Now that we have the increment, add it to the blocks of `scanned`.
-    #    Use map_direct since the chunks of increment and scanned aren't aligned anymore.
+    #    Use general_blockwise with a key function since the chunks of increment and scanned aren't aligned anymore.
     assert increment.shape[axis] == scanned.numblocks[axis]
+
+    def key_function(out_key):
+        out_coords = out_key[1:]
+        inc_coords = tuple(
+            bi // split_every if i == axis else bi for i, bi in enumerate(out_coords)
+        )
+        return ((scanned.name,) + out_coords, (increment.name,) + inc_coords)
+
+    def _scan_binop(scn, inc, block_id=None, **kwargs):
+        bi = block_id[axis] % split_every
+        ind = tuple(
+            slice(bi, bi + 1) if i == axis else slice(None) for i in range(inc.ndim)
+        )
+        return binop(scn, inc[ind])
+
     # 5. Bada-bing, bada-boom.
-    return map_direct(
-        partial(_scan_binop, binop=binop, axis=axis, identity=identity),
+    out = general_blockwise(
+        _scan_binop,
+        key_function,
         scanned,
         increment,
-        shape=scanned.shape,
-        dtype=scanned.dtype,
-        chunks=scanned.chunks,
+        shapes=[scanned.shape],
+        dtypes=[scanned.dtype],
+        chunkss=[scanned.chunks],
         extra_projected_mem=scanned.chunkmem * 2,  # arbitrary
     )
+
+    from cubed import Array
+
+    assert isinstance(out, Array)  # single output
+    return out
