@@ -50,6 +50,10 @@ def open_backend_array(
         from cubed.storage.backends.zarr_python_v3 import open_zarr_v3_array
 
         open_func = open_zarr_v3_array
+    elif storage_name == "zarrs-python":
+        from cubed.storage.backends.zarrs_python import open_zarr_v3_array
+
+        open_func = open_zarr_v3_array
     elif storage_name == "tensorstore":
         from cubed.storage.backends.tensorstore import open_tensorstore_array
 

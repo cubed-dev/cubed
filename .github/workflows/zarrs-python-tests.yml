@@ -1,0 +1,47 @@
+name: Zarrs-python tests
+
+on:
+  pull_request:
+  schedule:
+    # Every weekday at 03:43 UTC, see https://crontab.guru/
+    - cron: "43 3 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.12"]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[test]' 'zarrs'
+
+      - name: Run tests
+        run: |
+          pytest -v
+        env:
+          CUBED_STORAGE_NAME: zarrs-python
