@@ -270,9 +270,10 @@ def test_multiple_ops(spec, executor):
         ({}, ((2, 1), (1, 1, 1))),  # unchanged
     ],
 )
-def test_rechunk(spec, executor, new_chunks, expected_chunks):
+@pytest.mark.parametrize("use_new_impl", [True, False])
+def test_rechunk(spec, executor, new_chunks, expected_chunks, use_new_impl):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
-    b = a.rechunk(new_chunks)
+    b = a.rechunk(new_chunks, use_new_impl=use_new_impl)
     assert b.chunks == expected_chunks
     assert_array_equal(
         b.compute(executor=executor),
@@ -280,9 +281,10 @@ def test_rechunk(spec, executor, new_chunks, expected_chunks):
     )
 
 
-def test_rechunk_same_chunks(spec):
+@pytest.mark.parametrize("use_new_impl", [True, False])
+def test_rechunk_same_chunks(spec, use_new_impl):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
-    b = a.rechunk((2, 1))
+    b = a.rechunk((2, 1), use_new_impl=use_new_impl)
     assert b is a
     task_counter = TaskCounter()
     res = b.compute(callbacks=[task_counter])
@@ -293,11 +295,12 @@ def test_rechunk_same_chunks(spec):
 
 
 # see also test_rechunk.py
-def test_rechunk_intermediate(tmp_path):
-    # factor of 4 is for chunks copies, extra 8 is for map_selection
-    spec = cubed.Spec(tmp_path, allowed_mem=5 * 8 * 4 + 8)
+@pytest.mark.parametrize(("use_new_impl", "factor"), [(True, 5), (False, 4)])
+def test_rechunk_intermediate(tmp_path, use_new_impl, factor):
+    # factor is for chunks copies, extra 8 is for map_selection
+    spec = cubed.Spec(tmp_path, allowed_mem=5 * 8 * factor + 8)
     a = xp.ones((5, 5), chunks=(1, 5), spec=spec)
-    b = a.rechunk((5, 1))
+    b = a.rechunk((5, 1), use_new_impl=use_new_impl)
     assert_array_equal(b.compute(), np.ones((5, 5)))
     # intermediates = [n for (n, d) in b.plan.dag.nodes(data=True) if "-int" in d["name"]]
     # assert len(intermediates) == 1
@@ -310,11 +313,12 @@ def test_rechunk_intermediate(tmp_path):
 
 
 def test_rechunk_merge_chunks_optimization():
+    # new impl doesn't use this optimization
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
         chunks=(2, 1),
     )
-    b = a.rechunk((4, 2))
+    b = a.rechunk((4, 2), use_new_impl=False)
     assert b.chunks == ((4,), (2, 2))
     assert_array_equal(
         b.compute(),
