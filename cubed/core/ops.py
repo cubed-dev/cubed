@@ -1740,29 +1740,29 @@ def scan(
     if array.numblocks[axis] == 1:
         return scanned
 
-    # 2. Calculate the blockwise reduction using `preop`
-    reduced_chunks = tuple(
-        (1,) * array.numblocks[i] if i == axis else c
-        for i, c in enumerate(array.chunks)
+    # 2. Calculate the reduction using `preop`
+    #    Use `partial_reduce` to also merge to a decent intermediate chunksize
+    #    since reduced.chunksize[axis] == 1
+
+    def identity_func(a, **kwargs):
+        return a
+
+    split_size = min(split_every, array.numblocks[axis])
+    reduced = partial_reduce(
+        array,
+        initial_func=partial(preop, axis=axis, keepdims=True),
+        func=identity_func,
+        split_every={axis: split_size},
+        combine_sizes={axis: split_size},
     )
-    reduced = map_blocks(preop, array, chunks=reduced_chunks, axis=axis, keepdims=True)
 
     # 3. Now scan `reduced` to generate the increments for each block of `scanned`.
     #    Here we diverge from Blelloch, who runs a balanced tree algorithm to calculate the scan.
     #    Instead we generalize recursively apply the scan to `reduced`.
-    # 3a. First we merge to a decent intermediate chunksize since reduced.chunksize[axis] == 1
-    new_chunksize = min(reduced.shape[axis], reduced.chunksize[axis] * split_every)
-    new_chunks = (
-        reduced.chunksize[:axis] + (new_chunksize,) + reduced.chunksize[axis + 1 :]
-    )
-
-    merged = merge_chunks(reduced, new_chunks)
-
-    # 3b. Recursively scan this merged array to generate the increment for each block of `scanned`
-    #     Note we always want to include the initial identity value (but not the final value)
-    #     so blocks line up correctly.
+    #    Note we always want to include the initial identity value (but not the final value)
+    #    so blocks line up correctly.
     increment = scan(
-        merged,
+        reduced,
         func,
         preop=preop,
         binop=binop,
