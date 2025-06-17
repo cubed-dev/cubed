@@ -1154,13 +1154,9 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
 
     normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
     if x.chunks == normalized_chunks:
-        return x
+        return
     # normalizing takes care of dict args for chunks
     target_chunks = to_chunksize(normalized_chunks)
-
-    # merge chunks special case
-    if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
-        return merge_chunks(x, target_chunks)
 
     spec = x.spec
     source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
