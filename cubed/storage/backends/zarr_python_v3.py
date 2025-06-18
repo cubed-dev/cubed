@@ -4,6 +4,9 @@ import zarr
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
+# always write empty chunks to avoid a check for each chunk
+zarr.config.set({"array.write_empty_chunks": True})
+
 
 class ZarrV3ArrayGroup(dict):
     def __init__(
