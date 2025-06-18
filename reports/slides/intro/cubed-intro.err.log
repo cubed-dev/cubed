@@ -32,14 +32,14 @@ c.visualize()
 
 [31m---------------------------------------------------------------------------[39m
 [31mFileNotFoundError[39m                         Traceback (most recent call last)
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1826[39m, in [36mDot.create[39m[34m(self, prog, format, encoding)[39m
-[32m   1825[39m [38;5;28;01mtry[39;00m:
-[32m-> [39m[32m1826[39m     stdout_data, stderr_data, process = [43mcall_graphviz[49m[43m([49m
-[32m   1827[39m [43m        [49m[43mprogram[49m[43m=[49m[43mprog[49m[43m,[49m
-[32m   1828[39m [43m        [49m[43marguments[49m[43m=[49m[43marguments[49m[43m,[49m
-[32m   1829[39m [43m        [49m[43mworking_dir[49m[43m=[49m[43mtmp_dir[49m[43m,[49m
-[32m   1830[39m [43m    [49m[43m)[49m
-[32m   1831[39m [38;5;28;01mexcept[39;00m [38;5;167;01mOSError[39;00m [38;5;28;01mas[39;00m e:
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1824[39m, in [36mDot.create[39m[34m(self, prog, format, encoding)[39m
+[32m   1823[39m [38;5;28;01mtry[39;00m:
+[32m-> [39m[32m1824[39m     stdout_data, stderr_data, process = [43mcall_graphviz[49m[43m([49m
+[32m   1825[39m [43m        [49m[43mprogram[49m[43m=[49m[43mprog[49m[43m,[49m
+[32m   1826[39m [43m        [49m[43marguments[49m[43m=[49m[43marguments[49m[43m,[49m
+[32m   1827[39m [43m        [49m[43mworking_dir[49m[43m=[49m[43mtmp_dir[49m[43m,[49m
+[32m   1828[39m [43m    [49m[43m)[49m
+[32m   1829[39m [38;5;28;01mexcept[39;00m [38;5;167;01mOSError[39;00m [38;5;28;01mas[39;00m e:
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:249[39m, in [36mcall_graphviz[39m[34m(program, arguments, working_dir, **kwargs)[39m
 [32m    247[39m program_with_args = [program] + arguments
@@ -126,19 +126,19 @@ During handling of the above exception, another exception occurred:
 [32m    488[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
 [32m    489[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1732[39m, in [36mDot.write[39m[34m(self, path, prog, format, encoding)[39m
-[32m   1730[39m         f.write(s)
-[32m   1731[39m [38;5;28;01melse[39;00m:
-[32m-> [39m[32m1732[39m     s = [38;5;28;43mself[39;49m[43m.[49m[43mcreate[49m[43m([49m[43mprog[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m,[49m[43m [49m[43mencoding[49m[43m=[49m[43mencoding[49m[43m)[49m
-[32m   1733[39m     [38;5;28;01mwith[39;00m [38;5;28mopen[39m(path, mode=[33m"[39m[33mwb[39m[33m"[39m) [38;5;28;01mas[39;00m f:
-[32m   1734[39m         f.write(s)  [38;5;66;03m# type: ignore[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1730[39m, in [36mDot.write[39m[34m(self, path, prog, format, encoding)[39m
+[32m   1728[39m         f.write(s)
+[32m   1729[39m [38;5;28;01melse[39;00m:
+[32m-> [39m[32m1730[39m     s = [38;5;28;43mself[39;49m[43m.[49m[43mcreate[49m[43m([49m[43mprog[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m,[49m[43m [49m[43mencoding[49m[43m=[49m[43mencoding[49m[43m)[49m
+[32m   1731[39m     [38;5;28;01mwith[39;00m [38;5;28mopen[39m(path, mode=[33m"[39m[33mwb[39m[33m"[39m) [38;5;28;01mas[39;00m f:
+[32m   1732[39m         f.write(s)  [38;5;66;03m# type: ignore[39;00m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1835[39m, in [36mDot.create[39m[34m(self, prog, format, encoding)[39m
-[32m   1833[39m     args = [38;5;28mlist[39m(e.args)  [38;5;66;03m# type: ignore[39;00m
-[32m   1834[39m     args[[32m1[39m] = [33mf[39m[33m'[39m[33m"[39m[38;5;132;01m{[39;00mprog[38;5;132;01m}[39;00m[33m"[39m[33m not found in path.[39m[33m'[39m  [38;5;66;03m# type: ignore[39;00m
-[32m-> [39m[32m1835[39m     [38;5;28;01mraise[39;00m [38;5;167;01mOSError[39;00m(*args)
-[32m   1836[39m [38;5;28;01melse[39;00m:
-[32m   1837[39m     [38;5;28;01mraise[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1833[39m, in [36mDot.create[39m[34m(self, prog, format, encoding)[39m
+[32m   1831[39m     args = [38;5;28mlist[39m(e.args)  [38;5;66;03m# type: ignore[39;00m
+[32m   1832[39m     args[[32m1[39m] = [33mf[39m[33m'[39m[33m"[39m[38;5;132;01m{[39;00mprog[38;5;132;01m}[39;00m[33m"[39m[33m not found in path.[39m[33m'[39m  [38;5;66;03m# type: ignore[39;00m
+[32m-> [39m[32m1833[39m     [38;5;28;01mraise[39;00m [38;5;167;01mOSError[39;00m(*args)
+[32m   1834[39m [38;5;28;01melse[39;00m:
+[32m   1835[39m     [38;5;28;01mraise[39;00m
 
 [31mFileNotFoundError[39m: [Errno 2] "dot" not found in path.
 

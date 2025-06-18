@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=9467b470"></script>
+    <script src="../../_static/documentation_options.js?v=2c0356c4"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -478,14 +478,14 @@ document.write(`
 <div class="cell_output docutils container">
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
 <span class="ne">FileNotFoundError</span><span class="g g-Whitespace">                         </span>Traceback (most recent call last)
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1826,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1825</span> <span class="k">try</span><span class="p">:</span>
-<span class="ne">-&gt; </span><span class="mi">1826</span>     <span class="n">stdout_data</span><span class="p">,</span> <span class="n">stderr_data</span><span class="p">,</span> <span class="n">process</span> <span class="o">=</span> <span class="n">call_graphviz</span><span class="p">(</span>
-<span class="g g-Whitespace">   </span><span class="mi">1827</span>         <span class="n">program</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1828</span>         <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1829</span>         <span class="n">working_dir</span><span class="o">=</span><span class="n">tmp_dir</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1830</span>     <span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1831</span> <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1824,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1823</span> <span class="k">try</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1824</span>     <span class="n">stdout_data</span><span class="p">,</span> <span class="n">stderr_data</span><span class="p">,</span> <span class="n">process</span> <span class="o">=</span> <span class="n">call_graphviz</span><span class="p">(</span>
+<span class="g g-Whitespace">   </span><span class="mi">1825</span>         <span class="n">program</span><span class="o">=</span><span class="n">prog</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1826</span>         <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1827</span>         <span class="n">working_dir</span><span class="o">=</span><span class="n">tmp_dir</span><span class="p">,</span>
+<span class="g g-Whitespace">   </span><span class="mi">1828</span>     <span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1829</span> <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 
 <span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:249,</span> in <span class="ni">call_graphviz</span><span class="nt">(program, arguments, working_dir, **kwargs)</span>
 <span class="g g-Whitespace">    </span><span class="mi">247</span> <span class="n">program_with_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">program</span><span class="p">]</span> <span class="o">+</span> <span class="n">arguments</span>
@@ -572,19 +572,19 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">488</span> <span class="k">try</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
 <span class="g g-Whitespace">    </span><span class="mi">489</span>     <span class="kn">import</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">display</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1732,</span> in <span class="ni">Dot.write</span><span class="nt">(self, path, prog, format, encoding)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1730</span>         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1731</span> <span class="k">else</span><span class="p">:</span>
-<span class="ne">-&gt; </span><span class="mi">1732</span>     <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">prog</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1733</span>     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">1734</span>         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1730,</span> in <span class="ni">Dot.write</span><span class="nt">(self, path, prog, format, encoding)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1728</span>         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1729</span> <span class="k">else</span><span class="p">:</span>
+<span class="ne">-&gt; </span><span class="mi">1730</span>     <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">prog</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1731</span>     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1732</span>         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1835,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1833</span>     <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="g g-Whitespace">   </span><span class="mi">1834</span>     <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">prog</span><span class="si">}</span><span class="s1">&quot; not found in path.&#39;</span>  <span class="c1"># type: ignore</span>
-<span class="ne">-&gt; </span><span class="mi">1835</span>     <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1836</span> <span class="k">else</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">1837</span>     <span class="k">raise</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/site-packages/pydot/core.py:1833,</span> in <span class="ni">Dot.create</span><span class="nt">(self, prog, format, encoding)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1831</span>     <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="g g-Whitespace">   </span><span class="mi">1832</span>     <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&quot;</span><span class="si">{</span><span class="n">prog</span><span class="si">}</span><span class="s1">&quot; not found in path.&#39;</span>  <span class="c1"># type: ignore</span>
+<span class="ne">-&gt; </span><span class="mi">1833</span>     <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+<span class="g g-Whitespace">   </span><span class="mi">1834</span> <span class="k">else</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">1835</span>     <span class="k">raise</span>
 
 <span class="ne">FileNotFoundError</span>: [Errno 2] &quot;dot&quot; not found in path.
 </pre></div>
