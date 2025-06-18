@@ -836,6 +836,15 @@ def test_cumulative_sum_2d(axis):
     )
 
 
+def test_cumulative_sum_2d_recursive(executor):
+    a = xp.ones((10, 100), chunks=(10, 10))
+    b = xp.cumulative_sum(a, axis=1)
+    assert_array_equal(
+        b.compute(executor=executor),
+        np.cumulative_sum(np.ones((10, 100)), axis=1),
+    )
+
+
 def test_cumulative_sum_1d():
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=(4,))
     b = xp.cumulative_sum(a, axis=0)
@@ -843,6 +852,12 @@ def test_cumulative_sum_1d():
         b.compute(),
         np.cumulative_sum(np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), axis=0),
     )
+
+
+def test_cumulative_sum_unsupported_include_initial(spec):
+    with pytest.raises(NotImplementedError):
+        a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=(4,))
+        xp.cumulative_sum(a, axis=0, include_initial=True)
 
 
 def test_mean_axis_0(spec, executor):
