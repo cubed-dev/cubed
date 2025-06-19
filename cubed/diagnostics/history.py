@@ -17,6 +17,7 @@ class HistoryCallback(Callback):
                     name=name,
                     op_name=node["op_name"],
                     projected_mem=primitive_op.projected_mem,
+                    allowed_mem=primitive_op.allowed_mem,
                     reserved_mem=primitive_op.reserved_mem,
                     num_tasks=primitive_op.num_tasks,
                 )
