@@ -78,7 +78,7 @@ def generate_mem_usage(events_df, plan_df):
     )
 
     peak_measured_mem = events_df["peak_measured_mem_end"].max() / 1_000_000
-    ax.axhline(peak_measured_mem, label="max peak measured", color="#6fa8dc")
+    ax.axhline(peak_measured_mem, label="max actual usage", color="#6fa8dc")
 
     events_df.plot(
         kind="line",
