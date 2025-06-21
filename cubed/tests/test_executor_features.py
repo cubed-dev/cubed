@@ -14,6 +14,7 @@ import cubed.array_api as xp
 import cubed.random
 from cubed.diagnostics import ProgressBar
 from cubed.diagnostics.history import HistoryCallback
+from cubed.diagnostics.mem_usage import MemoryVisualizationCallback
 from cubed.diagnostics.mem_warn import MemoryWarningCallback
 from cubed.diagnostics.rich import RichProgressBar
 from cubed.diagnostics.timeline import TimelineVisualizationCallback
@@ -101,13 +102,15 @@ def test_callbacks(spec, executor):
     progress = TqdmProgressBar()
     hist = HistoryCallback()
     timeline_viz = TimelineVisualizationCallback()
+    memory_viz = MemoryVisualizationCallback()
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
     assert_array_equal(
         c.compute(
-            executor=executor, callbacks=[task_counter, progress, hist, timeline_viz]
+            executor=executor,
+            callbacks=[task_counter, progress, hist, timeline_viz, memory_viz],
         ),
         np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
     )
