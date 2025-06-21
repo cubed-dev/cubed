@@ -1710,7 +1710,7 @@ def scan(
 
     Notes
     -----
-    This method uses a variant of the Blelloch (1989) alogrithm.
+    This method uses a variant of the Blelloch (1989) algorithm.
 
     Returns
     -------

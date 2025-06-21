@@ -2,7 +2,7 @@
 
 ## Local machine
 
-All the examples can be run on your laptop, so you can try them out in a familar environment before moving to the cloud.
+All the examples can be run on your laptop, so you can try them out in a familiar environment before moving to the cloud.
 No extra set up is necessary in this case.
 
 (cloud-set-up)=
