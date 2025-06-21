@@ -214,7 +214,7 @@ Note that `batch_size` is not currently supported for Lithops.
 | `region`                     | N/A     | The cloud region to run in. This must be set to match the region of your cloud store to avoid data transfer fees. See Modal's [Region selection](https://modal.com/docs/guide/region-selection) page for possible values. |
 | `retries`                    | 2       | The number of times to retry a task if it fails.                                    |
 | `timeout`                    | 180     | Tasks that take longer than the timeout will be automatically killed and retried.   |
-| `enable_output`              | False   | Print Modal output to stdout and stderr things for debuggging.                      |
+| `enable_output`              | False   | Print Modal output to stdout and stderr things for debugging.                      |
 | `use_backups`                | `True`  | Whether to use backup tasks for mitigating stragglers.                              |
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. The default is not to batch. |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                           |

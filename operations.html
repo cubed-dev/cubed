@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=8128f198"></script>
+    <script src="_static/documentation_options.js?v=5bad0ff6"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -455,7 +455,7 @@ document.write(`
 <li><p><strong>Single</strong> input, <strong>single</strong> output</p></li>
 </ul>
 <p>It is a core operation that is implemented using a <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation called <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> that reads multiple blocks and performs the reduction operation on them.
-The <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> operations are arranged in a tree (<code class="docutils literal notranslate"><span class="pre">tree_reduce</span></code>) with multiple rounds until there’s a single block in each reduction axis. Finally an aggregrate <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation is applied to the results.</p>
+The <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> operations are arranged in a tree (<code class="docutils literal notranslate"><span class="pre">tree_reduce</span></code>) with multiple rounds until there’s a single block in each reduction axis. Finally an aggregate <code class="docutils literal notranslate"><span class="pre">blockwise</span></code> operation is applied to the results.</p>
 <p>Here is an example of reducing over the first axis, with two rounds of <code class="docutils literal notranslate"><span class="pre">partial_reduce</span></code> operations:</p>
 <p><img alt="The reduction core operation" src="_images/reduction_new.svg" /></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">arg_reduction</span></code> works similarly, but uses different functions to return indexes rather than values.</p>

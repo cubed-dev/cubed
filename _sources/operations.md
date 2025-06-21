@@ -92,7 +92,7 @@ The `reduction` operation reduces an array along one or more axes.
 * __Single__ input, __single__ output
 
 It is a core operation that is implemented using a `blockwise` operation called `partial_reduce` that reads multiple blocks and performs the reduction operation on them.
-The `partial_reduce` operations are arranged in a tree (`tree_reduce`) with multiple rounds until there's a single block in each reduction axis. Finally an aggregrate `blockwise` operation is applied to the results.
+The `partial_reduce` operations are arranged in a tree (`tree_reduce`) with multiple rounds until there's a single block in each reduction axis. Finally an aggregate `blockwise` operation is applied to the results.
 
 Here is an example of reducing over the first axis, with two rounds of `partial_reduce` operations:
 
