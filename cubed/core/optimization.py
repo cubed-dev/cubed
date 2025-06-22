@@ -96,8 +96,8 @@ def predecessors_unordered(dag, name):
 
 def successors_unordered(dag, name):
     """Return a node's successors in no particular order, with repeats for multiple edges."""
-    for pre, _ in dag.out_edges(name):
-        yield pre
+    for _, succ in dag.out_edges(name):
+        yield succ
 
 
 def predecessor_ops(dag, name):
