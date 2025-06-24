@@ -645,7 +645,9 @@ def quad_means(tmp_path, t_length):
     return m
 
 
-def test_quad_means(tmp_path, t_length=50):
+def test_quad_means(tmp_path):
+    t_length = 50
+
     # run twice, with and without optimization
     # set the random seed to ensure deterministic results
     random.seed(42)
@@ -669,7 +671,9 @@ def test_quad_means(tmp_path, t_length=50):
     assert_array_equal(res0[:], res1[:])
 
 
-def test_quad_means_zarr(tmp_path, t_length=50):
+def test_quad_means_zarr(tmp_path):
+    t_length = 50
+
     # write inputs to Zarr first to test more realistic usage pattern
     spec = cubed.Spec(tmp_path, allowed_mem="2GB", reserved_mem="100MB")
     u = cubed.random.random((t_length, 1, 987, 1920), chunks=(10, 1, -1, -1), spec=spec)

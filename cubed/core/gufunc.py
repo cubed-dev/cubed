@@ -128,9 +128,7 @@ def apply_gufunc(
                 raise ValueError(
                     "Core dimension `'{}'` consists of multiple chunks. To fix, rechunk into a single \
 chunk along this dimension or set `allow_rechunk=True`, but beware that this may increase memory usage \
-significantly.".format(
-                        dim
-                    )
+significantly.".format(dim)
                 )
             # Check if loop dimensions consist of same chunksizes, when they have sizes > 1
             relevant_chunksizes = list(

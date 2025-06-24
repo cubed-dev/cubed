@@ -62,14 +62,14 @@ def test_rechunk_era5(tmp_path, spec, executor):
     # from https://github.com/pangeo-data/rechunker/pull/89
     shape = (350640, 721, 1440)
     source_chunks = (31, 721, 1440)
-    target_chunks = (350640, 10, 10)
+    chunks = (350640, 10, 10)
 
     x = cubed.random.random(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
 
     from cubed.core.ops import _rechunk_plan
 
     i = 0
-    for copy_chunks, target_chunks in _rechunk_plan(x, target_chunks):
+    for copy_chunks, target_chunks in _rechunk_plan(x, chunks):
         # Find the smallest shape that contains the three chunk sizes
         # This will be a lot less than the full ERA5 shape (350640, 721, 1440),
         # making it suitable for running in a test

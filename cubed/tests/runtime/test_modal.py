@@ -7,7 +7,6 @@ modal = pytest.importorskip("modal")
 import asyncio
 
 import fsspec
-import modal
 
 from cubed.runtime.asyncio import async_map_unordered
 from cubed.runtime.executors.modal import modal_create_futures_func
