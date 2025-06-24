@@ -47,7 +47,7 @@ except ImportError:
     pass
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path, reserved_mem):
     return cubed.Spec(tmp_path, allowed_mem=ALLOWED_MEM, reserved_mem=reserved_mem)
 

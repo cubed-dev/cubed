@@ -5,10 +5,15 @@ import cubed as xp
 
 
 @pytest.mark.parametrize(
-    "min_mem, expected_num_stages, expected_max_input_blocks, expected_max_output_blocks",
+    (
+        "min_mem",
+        "expected_num_stages",
+        "expected_max_input_blocks",
+        "expected_max_output_blocks",
+    ),
     [
-        [None, 3, 16, 15],  # multistage rechunk - more stages, lower fan in/out
-        [0, 1, 3771, 3460],  # single stage rechunk - very high fan in/out
+        (None, 3, 16, 15),  # multistage rechunk - more stages, lower fan in/out
+        (0, 1, 3771, 3460),  # single stage rechunk - very high fan in/out
     ],
 )
 def test_rechunk_era5(

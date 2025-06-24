@@ -10,7 +10,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.tests.utils import MAIN_EXECUTORS
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 

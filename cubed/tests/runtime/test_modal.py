@@ -89,7 +89,7 @@ async def run_test(app_function, input, use_backups=False, batch_size=None, **kw
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries",
+    ("timing_map", "n_tasks", "retries"),
     [
         # no failures
         ({}, 3, 2),
@@ -126,7 +126,7 @@ def test_success(timing_map, n_tasks, retries, use_backups):
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries",
+    ("timing_map", "n_tasks", "retries"),
     [
         # too many failures
         ({0: [-1], 1: [-1], 2: [-1, -1, -1]}, 3, 2),
@@ -157,7 +157,7 @@ def test_failure(timing_map, n_tasks, retries, use_backups):
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries",
+    ("timing_map", "n_tasks", "retries"),
     [
         ({0: [-1], 1: [-1], 2: [-1]}, 1000, 2),
     ],
@@ -187,7 +187,7 @@ def test_large_number_of_tasks(timing_map, n_tasks, retries, use_backups):
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries, expected_invocation_counts_overrides",
+    ("timing_map", "n_tasks", "retries", "expected_invocation_counts_overrides"),
     [
         # backup succeeds quickly
         ({0: [60]}, 10, 2, {0: 2}),

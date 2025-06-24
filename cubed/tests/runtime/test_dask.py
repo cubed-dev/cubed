@@ -32,7 +32,7 @@ async def run_test(function, input, retries, use_backups=False, batch_size=None)
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries",
+    ("timing_map", "n_tasks", "retries"),
     [
         # no failures
         ({}, 3, 2),
@@ -63,7 +63,7 @@ def test_success(tmp_path, timing_map, n_tasks, retries, use_backups):
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries",
+    ("timing_map", "n_tasks", "retries"),
     [
         # too many failures
         ({0: [-1], 1: [-1], 2: [-1, -1, -1]}, 3, 2),
@@ -87,7 +87,7 @@ def test_failure(tmp_path, timing_map, n_tasks, retries, use_backups):
 
 # fmt: off
 @pytest.mark.parametrize(
-    "timing_map, n_tasks, retries",
+    ("timing_map", "n_tasks", "retries"),
     [
         ({0: [60]}, 10, 2),
     ],

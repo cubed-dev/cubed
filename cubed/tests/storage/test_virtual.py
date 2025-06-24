@@ -8,7 +8,7 @@ from cubed.storage.virtual import virtual_empty, virtual_offsets
 
 
 @pytest.mark.parametrize(
-    "shape,chunks,index",
+    ("shape", "chunks", "index"),
     [
         ((3,), (2,), 2),
         ((3, 2), (2, 1), (2, 1)),
@@ -40,11 +40,11 @@ def test_virtual_offsets(shape):
         assert v_offsets[1:2, 0:1] == offsets[1:2, 0:1]
 
 
-def test_virtual_offsets_fails():
+def test_virtual_offsets_indexing_fails():
+    v_offsets = virtual_offsets((3,))
     with pytest.raises(NotImplementedError):
-        v_offsets = virtual_offsets((3,))
         v_offsets[0:2]
 
+    v_offsets = virtual_offsets((3, 2))
     with pytest.raises(NotImplementedError):
-        v_offsets = virtual_offsets((3, 2))
         v_offsets[0:2, 1]

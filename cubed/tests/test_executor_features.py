@@ -29,7 +29,7 @@ from cubed.tests.utils import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 

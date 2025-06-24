@@ -6,7 +6,7 @@ import cubed
 import cubed.array_api as xp
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
@@ -71,10 +71,10 @@ def test_int_array_index_2d_no_op(spec, ind):
 
 
 def test_multiple_int_array_indexes(spec):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
     with pytest.raises(NotImplementedError):
-        a = xp.asarray(
-            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-            chunks=(2, 2),
-            spec=spec,
-        )
         a[[1, 2, 1], [2, 1, 0]]

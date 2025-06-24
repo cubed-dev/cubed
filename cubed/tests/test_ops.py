@@ -20,7 +20,7 @@ def test_smallest_blockdim():
 
 
 @pytest.mark.parametrize(
-    "chunks_a, chunks_b, expected_chunksize",
+    ("chunks_a", "chunks_b", "expected_chunksize"),
     [
         ((2,), (4,), (2,)),
         ((4,), (2,), (2,)),
@@ -44,7 +44,7 @@ def test_unify_chunks_elemwise(chunks_a, chunks_b, expected_chunksize):
 
 
 @pytest.mark.parametrize(
-    "chunks_a, chunks_b, expected_chunksize",
+    ("chunks_a", "chunks_b", "expected_chunksize"),
     [
         ((2, 2), (4, 4), (2, 2)),
         ((2, 4), (4, 2), (2, 2)),
@@ -66,7 +66,7 @@ def test_unify_chunks_elemwise_2d(chunks_a, chunks_b, expected_chunksize):
 
 
 @pytest.mark.parametrize(
-    "chunks_a, chunks_b, expected_chunksize",
+    ("chunks_a", "chunks_b", "expected_chunksize"),
     [
         ((2, 2), (4, 4), (2, 2)),
         ((2, 4), (2, 4), (2, 2)),

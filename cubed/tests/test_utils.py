@@ -38,17 +38,17 @@ def test_block_id_to_offset():
         offset = block_id_to_offset(block_id, numblocks)
         assert offset_to_block_id(offset, numblocks) == block_id
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid entry in coordinates array"):
         block_id_to_offset((6, 12), numblocks)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="index 100 is out of bounds for array"):
         offset_to_block_id(100, numblocks)
 
 
 def test_to_chunksize():
     assert to_chunksize(((3, 3, 3, 1),)) == (3,)
     assert to_chunksize(((0,),)) == (1,)  # Zarr doesn't support zero-length chunks
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Array must have regular chunks"):
         to_chunksize(((3, 2, 3, 3, 1),))
 
 
@@ -100,7 +100,9 @@ def test_memory_repr():
     assert memory_repr(1_000_000) == "1.0 MB"
     assert memory_repr(1_000_000_000_000_000) == "1.0 PB"
     assert memory_repr(int(1e18)) == "1.0e+18 bytes"
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Invalid value: -1. Expected a positive integer."
+    ):
         memory_repr(-1)
 
 
