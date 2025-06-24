@@ -8,7 +8,7 @@ from cubed import apply_gufunc
 from cubed.backend_array_api import namespace as nxp
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=1000000)
 

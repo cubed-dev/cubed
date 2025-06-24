@@ -9,7 +9,7 @@ from cubed.array_api.manipulation_functions import reshape_chunks
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
@@ -208,7 +208,7 @@ def test_add_scalars():
 
 
 @pytest.mark.parametrize(
-    "min, max",
+    ("min", "max"),
     [
         (None, None),
         (4, None),
@@ -317,7 +317,7 @@ def test_index_2d_no_op(spec, ind):
 
 
 @pytest.mark.parametrize(
-    "shape, chunks, ind, new_chunks_expected",
+    ("shape", "chunks", "ind", "new_chunks_expected"),
     [
         # step divides chunks exactly
         (20, 4, slice(3, 14, 2), ((4, 2),)),
@@ -339,7 +339,7 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
 
 # fmt: off
 @pytest.mark.parametrize(
-    "shape, chunks, ind, new_chunks_expected",
+    ("shape", "chunks", "ind", "new_chunks_expected"),
     [
         (
             (20, 20),
@@ -358,8 +358,8 @@ def test_index_2d_step(spec, shape, chunks, ind, new_chunks_expected):
 
 
 def test_index_slice_unsupported_step(spec):
+    a = xp.arange(12, chunks=(4,), spec=spec)
     with pytest.raises(NotImplementedError):
-        a = xp.arange(12, chunks=(4,), spec=spec)
         a[::-1]
 
 
@@ -485,7 +485,7 @@ def test_broadcast_arrays(executor):
 
 
 @pytest.mark.parametrize(
-    "shape, chunks, new_shape, new_chunks, new_chunks_expected",
+    ("shape", "chunks", "new_shape", "new_chunks", "new_chunks_expected"),
     [
         ((), (), (0,), None, ((0,),)),
         ((5, 1, 6), (3, 1, 3), (5, 0, 6), None, ((3, 2), (0,), (3, 3))),
@@ -564,7 +564,7 @@ def test_expand_dims(spec, executor):
 
 
 @pytest.mark.parametrize(
-    "shape, chunks, axis",
+    ("shape", "chunks", "axis"),
     [
         ((10,), (4,), None),
         ((10,), (4,), 0),
@@ -661,7 +661,7 @@ def _maybe_len(a):
 
 
 @pytest.mark.parametrize(
-    "chunks, shift, axis",
+    ("chunks", "shift", "axis"),
     [
         ((2, 6), 3, None),
         ((2, 6), 3, 0),
@@ -777,14 +777,14 @@ def test_argmin_axis_0(spec):
 
 
 @pytest.mark.parametrize(
-    "x1, x1_chunks, x2, x2_chunks",
+    ("x1", "x1_chunks", "x2", "x2_chunks"),
     [
-        [[], 1, [], 1],
-        [[0], 1, [0], 1],
-        [[-10, 0, 10, 20, 30], 3, [11, 30], 2],
-        [[-10, 0, 10, 20, 30], 3, [11, 30, -20, 1, -10, 10, 37, 11], 5],
-        [[-10, 0, 10, 20, 30], 3, [[11, 30, -20, 1, -10, 10, 37, 11]], 5],
-        [[-10, 0, 10, 20, 30], 3, [[7, 0], [-10, 10], [11, -1], [15, 15]], (2, 2)],
+        ([], 1, [], 1),
+        ([0], 1, [0], 1),
+        ([-10, 0, 10, 20, 30], 3, [11, 30], 2),
+        ([-10, 0, 10, 20, 30], 3, [11, 30, -20, 1, -10, 10, 37, 11], 5),
+        ([-10, 0, 10, 20, 30], 3, [[11, 30, -20, 1, -10, 10, 37, 11]], 5),
+        ([-10, 0, 10, 20, 30], 3, [[7, 0], [-10, 10], [11, -1], [15, 15]], (2, 2)),
     ],
 )
 @pytest.mark.parametrize("side", ["left", "right"])
@@ -855,8 +855,8 @@ def test_cumulative_sum_1d():
 
 
 def test_cumulative_sum_unsupported_include_initial(spec):
+    a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=(4,))
     with pytest.raises(NotImplementedError):
-        a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=(4,))
         xp.cumulative_sum(a, axis=0, include_initial=True)
 
 

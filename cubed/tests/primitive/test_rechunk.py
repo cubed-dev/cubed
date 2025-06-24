@@ -15,7 +15,15 @@ def executor(request):
 
 
 @pytest.mark.parametrize(
-    "shape, source_chunks, allowed_mem, reserved_mem, target_chunks, expected_projected_mem, expected_num_tasks",
+    (
+        "shape",
+        "source_chunks",
+        "allowed_mem",
+        "reserved_mem",
+        "target_chunks",
+        "expected_projected_mem",
+        "expected_num_tasks",
+    ),
     [
         # one target chunk is made up of two source chunks
         (

@@ -26,7 +26,7 @@ def executor(request):
     return request.param
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def icechunk_storage(tmpdir) -> "Storage":
     return Storage.new_local_filesystem(str(tmpdir))
 

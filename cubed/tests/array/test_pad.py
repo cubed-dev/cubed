@@ -6,7 +6,7 @@ import cubed
 import cubed.array_api as xp
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 

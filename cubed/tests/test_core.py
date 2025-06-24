@@ -19,7 +19,7 @@ from cubed.storage.backend import open_backend_array
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
@@ -53,7 +53,7 @@ def test_as_array_fails(spec):
 
 def test_regular_chunks(spec):
     xp.ones((5, 5), chunks=((2, 2, 1), (5,)), spec=spec)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Array must have regular chunks"):
         xp.ones((5, 5), chunks=((2, 1, 2), (5,)), spec=spec)
 
 
@@ -72,7 +72,7 @@ class WrappedArray:
 
 
 @pytest.mark.parametrize(
-    "x,chunks,asarray",
+    ("x", "chunks", "asarray"),
     [
         (np.arange(25).reshape((5, 5)), (5, 5), None),
         (np.arange(25).reshape((5, 5)), (3, 2), True),
@@ -352,7 +352,10 @@ def test_default_spec(executor):
 def test_default_spec_allowed_mem_exceeded():
     # default spec fails for large computations
     a = xp.ones((20000, 10000), chunks=(10000, 10000))
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=r"Projected blockwise memory \(\d+\) exceeds allowed_mem \(\d+\), including reserved_mem \(\d+\)",
+    ):
         xp.negative(a)
 
 
@@ -388,12 +391,14 @@ def test_different_specs(tmp_path):
     spec2 = cubed.Spec(tmp_path, allowed_mem=200000)
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec1)
     b = xp.ones((3, 3), chunks=(2, 2), spec=spec2)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Arrays must have same spec in single computation"
+    ):
         xp.add(a, b)
 
 
 @pytest.mark.parametrize(
-    "input_value, expected_value",
+    ("input_value", "expected_value"),
     [
         (500, 500),
         (100_000, 100_000),
@@ -427,7 +432,7 @@ def test_convert_to_bytes(input_value, expected_value):
     ],
 )
 def test_convert_to_bytes_error(input_value):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Invalid value"):
         cubed.Spec(allowed_mem=input_value)
 
 
@@ -465,7 +470,7 @@ def test_tree_reduce(spec):
 
 
 @pytest.mark.parametrize(
-    "target_chunks, expected_chunksize",
+    ("target_chunks", "expected_chunksize"),
     [
         ((2, 3), None),
         ((4, 3), None),
@@ -481,12 +486,21 @@ def test_merge_chunks(spec, target_chunks, expected_chunksize):
     assert_array_equal(b.compute(), np.ones((10, 10)))
 
 
-@pytest.mark.parametrize(
-    "target_chunks", [(2,), (2, 3, 1), (3, 2), (1, 3), (5, 5), (10, 10)]
-)
+@pytest.mark.parametrize("target_chunks", [(3, 2), (1, 3), (5, 5), (10, 10)])
 def test_merge_chunks_fails(spec, target_chunks):
     a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match=r"Chunks .* must be a multiple of array's chunks"
+    ):
+        merge_chunks(a, target_chunks)
+
+
+@pytest.mark.parametrize("target_chunks", [(2,), (2, 3, 1)])
+def test_merge_chunks_fails_dim_mismatch(spec, target_chunks):
+    a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)
+    with pytest.raises(
+        ValueError, match=r"Chunks .* must have same number of dimensions as array"
+    ):
         merge_chunks(a, target_chunks)
 
 
@@ -528,7 +542,9 @@ def test_compute_multiple_different_specs(tmp_path):
     b2 = xp.ones((3, 3), chunks=(2, 2), spec=spec2)
     c2 = xp.add(a2, b2)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Arrays must have same spec in single computation"
+    ):
         cubed.compute(c1, c2)
 
 

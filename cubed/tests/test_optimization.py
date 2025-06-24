@@ -25,7 +25,7 @@ from cubed.tests.test_core import sqrts
 from cubed.tests.utils import TaskCounter
 
 
-@pytest.fixture()
+@pytest.fixture
 def spec(tmp_path):
     return cubed.Spec(tmp_path, allowed_mem=100000)
 
