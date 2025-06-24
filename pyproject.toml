@@ -116,6 +116,7 @@ select = [
     "F",  # Pyflakes
     "B",  # flake8-bugbear
     "I",  # isort
+    "PT",  # flake8-pytest-style
 ]
 ignore = [
     "E402",  # Module level import not at top of file
