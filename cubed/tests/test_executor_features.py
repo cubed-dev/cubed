@@ -388,6 +388,6 @@ def test_compilation_with_config_can_fail(spec, executor):
     with pytest.raises(NotImplementedError) as excinfo:
         c.compute(executor=executor, compile_function=compile_function)
 
-    assert "BlockwiseSpec" in str(
-        excinfo.value
-    ), "Compile function was applied with a config argument."
+    assert "BlockwiseSpec" in str(excinfo.value), (
+        "Compile function was applied with a config argument."
+    )

@@ -265,7 +265,7 @@ class Plan:
 
         return dag
 
-    @lru_cache
+    @lru_cache  # noqa: B019
     def _finalize(
         self,
         optimize_graph: bool = True,
@@ -366,7 +366,7 @@ class Plan:
 
         # do an initial pass to extract array variable names from stack summaries
         array_display_names = {}
-        for n, d in dag.nodes(data=True):
+        for _, d in dag.nodes(data=True):
             if "stack_summaries" in d:
                 stack_summaries = d["stack_summaries"]
                 first_cubed_i = min(

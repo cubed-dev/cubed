@@ -52,7 +52,7 @@ def generate_timeline(events_df):
         ("task result", events_df.task_result_tstamp - start_tstamp),
     ]
 
-    for f_i, (field_name, val) in enumerate(fields):
+    for field_name, val in fields:
         ax.scatter(val, y, label=field_name, edgecolor="none", s=point_size, alpha=0.8)
 
     ax.set_xlabel("Execution time (sec)")

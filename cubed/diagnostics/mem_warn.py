@@ -32,4 +32,5 @@ class MemoryWarningCallback(Callback):
             warnings.warn(
                 f"Peak memory usage exceeded allowed_mem when running tasks: {', '.join(exceeded)}",
                 UserWarning,
+                stacklevel=2,
             )

@@ -16,9 +16,11 @@ from tlz import concat, first, partition
 from toolz import accumulate, map
 
 from cubed import config
-from cubed.backend_array_api import backend_array_to_numpy_array
+from cubed.backend_array_api import (
+    backend_array_to_numpy_array,
+    numpy_array_to_backend_array,
+)
 from cubed.backend_array_api import namespace as nxp
-from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
@@ -28,9 +30,14 @@ from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
 from cubed.types import T_RegularChunks, T_Shape
-from cubed.utils import array_memory, array_size, get_item
+from cubed.utils import (
+    array_memory,
+    array_size,
+    get_item,
+    offset_to_block_id,
+    to_chunksize,
+)
 from cubed.utils import numblocks as compute_numblocks
-from cubed.utils import offset_to_block_id, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
@@ -698,9 +705,9 @@ def _assemble_index_chunk(
     block_id=None,
     **kwargs,
 ):
-    assert not isinstance(
-        arrays, list
-    ), "index expects an iterator of array blocks, not a list"
+    assert not isinstance(arrays, list), (
+        "index expects an iterator of array blocks, not a list"
+    )
 
     # compute the selection on x required to get the relevant chunk for out_coords
     out_coords = block_id
@@ -1493,9 +1500,9 @@ def partial_reduce(
 
 def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
     # reduce each array in turn, accumulating in result
-    assert not isinstance(
-        arrays, list
-    ), "partial reduce expects an iterator of array blocks, not a list"
+    assert not isinstance(arrays, list), (
+        "partial reduce expects an iterator of array blocks, not a list"
+    )
     result = None
     for array in arrays:
         if initial_func is not None:

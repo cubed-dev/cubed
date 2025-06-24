@@ -7,8 +7,12 @@ from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
 from cubed.backend_array_api import namespace as nxp
-from cubed.core import squeeze  # noqa: F401
-from cubed.core import blockwise, rechunk, unify_chunks
+from cubed.core import (
+    blockwise,
+    rechunk,
+    squeeze,  # noqa: F401
+    unify_chunks,
+)
 from cubed.core.ops import (
     _create_zarr_indexer,
     elemwise,
@@ -347,8 +351,7 @@ def moveaxis(
     destination = normalize_axis_tuple(destination, x.ndim, "destination")
     if len(source) != len(destination):
         raise ValueError(
-            "`source` and `destination` arguments must have "
-            "the same number of elements"
+            "`source` and `destination` arguments must have the same number of elements"
         )
 
     order = [n for n in range(x.ndim) if n not in source]

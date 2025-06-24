@@ -73,7 +73,11 @@ class SparkExecutor(DagExecutor):
             # Create an RDD from pipeline.mappable.
             rdd = spark.sparkContext.parallelize(pipeline.mappable)
             # Define the transformation; note that this is lazy.
-            lazy_rdd = rdd.map(lambda x: pipeline.function(x, config=pipeline.config))
+            lazy_rdd = rdd.map(
+                lambda x, pipeline=pipeline: pipeline.function(
+                    x, config=pipeline.config
+                )
+            )
             results = lazy_rdd.collect()  # <-- Trigger computation immediately
             if callbacks is not None:
                 for result in results:

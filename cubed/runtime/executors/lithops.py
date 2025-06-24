@@ -47,7 +47,7 @@ def map_unordered(
         Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]]
     ],
     group_names: Sequence[str],
-    include_modules: List[str] = [],
+    include_modules: Optional[List[str]] = None,
     timeout: Optional[int] = None,
     retries: int = 2,
     use_backups: bool = False,
@@ -90,14 +90,16 @@ def map_unordered(
     ):
         # can't use functools.partial here as we get an error in lithops
         # also, lithops extra_args doesn't work for this case
-        partial_map_function = lambda x: map_function(x, **kwargs)
+        partial_map_function = lambda x, map_function=map_function: map_function(
+            x, **kwargs
+        )
         group_name_to_function[group_name] = partial_map_function
 
         futures = lithops_function_executor.map(
             partial_map_function,
             list(map_iterdata),  # lithops requires a list
             timeout=timeout,
-            include_modules=include_modules,
+            include_modules=include_modules or [],
             retries=retries,
         )
         start_times[group_name] = {k: time.monotonic() for k in futures}
@@ -150,7 +152,7 @@ def map_unordered(
                         group_name_to_function[group_name],
                         [input],
                         timeout=timeout,
-                        include_modules=include_modules,
+                        include_modules=include_modules or [],
                         retries=0,  # don't retry backup tasks
                     )
                     start_times[group_name].update(

@@ -20,9 +20,15 @@ from cubed.primitive.types import CubedArrayProxy, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_RegularChunks, T_Shape, T_Store
-from cubed.utils import array_memory, chunk_memory, get_item, map_nested
+from cubed.utils import (
+    array_memory,
+    chunk_memory,
+    get_item,
+    map_nested,
+    split_into,
+    to_chunksize,
+)
 from cubed.utils import numblocks as compute_numblocks
-from cubed.utils import split_into, to_chunksize
 from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
