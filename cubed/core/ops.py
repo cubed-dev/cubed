@@ -17,7 +17,7 @@ from cubed import config
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
-from cubed.core.plan import Plan, context_dir_path, new_temp_path
+from cubed.core.plan import Plan, context_dir_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -902,18 +902,17 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
     name = gensym()
     spec = x.spec
     if target_store is None:
-        target_store = new_temp_path(name=name, spec=spec)
+        target_store = context_dir_path(spec=spec)
     name_int = f"{name}-int"
-    temp_store = new_temp_path(name=name_int, spec=spec)
     ops = primitive_rechunk(
         x._zarray,
-        source_array_name=name,
+        source_array_name=x.name,
         int_array_name=name_int,
+        target_array_name=name,
         target_chunks=target_chunks,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
-        temp_store=temp_store,
         storage_options=spec.storage_options,
     )
 
