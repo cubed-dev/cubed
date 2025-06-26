@@ -365,7 +365,7 @@ def general_blockwise(
                     f"All outputs must have matching number of blocks in each dimension. Chunks specified: {chunkss}"
                 )
         ta: Union[zarr.Array, LazyZarrArray]
-        if isinstance(target_store, zarr.Array):
+        if isinstance(target_store, Union[zarr.Array, LazyZarrArray]):
             ta = target_store
         else:
             ta = lazy_zarr_array(
@@ -373,7 +373,7 @@ def general_blockwise(
                 shapes[i],
                 dtype=dtypes[i],
                 chunks=target_chunks_ or chunksize,
-                path=target_paths[i] if target_paths is not None else None,
+                path=target_names[i],  # use array name for path within store
                 storage_options=storage_options,
                 compressor=compressor,
             )
