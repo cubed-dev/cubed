@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Optional
 
 import zarr
@@ -39,6 +40,22 @@ def open_zarr_v3_array(
     path: Optional[str] = None,
     **kwargs,
 ):
+    # use obstore if requested
+    storage_options = kwargs.get("storage_options", None)
+    if storage_options is not None and storage_options.get("use_obstore", False):
+        import obstore as obs
+        from zarr.storage import ObjectStore
+
+        if isinstance(store, str):
+            if "://" not in store:
+                p = Path(store)
+                store = ObjectStore(obs.store.from_url(p.as_uri(), mkdir=True))
+            else:
+                store = ObjectStore(obs.store.from_url(store))
+        elif isinstance(store, Path):
+            p = store
+            store = ObjectStore(obs.store.from_url(p.as_uri(), mkdir=True))
+
     if isinstance(chunks, int):
         chunks = (chunks,)
 
