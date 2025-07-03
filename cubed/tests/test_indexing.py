@@ -98,7 +98,6 @@ def test_blocks():
     assert_array_equal(x.blocks[0], x[:4])
     assert_array_equal(x.blocks[0, :3], x[:4, :15])
     assert_array_equal(x.blocks[:, :3], x[:, :15])
-    assert_array_equal(x.blocks[[0, 1], [2, 3]], x[:8, 10:20])
 
     x = xp.ones((40, 40, 40), chunks=(10, 10, 10))
     assert_array_equal(x.blocks[0, :, 0], np.ones((10, 40, 10)))
@@ -106,5 +105,7 @@ def test_blocks():
     x = xp.ones((2, 2), chunks=1)
     with pytest.raises(ValueError, match="newaxis is not supported"):
         x.blocks[xp.newaxis, :, :]
+    with pytest.raises(NotImplementedError):
+        x.blocks[[0, 1], [0, 1]]
     with pytest.raises(IndexError, match="out of bounds"):
         x.blocks[100, 100]

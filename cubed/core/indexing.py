@@ -28,13 +28,16 @@ class BlockView:
         if any(isinstance(ia, ndindex.Newaxis) for ia in idx.args):
             raise ValueError("Slicing with xp.newaxis is not supported")
 
+        if sum(1 for ia in idx.args if isinstance(ia, ndindex.IntegerArray)) > 1:
+            raise NotImplementedError("Only one integer array index is allowed.")
+
         # convert Integer to Slice so we don't lose dimensions
-        def convert_integer_indext_to_slice(ia):
+        def convert_integer_index_to_slice(ia):
             if isinstance(ia, ndindex.Integer):
                 return ndindex.Slice(ia.raw, ia.raw + 1)
             return ia
 
-        idx = ndindex.Tuple(*(convert_integer_indext_to_slice(ia) for ia in idx.args))
+        idx = ndindex.Tuple(*(convert_integer_index_to_slice(ia) for ia in idx.args))
 
         chunks = tuple(
             tuple(np.array(ch)[ia].tolist())
@@ -50,6 +53,10 @@ class BlockView:
                 return ia.start + (step * i)
             elif isinstance(ia, ndindex.IntegerArray):
                 return ia.raw[i]
+            else:
+                raise NotImplementedError(
+                    "Only integer, slice, or int array indexes are supported."
+                )
 
         def key_function(out_key):
             out_coords = out_key[1:]
