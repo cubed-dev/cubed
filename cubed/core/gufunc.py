@@ -51,6 +51,13 @@ def apply_gufunc(
             "Multiple outputs are not yet supported, see https://github.com/cubed-dev/cubed/issues/69"
         )
 
+    if (
+        nout is None
+        and isinstance(output_dtypes, (tuple, list))
+        and len(output_dtypes) == 1
+    ):
+        output_dtypes = output_dtypes[0]
+
     # Vectorize function, if required
     if vectorize:
         otypes = output_dtypes
