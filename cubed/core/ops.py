@@ -591,7 +591,7 @@ def index(x, key):
         # empty output case
         from cubed.array_api.creation_functions import empty
 
-        out = empty(shape, dtype=x.dtype, spec=x.spec)
+        out = empty(shape, dtype=x.dtype, chunks=x.chunksize, spec=x.spec)
     else:
         dtype = x.dtype
         chunks = tuple(
