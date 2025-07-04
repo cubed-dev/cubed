@@ -78,3 +78,34 @@ def test_multiple_int_array_indexes(spec):
     )
     with pytest.raises(NotImplementedError):
         a[[1, 2, 1], [2, 1, 0]]
+
+
+def test_blocks():
+    # based on dask tests
+    x = xp.arange(10, chunks=2)
+    assert x.blocks.shape == (5,)
+    assert x.blocks.size == 5
+
+    assert_array_equal(x.blocks[0], x[:2])
+    assert_array_equal(x.blocks[-1], x[-2:])
+    assert_array_equal(x.blocks[:3], x[:6])
+    assert_array_equal(x.blocks[[0, 1, 2]], x[:6])
+    assert_array_equal(x.blocks[[3, 0, 2]], np.array([6, 7, 0, 1, 4, 5]))
+
+    x = cubed.random.random((20, 20), chunks=(4, 5))
+    assert x.blocks.shape == (5, 4)
+    assert x.blocks.size == 20
+    assert_array_equal(x.blocks[0], x[:4])
+    assert_array_equal(x.blocks[0, :3], x[:4, :15])
+    assert_array_equal(x.blocks[:, :3], x[:, :15])
+
+    x = xp.ones((40, 40, 40), chunks=(10, 10, 10))
+    assert_array_equal(x.blocks[0, :, 0], np.ones((10, 40, 10)))
+
+    x = xp.ones((2, 2), chunks=1)
+    with pytest.raises(ValueError, match="newaxis is not supported"):
+        x.blocks[xp.newaxis, :, :]
+    with pytest.raises(NotImplementedError):
+        x.blocks[[0, 1], [0, 1]]
+    with pytest.raises(IndexError, match="out of bounds"):
+        x.blocks[100, 100]

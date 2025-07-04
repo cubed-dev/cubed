@@ -58,6 +58,13 @@ class CoreArray:
         return open_if_lazy_zarr_array(self._zarray)
 
     @property
+    def blocks(self):
+        """An array-like interface to the blocks of an array."""
+        from cubed.core.indexing import BlockView
+
+        return BlockView(self)
+
+    @property
     def chunkmem(self):
         """Amount of memory in bytes that a single chunk uses."""
         return array_memory(self.dtype, self.chunksize)
