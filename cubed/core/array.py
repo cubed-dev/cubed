@@ -231,7 +231,7 @@ class CoreArray:
         )
 
     def __getitem__(self: T_ChunkedArray, key, /) -> T_ChunkedArray:
-        from cubed.core.ops import index
+        from cubed.core.indexing import index
 
         return index(self, key)
 
