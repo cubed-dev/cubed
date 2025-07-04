@@ -28,6 +28,7 @@
    .. autosummary::
    
       ~Array.T
+      ~Array.blocks
       ~Array.chunkmem
       ~Array.chunks
       ~Array.chunksize
