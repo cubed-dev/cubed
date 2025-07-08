@@ -16,7 +16,7 @@ class BufferCopies:
     """The number of copies made when writing an array to storage."""
 
 
-def get_buffer_copies(spec: Optional[Spec]):
+def get_buffer_copies(spec: Optional[Spec]) -> BufferCopies:
     """Return the number of buffer copies to use, based on the spec.
 
     Using cloud storage will result in more buffer copies being accounted for.
@@ -84,10 +84,10 @@ class MemoryModeller:
     current_mem: int = 0
     peak_mem: int = 0
 
-    def allocate(self, num_bytes):
+    def allocate(self, num_bytes: int) -> None:
         self.current_mem += num_bytes
         self.peak_mem = max(self.peak_mem, self.current_mem)
 
-    def free(self, num_bytes):
+    def free(self, num_bytes: int) -> None:
         self.current_mem -= num_bytes
         self.peak_mem = max(self.peak_mem, self.current_mem)

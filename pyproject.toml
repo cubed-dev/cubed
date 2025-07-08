@@ -146,3 +146,22 @@ known-third-party = [
     "toolz",
     "zarr",
 ]
+
+[tool.mypy]
+files = "cubed"
+python_version = "3.11"
+strict = false
+enable_error_code = ["truthy-bool"]
+ignore_missing_imports = true
+allow_redefinition= true
+exclude = [
+  "cubed/array_api",
+  "cubed/tests",
+  "cubed/vendor",
+  "docs"
+]
+
+[[tool.mypy.overrides]]
+# Ignore vendored libraries
+module = [ "cubed.array_api.*", "cubed.vendor.*", ]
+ignore_errors = true
