@@ -48,16 +48,6 @@ class CoreArray:
         self.plan = plan
 
     @property
-    def zarray_maybe_lazy(self):
-        """The underlying Zarr array or LazyZarrArray. Use this during planning, before the computation has started."""
-        return self._zarray
-
-    @property
-    def zarray(self):
-        """The underlying Zarr array. May only be used during the computation once the array has been created."""
-        return open_if_lazy_zarr_array(self._zarray)
-
-    @property
     def blocks(self):
         """An array-like interface to the blocks of an array."""
         from cubed.core.indexing import BlockView
@@ -123,7 +113,8 @@ class CoreArray:
         # Only works if the array has been computed
         if self.size > 0:
             # read back from zarr
-            return numpy_array_to_backend_array(self.zarray[...])
+            zarray = open_if_lazy_zarr_array(self._zarray)
+            return numpy_array_to_backend_array(zarray[...])
         else:
             # this case fails for zarr, so just return an empty array of the correct shape
             return nxp.empty(self.shape, dtype=self.dtype)

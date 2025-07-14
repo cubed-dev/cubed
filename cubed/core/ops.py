@@ -286,7 +286,7 @@ def blockwise(
 
     # replace arrays with zarr arrays
     zargs = list(args)
-    zargs[::2] = [a.zarray_maybe_lazy for a in arrays]
+    zargs[::2] = [a._zarray for a in arrays]
     in_names = [a.name for a in arrays]
 
     extra_source_arrays = kwargs.pop("extra_source_arrays", [])
@@ -438,7 +438,7 @@ def _general_blockwise(
     assert len(arrays) > 0
 
     # replace arrays with zarr arrays
-    zargs = [a.zarray_maybe_lazy for a in arrays]
+    zargs = [a._zarray for a in arrays]
     in_names = [a.name for a in arrays]
 
     extra_source_arrays = kwargs.pop("extra_source_arrays", [])
@@ -1079,7 +1079,7 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
     name_int = f"{name}-int"
     temp_store = new_temp_path(name=name_int, spec=spec)
     ops = primitive_rechunk(
-        x.zarray_maybe_lazy,
+        x._zarray,
         source_array_name=name,
         int_array_name=name_int,
         target_chunks=target_chunks,
