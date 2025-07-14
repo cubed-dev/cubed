@@ -6,7 +6,7 @@ kernelspec:
 # Icechunk
 
 This example shows how to perform large-scale distributed writes to Icechunk using Cubed
-(based on the examples for using [Icechunk with Dask](https://icechunk.io/en/latest/icechunk-python/dask/)).
+(based on the examples for using [Icechunk with Dask](https://icechunk.io/en/latest/dask/)).
 
 Install the package pre-requisites by running the following:
 
@@ -22,8 +22,8 @@ import tempfile
 
 # initialize the icechunk store
 storage = icechunk.local_filesystem_storage(tempfile.TemporaryDirectory().name)
-icechunk_repo = icechunk.Repository.create(storage)
-icechunk_session = icechunk_repo.writable_session("main")
+repo = icechunk.Repository.create(storage)
+session = repo.writable_session("main")
 ```
 
 ## Write to Icechunk
@@ -46,7 +46,7 @@ Now create the Zarr array you will write to.
 import zarr
 
 zarr_chunks = (10, 10)
-group = zarr.group(store=icechunk_session.store, overwrite=True)
+group = zarr.group(store=session.store, overwrite=True)
 
 zarray = group.create_array(
     "array",
@@ -55,26 +55,35 @@ zarray = group.create_array(
     dtype="f8",
     fill_value=float("nan"),
 )
+session.commit("initialize array")
 ```
 
 Note that the chunks in the store are a divisor of the Cubed chunks. This means each individual write task is independent, and will not conflict. It is your responsibility to ensure that such conflicts are avoided.
 
-Now write
+First remember to fork the session before re-opening the Zarr array. `store_icechunk` will merge all the remote write sessions on the cluster before returning back a single merged `ForkSession`.
 
 ```{code-cell} ipython3
 from cubed.icechunk import store_icechunk
 
-store_icechunk(
-    icechunk_session,
+session = repo.writable_session("main")
+fork = session.fork()
+zarray = zarr.open_array(fork.store, path="array")
+remote_session = store_icechunk(
     sources=[cubed_array],
     targets=[zarray]
 )
 ```
 
+Merge the remote session in to the local Session
+```{code-cell} ipython3
+session.merge(remote_session)
+```
+
+
 Finally commit your changes!
 
 ```{code-cell} ipython3
-print(icechunk_session.commit("wrote a cubed array!"))
+print(session.commit("wrote a cubed array!"))
 ```
 
 ## Read from Icechunk
@@ -82,47 +91,5 @@ print(icechunk_session.commit("wrote a cubed array!"))
 Use {py:func}`cubed.from_zarr` to read from Icechunk - note that no special Icechunk-specific function is needed in this case.
 
 ```{code-cell} ipython3
-cubed.from_zarr(store=icechunk_session.store, path="array")
-```
-
-## Distributed writes
-
-In distributed contexts where the Session, and Zarr Array objects are sent across the network, you must opt-in to successful pickling of a writable store.
-`cubed.icechunk.store_icechunk` takes care of the hard bit of merging Sessions but it is required that you opt-in to pickling prior to creating the target Zarr array objects.
-
-Here is an example:
-
-```{code-cell} ipython3
-from cubed import config
-
-# start a new session. Old session is readonly after committing
-
-icechunk_session = icechunk_repo.writable_session("main")
-zarr_chunks = (10, 10)
-
-# use the Cubed processes executor which requires pickling
-with config.set({"spec.executor_name": "processes"}):
-    with icechunk_session.allow_pickling():
-        cubed_array = cubed.random.random(shape, chunks=cubed_chunks)
-
-        group = zarr.group(
-            store=icechunk_session.store,
-            overwrite=True
-        )
-
-        zarray = group.create_array(
-            "array",
-            shape=shape,
-            chunks=zarr_chunks,
-            dtype="f8",
-            fill_value=float("nan"),
-        )
-
-        store_icechunk(
-            icechunk_session,
-            sources=[cubed_array],
-            targets=[zarray]
-        )
-
-print(icechunk_session.commit("wrote a cubed array!"))
+cubed.from_zarr(store=session.store, path="array")
 ```

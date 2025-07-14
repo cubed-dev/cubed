@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Any, List, Sequence, Union
 
 import zarr
-from icechunk import Session
+from icechunk.distributed import merge_sessions
+from icechunk.session import ForkSession
 
 from cubed import compute
 from cubed.core.array import CoreArray
@@ -13,13 +14,12 @@ if TYPE_CHECKING:
 
 
 def store_icechunk(
-    session: Session,
     *,
     sources: Union["Array", Sequence["Array"]],
     targets: List[zarr.Array],
     executor=None,
     **kwargs: Any,
-) -> None:
+) -> ForkSession:
     if isinstance(sources, CoreArray):
         sources = [sources]
         targets = [targets]  # type: ignore
@@ -62,21 +62,22 @@ def store_icechunk(
         **kwargs,
     )
 
-    # merge back into the session passed into this function
-    merged_session = store_callback.session
-    session.merge(merged_session)
+    return store_callback.merged_sessions
 
 
 class IcechunkStoreCallback(Callback):
     def on_compute_start(self, event):
-        self.session = None
+        self.sessions = []
 
     def on_task_end(self, event):
         result = event.result
         if result is None:
             return
-        for store in result:
-            if self.session is None:
-                self.session = store.session
-            else:
-                self.session.merge(store.session)
+        else:
+            self.sessions.append(merge_sessions(*[store.session for store in result]))
+
+    def on_compute_end(self, event):
+        if len(self.sessions) == 0:
+            self.merged_sessions = None
+        else:
+            self.merged_sessions = merge_sessions(self.sessions)
