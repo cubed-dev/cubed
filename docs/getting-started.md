@@ -27,20 +27,18 @@ conda install -c conda-forge cubed
 First, we'll create a small array `a`:
 
 ```python
-import cubed
 import cubed.array_api as xp
-spec = cubed.Spec(work_dir="tmp", allowed_mem="100kB")
-a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
 ```
 
 Cubed implements the [Python Array API standard](https://data-apis.org/array-api/latest/), which is essentially a subset of NumPy, and is imported as `xp` by convention.
 
-Notice that we also specify chunks, just like in Dask Array, and a {py:class}`Spec <cubed.Spec>` object that describes the resources available to run computations.
+Notice that we also specify chunks, just like in Dask Array.
 
 Next we create another array `b` and add to two array together to get `c`.
 
 ```python
-b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2))
 c = xp.add(a, b)
 ```
 
