@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 import zarr
 
@@ -32,7 +32,7 @@ class ZarrV3ArrayGroup(dict):
 
 def open_zarr_v3_array(
     store: T_Store,
-    mode: str,
+    mode: Optional[Literal["r", "r+", "a", "w", "w-"]],
     *,
     shape: Optional[T_Shape] = None,
     dtype: Optional[T_DType] = None,
@@ -69,6 +69,7 @@ def open_zarr_v3_array(
             path=path,
         )
 
+    assert mode is not None
     group = zarr.open_group(store=store, mode=mode, path=path)
 
     # create/open all the arrays in the group
@@ -78,6 +79,7 @@ def open_zarr_v3_array(
         if mode in ("r", "r+"):
             ret[field] = group[field]
         else:
+            assert chunks is not None
             ret[field] = group.create_array(
                 field,
                 shape=shape,
