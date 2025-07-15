@@ -559,7 +559,7 @@ def _assemble_index_chunk(
     indexer = _create_zarr_indexer(in_sel, in_shape, in_chunksize)
 
     shape = indexer.shape
-    out = np.empty(shape, dtype=dtype)
+    out = nxp.empty(shape, dtype=dtype)
 
     if array_size(shape) > 0:
         _, lchunk_selection, lout_selection, *_ = zip(*indexer)

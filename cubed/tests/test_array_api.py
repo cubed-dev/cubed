@@ -1,10 +1,10 @@
 import fsspec
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose, assert_array_equal
 
 import cubed
 import cubed.array_api as xp
+from cubed._testing import assert_allclose, assert_array_equal
 from cubed.array_api.manipulation_functions import reshape_chunks
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
 
