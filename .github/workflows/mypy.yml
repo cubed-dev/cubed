@@ -46,4 +46,4 @@ jobs:
 
       - name: Run mypy
         run: |
-          python -m mypy cubed
+          python -m mypy src/cubed
