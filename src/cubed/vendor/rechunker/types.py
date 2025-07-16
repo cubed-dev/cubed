@@ -1,4 +1,5 @@
 """Types definitions used by executors."""
+
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -61,12 +62,8 @@ class CopySpec(NamedTuple):
 
 
 Config = Any  # TODO: better typing for config
-SingleArgumentStageFunction = Callable[
-    [Any, NamedArg(type=Any, name="config")], None
-]  # noqa: F821
-NoArgumentStageFunction = Callable[
-    [NamedArg(type=Any, name="config")], None
-]  # noqa: F821
+SingleArgumentStageFunction = Callable[[Any, NamedArg(type=Any, name="config")], None]  # noqa: F821
+NoArgumentStageFunction = Callable[[NamedArg(type=Any, name="config")], None]  # noqa: F821
 StageFunction = Union[NoArgumentStageFunction, SingleArgumentStageFunction]
 
 

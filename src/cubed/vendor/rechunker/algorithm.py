@@ -1,4 +1,5 @@
 """Core rechunking algorithm stuff."""
+
 import logging
 import warnings
 from math import ceil, floor, prod
@@ -270,7 +271,6 @@ def multistage_rechunking_plan(
 
     # increase the number of stages until min_mem is exceeded
     for stage_count in range(1, MAX_STAGES):
-
         stage_chunks = calculate_stage_chunks(read_chunks, write_chunks, stage_count)
         pre_chunks = [read_chunks] + stage_chunks
         post_chunks = stage_chunks + [write_chunks]
@@ -297,6 +297,7 @@ def multistage_rechunking_plan(
                 f"Consider decreasing min_mem ({min_mem}) or increasing "
                 f"({max_mem}) to find a more efficient plan.",
                 category=ExcessiveIOWarning,
+                stacklevel=2,
             )
             assert prev_plan is not None
             return prev_plan

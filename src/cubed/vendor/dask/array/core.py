@@ -4,7 +4,7 @@ import math
 from numbers import Number
 
 import numpy as np
-from tlz import first, frequencies
+from tlz import frequencies
 
 from ..utils import is_integer, parse_bytes
 
@@ -312,7 +312,7 @@ def auto_chunks(chunks, shape, limit, dtype, previous_chunks=None):
         return tuple(chunks)
 
     if limit is None:
-        limit = "128MiB" # config.get("array.chunk-size")
+        limit = "128MiB"  # config.get("array.chunk-size")
     if isinstance(limit, str):
         limit = parse_bytes(limit)
 
