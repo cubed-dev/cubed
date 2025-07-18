@@ -358,11 +358,6 @@ def lol_product(head, values):
         return lol_product(head + (values[0],), values[1:])
 
 
-
-
-
-
-
 def broadcast_dimensions(argpairs, numblocks, sentinels=(1, (1,)), consolidate=None):
     """Find block dimensions from arguments
 
