@@ -1,21 +1,5 @@
-# Python 3.6
-#FROM python:3.6-slim-buster
-
-# Python 3.7
-#FROM python:3.7-slim-buster
-
-# Python 3.8
-#FROM python:3.8-slim-buster
-
-# Python 3.9
-#FROM python:3.9-slim-buster
-
-# Python 3.10
-#FROM python:3.10-slim-buster
-
 # Python 3.11
-FROM python:3.11-slim-buster
-
+FROM python:3.11-slim-bullseye
 
 RUN apt-get update \
     # Install aws-lambda-cpp build dependencies
@@ -35,14 +19,11 @@ ARG FUNCTION_DIR="/function"
 RUN mkdir -p ${FUNCTION_DIR}
 
 # Update pip
-# NB botocore/boto3 are pinned due to https://github.com/boto/boto3/issues/3648
-#    using versions from https://github.com/aio-libs/aiobotocore/blob/72b8dd5d7d4ef2f1a49a0ae0c37b47e5280e2070/setup.py
-#    due to s3fs dependency
 RUN pip install --upgrade --ignore-installed pip wheel six setuptools \
     && pip install --upgrade --no-cache-dir --ignore-installed \
         awslambdaric \
-        botocore==1.29.76 \
-        boto3==1.26.76 \
+        botocore \
+        boto3 \
         redis \
         httplib2 \
         requests \
