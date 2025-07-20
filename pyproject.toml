@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.17.1", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "cubed"
-version = "0.21.0"
+dynamic = ["version"]
 authors = [
     {name = "Tom White", email = "tom.e.white@gmail.com"},
 ]
@@ -94,11 +94,15 @@ homepage = "https://github.com/cubed-dev/cubed"
 documentation = "https://tomwhite.github.io/cubed"
 repository = "https://github.com/cubed-dev/cubed"
 
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/cubed/version.py"
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "error::UserWarning",
 ]
-testpaths = "cubed/tests"
+testpaths = "src/cubed/tests"
 
 [tool.ruff]
 target-version = "py311"
@@ -145,3 +149,54 @@ known-third-party = [
     "toolz",
     "zarr",
 ]
+
+[tool.mypy]
+exclude = "tests|doc"
+files = "src/"
+show_error_codes = true
+allow_redefinition = true
+
+[[tool.mypy.overrides]]
+# Ignore vendored libraries
+modules = "mypy-cubed.vendor.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+# Most of the numerical computing stack doesn't have type annotations yet.
+module = [
+    "mypy-apache_beam.*",
+    "mypy-aiostream.*",
+    "mypy-array_api_compat.*",
+    "mypy-cloudpickle.*",
+    "mypy-coiled.*",
+    "mypy-dask.*",
+    "mypy-donfig.*",
+    "mypy-distributed.*",
+    "mypy-fsspec.*",
+    "mypy-icechunk.*",
+    "mypy-lithops.*",
+    "mypy-IPython.*",
+    "mypy-memray.*",
+    "mypy-modal.*",
+    "mypy-matplotlib.*",
+    "mypy-ndindex.*",
+    "mypy-networkx.*",
+    "mypy-numcodecs.*",
+    "mypy-numpy.*",
+    "mypy-obstore.*",
+    "mypy-pandas.*",
+    "mypy-psutil.*",
+    "mypy-pytest.*",
+    "mypy-ray.*",
+    "mypy-rechunker.*",
+    "mypy-seaborn.*",
+    "mypy-six.*",
+    "mypy-tenacity.*",
+    "mypy-tensorstore.*",
+    "mypy-tlz.*",
+    "mypy-toolz.*",
+    "mypy-tqdm.*",
+    "mypy-zarr.*",
+    "mypy-pyspark.*",
+]
+ignore_missing_imports = true

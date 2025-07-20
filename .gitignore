@@ -34,6 +34,9 @@ MANIFEST
 *.manifest
 *.spec
 
+# scikit-build-core dynamic version
+src/cubed/version.py
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
