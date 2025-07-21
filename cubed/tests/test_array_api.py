@@ -357,6 +357,21 @@ def test_index_2d_step(spec, shape, chunks, ind, new_chunks_expected):
     assert b.chunks == new_chunks_expected
 
 
+@pytest.mark.parametrize(
+    ("shape", "chunks", "ind"),
+    [
+        ((0, 2), (0, 2), (slice(None), 0)),
+        ((0, 2), (1, 2), (slice(None), 0)),
+        ((2, 0), (2, 0), (0, slice(None))),
+        ((2, 0), (2, 1), (0, slice(None))),
+    ],
+)
+def test_index_zero_dim(shape, chunks, ind):
+    a = xp.ones(shape, chunks=chunks)
+    b = a[ind]
+    assert_array_equal(b.compute(), np.ones(shape)[ind])
+
+
 def test_index_slice_unsupported_step(spec):
     a = xp.arange(12, chunks=(4,), spec=spec)
     with pytest.raises(NotImplementedError):
