@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: data-apis/array-api-tests
-          ref: '1572b129c6682211abfe139e112592226c361a6c'  # Latest commit as of 2024-12-04
+          ref: '2025.05.23'
           path: array-api-tests
           submodules: "true"
       - name: Set up Python ${{ matrix.python-version }}
@@ -124,8 +124,9 @@ jobs:
           array_api_tests/test_manipulation_functions.py::test_repeat
           array_api_tests/test_sorting_functions.py
 
-          # finfo(float32).eps returns float32 but should return float
+          # finfo return type misalignment (https://github.com/data-apis/array-api/issues/405)
           array_api_tests/test_data_type_functions.py::test_finfo[float32]
+          array_api_tests/test_data_type_functions.py::test_finfo[complex64]
 
           # From https://github.com/data-apis/array-api-tests/blob/master/.github/workflows/numpy.yml
 
