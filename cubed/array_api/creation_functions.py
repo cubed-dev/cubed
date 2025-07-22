@@ -116,7 +116,11 @@ def eye(
 
     shape = (n_rows, n_cols)
     chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
-    chunksize = to_chunksize(chunks)[0]
+    vchunksize, hchunksize = to_chunksize(chunks)
+
+    # chunksize must be same for rows and cols for current implementation
+    chunksize = min(vchunksize, hchunksize)
+    chunks = normalize_chunks((chunksize, chunksize), shape=shape, dtype=dtype)
 
     return map_blocks(
         _eye,

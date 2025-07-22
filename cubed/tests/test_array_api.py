@@ -111,6 +111,11 @@ def test_eye(spec, k):
     assert_array_equal(a, np.eye(5, k=k))
 
 
+def test_eye_not_square():
+    a = xp.eye(1, 3, k=2)
+    assert_array_equal(a, np.eye(1, 3, k=2))
+
+
 @pytest.mark.parametrize("endpoint", [True, False])
 def test_linspace(spec, endpoint):
     a = xp.linspace(6, 49, 50, endpoint=endpoint, chunks=5, spec=spec)
