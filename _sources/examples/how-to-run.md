@@ -26,3 +26,4 @@ cd lithops/aws  # or whichever executor/cloud combination you are using
 |           | Google | [modal/gcp/README.md](https://github.com/cubed-dev/cubed/blob/main/examples/modal/gcp/README.md)     |
 | Coiled    | AWS    | [coiled/aws/README.md](https://github.com/cubed-dev/cubed/blob/main/examples/coiled/aws/README.md)   |
 | Beam      | Google | [dataflow/README.md](https://github.com/cubed-dev/cubed/blob/main/examples/dataflow/README.md)       |
+| Ray       | AWS    | [ray/aws/README.md](https://github.com/cubed-dev/cubed/blob/main/examples/ray/aws/README.md)         |

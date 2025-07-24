@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=792bb98b"></script>
+    <script src="../_static/documentation_options.js?v=fe8d484e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -391,7 +391,8 @@ If your data is in Amazon S3 then use Lithops with AWS Lambda, and if it’s in 
 <p><a class="reference external" href="https://modal.com/"><strong>Modal</strong></a> is very easy to get started with because it automatically builds a runtime environment in a matter of seconds (note that it requires that you <a class="reference external" href="https://modal.com/signup">sign up</a> for a free account). It has been tested with ~100 workers.</p>
 <p><a class="reference external" href="https://www.coiled.io/"><strong>Coiled</strong></a> is also easy to get started with (<a class="reference external" href="https://cloud.coiled.io/signup">sign up</a>). It uses <a class="reference external" href="https://docs.coiled.io/user_guide/usage/functions/index.html">Coiled Functions</a> and has a 1-2 minute overhead to start a cluster.</p>
 <p><a class="reference external" href="https://cloud.google.com/dataflow"><strong>Google Cloud Dataflow</strong></a> is relatively straightforward to get started with. It has the highest overhead for worker startup (minutes compared to seconds for Modal or Lithops), and although it has only been tested with ~20 workers, it is a mature service and therefore should be reliable for much larger computations.</p>
-<p>We have <strong>experimental</strong> executors for <a class="reference external" href="https://www.ray.io/"><strong>Ray</strong></a> (see <a class="reference external" href="https://github.com/cubed-dev/cubed/issues/488">#488</a>), <a class="reference external" href="https://www.globus.org/"><strong>Globus Compute</strong></a> (see <a class="reference external" href="https://github.com/cubed-dev/cubed/pull/689">#689</a>), and <a class="reference external" href="https://spark.apache.org/"><strong>Apache Spark</strong></a> (see <a class="reference external" href="https://github.com/cubed-dev/cubed/issues/499">#499</a>). These have not had much testing, so we’d be very interested in feedback if you try them out.</p>
+<p><a class="reference external" href="https://www.ray.io/"><strong>Ray</strong></a> is a popular way to scale Python and AI applications. You can run Cubed computations on a Ray cluster.</p>
+<p>We have <strong>experimental</strong> executors for <a class="reference external" href="https://www.globus.org/"><strong>Globus Compute</strong></a> (see <a class="reference external" href="https://github.com/cubed-dev/cubed/pull/689">#689</a>) and <a class="reference external" href="https://spark.apache.org/"><strong>Apache Spark</strong></a> (see <a class="reference external" href="https://github.com/cubed-dev/cubed/issues/499">#499</a>). These have not had much testing, so we’d be very interested in feedback if you try them out.</p>
 </section>
 <section id="specifying-an-executor">
 <h2>Specifying an executor<a class="headerlink" href="#specifying-an-executor" title="Link to this heading">#</a></h2>
