@@ -29,7 +29,7 @@ class Spec:
         Parameters
         ----------
         work_dir : str or None
-            The directory path (specified as an fsspec URL) used for storing intermediate data.
+            The directory path (specified as an fsspec or obstore URL) used for storing intermediate data.
         allowed_mem : int or str, optional
             The total memory available to a worker for running a task, in bytes.
 
@@ -68,7 +68,7 @@ class Spec:
 
     @property
     def work_dir(self) -> Optional[str]:
-        """The directory path (specified as an fsspec URL) used for storing intermediate data."""
+        """The directory path (specified as an fsspec or obstore URL) used for storing intermediate data."""
         return self._work_dir
 
     @property

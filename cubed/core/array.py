@@ -375,7 +375,7 @@ def measure_reserved_mem(
         reports peak memory, such as Lithops or Modal.
 
     work_dir : str or None, optional
-        The directory path (specified as an fsspec URL) used for storing intermediate data.
+        The directory path (specified as an fsspec or obstore URL) used for storing intermediate data.
         This is required when using a cloud runtime.
 
     kwargs
