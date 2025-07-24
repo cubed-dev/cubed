@@ -6,13 +6,11 @@ modal = pytest.importorskip("modal")
 
 import asyncio
 
-import fsspec
-
 from cubed.runtime.asyncio import async_map_unordered
 from cubed.runtime.executors.modal import modal_create_futures_func
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
-tmp_path = "s3://cubed-unittest/map_unordered"
+BASE_PATH = "s3://cubed-unittest/map_unordered"
 region = "us-east-1"  # S3 region for above bucket
 
 app = modal.App("cubed-test-app", include_source=True)
@@ -104,24 +102,20 @@ async def run_test(app_function, input, use_backups=False, batch_size=None, **kw
 # fmt: on
 @pytest.mark.parametrize("use_backups", [False, True])
 @pytest.mark.cloud
-def test_success(timing_map, n_tasks, retries, use_backups):
-    try:
-        outputs = asyncio.run(
-            run_test(
-                app_function=deterministic_failure_modal,
-                input=range(n_tasks),
-                use_backups=use_backups,
-                path=tmp_path,
-                timing_map=timing_map,
-            )
+def test_success(tmp_path, timing_map, n_tasks, retries, use_backups):
+    path = f"{BASE_PATH}/{tmp_path.name}"
+    outputs = asyncio.run(
+        run_test(
+            app_function=deterministic_failure_modal,
+            input=range(n_tasks),
+            use_backups=use_backups,
+            path=path,
+            timing_map=timing_map,
         )
+    )
 
-        assert outputs == set(range(n_tasks))
-        check_invocation_counts(tmp_path, timing_map, n_tasks, retries)
-
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    assert outputs == set(range(n_tasks))
+    check_invocation_counts(path, timing_map, n_tasks, retries)
 
 
 # fmt: off
@@ -135,24 +129,20 @@ def test_success(timing_map, n_tasks, retries, use_backups):
 # fmt: on
 @pytest.mark.parametrize("use_backups", [False, True])
 @pytest.mark.cloud
-def test_failure(timing_map, n_tasks, retries, use_backups):
-    try:
-        with pytest.raises(RuntimeError):
-            asyncio.run(
-                run_test(
-                    app_function=deterministic_failure_modal,
-                    input=range(n_tasks),
-                    use_backups=use_backups,
-                    path=tmp_path,
-                    timing_map=timing_map,
-                )
+def test_failure(tmp_path, timing_map, n_tasks, retries, use_backups):
+    path = f"{BASE_PATH}/{tmp_path.name}"
+    with pytest.raises(RuntimeError):
+        asyncio.run(
+            run_test(
+                app_function=deterministic_failure_modal,
+                input=range(n_tasks),
+                use_backups=use_backups,
+                path=path,
+                timing_map=timing_map,
             )
+        )
 
-        check_invocation_counts(tmp_path, timing_map, n_tasks, retries)
-
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    check_invocation_counts(path, timing_map, n_tasks, retries)
 
 
 # fmt: off
@@ -165,24 +155,20 @@ def test_failure(timing_map, n_tasks, retries, use_backups):
 # fmt: on
 @pytest.mark.parametrize("use_backups", [False, True])
 @pytest.mark.cloud
-def test_large_number_of_tasks(timing_map, n_tasks, retries, use_backups):
-    try:
-        outputs = asyncio.run(
-            run_test(
-                app_function=deterministic_failure_modal,
-                input=range(n_tasks),
-                use_backups=use_backups,
-                path=tmp_path,
-                timing_map=timing_map
-            )
+def test_large_number_of_tasks(tmp_path, timing_map, n_tasks, retries, use_backups):
+    path = f"{BASE_PATH}/{tmp_path.name}"
+    outputs = asyncio.run(
+        run_test(
+            app_function=deterministic_failure_modal,
+            input=range(n_tasks),
+            use_backups=use_backups,
+            path=path,
+            timing_map=timing_map
         )
+    )
 
-        assert outputs == set(range(n_tasks))
-        check_invocation_counts(tmp_path, timing_map, n_tasks, retries)
-
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    assert outputs == set(range(n_tasks))
+    check_invocation_counts(path, timing_map, n_tasks, retries)
 
 
 # fmt: off
@@ -195,24 +181,20 @@ def test_large_number_of_tasks(timing_map, n_tasks, retries, use_backups):
 )
 # fmt: on
 @pytest.mark.cloud
-def test_stragglers(timing_map, n_tasks, retries, expected_invocation_counts_overrides):
-    try:
-        outputs = asyncio.run(
-            run_test(
-                app_function=deterministic_failure_modal_long_timeout,
-                input=range(n_tasks),
-                path=tmp_path,
-                timing_map=timing_map,
-                use_backups=True,
-            )
+def test_stragglers(tmp_path, timing_map, n_tasks, retries, expected_invocation_counts_overrides):
+    path = f"{BASE_PATH}/{tmp_path.name}"
+    outputs = asyncio.run(
+        run_test(
+            app_function=deterministic_failure_modal_long_timeout,
+            input=range(n_tasks),
+            path=path,
+            timing_map=timing_map,
+            use_backups=True,
         )
+    )
 
-        assert outputs == set(range(n_tasks))
-        check_invocation_counts(tmp_path, timing_map, n_tasks, retries, expected_invocation_counts_overrides)
-
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    assert outputs == set(range(n_tasks))
+    check_invocation_counts(path, timing_map, n_tasks, retries, expected_invocation_counts_overrides)
 
 
 @pytest.mark.cloud
@@ -220,18 +202,14 @@ def test_batch(tmp_path):
     # input is unbounded, so if entire input were consumed and not read
     # in batches then it would never return, since it would never
     # run the first (failing) input
-    try:
-        with pytest.raises(RuntimeError):
-            asyncio.run(
-                run_test(
-                    app_function=deterministic_failure_modal_no_retries,
-                    input=itertools.count(),
-                    path=tmp_path,
-                    timing_map={0: [-1]},
-                    batch_size=10,
-                )
+    path = f"{BASE_PATH}/{tmp_path.name}"
+    with pytest.raises(RuntimeError):
+        asyncio.run(
+            run_test(
+                app_function=deterministic_failure_modal_no_retries,
+                input=itertools.count(),
+                path=path,
+                timing_map={0: [-1]},
+                batch_size=10,
             )
-
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+        )
