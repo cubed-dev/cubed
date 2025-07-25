@@ -21,8 +21,14 @@ from cubed.core.ops import (
     map_blocks,
     map_selection,
 )
-from cubed.utils import block_id_to_offset, get_item, offset_to_block_id, to_chunksize
-from cubed.vendor.dask.array.core import broadcast_chunks, normalize_chunks
+from cubed.utils import (
+    block_id_to_offset,
+    get_item,
+    normalize_chunks,
+    offset_to_block_id,
+    to_chunksize,
+)
+from cubed.vendor.dask.array.core import broadcast_chunks
 from cubed.vendor.dask.array.reshape import reshape_rechunk
 from cubed.vendor.dask.array.utils import validate_axis
 

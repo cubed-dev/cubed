@@ -3,8 +3,7 @@ from typing import Tuple
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import map_selection
 from cubed.types import T_RectangularChunks
-from cubed.utils import _cumsum
-from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.utils import _cumsum, normalize_chunks
 from cubed.vendor.dask.array.overlap import coerce_boundary, coerce_depth
 from cubed.vendor.dask.utils import has_keyword
 

@@ -25,11 +25,11 @@ from cubed.utils import (
     chunk_memory,
     get_item,
     map_nested,
+    normalize_chunks,
     split_into,
     to_chunksize,
 )
 from cubed.utils import numblocks as compute_numblocks
-from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.blockwise import _get_coord_mapping, _make_dims, lol_product
 from cubed.vendor.dask.core import flatten
 

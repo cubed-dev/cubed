@@ -11,8 +11,7 @@ from cubed.storage.virtual import (
     virtual_in_memory,
     virtual_offsets,
 )
-from cubed.utils import normalize_shape, to_chunksize
-from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.utils import normalize_chunks, normalize_shape, to_chunksize
 
 if TYPE_CHECKING:
     from .array_object import Array
