@@ -1339,7 +1339,7 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
 
 def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None):
     """A reduction that returns the array indexes, not the values."""
-    dtype = nxp.int64  # index data type
+    dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
