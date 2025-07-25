@@ -6,6 +6,7 @@ import cubed
 import cubed.array_api as xp
 from cubed._testing import assert_allclose, assert_array_equal
 from cubed.array_api.manipulation_functions import reshape_chunks
+from cubed.backend_array_api import namespace as nxp
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
 
 
@@ -20,6 +21,8 @@ def spec(tmp_path):
     ids=[executor.name for executor in MAIN_EXECUTORS],
 )
 def executor(request):
+    if request.param.name == "processes" and "cupy" in nxp.__name__:
+        pytest.skip(reason="CuPy is not supported with 'processes' executor")
     return request.param
 
 
