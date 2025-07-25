@@ -5,6 +5,7 @@ import networkx as nx
 import numpy as np
 
 from cubed import config
+from cubed.backend_array_api import namespace as nxp
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
 from cubed.storage.backend import open_backend_array
@@ -125,3 +126,14 @@ def execute_pipeline(pipeline, executor):
     dag = nx.MultiDiGraph()
     dag.add_node("node", pipeline=pipeline)
     executor.execute_dag(dag)
+
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    skip_if_cupy = pytest.mark.skipif(
+        "cupy" in nxp.__name__,
+        reason="CuPy is not supported",
+    )

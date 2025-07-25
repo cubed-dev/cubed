@@ -7,7 +7,12 @@ import cubed.array_api as xp
 from cubed._testing import assert_allclose, assert_array_equal
 from cubed.array_api.manipulation_functions import reshape_chunks
 from cubed.backend_array_api import namespace as nxp
-from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, MODAL_EXECUTORS
+from cubed.tests.utils import (
+    ALL_EXECUTORS,
+    MAIN_EXECUTORS,
+    MODAL_EXECUTORS,
+    skip_if_cupy,
+)
 
 
 @pytest.fixture
@@ -32,6 +37,8 @@ def executor(request):
     ids=[executor.name for executor in ALL_EXECUTORS],
 )
 def any_executor(request):
+    if request.param.name == "processes" and "cupy" in nxp.__name__:
+        pytest.skip(reason="CuPy is not supported with 'processes' executor")
     return request.param
 
 
@@ -387,6 +394,7 @@ def test_index_slice_unsupported_step(spec):
 
 
 @pytest.mark.parametrize("axis", [0, 1])
+@skip_if_cupy  # ndindex with a cupy.ndarray
 def test_take(spec, axis):
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
