@@ -38,13 +38,21 @@ else:
 # assume that no extra memory is allocated, by using the
 # Python buffer protocol.
 # See https://data-apis.org/array-api/latest/API_specification/generated/array_api.asarray.html
+if "cupy" in namespace.__name__:
+    # zarr-python 3.x natively supports some device buffers (currently just cupy,
+    # but https://github.com/zarr-developers/zarr-python/issues/2658 is expanding the
+    # set). For these backends, we *don't* want to copy to the host.
 
+    def backend_array_to_numpy_array(arr):
+        return arr
 
-def backend_array_to_numpy_array(arr):
-    # temporarily disable this. for cupy `arr` and GPU buffers in Zarr, we don't
-    # want to convert to NumPy.
-    return arr
-    return np.asarray(arr)
+else:
+
+    def backend_array_to_numpy_array(arr):
+        # temporarily disable this. for cupy `arr` and GPU buffers in Zarr, we don't
+        # want to convert to NumPy.
+        # return arr
+        return np.asarray(arr)
 
 
 def numpy_array_to_backend_array(arr, *, dtype=None):
