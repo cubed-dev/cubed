@@ -3,8 +3,7 @@ from typing import TYPE_CHECKING
 from cubed.array_api.manipulation_functions import broadcast_to, expand_dims
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import map_blocks, map_selection, reduction
-from cubed.utils import get_item
-from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.utils import get_item, normalize_chunks
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array

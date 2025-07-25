@@ -13,7 +13,7 @@ from math import prod
 from operator import add, mul
 from pathlib import Path
 from posixpath import join
-from typing import Dict, Tuple, Union, cast
+from typing import Dict, Optional, Tuple, Union, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
@@ -21,8 +21,9 @@ import tlz as toolz
 from toolz import reduce
 
 from cubed.backend_array_api import namespace as nxp
-from cubed.types import T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
-from cubed.vendor.dask.array.core import _check_regular_chunks, normalize_chunks
+from cubed.types import T_Chunks, T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
+from cubed.vendor.dask.array.core import _check_regular_chunks
+from cubed.vendor.dask.array.core import normalize_chunks as dask_normalize_chunks
 
 PathType = Union[str, Path]
 
@@ -369,3 +370,15 @@ def normalize_dtype(dtype, device=None) -> T_DType:
 
 def itemsize(dtype: T_DType) -> int:
     return dtype.itemsize
+
+
+def normalize_chunks(
+    chunks: T_Chunks,
+    shape: Optional[T_Shape] = None,
+    limit: Optional[int] = None,
+    dtype: Optional[T_DType] = None,
+    previous_chunks: Optional[T_RectangularChunks] = None,
+) -> T_RectangularChunks:
+    return dask_normalize_chunks(
+        chunks, shape=shape, limit=limit, dtype=dtype, previous_chunks=previous_chunks
+    )

@@ -9,8 +9,7 @@ from toolz import accumulate, map
 from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.core.array import CoreArray
 from cubed.core.ops import general_blockwise, map_selection, merge_chunks
-from cubed.utils import array_size
-from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.utils import array_size, normalize_chunks
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array

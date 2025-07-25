@@ -31,11 +31,11 @@ from cubed.utils import (
     array_size,
     get_item,
     itemsize,
+    normalize_chunks,
     offset_to_block_id,
     to_chunksize,
 )
 from cubed.utils import numblocks as compute_numblocks
-from cubed.vendor.dask.array.core import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
 from cubed.vendor.dask.utils import has_keyword
