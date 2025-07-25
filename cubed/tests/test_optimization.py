@@ -36,7 +36,7 @@ def spec(tmp_path):
 def test_fusion(spec, opt_fn):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
-    c = xp.astype(b, np.float32)
+    c = xp.astype(b, xp.float32)
     d = xp.negative(c)
 
     num_arrays = 4  # a, b, c, d
@@ -69,7 +69,7 @@ def test_fusion(spec, opt_fn):
 def test_fusion_compute_multiple(spec, opt_fn):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
-    c = xp.astype(b, np.float32)
+    c = xp.astype(b, xp.float32)
     d = xp.negative(c)
 
     # if we compute c and d then both have to be materialized
@@ -97,7 +97,7 @@ def test_fusion_compute_multiple(spec, opt_fn):
 def test_fusion_transpose(spec, opt_fn):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
-    c = xp.astype(b, np.float32)
+    c = xp.astype(b, xp.float32)
     d = c.T
 
     num_created_arrays = 3  # b, c, d
@@ -191,7 +191,7 @@ def test_no_fusion_multiple_edges(spec):
 def test_custom_optimize_function(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.negative(a)
-    c = xp.astype(b, np.float32)
+    c = xp.astype(b, xp.float32)
     d = xp.negative(c)
 
     num_tasks_with_no_optimization = d.plan._finalize(optimize_graph=False).num_tasks()
@@ -992,7 +992,7 @@ def test_fuse_merge_chunks_binary(spec):
 def test_fuse_partial_reduce_unary(spec):
     a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     b = xp.negative(a)
-    c = partial_reduce(b, np.sum, split_every={0: 3})
+    c = partial_reduce(b, nxp.sum, split_every={0: 3}, dtype=xp.float64)
 
     opt_fn = fuse_multiple_levels()
 
@@ -1017,7 +1017,7 @@ def test_fuse_partial_reduce_binary(spec):
     a = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     b = xp.ones((3, 2), chunks=(1, 2), spec=spec)
     c = xp.add(a, b)
-    d = partial_reduce(c, np.sum, split_every={0: 3})
+    d = partial_reduce(c, nxp.sum, split_every={0: 3}, dtype=xp.float64)
 
     opt_fn = fuse_multiple_levels()
 
