@@ -23,7 +23,14 @@ def cumulative_sum(x, /, *, axis=None, dtype=None, include_initial=False, device
         fname="cumulative_sum",
         device=device,
     )
-    return scan(x, preop=nxp.sum, func=_cumulative_sum_func, binop=nxp.add, axis=axis)
+    return scan(
+        x,
+        preop=nxp.sum,
+        func=_cumulative_sum_func,
+        binop=nxp.add,
+        axis=axis,
+        dtype=dtype,
+    )
 
 
 def _cumulative_sum_func(a, /, *, axis=None, dtype=None, include_initial=False):
