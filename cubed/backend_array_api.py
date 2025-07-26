@@ -32,6 +32,7 @@ else:
     import array_api_compat.numpy
 
     namespace = array_api_compat.numpy
+    xp_name = "numpy"
 
 
 # These functions to convert to/from backend arrays

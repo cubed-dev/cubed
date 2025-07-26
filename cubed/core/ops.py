@@ -15,7 +15,7 @@ from toolz import map
 
 from cubed import config
 from cubed.backend_array_api import namespace as nxp
-from cubed.backend_array_api import numpy_array_to_backend_array
+from cubed.backend_array_api import numpy_array_to_backend_array, xp_name
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, new_temp_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
@@ -566,7 +566,11 @@ def _assemble_index_chunk(
         for ai, chunk_select, out_select in zip(
             arrays, lchunk_selection, lout_selection
         ):
-            out[out_select] = ai[chunk_select]
+            # jax doesn't support in-place assignment
+            if "jax" in xp_name:
+                out = out.at[out_select].set(ai[chunk_select])
+            else:
+                out[out_select] = ai[chunk_select]
 
     if func is not None:
         if has_keyword(func, "block_id"):
