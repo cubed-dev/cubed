@@ -213,7 +213,7 @@ def _read_concat_chunk(
     stop = min(stop, target_shape[axis])
 
     chunk_shape = tuple(ch[bi] for ch, bi in zip(target_chunks, block_id))
-    out = np.empty(chunk_shape, dtype=dtype)
+    out = nxp.empty(chunk_shape, dtype=dtype)
     for array, (lchunk_selection, lout_selection) in zip(
         arrays,
         _chunk_slices(
