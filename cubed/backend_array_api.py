@@ -49,9 +49,6 @@ if "cupy" in namespace.__name__:
 else:
 
     def backend_array_to_numpy_array(arr):
-        # temporarily disable this. for cupy `arr` and GPU buffers in Zarr, we don't
-        # want to convert to NumPy.
-        # return arr
         return np.asarray(arr)
 
 
