@@ -57,3 +57,7 @@ def numpy_array_to_backend_array(arr, *, dtype=None):
     if isinstance(arr, dict):
         return {k: namespace.asarray(v, dtype=dtype) for k, v in arr.items()}
     return namespace.asarray(arr, dtype=dtype)
+
+
+# jax doesn't support in-place assignment, so we use .at[].set() instead.
+IS_IMMUTABLE_ARRAY = "jax" in xp_name

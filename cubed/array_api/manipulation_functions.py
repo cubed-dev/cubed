@@ -6,6 +6,7 @@ import tlz
 from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
+from cubed.backend_array_api import IS_IMMUTABLE_ARRAY
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import (
     blockwise,
@@ -220,7 +221,10 @@ def _read_concat_chunk(
             offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
         ),
     ):
-        out[lout_selection] = array[lchunk_selection]
+        if IS_IMMUTABLE_ARRAY:
+            out = out.at[lout_selection].set(array[lchunk_selection])
+        else:
+            out[lout_selection] = array[lchunk_selection]
     return out
 
 
