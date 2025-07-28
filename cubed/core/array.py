@@ -9,7 +9,7 @@ from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.runtime.types import Callback, Executor
 from cubed.spec import Spec, spec_from_config
 from cubed.storage.zarr import open_if_lazy_zarr_array
-from cubed.utils import array_memory
+from cubed.utils import array_memory, itemsize
 from cubed.vendor.dask.array.core import normalize_chunks
 
 from .plan import arrays_to_plan
@@ -102,12 +102,12 @@ class CoreArray:
     @property
     def nbytes(self) -> int:
         """Number of bytes in array"""
-        return self.size * self.dtype.itemsize
+        return self.size * itemsize(self.dtype)
 
     @property
     def itemsize(self) -> int:
         """Length of one array element in bytes"""
-        return self.dtype.itemsize
+        return itemsize(self.dtype)
 
     def _read_stored(self):
         # Only works if the array has been computed

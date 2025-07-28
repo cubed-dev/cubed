@@ -30,6 +30,7 @@ from cubed.utils import (
     array_memory,
     array_size,
     get_item,
+    itemsize,
     offset_to_block_id,
     to_chunksize,
 )
@@ -1007,7 +1008,7 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
         shape=x.shape,
         source_chunks=source_chunks,
         target_chunks=target_chunks,
-        itemsize=x.dtype.itemsize,
+        itemsize=itemsize(x.dtype),
         min_mem=min_mem,
         max_mem=rechunker_max_mem,
     )

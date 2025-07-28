@@ -9,6 +9,7 @@ from cubed.primitive.types import CubedArrayProxy, CubedCopySpec, PrimitiveOpera
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.zarr import T_ZarrArray, lazy_zarr_array
 from cubed.types import T_RegularChunks, T_Shape, T_Store
+from cubed.utils import itemsize
 from cubed.vendor.rechunker.algorithm import rechunking_plan
 
 sym_counter = 0
@@ -127,13 +128,12 @@ def _setup_array_rechunk(
     shape = source_array.shape
     source_chunks = source_array.chunks
     dtype = source_array.dtype
-    itemsize = dtype.itemsize
 
     read_chunks, int_chunks, write_chunks = rechunking_plan(
         shape,
         source_chunks,
         target_chunks,
-        itemsize,
+        itemsize(dtype),
         max_mem,
     )
 

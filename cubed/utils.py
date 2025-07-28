@@ -29,7 +29,7 @@ PathType = Union[str, Path]
 
 def array_memory(dtype: T_DType, shape: T_Shape) -> int:
     """Calculate the amount of memory in bytes that an array uses."""
-    return normalize_dtype(dtype).itemsize * prod(shape)
+    return itemsize(normalize_dtype(dtype)) * prod(shape)
 
 
 def chunk_memory(arr) -> int:
@@ -365,3 +365,7 @@ def normalize_dtype(dtype, device=None) -> T_DType:
     """
 
     return np.dtype(dtype)
+
+
+def itemsize(dtype: T_DType) -> int:
+    return dtype.itemsize
