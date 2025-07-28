@@ -3,9 +3,8 @@ from functools import reduce
 from itertools import starmap
 from operator import mul
 
-import numpy as np
-
 from cubed.types import T_DType, T_RegularChunks, T_Shape
+from cubed.utils import normalize_dtype
 
 
 class ArrayMetadata:
@@ -16,7 +15,7 @@ class ArrayMetadata:
         chunks: T_RegularChunks,
     ):
         self.shape = shape
-        self.dtype = np.dtype(dtype)
+        self.dtype = normalize_dtype(dtype)
         self.chunks = chunks
 
     @property

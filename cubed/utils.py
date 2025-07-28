@@ -29,7 +29,7 @@ PathType = Union[str, Path]
 
 def array_memory(dtype: T_DType, shape: T_Shape) -> int:
     """Calculate the amount of memory in bytes that an array uses."""
-    return np.dtype(dtype).itemsize * prod(shape)
+    return normalize_dtype(dtype).itemsize * prod(shape)
 
 
 def chunk_memory(arr) -> int:
@@ -355,3 +355,13 @@ def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> Tuple[int, ...]
     shape = cast(Tuple[int, ...], shape)
     shape = tuple(int(s) for s in shape)
     return shape
+
+
+def normalize_dtype(dtype, device=None) -> T_DType:
+    """Normalize a `dtype` argument to the underlying backend array API dtype.
+
+    This allows dtypes to be specified as `bool`, `int`, `float`, or `complex`,
+    or a string (if the array API implementation supports it).
+    """
+
+    return np.dtype(dtype)
