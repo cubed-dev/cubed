@@ -401,7 +401,26 @@ def normalize_dtype(dtype, device=None) -> T_DType:
     or a string (if the array API implementation supports it).
     """
 
-    return np.dtype(dtype)
+    from cubed.array_api.inspection import __array_namespace_info__
+
+    dtypes = __array_namespace_info__().default_dtypes(device=device)
+    # check bool first since True/False are instances of int and float
+    if dtype is bool:
+        dtype = nxp.bool
+    elif dtype is int:
+        dtype = dtypes["integral"]
+    elif dtype is float:
+        dtype = dtypes["real floating"]
+    elif dtype is complex:
+        dtype = dtypes["complex floating"]
+    elif isinstance(dtype, str):
+        # TODO: check that conversion from string is supported?
+        dtype = nxp.dtype(dtype)
+    elif isinstance(dtype, list):
+        dtype = [
+            (field[0], normalize_dtype(field[1], device=device)) for field in dtype
+        ]
+    return dtype
 
 
 def itemsize(dtype: T_DType) -> int:
@@ -422,6 +441,7 @@ def normalize_chunks(
     dtype: Optional[T_DType] = None,
     previous_chunks: Optional[T_RectangularChunks] = None,
 ) -> T_RectangularChunks:
+    dtype = backend_dtype_to_numpy_dtype(dtype) if dtype is not None else None
     return dask_normalize_chunks(
         chunks, shape=shape, limit=limit, dtype=dtype, previous_chunks=previous_chunks
     )

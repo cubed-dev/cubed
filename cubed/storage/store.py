@@ -1,6 +1,7 @@
 from typing import Optional
 
 from cubed import config
+from cubed.backend_array_api import backend_dtype_to_numpy_dtype
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
@@ -57,6 +58,9 @@ def open_storage_array(
     **kwargs,
 ):
     storage_name = get_storage_name()
+
+    # all storage backend use numpy dtypes, so convert
+    dtype = backend_dtype_to_numpy_dtype(dtype) if dtype is not None else None
 
     if storage_name == "zarr-python":
         from cubed.storage.stores.zarr_python import open_zarr_array  # type: ignore

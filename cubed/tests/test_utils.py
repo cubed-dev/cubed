@@ -18,6 +18,7 @@ from cubed.utils import (
     join_path,
     map_nested,
     memory_repr,
+    normalize_dtype,
     normalize_shape,
     offset_to_block_id,
     peak_measured_mem,
@@ -223,3 +224,20 @@ def test_normalize_shape():
 
     with pytest.raises(TypeError):
         normalize_shape(None)
+
+
+def test_normalize_dtype():
+    assert normalize_dtype(np.int32) == np.int32
+    assert normalize_dtype(np.dtype(np.int32)) == np.int32
+    assert normalize_dtype(bool) == np.bool
+    assert normalize_dtype(int) == np.int64
+    assert normalize_dtype(float) == np.float64
+    assert normalize_dtype(complex) == np.complex128
+    assert normalize_dtype("int32") == np.int32
+    assert normalize_dtype([("a", np.int32), ("b", int)]) == [
+        ("a", np.int32),
+        ("b", np.int64),
+    ]
+    assert normalize_dtype(np.dtype([("a", np.int32), ("b", int)])) == np.dtype(
+        [("a", np.int32), ("b", np.int64)]
+    )

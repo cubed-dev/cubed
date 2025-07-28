@@ -37,10 +37,10 @@ class Array(CoreArray):
 
     def __array__(self, dtype=None) -> np.ndarray:
         x = self.compute()
-        if dtype and x.dtype != dtype:
-            x = x.astype(dtype)
         if not isinstance(x, np.ndarray):
             x = np.array(x)
+        if dtype and x.dtype != dtype:
+            x = x.astype(dtype)
         return x
 
     def __repr__(self):
