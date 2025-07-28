@@ -4,7 +4,7 @@ from itertools import starmap
 from operator import mul
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape
-from cubed.utils import normalize_dtype
+from cubed.utils import itemsize, normalize_dtype
 
 
 class ArrayMetadata:
@@ -26,7 +26,7 @@ class ArrayMetadata:
     @property
     def nbytes(self) -> int:
         """Number of bytes in array"""
-        return self.size * self.dtype.itemsize
+        return self.size * itemsize(self.dtype)
 
     @property
     def _cdata_shape(self) -> T_Shape:
