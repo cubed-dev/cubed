@@ -113,9 +113,16 @@ def _upcast_integral_dtypes(
         elif x.dtype in _signed_integer_dtypes:
             dtype = dtypes["integral"]
         elif x.dtype in _unsigned_integer_dtypes:
-            # Type arithmetic to produce an unsigned integer dtype at the same default precision.
-            default_bits = nxp.iinfo(dtypes["integral"]).bits
-            dtype = nxp.dtype(f"u{default_bits // 8}")
+            # produce an unsigned integer dtype at the same default precision
+            dtype = dtypes["integral"]
+            if dtype == int8:
+                dtype = nxp.uint8
+            elif dtype == int16:
+                dtype = nxp.uint16
+            elif dtype == int32:
+                dtype = nxp.int32
+            elif dtype == int64:
+                dtype = nxp.uint64
         else:
             dtype = x.dtype
 
