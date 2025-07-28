@@ -1339,7 +1339,7 @@ def _partial_reduce(arrays, reduce_func=None, initial_func=None, axis=None):
 
 def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None):
     """A reduction that returns the array indexes, not the values."""
-    dtype = nxp.int64  # index data type
+    dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
@@ -1549,7 +1549,9 @@ def scan(
 
     # Blelloch (1990) out-of-core algorithm.
     # 1. First, scan blockwise
-    scanned = map_blocks(func, array, axis=axis, include_initial=include_initial)
+    scanned = map_blocks(
+        func, array, dtype=dtype, axis=axis, include_initial=include_initial
+    )
     # If there is only a single chunk, we can be done
     if array.numblocks[axis] == 1:
         return scanned
@@ -1567,6 +1569,7 @@ def scan(
         initial_func=partial(preop, axis=axis, keepdims=True),
         func=identity_func,
         split_every={axis: split_size},
+        dtype=dtype,
         combine_sizes={axis: split_size},
     )
 
@@ -1581,6 +1584,7 @@ def scan(
         preop=preop,
         binop=binop,
         axis=axis,
+        dtype=dtype,
         include_initial=True,
     )
 

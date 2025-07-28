@@ -49,6 +49,7 @@ def searchsorted(x1, x2, /, *, side="left", sorter=None):
         )
 
     # call nxp.searchsorted for each pair of blocks in x1 and v
+    dtype = nxp.__array_namespace_info__().default_dtypes(device=x1.device)["indexing"]
     out = blockwise(
         _searchsorted,
         list(range(x2.ndim + 1)),
@@ -56,7 +57,7 @@ def searchsorted(x1, x2, /, *, side="left", sorter=None):
         [0],
         x2,
         list(range(1, x2.ndim + 1)),
-        dtype=nxp.int64,  # TODO: index dtype
+        dtype=dtype,
         adjust_chunks={0: 1},  # one row for each block in x1
         side=side,
     )

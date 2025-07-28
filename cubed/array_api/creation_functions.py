@@ -228,16 +228,12 @@ def linspace(
 def _linspace(
     x, size, start, step, endpoint, linspace_dtype, device=None, block_id=None
 ):
-    dtypes = __array_namespace_info__().default_dtypes(device=device)
-
     bs = x.shape[0]
     i = block_id[0]
     adjusted_bs = bs - 1 if endpoint else bs
 
-    # float_ is a type casting function.
-    float_ = dtypes["real floating"].type
-    blockstart = float_(start + (i * size * step))
-    blockstop = float_(blockstart + float_(adjusted_bs * step))
+    blockstart = start + (i * size * step)
+    blockstop = blockstart + adjusted_bs * step
     return nxp.linspace(
         blockstart, blockstop, bs, endpoint=endpoint, dtype=linspace_dtype
     )

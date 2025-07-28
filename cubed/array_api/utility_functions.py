@@ -10,7 +10,7 @@ def all(x, /, *, axis=None, keepdims=False, split_every=None):
         x,
         nxp.all,
         axis=axis,
-        dtype=bool,
+        dtype=nxp.bool,
         keepdims=keepdims,
         split_every=split_every,
     )
@@ -23,7 +23,7 @@ def any(x, /, *, axis=None, keepdims=False, split_every=None):
         x,
         nxp.any,
         axis=axis,
-        dtype=bool,
+        dtype=nxp.bool,
         keepdims=keepdims,
         split_every=split_every,
     )
