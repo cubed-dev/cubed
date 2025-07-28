@@ -13,4 +13,5 @@ reliability
 optimization
 scaling
 diagnostics
+gpus
 ```
