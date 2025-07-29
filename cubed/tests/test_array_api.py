@@ -1,4 +1,3 @@
-import fsspec
 import numpy as np
 import pytest
 
@@ -430,52 +429,46 @@ def test_matmul(spec, executor):
 
 @pytest.mark.cloud
 def test_matmul_cloud(executor):
-    tmp_path = "gs://barry-zarr-test/matmul"
-    spec = cubed.Spec(tmp_path, allowed_mem=100000)
-    try:
-        a = xp.asarray(
-            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-            chunks=(2, 2),
-            spec=spec,
-        )
-        b = xp.asarray(
-            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-            chunks=(2, 2),
-            spec=spec,
-        )
-        c = xp.matmul(a, b)
-        x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-        y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-        expected = np.matmul(x, y)
-        assert_array_equal(c.compute(executor=executor), expected)
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    tmp_path = "s3://cubed-unittest/matmul"
+    spec = cubed.Spec(tmp_path, allowed_mem=100000, storage_options=dict(use_obstore=True))
+
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    c = xp.matmul(a, b)
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    expected = np.matmul(x, y)
+    assert_array_equal(c.compute(executor=executor), expected)
 
 
 @pytest.mark.cloud
 def test_matmul_modal(modal_executor):
     tmp_path = "s3://cubed-unittest/matmul"
-    spec = cubed.Spec(tmp_path, allowed_mem=100000)
-    try:
-        a = xp.asarray(
-            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-            chunks=(2, 2),
-            spec=spec,
-        )
-        b = xp.asarray(
-            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-            chunks=(2, 2),
-            spec=spec,
-        )
-        c = xp.matmul(a, b)
-        x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-        y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-        expected = np.matmul(x, y)
-        assert_array_equal(c.compute(executor=modal_executor), expected)
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    spec = cubed.Spec(tmp_path, allowed_mem=100000, storage_options=dict(use_obstore=True))
+
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    b = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    c = xp.matmul(a, b)
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    expected = np.matmul(x, y)
+    assert_array_equal(c.compute(executor=modal_executor), expected)
 
 
 def test_outer(spec, executor):

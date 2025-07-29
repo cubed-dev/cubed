@@ -2,7 +2,6 @@ import os
 import platform
 import re
 
-import fsspec
 import numpy as np
 import psutil
 import pytest
@@ -152,20 +151,17 @@ def test_callbacks_modal(spec, modal_executor):
     task_counter = TaskCounter(check_timestamps=False)
     tmp_path = "s3://cubed-unittest/callbacks"
     spec = cubed.Spec(tmp_path, allowed_mem=100000)
-    try:
-        a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
-        b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
-        c = xp.add(a, b)
-        assert_array_equal(
-            c.compute(executor=modal_executor, callbacks=[task_counter]),
-            np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
-        )
 
-        num_created_arrays = 1
-        assert task_counter.value == num_created_arrays + 4
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    assert_array_equal(
+        c.compute(executor=modal_executor, callbacks=[task_counter]),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]]),
+    )
+
+    num_created_arrays = 1
+    assert task_counter.value == num_created_arrays + 4
 
 
 @pytest.mark.skipif(
@@ -246,19 +242,16 @@ def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parall
 def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_parallel):
     tmp_path = "s3://cubed-unittest/parallel_pipelines"
     spec = cubed.Spec(tmp_path, allowed_mem=100000)
-    try:
-        a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
-        b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
-        c = xp.add(a, b)
 
-        # note that this merely checks that compute_arrays_in_parallel is accepted
-        c.compute(
-            executor=modal_executor,
-            compute_arrays_in_parallel=compute_arrays_in_parallel,
-        )
-    finally:
-        fs = fsspec.open(tmp_path).fs
-        fs.rm(tmp_path, recursive=True)
+    a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
+    c = xp.add(a, b)
+
+    # note that this merely checks that compute_arrays_in_parallel is accepted
+    c.compute(
+        executor=modal_executor,
+        compute_arrays_in_parallel=compute_arrays_in_parallel,
+    )
 
 
 def test_check_runtime_memory_dask(spec, executor):
