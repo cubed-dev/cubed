@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=271464ff"></script>
+    <script src="../_static/documentation_options.js?v=82f77fa0"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -390,7 +390,7 @@ data and measuring the peak memory use.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em>) – The executor to use to run the computation. It must be an executor that
 reports peak memory, such as Lithops or Modal.</p></li>
-<li><p><strong>work_dir</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The directory path (specified as an fsspec URL) used for storing intermediate data.
+<li><p><strong>work_dir</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – The directory path (specified as an fsspec or obstore URL) used for storing intermediate data.
 This is required when using a cloud runtime.</p></li>
 <li><p><strong>kwargs</strong> – Keyword arguments to pass to the <code class="docutils literal notranslate"><span class="pre">compute</span></code> function.</p></li>
 </ul>
