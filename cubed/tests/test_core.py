@@ -6,11 +6,11 @@ import dill
 import numpy as np
 import pytest
 import zarr
-from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed._testing import assert_array_equal
 from cubed.array_api.dtypes import _floating_dtypes
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
