@@ -3,11 +3,11 @@ from typing import Iterable
 import numpy as np
 import pytest
 import zarr
-from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed._testing import assert_array_equal
 from cubed.tests.utils import MAIN_EXECUTORS
 
 icechunk = pytest.importorskip("icechunk")
