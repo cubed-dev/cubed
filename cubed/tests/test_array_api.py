@@ -452,7 +452,7 @@ def test_matmul_cloud(executor):
 @pytest.mark.cloud
 def test_matmul_modal(modal_executor):
     tmp_path = "s3://cubed-unittest/matmul"
-    spec = cubed.Spec(tmp_path, allowed_mem=100000, storage_options=dict(use_obstore=True))
+    spec = cubed.Spec(tmp_path, allowed_mem=100000)
 
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
