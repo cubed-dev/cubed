@@ -5,6 +5,10 @@ import networkx as nx
 import numpy as np
 
 from cubed import config
+from cubed.backend_array_api import (
+    backend_array_to_numpy_array,
+    numpy_array_to_backend_array,
+)
 from cubed.backend_array_api import namespace as nxp
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
@@ -110,6 +114,9 @@ def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):
     if not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
         a = np.asarray(a, dtype=dtype)
+        # following forces 'a' to be numpy or cupy (for GPUs)
+        a = numpy_array_to_backend_array(a)
+        a = backend_array_to_numpy_array(a)
     if dtype is None:
         dtype = a.dtype
 
