@@ -330,9 +330,15 @@ __all__ += [
     "unstack",
 ]
 
-from .array_api.searching_functions import argmax, argmin, searchsorted, where
+from .array_api.searching_functions import (
+    argmax,
+    argmin,
+    count_nonzero,
+    searchsorted,
+    where,
+)
 
-__all__ += ["argmax", "argmin", "searchsorted", "where"]
+__all__ += ["argmax", "argmin", "count_nonzero", "searchsorted", "where"]
 
 from .array_api.statistical_functions import (
     cumulative_sum,

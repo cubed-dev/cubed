@@ -69,7 +69,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unstack`           | :white_check_mark: | 2023.12    |                              |
 | Searching Functions      | `argmax`            | :white_check_mark: |            |                              |
 |                          | `argmin`            | :white_check_mark: |            |                              |
-|                          | `count_nonzero`     | :x:                | 2024.12    |                              |
+|                          | `count_nonzero`     | :white_check_mark: | 2024.12    |                              |
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
 |                          | `searchsorted`      | :white_check_mark: | 2023.12    |                              |
 |                          | `where`             | :white_check_mark: |            |                              |
