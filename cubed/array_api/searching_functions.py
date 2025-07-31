@@ -1,8 +1,8 @@
 from cubed.array_api.creation_functions import asarray, zeros_like
-from cubed.array_api.data_type_functions import result_type
+from cubed.array_api.data_type_functions import astype, result_type
 from cubed.array_api.dtypes import _promote_scalars, _real_numeric_dtypes
 from cubed.array_api.manipulation_functions import reshape
-from cubed.array_api.statistical_functions import max
+from cubed.array_api.statistical_functions import max, sum
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import arg_reduction, blockwise, elemwise
 
@@ -34,6 +34,17 @@ def argmin(x, /, *, axis=None, keepdims=False, split_every=None):
         x,
         nxp.argmin,
         axis=axis,
+        keepdims=keepdims,
+        split_every=split_every,
+    )
+
+
+def count_nonzero(x, /, *, axis=None, keepdims=False, split_every=None):
+    dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
+    return sum(
+        astype(x, nxp.bool),
+        axis=axis,
+        dtype=dtype,
         keepdims=keepdims,
         split_every=split_every,
     )

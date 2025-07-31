@@ -136,10 +136,12 @@ from .elementwise_functions import (
     minimum,
     multiply,
     negative,
+    nextafter,
     not_equal,
     positive,
     pow,
     real,
+    reciprocal,
     remainder,
     round,
     sign,
@@ -203,11 +205,13 @@ __all__ += [
     "maximum",
     "minimum",
     "multiply",
+    "nextafter",
     "negative",
     "not_equal",
     "positive",
     "pow",
     "real",
+    "reciprocal",
     "remainder",
     "round",
     "sign",
@@ -264,9 +268,9 @@ __all__ += [
     "unstack",
 ]
 
-from .searching_functions import argmax, argmin, searchsorted, where
+from .searching_functions import argmax, argmin, count_nonzero, searchsorted, where
 
-__all__ += ["argmax", "argmin", "searchsorted", "where"]
+__all__ += ["argmax", "argmin", "count_nonzero", "searchsorted", "where"]
 
 from .statistical_functions import cumulative_sum, max, mean, min, prod, std, sum, var
 

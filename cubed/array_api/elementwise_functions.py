@@ -372,6 +372,13 @@ def multiply(x1, x2, /):
     return elemwise(nxp.multiply, x1, x2, dtype=result_type(x1, x2))
 
 
+def nextafter(x1, x2, /):
+    x1, x2 = _promote_scalars(x1, x2, "nextafter")
+    if x1.dtype not in _real_floating_dtypes or x2.dtype not in _real_floating_dtypes:
+        raise TypeError("Only real floating-point dtypes are allowed in nextafter")
+    return elemwise(nxp.nextafter, x1, x2, dtype=x1.dtype)
+
+
 def negative(x, /):
     if x.dtype not in _numeric_dtypes:
         raise TypeError("Only numeric dtypes are allowed in negative")
@@ -404,6 +411,12 @@ def real(x, /):
     else:
         raise TypeError("Only complex floating-point dtypes are allowed in real")
     return elemwise(nxp.real, x, dtype=dtype)
+
+
+def reciprocal(x, /):
+    if x.dtype not in _floating_dtypes:
+        raise TypeError("Only floating-point dtypes are allowed in reciprocal")
+    return elemwise(nxp.reciprocal, x, dtype=x.dtype)
 
 
 def remainder(x1, x2, /):
