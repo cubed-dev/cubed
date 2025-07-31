@@ -13,6 +13,8 @@
 conda create --name cubed-lithops-aws-examples -y python=3.11
 conda activate cubed-lithops-aws-examples
 pip install 'cubed[lithops-aws]'
+# or for obstore:
+pip install 'cubed[diagnostics]' 'lithops[aws]' obstore
 ```
 
 2. Configure Lithops with an [AWS Lambda compute backend](https://lithops-cloud.github.io/docs/source/compute_config/aws_lambda.html), and an [AWS S3 storage backend](https://lithops-cloud.github.io/docs/source/storage_config/aws_s3.html).
@@ -23,6 +25,7 @@ pip install 'cubed[lithops-aws]'
    - Note: if you are building on an arm64 machine (e.g. Apple Silicon) then make sure that your Lithops config file contains `architecture: arm64` under the `aws_lambda` section.
 
 ```shell
+# Note: change `s3fs` to `obstore` in the docker file to use obstore instead of fsspec
 lithops runtime build -b aws_lambda -f docker/Dockerfile_aws_lambda cubed-runtime
 lithops runtime deploy -b aws_lambda --memory 2000 --timeout 180 cubed-runtime # optional, will be done automatically on first use
 ```
@@ -33,12 +36,22 @@ lithops runtime deploy -b aws_lambda --memory 2000 --timeout 180 cubed-runtime #
 ulimit -n 1024
 ```
 
+6. [Obstore only] Set AWS env variables
+
+```shell
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_REGION=...
+```
+
 ## Running
 
 Before running the examples, first change to the top-level examples directory (`cd ../..`) and type
 
 ```shell
 export CUBED_CONFIG=$(pwd)/lithops/aws
+# or for obstore:
+export CUBED_CONFIG=$(pwd)/lithops/aws/cubed-obstore.yaml
 ```
 
 Then you can run the examples in the [docs](https://cubed-dev.github.io/cubed/examples/index.html).
