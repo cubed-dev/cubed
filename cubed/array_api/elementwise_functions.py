@@ -413,6 +413,12 @@ def real(x, /):
     return elemwise(nxp.real, x, dtype=dtype)
 
 
+def reciprocal(x, /):
+    if x.dtype not in _floating_dtypes:
+        raise TypeError("Only floating-point dtypes are allowed in reciprocal")
+    return elemwise(nxp.reciprocal, x, dtype=x.dtype)
+
+
 def remainder(x1, x2, /):
     x1, x2 = _promote_scalars(x1, x2, "remainder")
     if x1.dtype not in _real_numeric_dtypes or x2.dtype not in _real_numeric_dtypes:
