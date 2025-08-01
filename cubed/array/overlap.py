@@ -127,10 +127,16 @@ def get_item_with_depth(
 ) -> Tuple[slice, ...]:
     """Convert a chunk index to a tuple of slices with depth offsets."""
     starts = tuple(_cumsum(c, initial_zero=True) for c in chunks)
+
+    def depth_offsets(d):
+        if isinstance(d, int):
+            return -d, d
+        return d
+
     loc = tuple(
         (
-            _clamp(0, start[i] - depth[ax], start[-1]),
-            _clamp(0, start[i + 1] + depth[ax], start[-1]),
+            _clamp(0, start[i] + depth_offsets(depth[ax])[0], start[-1]),
+            _clamp(0, start[i + 1] + depth_offsets(depth[ax])[1], start[-1]),
         )
         for ax, (i, start) in enumerate(zip(idx, starts))
     )
@@ -140,7 +146,7 @@ def get_item_with_depth(
 def _pad_boundaries(x, depth, boundary, numblocks, block_id):
     for i in range(x.ndim):
         d = depth.get(i, 0)
-        if d == 0 or block_id[i] not in (0, numblocks[i] - 1):
+        if d == 0 or block_id[i] not in (0, numblocks[i] - 1) or boundary[i] == "none":
             continue
         pad_shape = list(x.shape)
         pad_shape[i] = d
