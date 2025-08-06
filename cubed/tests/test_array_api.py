@@ -894,6 +894,11 @@ def test_mean_axis_0(spec, executor):
         np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]).mean(axis=0),
     )
 
+def test_mean_complex():
+    a = xp.asarray([1.0+1.0j, 2.0+2.0j, 3.0+3.0j], chunks=(2,))
+    b = xp.mean(a)
+    assert_array_equal(b.compute(), np.array([1.0+1.0j, 2.0+2.0j, 3.0+3.0j]).mean())
+
 
 def test_sum(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)

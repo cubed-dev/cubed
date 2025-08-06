@@ -1,6 +1,8 @@
 import math
 
+from cubed.array_api.data_type_functions import isdtype
 from cubed.array_api.dtypes import (
+    _floating_dtypes,
     _real_floating_dtypes,
     _real_numeric_dtypes,
     _upcast_integral_dtypes,
@@ -58,14 +60,17 @@ def max(x, /, *, axis=None, keepdims=False, split_every=None):
 
 
 def mean(x, /, *, axis=None, keepdims=False, split_every=None):
-    if x.dtype not in _real_floating_dtypes:
-        raise TypeError("Only real floating-point dtypes are allowed in mean")
+    if x.dtype not in _floating_dtypes:
+        raise TypeError("Only floating-point dtypes are allowed in mean")
     # This implementation uses a Zarr group of two arrays to store a
     # pair of fields needed to keep per-chunk counts and totals for computing
     # the mean.
     dtype = x.dtype
     # TODO(#658): Should these be default dtypes?
-    intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
+    if isdtype(x.dtype, "complex floating"):
+        intermediate_dtype = [("n", nxp.int64), ("total", nxp.complex128)]
+    else:
+        intermediate_dtype = [("n", nxp.int64), ("total", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype)
     return reduction(
         x,
