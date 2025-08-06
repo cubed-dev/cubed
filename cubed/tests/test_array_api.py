@@ -970,3 +970,24 @@ def test_all_zero_dimension(spec, executor):
     assert b.ndim == 0
     assert b.size == 1
     assert b.compute(executor=executor)
+
+
+@pytest.mark.parametrize("n", [1, 2])
+def test_diff(n):
+    x = np.array([1, 5, 3, 8, 7, 2, 6, 9])
+    a = xp.asarray(x, chunks=(3,))
+    b = xp.diff(a, n=n)
+
+    assert_array_equal(b.compute(), np.diff(x, n=n))
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis"),
+    [((10, 15, 20), 0), ((10, 15, 20), 1), ((10, 15, 20), 2), ((10, 15, 20), -1)],
+)
+@pytest.mark.parametrize("n", [0, 1, 2])
+def test_diff_3d(shape, n, axis):
+    x = np.random.default_rng().integers(0, 10, shape)
+    a = xp.asarray(x, chunks=(len(shape) * (5,)))
+
+    assert_array_equal(xp.diff(a, axis=axis, n=n), np.diff(x, axis=axis, n=n))

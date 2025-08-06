@@ -90,7 +90,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `var`               | :white_check_mark: |            |                              |
 | Utility Functions        | `all`               | :white_check_mark: |            |                              |
 |                          | `any`               | :white_check_mark: |            |                              |
-|                          | `diff`              | :x:                | 2024.12    |                              |
+|                          | `diff`              | :white_check_mark: | 2024.12    |                              |
 
 ### Linear Algebra Extension
 

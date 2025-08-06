@@ -276,6 +276,6 @@ from .statistical_functions import cumulative_sum, max, mean, min, prod, std, su
 
 __all__ += ["cumulative_sum", "max", "mean", "min", "prod", "std", "sum", "var"]
 
-from .utility_functions import all, any
+from .utility_functions import all, any, diff
 
-__all__ += ["all", "any"]
+__all__ += ["all", "any", "diff"]

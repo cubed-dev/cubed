@@ -353,9 +353,9 @@ from .array_api.statistical_functions import (
 
 __all__ += ["cumulative_sum", "max", "mean", "min", "prod", "std", "sum", "var"]
 
-from .array_api.utility_functions import all, any
+from .array_api.utility_functions import all, any, diff
 
-__all__ += ["all", "any"]
+__all__ += ["all", "any", "diff"]
 
 # extensions
 
