@@ -70,17 +70,16 @@ def test_rechunk(
 ):
     source = zarr.ones(shape, chunks=source_chunks, store=tmp_path / "source.zarr")
     target_store = tmp_path / "target.zarr"
-    temp_store = tmp_path / "temp.zarr"
 
     ops = rechunk(
         source,
         source_array_name="source-array",
         int_array_name="int-array",
+        target_array_name="target-array",
         target_chunks=target_chunks,
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
         target_store=target_store,
-        temp_store=temp_store,
     )
 
     assert len(ops) == len(expected_num_tasks)
@@ -103,7 +102,7 @@ def test_rechunk(
     for op in ops:
         execute_pipeline(op.pipeline, executor=executor)
 
-    res = open_backend_array(target_store, mode="r")
+    res = open_backend_array(target_store, mode="r", path="target-array")
     assert_array_equal(res[:], np.ones(shape))
     assert res.chunks == target_chunks
 
@@ -112,7 +111,6 @@ def test_rechunk_allowed_mem_exceeded(tmp_path):
     source = zarr.ones((4, 4), chunks=(2, 2), store=tmp_path / "source.zarr")
     allowed_mem = 16
     target_store = tmp_path / "target.zarr"
-    temp_store = tmp_path / "temp.zarr"
 
     # cubed's allowed_mem is reduced by a factor of 4 for rechunker's max_mem from 16 to 4
     with pytest.raises(
@@ -122,9 +120,9 @@ def test_rechunk_allowed_mem_exceeded(tmp_path):
             source,
             source_array_name="source-array",
             int_array_name="int-array",
+            target_array_name="target-array",
             target_chunks=(4, 1),
             allowed_mem=allowed_mem,
             reserved_mem=0,
             target_store=target_store,
-            temp_store=temp_store,
         )

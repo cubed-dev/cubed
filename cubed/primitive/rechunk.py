@@ -24,11 +24,11 @@ def rechunk(
     source: T_ZarrArray,
     source_array_name: str,
     int_array_name: str,
+    target_array_name: str,
     target_chunks: T_RegularChunks,
     allowed_mem: int,
     reserved_mem: int,
     target_store: T_Store,
-    temp_store: Optional[T_Store] = None,
     storage_options: Optional[Dict[str, Any]] = None,
 ) -> List[PrimitiveOperation]:
     """Change the chunking of an array, without changing its shape or dtype.
@@ -44,8 +44,6 @@ def rechunk(
         The memory reserved on a worker for non-data use when running a task, in bytes
     target_store : str
         Path to output Zarr store.
-    temp_store : str, optional
-        Path to temporary store for intermediate data.
 
     Returns
     -------
@@ -61,10 +59,11 @@ def rechunk(
 
     read_proxy, int_proxy, write_proxy = _setup_array_rechunk(
         source_array=source,
+        int_array_name=int_array_name,
+        target_array_name=target_array_name,
         target_chunks=target_chunks,
         max_mem=rechunker_max_mem,
         target_store=target_store,
-        temp_store=temp_store,
         storage_options=storage_options,
     )
 
@@ -118,10 +117,11 @@ def rechunk(
 # from rechunker, but simpler since it only has to handle Zarr arrays
 def _setup_array_rechunk(
     source_array: T_ZarrArray,
+    int_array_name: str,
+    target_array_name: str,
     target_chunks: T_RegularChunks,
     max_mem: int,
     target_store: T_Store,
-    temp_store: Optional[T_Store] = None,
     storage_options: Optional[Dict[str, Any]] = None,
 ) -> Tuple[CubedArrayProxy, Optional[CubedArrayProxy], CubedArrayProxy]:
     shape = source_array.shape
@@ -148,6 +148,7 @@ def _setup_array_rechunk(
         shape,
         dtype,
         chunks=target_chunks,
+        path=target_array_name,  # use array name for path within store
         storage_options=storage_options,
     )
 
@@ -155,10 +156,13 @@ def _setup_array_rechunk(
         int_array = None
     else:
         # do intermediate store
-        if temp_store is None:
-            raise ValueError("A temporary store location must be provided.")
         int_array = lazy_zarr_array(
-            temp_store, shape, dtype, chunks=int_chunks, storage_options=storage_options
+            target_store,
+            shape,
+            dtype,
+            chunks=int_chunks,
+            path=int_array_name,  # use array name for path within store
+            storage_options=storage_options,
         )
 
     read_proxy = CubedArrayProxy(source_array, read_chunks)
