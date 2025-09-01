@@ -11,5 +11,5 @@ numpy >= 1.22
 psutil
 tenacity
 toolz
-zarr
+zarr != 3.1.2
 pyspark
