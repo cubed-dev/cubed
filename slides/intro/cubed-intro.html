@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=82be8b84"></script>
+    <script src="../../_static/documentation_options.js?v=24b01d20"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -371,10 +371,10 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#computation-plan">Computation plan</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization">Optimization</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization-an-advanced-example">Optimization: an advanced example</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#quadratic-means-timeline">Quadratic Means timeline</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#memory">Memory</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#peak-memory">Peak memory</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#runtimes">Runtimes</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-timeline">Example timeline</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#scalability-and-robustness">Scalability and robustness</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#xarray-integration">Xarray integration</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#try-out-cubed">Try out Cubed!</a></li>
@@ -392,7 +392,7 @@ document.write(`
                   
   <section id="cubed-an-introduction">
 <h1>Cubed: an introduction<a class="headerlink" href="#cubed-an-introduction" title="Link to this heading">#</a></h1>
-<p>Tom White, November 2024</p>
+<p>Tom White, August 2025</p>
 </section>
 <section id="idea">
 <h1>Idea<a class="headerlink" href="#idea" title="Link to this heading">#</a></h1>
@@ -607,6 +607,10 @@ document.write(`
 <img src="benchmarks-aws.png" width="600">
 <p>More details in <a class="reference external" href="https://medium.com/pangeo/optimizing-cubed-7a0b8f65f5b7">Optimizing Cubed</a></p>
 </section>
+<section id="quadratic-means-timeline">
+<h1>Quadratic Means timeline<a class="headerlink" href="#quadratic-means-timeline" title="Link to this heading">#</a></h1>
+<p><img alt="QM timeline" src="../../_images/qm-timeline.png" /></p>
+</section>
 <section id="memory">
 <h1>Memory<a class="headerlink" href="#memory" title="Link to this heading">#</a></h1>
 <p>Cubed models the memory used by every operation, and calculates the <code class="docutils literal notranslate"><span class="pre">projected_mem</span></code> for a task - an upper bound.</p>
@@ -647,34 +651,37 @@ document.write(`
 <section id="runtimes">
 <h1>Runtimes<a class="headerlink" href="#runtimes" title="Link to this heading">#</a></h1>
 <ul class="simple">
+<li><p><strong>Local machine</strong></p>
+<ul>
+<li><p>Start here to process hundreds of GB on your laptop using all available cores</p></li>
+</ul>
+</li>
+<li><p><strong>Serverless</strong></p>
+<ul>
 <li><p><strong>Lithops</strong>: multi-cloud serverless computing framework</p>
 <ul>
 <li><p>Slightly more work to get started since you have to build a runtime environment first</p></li>
 <li><p>Tested on AWS Lambda and Google Cloud Functions with ~1000 workers</p></li>
 </ul>
 </li>
-</ul>
-<ul class="simple">
 <li><p><strong>Modal</strong>: a commercial serverless platform</p>
 <ul>
 <li><p>Very easy to set up since it builds the runtime automatically</p></li>
 <li><p>Tested with ~300 workers</p></li>
 </ul>
 </li>
+<li><p><strong>Coiled Functions</strong></p></li>
 </ul>
-<ul class="simple">
-<li><p><strong>Apache Beam (Google Cloud Dataflow)</strong>: fully managed pipeline processing service</p>
+</li>
+<li><p><strong>Cluster/HPC</strong></p>
 <ul>
-<li><p>Slow to spin up</p></li>
-<li><p>Only tested with ~20 workers, but very mature so will scale out</p></li>
+<li><p><strong>Ray</strong></p></li>
+<li><p><strong>Apache Beam (Google Cloud Dataflow)</strong></p></li>
+<li><p><strong>Globus Compute</strong></p></li>
+<li><p><strong>Apache Spark</strong></p></li>
 </ul>
 </li>
 </ul>
-</section>
-<section id="example-timeline">
-<h1>Example timeline<a class="headerlink" href="#example-timeline" title="Link to this heading">#</a></h1>
-<p>Adding two 20GB arrays on Lithops (AWS Lambda)</p>
-<p><img alt="Lithops timeline" src="../../_images/cubed-lithops-timeline.png" /></p>
 </section>
 <section id="scalability-and-robustness">
 <h1>Scalability and robustness<a class="headerlink" href="#scalability-and-robustness" title="Link to this heading">#</a></h1>
@@ -766,10 +773,10 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#computation-plan">Computation plan</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization">Optimization</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#optimization-an-advanced-example">Optimization: an advanced example</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#quadratic-means-timeline">Quadratic Means timeline</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#memory">Memory</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#peak-memory">Peak memory</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#runtimes">Runtimes</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-timeline">Example timeline</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#scalability-and-robustness">Scalability and robustness</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#xarray-integration">Xarray integration</a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#try-out-cubed">Try out Cubed!</a></li>
