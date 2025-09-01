@@ -6,6 +6,7 @@ from donfig.config_obj import expand_environment_variables
 
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Executor
+from cubed.types import T_Store
 from cubed.utils import convert_to_bytes
 
 
@@ -22,6 +23,9 @@ class Spec:
         executor_options: Optional[dict] = None,
         storage_options: Union[dict, None] = None,
         zarr_compressor: Union[dict, str, None] = "default",
+        intermediate_store: Union[
+            T_Store, None
+        ] = None,  # TODO: doc, repr, eq (+position?)
     ):
         """
         Specify resources available to run a computation.
@@ -65,6 +69,7 @@ class Spec:
         self._executor_options = executor_options
         self._storage_options = storage_options
         self._zarr_compressor = zarr_compressor
+        self._intermediate_store = intermediate_store
 
     @property
     def work_dir(self) -> Optional[str]:
@@ -117,6 +122,11 @@ class Spec:
     def zarr_compressor(self) -> Union[dict, str, None]:
         """The compressor used by Zarr for intermediate data."""
         return self._zarr_compressor
+
+    @property
+    def intermediate_store(self) -> Union[dict, str, None]:
+        """The Zarr store for intermediate data. Takes precedence over 'work_dir'."""
+        return self._intermediate_store
 
     def __repr__(self) -> str:
         return (
