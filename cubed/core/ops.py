@@ -17,13 +17,14 @@ from cubed import config
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
-from cubed.core.plan import Plan, new_temp_path
+from cubed.core.plan import Plan, context_dir_path
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.backend import open_backend_array
+from cubed.storage.zarr import lazy_zarr_array
 from cubed.types import T_RegularChunks, T_Shape
 from cubed.utils import (
     array_memory,
@@ -157,6 +158,14 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
     for source, target in zip(sources, targets):
         identity = lambda a: a
         ind = tuple(range(source.ndim))
+
+        if target is not None and not isinstance(target, zarr.Array):
+            target = lazy_zarr_array(
+                target,
+                shape=source.shape,
+                dtype=source.dtype,
+                chunks=source.chunksize,
+            )
         array = blockwise(
             identity,
             ind,
@@ -192,6 +201,14 @@ def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
     # by map fusion (if it was produced with a blockwise operation).
     identity = lambda a: a
     ind = tuple(range(x.ndim))
+    if store is not None and not isinstance(store, zarr.Array):
+        store = lazy_zarr_array(
+            store,
+            shape=x.shape,
+            dtype=x.dtype,
+            chunks=x.chunksize,
+            path=path,
+        )
     out = blockwise(
         identity,
         ind,
@@ -200,7 +217,6 @@ def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
         dtype=x.dtype,
         align_arrays=False,
         target_store=store,
-        target_path=path,
     )
     out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
 
@@ -298,7 +314,7 @@ def blockwise(
     spec = check_array_specs(arrays)
     buffer_copies = get_buffer_copies(spec)
     if target_store is None:
-        target_store = new_temp_path(name=name, spec=spec)
+        target_store = context_dir_path(spec=spec)
     op = primitive_blockwise(
         func,
         out_ind,
@@ -452,14 +468,14 @@ def _general_blockwise(
     if isinstance(target_stores, list):  # multiple outputs
         name = [gensym() for _ in range(len(target_stores))]
         target_stores = [
-            ts if ts is not None else new_temp_path(name=n, spec=spec)
-            for n, ts in zip(name, target_stores)
+            ts if ts is not None else context_dir_path(spec=spec)
+            for ts in target_stores
         ]
         target_names = name
     else:  # single output
         name = gensym()
         if target_stores is None:
-            target_stores = [new_temp_path(name=name, spec=spec)]
+            target_stores = [context_dir_path(spec=spec)]
         target_names = [name]
 
     op = primitive_general_blockwise(
@@ -886,18 +902,17 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
     name = gensym()
     spec = x.spec
     if target_store is None:
-        target_store = new_temp_path(name=name, spec=spec)
+        target_store = context_dir_path(spec=spec)
     name_int = f"{name}-int"
-    temp_store = new_temp_path(name=name_int, spec=spec)
     ops = primitive_rechunk(
         x._zarray,
-        source_array_name=name,
+        source_array_name=x.name,
         int_array_name=name_int,
+        target_array_name=name,
         target_chunks=target_chunks,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
         target_store=target_store,
-        temp_store=temp_store,
         storage_options=spec.storage_options,
     )
 
