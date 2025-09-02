@@ -1,8 +1,13 @@
 import itertools
+import uuid
+from datetime import datetime
 
 import pytest
 
 modal = pytest.importorskip("modal")
+
+# import MODAL_EXECUTORS to set up config correctly
+from cubed.tests.utils import MODAL_EXECUTORS  # isort: skip # noqa: F401
 
 import asyncio
 
@@ -10,7 +15,8 @@ from cubed.runtime.asyncio import async_map_unordered
 from cubed.runtime.executors.modal import modal_create_futures_func
 from cubed.tests.runtime.utils import check_invocation_counts, deterministic_failure
 
-BASE_PATH = "s3://cubed-unittest/map_unordered"
+UNIQUE_DIR_NAME = f"test-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
+BASE_PATH = f"s3://cubed-unittest/map_unordered/{UNIQUE_DIR_NAME}"
 region = "us-east-1"  # S3 region for above bucket
 
 app = modal.App("cubed-test-app", include_source=True)
@@ -23,6 +29,7 @@ image = modal.Image.debian_slim().pip_install(
         "mypy_extensions",  # for rechunker
         "ndindex",
         "networkx",
+        "psutil",
         "pytest-mock",  # TODO: only needed for tests
         "s3fs",
         "tenacity",
