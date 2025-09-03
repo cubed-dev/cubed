@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=a2100307"></script>
+    <script src="../_static/documentation_options.js?v=9fc5a065"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -362,6 +362,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-storage">Local storage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-storage">Cloud storage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zarr-backend">Zarr backend</a></li>
 </ul>
             </nav>
         </div>
@@ -396,6 +397,24 @@ document.write(`
 <li><p>For <strong>AWS S3</strong>, follow <a class="reference external" href="https://lepczynski.it/en/aws_en/automatically-delete-old-files-from-aws-s3/">these instructions</a>.</p></li>
 </ul>
 <p>If you use this approach then be sure to store persistent data in a separate bucket to the one used for intermediate data.</p>
+</section>
+<section id="zarr-backend">
+<h2>Zarr backend<a class="headerlink" href="#zarr-backend" title="Link to this heading">#</a></h2>
+<p>Cubed uses the <a class="reference external" href="https://github.com/zarr-developers/zarr-python"><code class="docutils literal notranslate"><span class="pre">zarr-python</span></code></a> library for reading and writing intermediate Zarr data, but it is possible to override this and use another Zarr library by setting the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable.</p>
+<p>To use the <a class="reference external" href="https://github.com/zarrs/zarrs-python"><code class="docutils literal notranslate"><span class="pre">zarrs-python</span></code></a> Rust implementation, install the <code class="docutils literal notranslate"><span class="pre">zarrs</span></code> Python package and set the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">zarrs-python</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUBED_STORAGE_NAME</span><span class="o">=</span>zarrs-python
+</pre></div>
+</div>
+<p>To use <a class="reference external" href="https://google.github.io/tensorstore/">Tensorstore</a>, install the <code class="docutils literal notranslate"><span class="pre">tensorstore</span></code> Python package and set the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">tensorstore</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUBED_STORAGE_NAME</span><span class="o">=</span>tensorstore
+</pre></div>
+</div>
+<p>For <code class="docutils literal notranslate"><span class="pre">zarr-python</span></code> v3 only, you can use Zarr’s <a class="reference external" href="https://zarr.readthedocs.io/en/main/api/zarr/storage/index.html#zarr.storage.ObjectStore"><code class="docutils literal notranslate"><span class="pre">ObjectStore</span></code></a> which uses the Rust-based <a class="reference external" href="https://developmentseed.org/obstore/latest/"><code class="docutils literal notranslate"><span class="pre">obstore</span></code></a>, by setting the <code class="docutils literal notranslate"><span class="pre">storage_options.use_obstore</span></code> <a class="reference internal" href="../configuration.html"><span class="std std-doc">configuration</span></a> option to <code class="docutils literal notranslate"><span class="pre">True</span></code>, as illustrated in this YAML file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">storage_options</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">use_obstore</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -446,6 +465,7 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-storage">Local storage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-storage">Cloud storage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zarr-backend">Zarr backend</a></li>
 </ul>
   </nav></div>
 
