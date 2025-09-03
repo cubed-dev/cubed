@@ -27,3 +27,27 @@ To set up a lifecycle rule:
 * For **AWS S3**, follow [these instructions](https://lepczynski.it/en/aws_en/automatically-delete-old-files-from-aws-s3/).
 
 If you use this approach then be sure to store persistent data in a separate bucket to the one used for intermediate data.
+
+## Zarr backend
+
+Cubed uses the [`zarr-python`](https://github.com/zarr-developers/zarr-python) library for reading and writing intermediate Zarr data, but it is possible to override this and use another Zarr library by setting the `CUBED_STORAGE_NAME` environment variable.
+
+To use the [`zarrs-python`](https://github.com/zarrs/zarrs-python) Rust implementation, install the `zarrs` Python package and set the `CUBED_STORAGE_NAME` environment variable to `zarrs-python`:
+
+```shell
+export CUBED_STORAGE_NAME=zarrs-python
+```
+
+To use [Tensorstore](https://google.github.io/tensorstore/), install the `tensorstore` Python package and set the `CUBED_STORAGE_NAME` environment variable to `tensorstore`:
+
+```shell
+export CUBED_STORAGE_NAME=tensorstore
+```
+
+For `zarr-python` v3 only, you can use Zarr's [`ObjectStore`](https://zarr.readthedocs.io/en/main/api/zarr/storage/index.html#zarr.storage.ObjectStore) which uses the Rust-based [`obstore`](https://developmentseed.org/obstore/latest/), by setting the `storage_options.use_obstore` [configuration](../configuration.md) option to `True`, as illustrated in this YAML file:
+
+```yaml
+spec:
+  storage_options:
+    use_obstore: True
+```
