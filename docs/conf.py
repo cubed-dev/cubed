@@ -58,8 +58,8 @@ master_doc = "index"
 
 # General information about the project.
 project = "Cubed"
-copyright = "2022-2024, Tom White"
-author = "Tom White"
+copyright = "2022-2025"
+author = "Cubed contributors"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -115,6 +115,7 @@ html_theme_options = {
     "use_fullscreen_button": False,
 }
 html_title = "Cubed"
+html_logo = "_static/cubed-logo.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

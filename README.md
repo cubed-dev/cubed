@@ -1,4 +1,4 @@
-# Cubed
+![Cubed](docs/_static/cubed-logo.svg)
 
 ## Scalable array processing with bounded memory
 
