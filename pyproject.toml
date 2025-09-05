@@ -82,8 +82,8 @@ coiled = [
 test = [
     "cubed[diagnostics]",
     "dill",
-    "fsspec",
     "numpy_groupies",
+    "obstore",
     "pytest",
     "pytest-cov",
     "pytest-mock",

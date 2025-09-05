@@ -150,7 +150,9 @@ def test_rich_progress_bar(spec, executor):
 def test_callbacks_modal(spec, modal_executor):
     task_counter = TaskCounter(check_timestamps=False)
     tmp_path = "s3://cubed-unittest/callbacks"
-    spec = cubed.Spec(tmp_path, allowed_mem=100000)
+    spec = cubed.Spec(
+        tmp_path, allowed_mem=100000, storage_options=dict(use_obstore=True)
+    )
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
@@ -241,7 +243,9 @@ def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parall
 @pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
 def test_compute_arrays_in_parallel_modal(modal_executor, compute_arrays_in_parallel):
     tmp_path = "s3://cubed-unittest/parallel_pipelines"
-    spec = cubed.Spec(tmp_path, allowed_mem=100000)
+    spec = cubed.Spec(
+        tmp_path, allowed_mem=100000, storage_options=dict(use_obstore=True)
+    )
 
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
@@ -290,7 +294,11 @@ def test_check_runtime_memory_dask_no_workers(spec, executor):
 @pytest.mark.cloud
 def test_check_runtime_memory_modal(spec, modal_executor):
     tmp_path = "s3://cubed-unittest/check-runtime-memory"
-    spec = cubed.Spec(tmp_path, allowed_mem="4GB")  # larger than Modal runtime memory
+    spec = cubed.Spec(
+        tmp_path,
+        allowed_mem="4GB",  # larger than Modal runtime memory
+        storage_options=dict(use_obstore=True),
+    )
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
