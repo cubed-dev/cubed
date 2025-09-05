@@ -1,20 +1,27 @@
-import re
+import asyncio
 import time
-from urllib.parse import urlparse
+from pathlib import Path
 
-import fsspec
-
-from cubed.utils import join_path
+import obstore as obs
 
 
-def read_int_from_file(path):
-    with fsspec.open(path) as f:
-        return int(f.read())
+def path_to_store(path):
+    if isinstance(path, str):
+        if "://" not in path:
+            return obs.store.from_url(Path(path).as_uri(), mkdir=True)
+        else:
+            return obs.store.from_url(path)
+    elif isinstance(path, Path):
+        return obs.store.from_url(path.as_uri(), mkdir=True)
 
 
-def write_int_to_file(path, i):
-    with fsspec.open(path, "w") as f:
-        f.write(str(i))
+def read_int_from_file(store, path):
+    result = obs.get(store, path)
+    return int(result.bytes())
+
+
+def write_int_to_file(store, path, i):
+    obs.put(store, path, bytes(str(i), encoding="UTF8"))
 
 
 def deterministic_failure(path, timing_map, i, *, default_sleep=0.01, name=None):
@@ -34,13 +41,12 @@ def deterministic_failure(path, timing_map, i, *, default_sleep=0.01, name=None)
     they will all run normally.
     """
     # increment number of invocations of this function with arg i
-    invocation_count_file = join_path(path, f"{i}")
-    fs = fsspec.open(invocation_count_file).fs
-    if fs.exists(invocation_count_file):
-        invocation_count = read_int_from_file(invocation_count_file)
-    else:
+    store = path_to_store(path)
+    try:
+        invocation_count = read_int_from_file(store, f"{i}")
+    except FileNotFoundError:
         invocation_count = 0
-    write_int_to_file(invocation_count_file, invocation_count + 1)
+    write_int_to_file(store, f"{i}", invocation_count + 1)
 
     timing_code = default_sleep
     if i in timing_map:
@@ -61,6 +67,20 @@ def deterministic_failure(path, timing_map, i, *, default_sleep=0.01, name=None)
 
 
 def check_invocation_counts(
+    path, timing_map, n_tasks, retries=None, expected_invocation_counts_overrides=None
+):
+    asyncio.run(
+        check_invocation_counts_async(
+            path,
+            timing_map,
+            n_tasks,
+            retries=retries,
+            expected_invocation_counts_overrides=expected_invocation_counts_overrides,
+        )
+    )
+
+
+async def check_invocation_counts_async(
     path, timing_map, n_tasks, retries=None, expected_invocation_counts_overrides=None
 ):
     expected_invocation_counts = {}
@@ -84,16 +104,11 @@ def check_invocation_counts(
         expected_invocation_counts.update(expected_invocation_counts_overrides)
 
     # retrieve outputs concurrently, so we can test on large numbers of inputs
-    # see https://filesystem-spec.readthedocs.io/en/latest/async.html#synchronous-api
-    if re.match(r"^[a-zA-Z]:\\", str(path)):  # Windows local file
-        protocol = ""
-    else:
-        protocol = urlparse(str(path)).scheme
-    fs = fsspec.filesystem(protocol)
-    paths = [join_path(path, str(i)) for i in range(n_tasks)]
-    out = fs.cat(paths)
-    path_to_i = lambda p: int(p.rsplit("/", 1)[-1])
-    actual_invocation_counts = {path_to_i(path): int(val) for path, val in out.items()}
+    store = path_to_store(path)
+    paths = [str(i) for i in range(n_tasks)]
+    results = await asyncio.gather(*[obs.get_async(store, path) for path in paths])
+    values = await asyncio.gather(*[result.bytes_async() for result in results])
+    actual_invocation_counts = {i: int(val) for i, val in enumerate(values)}
 
     if actual_invocation_counts != expected_invocation_counts:
         for i, expected_count in expected_invocation_counts.items():

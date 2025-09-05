@@ -78,6 +78,7 @@ try:
         {
             "spec.executor_options.cloud": "aws",
             "spec.executor_options.region": "us-east-1",
+            "spec.executor_options.secret": "aws-secret-us-east-1",
         }
     )
     executor_options = dict(enable_output=True)

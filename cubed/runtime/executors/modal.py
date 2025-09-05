@@ -48,13 +48,12 @@ else:
             [
                 "array-api-compat",
                 "donfig",
-                "fsspec",
                 "mypy_extensions",  # for rechunker
                 "ndindex",
                 "networkx",
+                "obstore",
                 "psutil",
                 "pytest-mock",  # TODO: only needed for tests
-                "s3fs",
                 "tenacity",
                 "toolz",
                 "zarr",
