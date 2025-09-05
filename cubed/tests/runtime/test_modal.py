@@ -25,13 +25,12 @@ image = modal.Image.debian_slim().pip_install(
     [
         "array-api-compat",
         "donfig",
-        "fsspec",
         "mypy_extensions",  # for rechunker
         "ndindex",
         "networkx",
+        "obstore",
         "psutil",
         "pytest-mock",  # TODO: only needed for tests
-        "s3fs",
         "tenacity",
         "toolz",
         "zarr",
@@ -41,7 +40,7 @@ image = modal.Image.debian_slim().pip_install(
 
 @app.function(
     image=image,
-    secrets=[modal.Secret.from_name("my-aws-secret")],
+    secrets=[modal.Secret.from_name("aws-secret-us-east-1")],
     retries=2,
     timeout=10,
     cloud="aws",
@@ -53,7 +52,7 @@ def deterministic_failure_modal(i, path=None, timing_map=None, *, name=None):
 
 @app.function(
     image=image,
-    secrets=[modal.Secret.from_name("my-aws-secret")],
+    secrets=[modal.Secret.from_name("aws-secret-us-east-1")],
     timeout=10,
     cloud="aws",
     region=region,
@@ -64,7 +63,7 @@ def deterministic_failure_modal_no_retries(i, path=None, timing_map=None, *, nam
 
 @app.function(
     image=image,
-    secrets=[modal.Secret.from_name("my-aws-secret")],
+    secrets=[modal.Secret.from_name("aws-secret-us-east-1")],
     retries=2,
     timeout=300,
     cloud="aws",
