@@ -212,6 +212,7 @@ Note that `batch_size` is not currently supported for Lithops.
 |------------------------------|---------|-------------------------------------------------------------------------------------|
 | `cloud`                      | `"aws"` | The cloud to run on. One of `"aws"` or `"gcp"`.                                     |
 | `region`                     | N/A     | The cloud region to run in. This must be set to match the region of your cloud store to avoid data transfer fees. See Modal's [Region selection](https://modal.com/docs/guide/region-selection) page for possible values. |
+| `secret`                     | `"my-aws-secret"` for AWS, `"my-googlecloud-secret"` for Google Cloud | The name of the [Modal secret](https://modal.com/docs/guide/secrets) to use.        |
 | `retries`                    | 2       | The number of times to retry a task if it fails.                                    |
 | `timeout`                    | 180     | Tasks that take longer than the timeout will be automatically killed and retried.   |
 | `enable_output`              | False   | Print Modal output to stdout and stderr things for debugging.                      |

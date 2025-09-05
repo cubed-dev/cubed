@@ -80,12 +80,15 @@ else:
     else:
         raise ValueError(f"Unrecognized cloud: {cloud}")
 
-if cloud == "aws":
-    secrets = [modal.Secret.from_name("my-aws-secret")]
-elif cloud == "gcp":
-    secrets = [modal.Secret.from_name("my-googlecloud-secret")]
-else:
-    raise ValueError(f"Unrecognized cloud: {cloud}")
+secret_name = executor_options.get("secret", None)
+if secret_name is None:
+    if cloud == "aws":
+        secret_name = "my-aws-secret"
+    elif secret_name == "gcp":
+        secrets_name = "my-googlecloud-secret"
+    else:
+        raise ValueError(f"Unrecognized cloud: {cloud}")
+secrets = [modal.Secret.from_name(secret_name)]
 
 
 def check_runtime_memory(spec):
@@ -155,7 +158,15 @@ class ModalExecutor(DagExecutor):
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
         # remove executor options as they should already have been used in defining the remote functions
-        for executor_option in ("memory", "retries", "timeout", "cloud", "region"):
+        for executor_option in (
+            "memory",
+            "retries",
+            "timeout",
+            "cloud",
+            "region",
+            "requirements_file",
+            "secret",
+        ):
             merged_kwargs.pop(executor_option, None)
         asyncio_run(
             self._async_execute_dag(
