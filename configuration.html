@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=945cc53b"></script>
+    <script src="_static/documentation_options.js?v=336bf6e2"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -734,27 +734,31 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
 <td><p>N/A</p></td>
 <td><p>The cloud region to run in. This must be set to match the region of your cloud store to avoid data transfer fees. See Modal’s <a class="reference external" href="https://modal.com/docs/guide/region-selection">Region selection</a> page for possible values.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">retries</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">secret</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;my-aws-secret&quot;</span></code> for AWS, <code class="docutils literal notranslate"><span class="pre">&quot;my-googlecloud-secret&quot;</span></code> for Google Cloud</p></td>
+<td><p>The name of the <a class="reference external" href="https://modal.com/docs/guide/secrets">Modal secret</a> to use.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">retries</span></code></p></td>
 <td><p>2</p></td>
 <td><p>The number of times to retry a task if it fails.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code></p></td>
 <td><p>180</p></td>
 <td><p>Tasks that take longer than the timeout will be automatically killed and retried.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_output</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_output</span></code></p></td>
 <td><p>False</p></td>
 <td><p>Print Modal output to stdout and stderr things for debugging.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">use_backups</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">use_backups</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code></p></td>
 <td><p>Whether to use backup tasks for mitigating stragglers.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Number of input tasks to submit to be run in parallel. The default is not to batch.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">compute_arrays_in_parallel</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">compute_arrays_in_parallel</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
 <td><p>Whether arrays are computed one at a time or in parallel.</p></td>
 </tr>
