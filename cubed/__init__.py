@@ -341,6 +341,7 @@ from .array_api.searching_functions import (
 __all__ += ["argmax", "argmin", "count_nonzero", "searchsorted", "where"]
 
 from .array_api.statistical_functions import (
+    cumulative_prod,
     cumulative_sum,
     max,
     mean,
@@ -351,7 +352,17 @@ from .array_api.statistical_functions import (
     var,
 )
 
-__all__ += ["cumulative_sum", "max", "mean", "min", "prod", "std", "sum", "var"]
+__all__ += [
+    "cumulative_prod",
+    "cumulative_sum",
+    "max",
+    "mean",
+    "min",
+    "prod",
+    "std",
+    "sum",
+    "var",
+]
 
 from .array_api.utility_functions import all, any, diff
 
