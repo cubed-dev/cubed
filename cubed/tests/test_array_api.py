@@ -851,6 +851,16 @@ def test_where_scalars():
 
 
 @pytest.mark.parametrize("axis", [0, 1])
+def test_cumulative_prod_2d(axis):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    b = xp.cumulative_prod(a, axis=axis)
+    assert_array_equal(
+        b.compute(),
+        np.cumulative_prod(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), axis=axis),
+    )
+
+
+@pytest.mark.parametrize("axis", [0, 1])
 def test_cumulative_sum_2d(axis):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
     b = xp.cumulative_sum(a, axis=axis)

@@ -272,9 +272,29 @@ from .searching_functions import argmax, argmin, count_nonzero, searchsorted, wh
 
 __all__ += ["argmax", "argmin", "count_nonzero", "searchsorted", "where"]
 
-from .statistical_functions import cumulative_sum, max, mean, min, prod, std, sum, var
+from .statistical_functions import (
+    cumulative_prod,
+    cumulative_sum,
+    max,
+    mean,
+    min,
+    prod,
+    std,
+    sum,
+    var,
+)
 
-__all__ += ["cumulative_sum", "max", "mean", "min", "prod", "std", "sum", "var"]
+__all__ += [
+    "cumulative_prod",
+    "cumulative_sum",
+    "max",
+    "mean",
+    "min",
+    "prod",
+    "std",
+    "sum",
+    "var",
+]
 
 from .utility_functions import all, any, diff
 

@@ -10,6 +10,42 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction, scan
 
 
+def cumulative_prod(x, /, *, axis=None, dtype=None, include_initial=False, device=None):
+    if include_initial:
+        raise NotImplementedError("include_initial is not supported in cumulative_prod")
+    dtype = _upcast_integral_dtypes(
+        x,
+        dtype,
+        allowed_dtypes=(
+            "numeric",
+            "boolean",
+        ),
+        fname="cumulative_prod",
+        device=device,
+    )
+    return scan(
+        x,
+        preop=nxp.prod,
+        func=_cumulative_prod_func,
+        binop=nxp.multiply,
+        axis=axis,
+        dtype=dtype,
+    )
+
+
+def _cumulative_prod_func(a, /, *, axis=None, dtype=None, include_initial=False):
+    out = nxp.cumulative_prod(
+        a, axis=axis, dtype=dtype, include_initial=include_initial
+    )
+    if include_initial:
+        # we don't yet support including the final element as it complicates chunk sizing
+        ind = tuple(
+            slice(a.shape[i]) if i == axis else slice(None) for i in range(a.ndim)
+        )
+        out = out[ind]
+    return out
+
+
 def cumulative_sum(x, /, *, axis=None, dtype=None, include_initial=False, device=None):
     if include_initial:
         raise NotImplementedError("include_initial is not supported in cumulative_sum")

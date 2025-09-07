@@ -79,7 +79,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `unique_values`     | :x:                |            | Shape is data dependent      |
 | Sorting Functions        | `argsort`           | :x:                |            |                              |
 |                          | `sort`              | :x:                |            |                              |
-| Statistical Functions    | `cumulative_prod`   | :x:                | 2024.12    |                              |
+| Statistical Functions    | `cumulative_prod`   | :white_check_mark: | 2024.12    |                              |
 |                          | `cumulative_sum`    | :white_check_mark: | 2023.12    |                              |
 |                          | `max`               | :white_check_mark: |            |                              |
 |                          | `mean`              | :white_check_mark: |            |                              |

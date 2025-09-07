@@ -114,7 +114,8 @@ jobs:
           array_api_tests/test_array_object.py::test_getitem
           # test_searchsorted depends on sort which is not implemented
           array_api_tests/test_searching_functions.py::test_searchsorted
-          # cumulative_sum with include_initial=True is not implemented
+          # cumulative_* functions with include_initial=True are not implemented
+          array_api_tests/test_statistical_functions.py::test_cumulative_prod
           array_api_tests/test_statistical_functions.py::test_cumulative_sum
 
           # not implemented
