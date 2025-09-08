@@ -294,6 +294,7 @@ def general_blockwise(
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     target_chunks_: Optional[T_RegularChunks] = None,
     return_writes_stores: bool = False,
+    output_blocks: Optional[Iterator[List[int]]] = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -417,9 +418,10 @@ def general_blockwise(
         )
 
     # this must be an iterator of lists, not of tuples, otherwise lithops breaks
-    output_blocks = map(
-        list, itertools.product(*[range(len(c)) for c in chunks_normal])
-    )
+    if output_blocks is None:
+        output_blocks = map(
+            list, itertools.product(*[range(len(c)) for c in chunks_normal])
+        )
     num_tasks = math.prod(len(c) for c in chunks_normal)
 
     pipeline = CubedPipeline(

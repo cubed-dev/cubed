@@ -160,6 +160,137 @@ def test_to_zarr(tmp_path, spec, executor, path):
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+def test_to_zarr_array(tmp_path, spec, executor):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    store = tmp_path / "output.zarr"
+    z = create_zarr(
+        np.zeros(a.shape, dtype=a.dtype),
+        chunks=(2, 2),
+        store=store,
+    )
+    cubed.to_zarr(a, z, executor=executor)
+    res = open_backend_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
+def test_to_zarr_region(tmp_path, spec, executor):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+        spec=spec,
+    )
+    store = tmp_path / "output.zarr"
+    z = create_zarr(
+        np.zeros((5, 5), dtype=a.dtype),
+        chunks=(2, 2),
+        store=store,
+    )
+    # note that the same zarr store is overwritten in the following tests
+
+    region = (slice(0, 2), slice(0, 2))
+    cubed.to_zarr(a[:2, :2], z, region=region, executor=executor)
+    res = open_backend_array(store, mode="r")
+    assert_array_equal(res[region], np.array([[1, 2], [5, 6]]))
+    assert_array_equal(
+        res[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 0],
+                [5, 6, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+            ]
+        ),
+    )
+
+    region = (slice(2, 4), slice(0, 4))
+    cubed.to_zarr(a[0:2, 0:4], z, region=region, executor=executor)
+    res = open_backend_array(store, mode="r")
+    assert_array_equal(
+        res[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 0],
+                [5, 6, 0, 0, 0],
+                [1, 2, 3, 4, 0],
+                [5, 6, 7, 8, 0],
+                [0, 0, 0, 0, 0],
+            ]
+        ),
+    )
+
+    region = (slice(2, 5), slice(2, 5))
+    cubed.to_zarr(a[0:3, 0:3], z, region=region, executor=executor)
+    res = open_backend_array(store, mode="r")
+    assert_array_equal(
+        res[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 0],
+                [5, 6, 0, 0, 0],
+                [1, 2, 1, 2, 3],
+                [5, 6, 5, 6, 7],
+                [0, 0, 9, 10, 11],
+            ]
+        ),
+    )
+
+    region = (slice(2, 5), slice(4, 5))
+    cubed.to_zarr(a[0:3, 0:1], z, region=region, executor=executor)
+    res = open_backend_array(store, mode="r")
+    assert_array_equal(
+        res[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 0],
+                [5, 6, 0, 0, 0],
+                [1, 2, 1, 2, 1],
+                [5, 6, 5, 6, 5],
+                [0, 0, 9, 10, 9],
+            ]
+        ),
+    )
+
+
+def test_to_zarr_region_fails(tmp_path):
+    a = xp.ones((4, 4), chunks=(2, 2))
+
+    region = (slice(0, 2), slice(0, 2))
+    with pytest.raises(
+        ValueError, match=r"Target store must be specified when setting a region"
+    ):
+        cubed.to_zarr(a[:2, :2], store=None, region=region)
+
+    store = tmp_path / "output.zarr"
+    z = create_zarr(
+        np.zeros((7, 5), dtype=a.dtype),
+        chunks=(2, 2),
+        store=store,
+    )
+
+    region = (slice(0, 4), slice(2, 4))
+    with pytest.raises(
+        ValueError,
+        match=r"Source array shape \(4, 3\) does not match region shape \(4, 2\)",
+    ):
+        cubed.to_zarr(a[:4, :3], z, region=region)
+
+    region = (slice(0, 4), slice(1, 4))
+    with pytest.raises(
+        ValueError,
+        match=r"Region \(slice\(0, 4, None\), slice\(1, 4, None\)\) does not align with target chunks \(2, 2\)",
+    ):
+        cubed.to_zarr(a[:4, :3], z, region=region)
+
+    region = (slice(0, 4), slice(0, 3))
+    with pytest.raises(
+        ValueError,
+        match=r"Region \(slice\(0, 4, None\), slice\(0, 3, None\)\) does not align with target chunks \(2, 2\)",
+    ):
+        cubed.to_zarr(a[:4, :3], z, region=region)
+
+
 def test_map_blocks_with_kwargs(spec, executor):
     # based on dask test
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=5, spec=spec)
