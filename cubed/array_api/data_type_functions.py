@@ -19,11 +19,11 @@ def can_cast(from_, to, /):
 
 
 def finfo(type, /):
-    return nxp.finfo(type)
+    return nxp.finfo(_as_dtype(type))
 
 
 def iinfo(type, /):
-    return nxp.iinfo(type)
+    return nxp.iinfo(_as_dtype(type))
 
 
 def isdtype(dtype, kind):
@@ -31,6 +31,8 @@ def isdtype(dtype, kind):
 
 
 def result_type(*arrays_and_dtypes):
-    return nxp.result_type(
-        *(a.dtype if isinstance(a, CoreArray) else a for a in arrays_and_dtypes)
-    )
+    return nxp.result_type(*(_as_dtype(a) for a in arrays_and_dtypes))
+
+
+def _as_dtype(type):
+    return type.dtype if isinstance(type, CoreArray) else type

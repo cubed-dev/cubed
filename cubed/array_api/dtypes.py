@@ -1,4 +1,6 @@
 # Copied from numpy.array_api
+import builtins
+
 from cubed.array_api.inspection import __array_namespace_info__
 from cubed.backend_array_api import namespace as nxp
 
@@ -111,9 +113,16 @@ def _upcast_integral_dtypes(
         elif x.dtype in _signed_integer_dtypes:
             dtype = dtypes["integral"]
         elif x.dtype in _unsigned_integer_dtypes:
-            # Type arithmetic to produce an unsigned integer dtype at the same default precision.
-            default_bits = nxp.iinfo(dtypes["integral"]).bits
-            dtype = nxp.dtype(f"u{default_bits // 8}")
+            # produce an unsigned integer dtype at the same default precision
+            dtype = dtypes["integral"]
+            if dtype == int8:
+                dtype = uint8
+            elif dtype == int16:
+                dtype = uint16
+            elif dtype == int32:
+                dtype = uint32
+            elif dtype == int64:
+                dtype = uint64
         else:
             dtype = x.dtype
 
@@ -122,8 +131,8 @@ def _upcast_integral_dtypes(
 
 def _promote_scalars(x1, x2, op):
     """Promote at most one of x1 or x2 to an array from a Python scalar"""
-    x1_is_scalar = isinstance(x1, (int, float, complex, bool))
-    x2_is_scalar = isinstance(x2, (int, float, complex, bool))
+    x1_is_scalar = isinstance(x1, (int, float, complex, builtins.bool))
+    x2_is_scalar = isinstance(x2, (int, float, complex, builtins.bool))
     if x1_is_scalar and x2_is_scalar:
         raise TypeError(f"At least one of x1 and x2 must be an array in {op}")
     elif x1_is_scalar:
