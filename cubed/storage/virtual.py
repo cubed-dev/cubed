@@ -86,9 +86,10 @@ class VirtualInMemoryArray(ArrayMetadata):
         chunks: T_RegularChunks,
         max_nbytes: int = 10**6,
     ):
-        if array.nbytes > max_nbytes:
+        nbytes = array_memory(array.dtype, array.shape)
+        if nbytes > max_nbytes:
             raise ValueError(
-                f"Size of in memory array is {memory_repr(array.nbytes)} which exceeds maximum of {memory_repr(max_nbytes)}. Consider loading the array from storage using `from_array`."
+                f"Size of in memory array is {memory_repr(nbytes)} which exceeds maximum of {memory_repr(max_nbytes)}. Consider loading the array from storage using `from_array`."
             )
         self.array = array
         super().__init__(array.shape, array.dtype, chunks)
