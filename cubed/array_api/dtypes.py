@@ -120,7 +120,7 @@ def _upcast_integral_dtypes(
             elif dtype == int16:
                 dtype = nxp.uint16
             elif dtype == int32:
-                dtype = nxp.int32
+                dtype = nxp.uint32
             elif dtype == int64:
                 dtype = nxp.uint64
         else:
