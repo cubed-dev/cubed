@@ -116,13 +116,13 @@ def _upcast_integral_dtypes(
             # produce an unsigned integer dtype at the same default precision
             dtype = dtypes["integral"]
             if dtype == int8:
-                dtype = nxp.uint8
+                dtype = uint8
             elif dtype == int16:
-                dtype = nxp.uint16
+                dtype = uint16
             elif dtype == int32:
-                dtype = nxp.uint32
+                dtype = uint32
             elif dtype == int64:
-                dtype = nxp.uint64
+                dtype = uint64
         else:
             dtype = x.dtype
 
