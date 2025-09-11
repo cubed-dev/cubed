@@ -18,6 +18,7 @@ from cubed.backend_array_api import (
 from cubed.primitive.memory import BufferCopies, MemoryModeller, calculate_projected_mem
 from cubed.primitive.types import CubedArrayProxy, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
+from cubed.storage.backend import is_backend_storage_array
 from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
 from cubed.types import T_Chunks, T_DType, T_RegularChunks, T_Shape, T_Store
 from cubed.utils import (
@@ -366,7 +367,9 @@ def general_blockwise(
                     f"All outputs must have matching number of blocks in each dimension. Chunks specified: {chunkss}"
                 )
         ta: Union[zarr.Array, LazyZarrArray]
-        if isinstance(target_store, (zarr.Array, LazyZarrArray)):
+        if is_backend_storage_array(target_store) or isinstance(
+            target_store, LazyZarrArray
+        ):
             ta = target_store
         else:
             ta = lazy_zarr_array(
