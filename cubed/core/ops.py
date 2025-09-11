@@ -225,7 +225,10 @@ def _store_array(source: "Array", target, path=None, region=None):
             raise ValueError(
                 f"Source array shape {source.shape} does not match region shape {indexer.shape}"
             )
-        output_blocks = map(lambda chunk_projection: list(chunk_projection[0]), indexer)
+        # TODO(#800): make Zarr indexer pickle-able so we don't have to materialize all the block IDs
+        output_blocks = map(
+            lambda chunk_projection: list(chunk_projection[0]), list(indexer)
+        )
 
         out = general_blockwise(
             identity,
