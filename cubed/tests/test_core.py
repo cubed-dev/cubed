@@ -5,7 +5,6 @@ from functools import partial
 import dill
 import numpy as np
 import pytest
-import zarr
 from numpy.testing import assert_array_equal
 
 import cubed
@@ -116,7 +115,9 @@ def test_store(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
 
     store = tmp_path / "source.zarr"
-    target = zarr.empty(a.shape, chunks=a.chunksize, store=store)
+    target = open_backend_array(
+        store, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
+    )
 
     cubed.store(a, target, executor=executor)
     assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
@@ -127,9 +128,13 @@ def test_store_multiple(tmp_path, spec, executor):
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
 
     store1 = tmp_path / "source1.zarr"
-    target1 = zarr.empty(a.shape, chunks=a.chunksize, store=store1)
+    target1 = open_backend_array(
+        store1, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
+    )
     store2 = tmp_path / "source2.zarr"
-    target2 = zarr.empty(b.shape, chunks=b.chunksize, store=store2)
+    target2 = open_backend_array(
+        store2, mode="w", shape=b.shape, dtype=b.dtype, chunks=b.chunksize
+    )
 
     cubed.store([a, b], [target1, target2], executor=executor)
     assert_array_equal(target1[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
@@ -140,7 +145,9 @@ def test_store_fails(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     store = tmp_path / "source.zarr"
-    target = zarr.empty(a.shape, chunks=a.chunksize, store=store)
+    target = open_backend_array(
+        store, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
+    )
 
     with pytest.raises(
         ValueError, match=r"Different number of sources \(2\) and targets \(1\)"
