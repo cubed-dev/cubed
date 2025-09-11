@@ -1,6 +1,6 @@
 ## Array API Coverage Implementation Status
 
-Cubed supports version [2023.12](https://data-apis.org/array-api/2023.12/index.html) of the Python array API standard, with a few exceptions noted below. The [Fourier transform functions](https://data-apis.org/array-api/2023.12/extensions/fourier_transform_functions.html) are *not* supported.
+Cubed supports version [2024.12](https://data-apis.org/array-api/2024.12/index.html) of the Python array API standard, with a few exceptions noted below. The [Fourier transform functions](https://data-apis.org/array-api/2024.12/extensions/fourier_transform_functions.html) are *not* supported.
 
 This table shows which parts of the the [Array API](https://data-apis.org/array-api/latest/API_specification/index.html) have been implemented in Cubed, and which ones are missing. The version column shows the version when the feature was added to the standard, for version 2022.12 or later.
 

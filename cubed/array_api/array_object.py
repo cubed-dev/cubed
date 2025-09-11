@@ -365,6 +365,7 @@ class Array(CoreArray):
             "2021.12",
             "2022.12",
             "2023.12",
+            "2024.12",
         ):
             raise ValueError(f"Unrecognized array API version: {api_version!r}")
         import cubed

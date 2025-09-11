@@ -89,6 +89,24 @@ jobs:
           array_api_tests/test_special_cases.py::test_empty_arrays[var]
           array_api_tests/test_special_cases.py::test_nan_propagation[std]
           array_api_tests/test_special_cases.py::test_nan_propagation[var]
+          array_api_tests/test_special_cases.py::test_binary[floor_divide(x1_i is +infinity and isfinite(x2_i) and x2_i > 0) -> +infinity]
+          array_api_tests/test_special_cases.py::test_binary[floor_divide(x1_i is +infinity and isfinite(x2_i) and x2_i < 0) -> -infinity]
+          array_api_tests/test_special_cases.py::test_binary[floor_divide(x1_i is -infinity and isfinite(x2_i) and x2_i > 0) -> -infinity]
+          array_api_tests/test_special_cases.py::test_binary[floor_divide(x1_i is -infinity and isfinite(x2_i) and x2_i < 0) -> +infinity]
+          array_api_tests/test_special_cases.py::test_binary[floor_divide(isfinite(x1_i) and x1_i > 0 and x2_i is -infinity) -> -0]
+          array_api_tests/test_special_cases.py::test_binary[floor_divide(isfinite(x1_i) and x1_i < 0 and x2_i is +infinity) -> -0]
+          array_api_tests/test_special_cases.py::test_binary[__floordiv__(x1_i is +infinity and isfinite(x2_i) and x2_i > 0) -> +infinity]
+          array_api_tests/test_special_cases.py::test_binary[__floordiv__(x1_i is +infinity and isfinite(x2_i) and x2_i < 0) -> -infinity]
+          array_api_tests/test_special_cases.py::test_binary[__floordiv__(x1_i is -infinity and isfinite(x2_i) and x2_i > 0) -> -infinity]
+          array_api_tests/test_special_cases.py::test_binary[__floordiv__(x1_i is -infinity and isfinite(x2_i) and x2_i < 0) -> +infinity]
+          array_api_tests/test_special_cases.py::test_binary[__floordiv__(isfinite(x1_i) and x1_i > 0 and x2_i is -infinity) -> -0]
+          array_api_tests/test_special_cases.py::test_binary[__floordiv__(isfinite(x1_i) and x1_i < 0 and x2_i is +infinity) -> -0]
+          array_api_tests/test_special_cases.py::test_iop[__ifloordiv__(x1_i is +infinity and isfinite(x2_i) and x2_i > 0) -> +infinity]
+          array_api_tests/test_special_cases.py::test_iop[__ifloordiv__(x1_i is +infinity and isfinite(x2_i) and x2_i < 0) -> -infinity]
+          array_api_tests/test_special_cases.py::test_iop[__ifloordiv__(x1_i is -infinity and isfinite(x2_i) and x2_i > 0) -> -infinity]
+          array_api_tests/test_special_cases.py::test_iop[__ifloordiv__(x1_i is -infinity and isfinite(x2_i) and x2_i < 0) -> +infinity]
+          array_api_tests/test_special_cases.py::test_iop[__ifloordiv__(isfinite(x1_i) and x1_i > 0 and x2_i is -infinity) -> -0]
+          array_api_tests/test_special_cases.py::test_iop[__ifloordiv__(isfinite(x1_i) and x1_i < 0 and x2_i is +infinity) -> -0]
 
           # don't test names yet as some are not implemented
           array_api_tests/test_has_names.py
@@ -102,6 +120,7 @@ jobs:
           array_api_tests/test_signatures.py::test_func_signature[from_dlpack]
           array_api_tests/test_signatures.py::test_func_signature[argsort]
           array_api_tests/test_signatures.py::test_func_signature[sort]
+          array_api_tests/test_signatures.py::test_func_signature[take_along_axis]
           array_api_tests/test_signatures.py::test_array_method_signature[__dlpack__]
           array_api_tests/test_signatures.py::test_array_method_signature[__dlpack_device__]
           array_api_tests/test_signatures.py::test_array_method_signature[__setitem__]
@@ -112,6 +131,9 @@ jobs:
           array_api_tests/test_linalg.py::test_vecdot
           # (getitem with negative step size is not implemented)
           array_api_tests/test_array_object.py::test_getitem
+          # (indexing with more than one integer index is not implemented)
+          array_api_tests/test_array_object.py::test_getitem_arrays_and_ints_1
+          array_api_tests/test_array_object.py::test_getitem_arrays_and_ints_2
           # test_searchsorted depends on sort which is not implemented
           array_api_tests/test_searching_functions.py::test_searchsorted
           # cumulative_* functions with include_initial=True are not implemented
@@ -122,6 +144,7 @@ jobs:
           array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
           array_api_tests/test_creation_functions.py::test_asarray_arrays
+          array_api_tests/test_indexing_functions.py::test_take_along_axis
           array_api_tests/test_manipulation_functions.py::test_repeat
           array_api_tests/test_sorting_functions.py
 
