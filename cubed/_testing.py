@@ -14,6 +14,8 @@ def has_cupy() -> bool:
 
 @functools.singledispatch
 def to_numpy(a):
+    if hasattr(a, "mask"):  # TODO: shouldn't drop mask...
+        a = a.data
     return np.asarray(a)
 
 

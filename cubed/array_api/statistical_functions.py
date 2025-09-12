@@ -1,5 +1,3 @@
-import math
-
 from cubed.array_api.data_type_functions import isdtype
 from cubed.array_api.dtypes import (
     _floating_dtypes,
@@ -145,30 +143,33 @@ def _numel(x, **kwargs):
     """
     A reduction to count the number of elements.
     """
-    shape = x.shape
-    keepdims = kwargs.get("keepdims", False)
-    axis = kwargs.get("axis", None)
-    dtype = kwargs.get("dtype", nxp.float64)
+    # shape = x.shape
+    # keepdims = kwargs.get("keepdims", False)
+    # axis = kwargs.get("axis", None)
+    # dtype = kwargs.get("dtype", nxp.float64)
 
-    if axis is None:
-        prod = nxp.prod(shape, dtype=dtype)
-        if keepdims is False:
-            return prod
+    # if axis is None:
+    #     prod = nxp.prod(shape, dtype=dtype)
+    #     if keepdims is False:
+    #         return prod
 
-        return nxp.full(shape=(1,) * len(shape), fill_value=prod, dtype=dtype)
+    #     return nxp.full(shape=(1,) * len(shape), fill_value=prod, dtype=dtype)
 
-    if not isinstance(axis, (tuple, list)):
-        axis = [axis]
+    # if not isinstance(axis, (tuple, list)):
+    #     axis = [axis]
 
-    prod = math.prod(shape[dim] for dim in axis)
-    if keepdims is True:
-        new_shape = tuple(
-            shape[dim] if dim not in axis else 1 for dim in range(len(shape))
-        )
-    else:
-        new_shape = tuple(shape[dim] for dim in range(len(shape)) if dim not in axis)
+    # prod = math.prod(shape[dim] for dim in axis)
+    # if keepdims is True:
+    #     new_shape = tuple(
+    #         shape[dim] if dim not in axis else 1 for dim in range(len(shape))
+    #     )
+    # else:
+    #     new_shape = tuple(shape[dim] for dim in range(len(shape)) if dim not in axis)
 
-    return nxp.broadcast_to(nxp.asarray(prod, dtype=dtype), new_shape)
+    # return nxp.broadcast_to(nxp.asarray(prod, dtype=dtype), new_shape)
+
+    # TODO: this works for masked arrays and others, but is less efficient
+    return nxp.sum(nxp.ones_like(x), **kwargs)
 
 
 def min(x, /, *, axis=None, keepdims=False, split_every=None):

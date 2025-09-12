@@ -55,6 +55,8 @@ else:
 
 def numpy_array_to_backend_array(arr, *, dtype=None):
     if isinstance(arr, dict):
+        if "mask" in arr:  # TODO: better way of supporting marray
+            return namespace.asarray(arr["data"], dtype=dtype, mask=arr["mask"])
         return {k: namespace.asarray(v, dtype=dtype) for k, v in arr.items()}
     return namespace.asarray(arr, dtype=dtype)
 

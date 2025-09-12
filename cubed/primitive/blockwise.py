@@ -108,6 +108,11 @@ def apply_blockwise(
             for k, v in result.items():
                 v = backend_array_to_numpy_array(v)
                 write_proxy.open().set_basic_selection(out_chunk_key, v, fields=k)
+        elif hasattr(result, "mask"):  # marray
+            data = backend_array_to_numpy_array(result.data)
+            write_proxy.open().set_basic_selection(out_chunk_key, data, fields="data")
+            mask = backend_array_to_numpy_array(result.mask)
+            write_proxy.open().set_basic_selection(out_chunk_key, mask, fields="mask")
         else:
             result = backend_array_to_numpy_array(result)
             write_proxy.open()[out_chunk_key] = result

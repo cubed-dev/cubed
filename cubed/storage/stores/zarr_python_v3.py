@@ -60,14 +60,35 @@ def open_zarr_v3_array(
         chunks = (chunks,)
 
     if dtype is None or not hasattr(dtype, "fields") or dtype.fields is None:
-        return zarr.open(
-            store=store,
-            mode=mode,
-            shape=shape,
-            dtype=dtype,
-            chunks=chunks,
-            path=path,
-        )
+        # return zarr.open(
+        #     store=store,
+        #     mode=mode,
+        #     shape=shape,
+        #     dtype=dtype,
+        #     chunks=chunks,
+        #     path=path,
+        # )
+        group = zarr.open_group(store=store, mode=mode, path=path)
+        ret = ZarrV3ArrayGroup(shape=shape, dtype=dtype, chunks=chunks)
+        if mode in ("r", "r+"):
+            ret["data"] = group["data"]
+        else:
+            ret["data"] = group.create_array(
+                "data",
+                shape=shape,
+                dtype=dtype,
+                chunks=chunks,
+            )
+        if mode in ("r", "r+"):
+            ret["mask"] = group["mask"]
+        else:
+            ret["mask"] = group.create_array(
+                "mask",
+                shape=shape,
+                dtype=bool,  # TODO: namespace?
+                chunks=chunks,
+            )
+        return ret
 
     assert mode is not None
     group = zarr.open_group(store=store, mode=mode, path=path)
