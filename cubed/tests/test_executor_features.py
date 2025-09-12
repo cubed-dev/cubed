@@ -5,11 +5,11 @@ import re
 import numpy as np
 import psutil
 import pytest
-from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed._testing import assert_array_equal
 from cubed.diagnostics import ProgressBar
 from cubed.diagnostics.history import HistoryCallback
 from cubed.diagnostics.mem_usage import MemoryVisualizationCallback

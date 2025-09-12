@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 import zarr
-from numpy.testing import assert_array_equal
 
+from cubed._testing import assert_array_equal
 from cubed.primitive.rechunk import rechunk
 from cubed.runtime.executors.local import SingleThreadedExecutor
 from cubed.storage.backend import open_backend_array

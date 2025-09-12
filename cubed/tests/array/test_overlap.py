@@ -1,8 +1,8 @@
 import numpy as np
-from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
+from cubed._testing import assert_array_equal
 
 
 def test_map_overlap_1d():

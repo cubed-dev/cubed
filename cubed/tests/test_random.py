@@ -1,11 +1,11 @@
 import random
 
 import pytest
-from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
 import cubed.random
+from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.tests.utils import MAIN_EXECUTORS
 
