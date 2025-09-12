@@ -20,6 +20,32 @@ def backend_storage_name():
     return storage_name
 
 
+def is_backend_storage_array(obj):
+    storage_name = backend_storage_name()
+
+    if storage_name == "zarr-python":
+        import zarr
+
+        from cubed.storage.backends.zarr_python import ZarrArrayGroup
+
+        return isinstance(obj, (zarr.Array, ZarrArrayGroup))
+    elif storage_name in ("zarr-python-v3", "zarrs-python"):
+        import zarr
+
+        from cubed.storage.backends.zarr_python_v3 import ZarrV3ArrayGroup
+
+        return isinstance(obj, (zarr.Array, ZarrV3ArrayGroup))
+    elif storage_name == "tensorstore":
+        from cubed.storage.backends.tensorstore import (
+            TensorStoreArray,
+            TensorStoreGroup,
+        )
+
+        return isinstance(obj, (TensorStoreArray, TensorStoreGroup))
+    else:
+        raise ValueError(f"Unrecognized storage name: {storage_name}")
+
+
 def open_backend_array(
     store: T_Store,
     mode: str,

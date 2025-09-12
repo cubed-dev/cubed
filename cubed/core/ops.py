@@ -23,7 +23,7 @@ from cubed.primitive.blockwise import general_blockwise as primitive_general_blo
 from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
-from cubed.storage.backend import open_backend_array
+from cubed.storage.backend import is_backend_storage_array, open_backend_array
 from cubed.storage.zarr import lazy_zarr_array
 from cubed.types import T_RegularChunks, T_Shape
 from cubed.utils import (
@@ -125,7 +125,13 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     return Array(name, target, spec, plan)
 
 
-def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **kwargs):
+def store(
+    sources: Union["Array", Sequence["Array"]],
+    targets,
+    regions: tuple[slice, ...] | list[tuple[slice, ...]] | None = None,
+    executor=None,
+    **kwargs,
+):
     """Save source arrays to array-like objects.
 
     In the current implementation ``targets`` must be Zarr arrays.
@@ -135,10 +141,12 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
 
     Parameters
     ----------
-    x : cubed.Array or collection of cubed.Array
+    sources : cubed.Array or collection of cubed.Array
         Arrays to save
-    store : zarr.Array or collection of zarr.Array
+    targets : string or Zarr store or collection of strings or Zarr stores
         Zarr arrays to write to
+    regions : tuple of slices or list of tuple of slices, optional
+        The regions of data that should be written to in targets.
     executor : cubed.runtime.types.Executor, optional
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
@@ -155,19 +163,38 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
             f"Different number of sources ({len(sources)}) and targets ({len(targets)})"
         )
 
-    arrays = []
-    for source, target in zip(sources, targets):
-        identity = lambda a: a
-        ind = tuple(range(source.ndim))
-
-        if target is not None and not isinstance(target, zarr.Array):
-            target = lazy_zarr_array(
-                target,
-                shape=source.shape,
-                dtype=source.dtype,
-                chunks=source.chunksize,
+    if isinstance(regions, tuple) or regions is None:
+        regions_list = [regions] * len(sources)
+    else:
+        regions_list = list(regions)
+        if len(sources) != len(regions_list):
+            raise ValueError(
+                f"Different number of sources [{len(sources)}] and "
+                f"targets [{len(targets)}] than regions [{len(regions_list)}]"
             )
-        array = blockwise(
+
+    arrays = []
+    for source, target, region in zip(sources, targets, regions_list):
+        array = _store_array(source, target, region=region)
+        arrays.append(array)
+    compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
+
+
+def _store_array(source: "Array", target, path=None, region=None):
+    if target is not None and not is_backend_storage_array(target):
+        target = lazy_zarr_array(
+            target,
+            shape=source.shape,
+            dtype=source.dtype,
+            chunks=source.chunksize,
+            path=path,
+        )
+    if target is None and region is not None:
+        raise ValueError("Target store must be specified when setting a region")
+    identity = lambda a: a
+    if region is None or all(r == slice(None) for r in region):
+        ind = tuple(range(source.ndim))
+        return blockwise(
             identity,
             ind,
             source,
@@ -176,11 +203,50 @@ def store(sources: Union["Array", Sequence["Array"]], targets, executor=None, **
             align_arrays=False,
             target_store=target,
         )
-        arrays.append(array)
-    compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
+    else:
+        # treat a region as an offset within the target store
+        shape = target.shape
+        chunks = target.chunks
+        for i, (sl, cs) in enumerate(zip(region, chunks)):
+            if sl.start % cs != 0 or (sl.stop % cs != 0 and sl.stop != shape[i]):
+                raise ValueError(
+                    f"Region {region} does not align with target chunks {chunks}"
+                )
+        block_offsets = [sl.start // cs for sl, cs in zip(region, chunks)]
+
+        def key_function(out_key):
+            out_coords = out_key[1:]
+            in_coords = tuple(bi - off for bi, off in zip(out_coords, block_offsets))
+            return ((source.name, *in_coords),)
+
+        # calculate output block ids from region selection
+        indexer = _create_zarr_indexer(region, shape, chunks)
+        if source.shape != indexer.shape:
+            raise ValueError(
+                f"Source array shape {source.shape} does not match region shape {indexer.shape}"
+            )
+        # TODO(#800): make Zarr indexer pickle-able so we don't have to materialize all the block IDs
+        output_blocks = map(
+            lambda chunk_projection: list(chunk_projection[0]), list(indexer)
+        )
+
+        out = general_blockwise(
+            identity,
+            key_function,
+            source,
+            shapes=[shape],
+            dtypes=[source.dtype],
+            chunkss=[chunks],
+            target_stores=[target],
+            output_blocks=output_blocks,
+        )
+        from cubed import Array
+
+        assert isinstance(out, Array)  # single output
+        return out
 
 
-def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
+def to_zarr(x: "Array", store, path=None, region=None, executor=None, **kwargs):
     """Save an array to Zarr storage.
 
     Note that this operation is eager, and will run the computation
@@ -190,35 +256,17 @@ def to_zarr(x: "Array", store, path=None, executor=None, **kwargs):
     ----------
     x : cubed.Array
         Array to save
-    store : string or Zarr Store
+    store : string or Zarr store
         Output Zarr store
     path : string, optional
         Group path
+    region : tuple of slices, optional
+        The region of data that should be written to in target.
     executor : cubed.runtime.types.Executor, optional
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
     """
-    # Note that the intermediate write to x's store will be optimized away
-    # by map fusion (if it was produced with a blockwise operation).
-    identity = lambda a: a
-    ind = tuple(range(x.ndim))
-    if store is not None and not isinstance(store, zarr.Array):
-        store = lazy_zarr_array(
-            store,
-            shape=x.shape,
-            dtype=x.dtype,
-            chunks=x.chunksize,
-            path=path,
-        )
-    out = blockwise(
-        identity,
-        ind,
-        x,
-        ind,
-        dtype=x.dtype,
-        align_arrays=False,
-        target_store=store,
-    )
+    out = _store_array(x, store, path=path, region=region)
     out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
 
 
@@ -466,7 +514,7 @@ def _general_blockwise(
     spec = check_array_specs(arrays)
     buffer_copies = get_buffer_copies(spec)
 
-    if isinstance(target_stores, list):  # multiple outputs
+    if isinstance(target_stores, list) and len(target_stores) > 1:  # multiple outputs
         name = [gensym() for _ in range(len(target_stores))]
         target_stores = [
             ts if ts is not None else context_dir_path(spec=spec)
