@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=b4a4050c"></script>
+    <script src="../_static/documentation_options.js?v=16518132"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -382,7 +382,7 @@ document.write(`
 <h1>cubed.store<a class="headerlink" href="#cubed-store" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cubed.store">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.store" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.store" title="Link to this definition">#</a></dt>
 <dd><p>Save source arrays to array-like objects.</p>
 <p>In the current implementation <code class="docutils literal notranslate"><span class="pre">targets</span></code> must be Zarr arrays.</p>
 <p>Note that this operation is eager, and will run the computation
@@ -390,8 +390,9 @@ immediately.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference internal" href="cubed.Array.html#cubed.Array" title="cubed.Array"><em>cubed.Array</em></a><em> or </em><em>collection</em><em> of </em><a class="reference internal" href="cubed.Array.html#cubed.Array" title="cubed.Array"><em>cubed.Array</em></a>) – Arrays to save</p></li>
-<li><p><strong>store</strong> (<em>zarr.Array</em><em> or </em><em>collection</em><em> of </em><em>zarr.Array</em>) – Zarr arrays to write to</p></li>
+<li><p><strong>sources</strong> (<a class="reference internal" href="cubed.Array.html#cubed.Array" title="cubed.Array"><em>cubed.Array</em></a><em> or </em><em>collection</em><em> of </em><a class="reference internal" href="cubed.Array.html#cubed.Array" title="cubed.Array"><em>cubed.Array</em></a>) – Arrays to save</p></li>
+<li><p><strong>targets</strong> (<em>string</em><em> or </em><em>Zarr store</em><em> or </em><em>collection</em><em> of </em><em>strings</em><em> or </em><em>Zarr stores</em>) – Zarr arrays to write to</p></li>
+<li><p><strong>regions</strong> (<em>tuple</em><em> of </em><em>slices</em><em> or </em><em>list</em><em> of </em><em>tuple</em><em> of </em><em>slices</em><em>, </em><em>optional</em>) – The regions of data that should be written to in targets.</p></li>
 <li><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em><em>, </em><em>optional</em>) – The executor to use to run the computation.
 Defaults to using the in-process Python executor.</p></li>
 </ul>

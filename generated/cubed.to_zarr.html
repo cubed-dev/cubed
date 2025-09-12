@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=b4a4050c"></script>
+    <script src="../_static/documentation_options.js?v=16518132"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -382,7 +382,7 @@ document.write(`
 <h1>cubed.to_zarr<a class="headerlink" href="#cubed-to-zarr" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cubed.to_zarr">
-<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">to_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.to_zarr" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cubed.</span></span><span class="sig-name descname"><span class="pre">to_zarr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cubed.to_zarr" title="Link to this definition">#</a></dt>
 <dd><p>Save an array to Zarr storage.</p>
 <p>Note that this operation is eager, and will run the computation
 immediately.</p>
@@ -390,8 +390,9 @@ immediately.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference internal" href="cubed.Array.html#cubed.Array" title="cubed.Array"><em>cubed.Array</em></a>) – Array to save</p></li>
-<li><p><strong>store</strong> (<em>string</em><em> or </em><em>Zarr Store</em>) – Output Zarr store</p></li>
+<li><p><strong>store</strong> (<em>string</em><em> or </em><em>Zarr store</em>) – Output Zarr store</p></li>
 <li><p><strong>path</strong> (<em>string</em><em>, </em><em>optional</em>) – Group path</p></li>
+<li><p><strong>region</strong> (<em>tuple</em><em> of </em><em>slices</em><em>, </em><em>optional</em>) – The region of data that should be written to in target.</p></li>
 <li><p><strong>executor</strong> (<em>cubed.runtime.types.Executor</em><em>, </em><em>optional</em>) – The executor to use to run the computation.
 Defaults to using the in-process Python executor.</p></li>
 </ul>
