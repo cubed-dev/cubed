@@ -33,7 +33,7 @@ def test_random(spec, executor):
 
     x = nxp.unique_values(a.compute(executor=executor))
     assert x.dtype == xp.float64
-    assert len(x) > 90
+    assert x.shape[0] > 90
 
 
 def test_random_dtype(spec, executor):
@@ -45,7 +45,7 @@ def test_random_dtype(spec, executor):
 
     x = nxp.unique_values(a.compute(executor=executor))
     assert x.dtype == xp.float32
-    assert len(x) > 90
+    assert x.shape[0] > 90
 
 
 def test_random_add(spec, executor):
@@ -55,7 +55,7 @@ def test_random_add(spec, executor):
     c = xp.add(a, b)
 
     x = nxp.unique_values(c.compute(executor=executor))
-    assert len(x) > 90
+    assert x.shape[0] > 90
 
 
 def test_random_seed(spec, executor):
