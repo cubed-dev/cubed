@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 
 import cubed.array_api as xp
+from cubed._testing import assert_array_equal
 from cubed.core.ops import smallest_blockdim, unify_chunks
 from cubed.tests.utils import TaskCounter
 

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
+from cubed._testing import assert_array_equal
 
 
 @pytest.fixture
