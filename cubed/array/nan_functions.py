@@ -42,7 +42,7 @@ def _nanmean_combine(a, **kwargs):
 
 def _nanmean_aggregate(a):
     with np.errstate(divide="ignore", invalid="ignore"):
-        return nxp.divide(a["total"], a["n"])
+        return nxp.divide(a["total"], nxp.astype(a["n"], a["total"].dtype))
 
 
 def _nannumel(x, **kwargs):

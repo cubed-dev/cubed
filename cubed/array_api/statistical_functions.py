@@ -141,7 +141,7 @@ def _mean_combine(a, **kwargs):
 
 
 def _mean_aggregate(a, **kwargs):
-    return nxp.divide(a["total"], a["n"])
+    return nxp.divide(a["total"], nxp.astype(a["n"], a["total"].dtype))
 
 
 # based on dask
