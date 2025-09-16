@@ -8,7 +8,7 @@ from cubed import config
 from cubed.backend_array_api import namespace as nxp
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback
-from cubed.storage.backend import open_backend_array
+from cubed.storage.store import open_storage_array
 
 LITHOPS_LOCAL_CONFIG = {
     "lithops": {
@@ -115,7 +115,7 @@ def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):
         dtype = a.dtype
 
     # write to zarr
-    za = open_backend_array(
+    za = open_storage_array(
         store, mode="w", shape=a.shape, dtype=dtype, chunks=chunks, path=path
     )
     za[:] = a

@@ -19,7 +19,7 @@ from cubed.diagnostics.timeline import TimelineVisualizationCallback
 from cubed.diagnostics.tqdm import TqdmProgressBar
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.create import create_executor
-from cubed.storage.backend import backend_storage_name
+from cubed.storage.store import get_storage_name
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -189,7 +189,7 @@ def test_mem_warn(tmp_path, executor):
 
 
 @pytest.mark.skipif(
-    backend_storage_name() == "tensorstore",
+    get_storage_name() == "tensorstore",
     reason="tensorstore does not support resume",
 )
 def test_resume(spec, executor):

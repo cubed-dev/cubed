@@ -14,7 +14,7 @@ from cubed.array_api.dtypes import _floating_dtypes
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
-from cubed.storage.backend import open_backend_array
+from cubed.storage.store import open_storage_array
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
 
 
@@ -115,7 +115,7 @@ def test_store(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
 
     store = tmp_path / "source.zarr"
-    target = open_backend_array(
+    target = open_storage_array(
         store, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
     )
 
@@ -128,11 +128,11 @@ def test_store_multiple(tmp_path, spec, executor):
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
 
     store1 = tmp_path / "source1.zarr"
-    target1 = open_backend_array(
+    target1 = open_storage_array(
         store1, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
     )
     store2 = tmp_path / "source2.zarr"
-    target2 = open_backend_array(
+    target2 = open_storage_array(
         store2, mode="w", shape=b.shape, dtype=b.dtype, chunks=b.chunksize
     )
 
@@ -145,7 +145,7 @@ def test_store_fails(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     store = tmp_path / "source.zarr"
-    target = open_backend_array(
+    target = open_storage_array(
         store, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
     )
 
@@ -163,7 +163,7 @@ def test_to_zarr(tmp_path, spec, executor, path):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     store = tmp_path / "output.zarr"
     cubed.to_zarr(a, store, path=path, executor=executor)
-    res = open_backend_array(store, mode="r", path=path)
+    res = open_storage_array(store, mode="r", path=path)
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
@@ -176,7 +176,7 @@ def test_to_zarr_array(tmp_path, spec, executor):
         store=store,
     )
     cubed.to_zarr(a, z, executor=executor)
-    res = open_backend_array(store, mode="r")
+    res = open_storage_array(store, mode="r")
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
@@ -196,7 +196,7 @@ def test_to_zarr_region(tmp_path, spec, executor):
 
     region = (slice(0, 2), slice(0, 2))
     cubed.to_zarr(a[:2, :2], z, region=region, executor=executor)
-    res = open_backend_array(store, mode="r")
+    res = open_storage_array(store, mode="r")
     assert_array_equal(res[region], np.array([[1, 2], [5, 6]]))
     assert_array_equal(
         res[:],
@@ -213,7 +213,7 @@ def test_to_zarr_region(tmp_path, spec, executor):
 
     region = (slice(2, 4), slice(0, 4))
     cubed.to_zarr(a[0:2, 0:4], z, region=region, executor=executor)
-    res = open_backend_array(store, mode="r")
+    res = open_storage_array(store, mode="r")
     assert_array_equal(
         res[:],
         np.array(
@@ -229,7 +229,7 @@ def test_to_zarr_region(tmp_path, spec, executor):
 
     region = (slice(2, 5), slice(2, 5))
     cubed.to_zarr(a[0:3, 0:3], z, region=region, executor=executor)
-    res = open_backend_array(store, mode="r")
+    res = open_storage_array(store, mode="r")
     assert_array_equal(
         res[:],
         np.array(
@@ -245,7 +245,7 @@ def test_to_zarr_region(tmp_path, spec, executor):
 
     region = (slice(2, 5), slice(4, 5))
     cubed.to_zarr(a[0:3, 0:1], z, region=region, executor=executor)
-    res = open_backend_array(store, mode="r")
+    res = open_storage_array(store, mode="r")
     assert_array_equal(
         res[:],
         np.array(
@@ -819,8 +819,8 @@ def test_quad_means(tmp_path):
         m1, store=tmp_path / "result1", optimize_function=fuse_all_optimize_dag
     )
 
-    res0 = open_backend_array(tmp_path / "result0", mode="r")
-    res1 = open_backend_array(tmp_path / "result1", mode="r")
+    res0 = open_storage_array(tmp_path / "result0", mode="r")
+    res1 = open_storage_array(tmp_path / "result1", mode="r")
 
     assert_array_equal(res0[:], res1[:])
 

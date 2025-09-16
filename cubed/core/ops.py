@@ -23,7 +23,7 @@ from cubed.primitive.blockwise import general_blockwise as primitive_general_blo
 from cubed.primitive.memory import get_buffer_copies
 from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
-from cubed.storage.backend import is_backend_storage_array, open_backend_array
+from cubed.storage.store import is_storage_array, open_storage_array
 from cubed.storage.zarr import lazy_zarr_array
 from cubed.types import T_RegularChunks, T_Shape
 from cubed.utils import (
@@ -112,7 +112,7 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     """
     name = gensym()
     spec = spec or spec_from_config(config)
-    target = open_backend_array(
+    target = open_storage_array(
         store,
         mode="r",
         path=path,
@@ -181,7 +181,7 @@ def store(
 
 
 def _store_array(source: "Array", target, path=None, region=None):
-    if target is not None and not is_backend_storage_array(target):
+    if target is not None and not is_storage_array(target):
         target = lazy_zarr_array(
             target,
             shape=source.shape,

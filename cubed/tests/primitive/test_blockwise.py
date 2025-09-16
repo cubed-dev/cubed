@@ -9,7 +9,7 @@ from cubed.primitive.blockwise import (
     make_blockwise_key_function,
 )
 from cubed.runtime.executors.local import SingleThreadedExecutor
-from cubed.storage.backend import open_backend_array
+from cubed.storage.store import open_storage_array
 from cubed.tests.utils import create_zarr, execute_pipeline
 from cubed.vendor.dask.blockwise import make_blockwise_graph
 
@@ -67,7 +67,7 @@ def test_blockwise(tmp_path, executor, reserved_mem):
 
     execute_pipeline(op.pipeline, executor=executor)
 
-    res = open_backend_array(target_store, mode="r", path="target")
+    res = open_storage_array(target_store, mode="r", path="target")
     assert_array_equal(res[:], np.outer([0, 1, 2], [10, 50, 100]))
 
 
@@ -132,7 +132,7 @@ def test_blockwise_with_args(tmp_path, executor):
 
     execute_pipeline(op.pipeline, executor=executor)
 
-    res = open_backend_array(target_store, mode="r", path="target")
+    res = open_storage_array(target_store, mode="r", path="target")
     assert_array_equal(
         res[:], np.transpose(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), axes=(1, 0))
     )
@@ -225,7 +225,7 @@ def test_general_blockwise(tmp_path, executor):
 
     execute_pipeline(op.pipeline, executor=executor)
 
-    res = open_backend_array(target_store, mode="r", path="target")
+    res = open_storage_array(target_store, mode="r", path="target")
     assert_array_equal(res[:], np.arange(20))
 
 
@@ -284,10 +284,10 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
 
     input = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
-    res1 = open_backend_array(target_store1, mode="r", path="target1")
+    res1 = open_storage_array(target_store1, mode="r", path="target1")
     assert_array_equal(res1[:], np.sqrt(input))
 
-    res2 = open_backend_array(target_store2, mode="r", path="target2")
+    res2 = open_storage_array(target_store2, mode="r", path="target2")
     assert_array_equal(res2[:], -np.sqrt(input))
 
 

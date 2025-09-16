@@ -4,7 +4,7 @@ from cubed import config
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 
-def backend_storage_name():
+def get_storage_name():
     # get storage name from top-level config
     # e.g. set globally with CUBED_STORAGE_NAME=tensorstore
     storage_name = config.get("storage_name", None)
@@ -20,23 +20,23 @@ def backend_storage_name():
     return storage_name
 
 
-def is_backend_storage_array(obj):
-    storage_name = backend_storage_name()
+def is_storage_array(obj):
+    storage_name = get_storage_name()
 
     if storage_name == "zarr-python":
         import zarr
 
-        from cubed.storage.backends.zarr_python import ZarrArrayGroup
+        from cubed.storage.stores.zarr_python import ZarrArrayGroup
 
         return isinstance(obj, (zarr.Array, ZarrArrayGroup))
     elif storage_name in ("zarr-python-v3", "zarrs-python"):
         import zarr
 
-        from cubed.storage.backends.zarr_python_v3 import ZarrV3ArrayGroup
+        from cubed.storage.stores.zarr_python_v3 import ZarrV3ArrayGroup
 
         return isinstance(obj, (zarr.Array, ZarrV3ArrayGroup))
     elif storage_name == "tensorstore":
-        from cubed.storage.backends.tensorstore import (
+        from cubed.storage.stores.tensorstore import (
             TensorStoreArray,
             TensorStoreGroup,
         )
@@ -46,7 +46,7 @@ def is_backend_storage_array(obj):
         raise ValueError(f"Unrecognized storage name: {storage_name}")
 
 
-def open_backend_array(
+def open_storage_array(
     store: T_Store,
     mode: str,
     *,
@@ -56,10 +56,10 @@ def open_backend_array(
     path: Optional[str] = None,
     **kwargs,
 ):
-    storage_name = backend_storage_name()
+    storage_name = get_storage_name()
 
     if storage_name == "zarr-python":
-        from cubed.storage.backends.zarr_python import open_zarr_array  # type: ignore
+        from cubed.storage.stores.zarr_python import open_zarr_array  # type: ignore
 
         open_func = open_zarr_array
 
@@ -73,15 +73,15 @@ def open_backend_array(
             kwargs["object_codec"] = object_codec
 
     elif storage_name == "zarr-python-v3":
-        from cubed.storage.backends.zarr_python_v3 import open_zarr_v3_array
+        from cubed.storage.stores.zarr_python_v3 import open_zarr_v3_array
 
         open_func = open_zarr_v3_array
     elif storage_name == "zarrs-python":
-        from cubed.storage.backends.zarrs_python import open_zarr_v3_array
+        from cubed.storage.stores.zarrs_python import open_zarr_v3_array
 
         open_func = open_zarr_v3_array
     elif storage_name == "tensorstore":
-        from cubed.storage.backends.tensorstore import open_tensorstore_array
+        from cubed.storage.stores.tensorstore import open_tensorstore_array
 
         open_func = open_tensorstore_array
     else:
