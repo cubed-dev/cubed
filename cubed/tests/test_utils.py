@@ -14,6 +14,7 @@ from cubed.utils import (
     extract_stack_summaries,
     is_cloud_storage_path,
     is_local_path,
+    itemsize,
     join_path,
     map_nested,
     memory_repr,
@@ -30,6 +31,15 @@ def test_array_memory():
     assert array_memory(np.int32, (3,)) == 12
     assert array_memory(np.int32, (3, 5)) == 60
     assert array_memory(np.int32, (0,)) == 0
+
+
+def test_itemsize():
+    assert itemsize(np.bool) == 1
+    assert itemsize(np.int32) == 4
+    assert itemsize(np.int64) == 8
+    assert itemsize(np.dtype(np.int64)) == 8
+    assert itemsize([("a", np.int32), ("b", np.int64)]) == 12
+    assert itemsize(np.dtype([("a", np.int32), ("b", np.int64)])) == 12
 
 
 def test_block_id_to_offset():
