@@ -41,8 +41,9 @@ def argmin(x, /, *, axis=None, keepdims=False, split_every=None):
 
 def count_nonzero(x, /, *, axis=None, keepdims=False, split_every=None):
     dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
+    x_nonzero = astype(x, nxp.bool)
     return sum(
-        astype(x, nxp.bool),
+        astype(x_nonzero, dtype),
         axis=axis,
         dtype=dtype,
         keepdims=keepdims,
