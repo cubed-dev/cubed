@@ -15,7 +15,7 @@ from cubed.primitive.blockwise import BlockwiseSpec
 from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
-from cubed.storage.backend import is_backend_storage_array
+from cubed.storage.store import is_storage_array
 from cubed.storage.zarr import LazyZarrArray, open_if_lazy_zarr_array
 from cubed.utils import (
     chunk_memory,
@@ -456,9 +456,7 @@ class Plan:
                 chunkmem = memory_repr(chunk_memory(target))
 
                 # materialized arrays are light orange, virtual arrays are white
-                if isinstance(target, LazyZarrArray) or is_backend_storage_array(
-                    target
-                ):
+                if isinstance(target, LazyZarrArray) or is_storage_array(target):
                     d["style"] = "filled"
                     d["fillcolor"] = "#ffd8b1"
                 if n in array_display_names:

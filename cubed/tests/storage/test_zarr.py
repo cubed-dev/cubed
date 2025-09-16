@@ -3,7 +3,7 @@ import zarr
 from numcodecs.registry import get_codec
 
 from cubed import config
-from cubed.storage.backend import open_backend_array
+from cubed.storage.store import open_storage_array
 from cubed.storage.zarr import lazy_zarr_array
 
 ZARR_PYTHON_V3 = zarr.__version__[0] == "3"
@@ -43,7 +43,7 @@ def test_compression(tmp_path, compressor):
 
     # open with zarr python (for zarr python v2 and tensorstore)
     with config.set({"storage_name": "zarr-python"}):
-        z = open_backend_array(zarr_path, mode="r")
+        z = open_storage_array(zarr_path, mode="r")
 
     if compressor is None:
         assert z.compressor is None

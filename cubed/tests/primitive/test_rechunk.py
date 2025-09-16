@@ -5,7 +5,7 @@ import zarr
 from cubed._testing import assert_array_equal
 from cubed.primitive.rechunk import rechunk
 from cubed.runtime.executors.local import SingleThreadedExecutor
-from cubed.storage.backend import open_backend_array
+from cubed.storage.store import open_storage_array
 from cubed.tests.utils import execute_pipeline
 
 
@@ -102,7 +102,7 @@ def test_rechunk(
     for op in ops:
         execute_pipeline(op.pipeline, executor=executor)
 
-    res = open_backend_array(target_store, mode="r", path="target-array")
+    res = open_storage_array(target_store, mode="r", path="target-array")
     assert_array_equal(res[:], np.ones(shape))
     assert res.chunks == target_chunks
 

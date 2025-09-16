@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 import zarr
 
-from cubed.storage.backend import open_backend_array
+from cubed.storage.store import open_storage_array
 from cubed.storage.types import ArrayMetadata
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
@@ -42,7 +42,7 @@ class LazyZarrArray(ArrayMetadata):
             The mode to open the Zarr array with using ``zarr.open``.
             Default is 'w-', which means create, fail it already exists.
         """
-        target = open_backend_array(
+        target = open_storage_array(
             self.store,
             mode=mode,
             shape=self.shape,
@@ -59,7 +59,7 @@ class LazyZarrArray(ArrayMetadata):
         Note that the Zarr array must have been created or this method will raise an exception.
         """
         # r+ means read/write, fail if it doesn't exist
-        return open_backend_array(
+        return open_storage_array(
             self.store,
             mode="r+",
             shape=self.shape,
