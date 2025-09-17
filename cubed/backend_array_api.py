@@ -7,7 +7,7 @@ import numpy as np
 # namespace variable, and defaults to array_api_compat.nump, unless it
 # is overridden by an environment variable.
 # It must be compatible with the Python Array API standard, although
-# some extra functions are used too (nan functions, take_along_axis),
+# some extra functions are used too (e.g. nan functions),
 # which array_api_compat provides, but other Array API implementations
 # may not.
 
