@@ -1,4 +1,5 @@
 import collections
+import inspect
 import itertools
 import numbers
 import platform
@@ -20,6 +21,7 @@ import numpy as np
 import tlz as toolz
 from toolz import reduce
 
+from cubed.backend_array_api import backend_dtype_to_numpy_dtype
 from cubed.backend_array_api import namespace as nxp
 from cubed.types import T_Chunks, T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
 from cubed.vendor.dask.array.core import _check_regular_chunks
@@ -369,7 +371,14 @@ def normalize_dtype(dtype, device=None) -> T_DType:
 
 
 def itemsize(dtype: T_DType) -> int:
-    return dtype.itemsize
+    """Return the length of one array element in bytes."""
+    if hasattr(dtype, "itemsize") and not inspect.isdatadescriptor(dtype.itemsize):
+        return dtype.itemsize
+    elif isinstance(dtype, list):
+        return sum(itemsize(v) for _, v in dtype)
+    else:
+        # if dtype has no itemsize property, convert to numpy and use its itemsize
+        return backend_dtype_to_numpy_dtype(dtype).itemsize
 
 
 def normalize_chunks(
