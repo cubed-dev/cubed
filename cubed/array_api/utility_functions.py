@@ -3,7 +3,7 @@ from cubed.array_api.creation_functions import asarray
 from cubed.array_api.manipulation_functions import concat
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
-from cubed.vendor.dask.array.core import normalize_chunks
+from cubed.utils import normalize_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 
 
