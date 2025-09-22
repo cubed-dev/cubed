@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=165e15e0"></script>
+    <script src="../_static/documentation_options.js?v=ab5ddc0c"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -368,7 +368,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-storage">Local storage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-storage">Cloud storage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zarr-backend">Zarr backend</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zarr-storage-libraries">Zarr storage libraries</a></li>
 </ul>
             </nav>
         </div>
@@ -404,8 +404,8 @@ document.write(`
 </ul>
 <p>If you use this approach then be sure to store persistent data in a separate bucket to the one used for intermediate data.</p>
 </section>
-<section id="zarr-backend">
-<h2>Zarr backend<a class="headerlink" href="#zarr-backend" title="Link to this heading">#</a></h2>
+<section id="zarr-storage-libraries">
+<h2>Zarr storage libraries<a class="headerlink" href="#zarr-storage-libraries" title="Link to this heading">#</a></h2>
 <p>Cubed uses the <a class="reference external" href="https://github.com/zarr-developers/zarr-python"><code class="docutils literal notranslate"><span class="pre">zarr-python</span></code></a> library for reading and writing intermediate Zarr data, but it is possible to override this and use another Zarr library by setting the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable.</p>
 <p>To use the <a class="reference external" href="https://github.com/zarrs/zarrs-python"><code class="docutils literal notranslate"><span class="pre">zarrs-python</span></code></a> Rust implementation, install the <code class="docutils literal notranslate"><span class="pre">zarrs</span></code> Python package and set the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">zarrs-python</span></code>:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUBED_STORAGE_NAME</span><span class="o">=</span>zarrs-python
@@ -471,7 +471,7 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-storage">Local storage</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cloud-storage">Cloud storage</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zarr-backend">Zarr backend</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#zarr-storage-libraries">Zarr storage libraries</a></li>
 </ul>
   </nav></div>
 

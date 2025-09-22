@@ -28,7 +28,7 @@ To set up a lifecycle rule:
 
 If you use this approach then be sure to store persistent data in a separate bucket to the one used for intermediate data.
 
-## Zarr backend
+## Zarr storage libraries
 
 Cubed uses the [`zarr-python`](https://github.com/zarr-developers/zarr-python) library for reading and writing intermediate Zarr data, but it is possible to override this and use another Zarr library by setting the `CUBED_STORAGE_NAME` environment variable.
 
