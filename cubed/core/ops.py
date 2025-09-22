@@ -1433,7 +1433,6 @@ def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None
 
 def _arg_map_func(a, axis, arg_func=None, size=None, block_id=None):
     i = arg_func(a, axis=axis, keepdims=True)
-    # note that the array API doesn't have take_along_axis, so this may fail
     v = nxp.take_along_axis(a, i, axis=axis)
     # add block offset to i so it is absolute index within whole array
     offset = block_id[axis] * size
@@ -1454,7 +1453,6 @@ def _arg_combine(a, arg_func=None, **kwargs):
 
     # find indexes of values in v and apply to i and v
     vi = arg_func(v, axis=axis, **kwargs)
-    # note that the array API doesn't have take_along_axis, so this may fail
     i_combined = nxp.take_along_axis(i, vi, axis=axis)
     v_combined = nxp.take_along_axis(v, vi, axis=axis)
     return {"i": i_combined, "v": v_combined}
