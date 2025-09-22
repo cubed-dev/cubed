@@ -29,7 +29,7 @@ from cubed.utils import (
 try:
     from zarr.errors import ArrayNotFoundError  # type: ignore
 except ImportError:
-    ArrayNotFoundError = FileNotFoundError  # zarr-python 3
+    ArrayNotFoundError = FileNotFoundError  # type: ignore # zarr-python<=3.1.1
 
 # A unique ID with sensible ordering, used for making directory names
 CONTEXT_ID = f"cubed-{datetime.now().strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4()}"
