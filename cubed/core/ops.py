@@ -17,7 +17,7 @@ from cubed import config
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_array
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
-from cubed.core.plan import Plan, context_dir_path
+from cubed.core.plan import Plan, intermediate_store
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -363,7 +363,7 @@ def blockwise(
     spec = check_array_specs(arrays)
     buffer_copies = get_buffer_copies(spec)
     if target_store is None:
-        target_store = context_dir_path(spec=spec)
+        target_store = intermediate_store(spec=spec)
     op = primitive_blockwise(
         func,
         out_ind,
@@ -517,14 +517,14 @@ def _general_blockwise(
     if isinstance(target_stores, list) and len(target_stores) > 1:  # multiple outputs
         name = [gensym() for _ in range(len(target_stores))]
         target_stores = [
-            ts if ts is not None else context_dir_path(spec=spec)
+            ts if ts is not None else intermediate_store(spec=spec)
             for ts in target_stores
         ]
         target_names = name
     else:  # single output
         name = gensym()
         if target_stores is None:
-            target_stores = [context_dir_path(spec=spec)]
+            target_stores = [intermediate_store(spec=spec)]
         target_names = [name]
 
     op = primitive_general_blockwise(
@@ -951,7 +951,7 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
     name = gensym()
     spec = x.spec
     if target_store is None:
-        target_store = context_dir_path(spec=spec)
+        target_store = intermediate_store(spec=spec)
     name_int = f"{name}-int"
     ops = primitive_rechunk(
         x._zarray,
