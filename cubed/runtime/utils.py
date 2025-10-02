@@ -57,10 +57,14 @@ def execute_with_timing(function, *args, **kwargs):
     )
 
 
-def execution_stats(func):
+def execution_stats(func, name=None):
     """Decorator to measure timing information and peak memory usage of a function call."""
 
-    return partial(execute_with_stats, func)
+    def wrapper(*args, **kwargs):
+        return execute_with_stats(func, *args, **kwargs)
+
+    wrapper.__name__ = name or func.__name__
+    return wrapper
 
 
 def execution_timing(func):
