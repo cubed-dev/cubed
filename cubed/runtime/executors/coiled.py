@@ -42,9 +42,8 @@ class CoiledExecutor(DagExecutor):
             handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
             # this name will show up on the dask dashboard - need to replace '-' as anything after it is suppressed
-            op_display_name = (
-                node["op_display_name"].replace("\n", " ").replace("-", "_")
-            )
+            func_name = node["func_name"]
+            op_display_name = f"{name} {func_name}".replace("-", "_")
             coiled_function = make_coiled_function(
                 pipeline.function, op_display_name, merged_kwargs
             )
