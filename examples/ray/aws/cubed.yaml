@@ -1,12 +1,9 @@
 spec:
-  work_dir: "s3://cubed-$USER-temp"
+  work_dir: "s3://cubed-mgroverwx-temp"
   allowed_mem: "2GB"
   executor_name: "ray"
   executor_options:
     ray_init:
       runtime_env:
         pip: ["cubed", "s3fs"]
-        env_vars:
-          AWS_ACCESS_KEY_ID: "$AWS_ACCESS_KEY_ID"
-          AWS_SECRET_ACCESS_KEY: "$AWS_SECRET_ACCESS_KEY"
       ignore_reinit_error: True

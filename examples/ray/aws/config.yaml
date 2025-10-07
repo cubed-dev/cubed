@@ -36,14 +36,13 @@ docker:
 # If a node is idle for this many minutes, it will be removed.
 idle_timeout_minutes: 5
 
-# Cloud-provider specific configuration.
 provider:
     type: aws
-    region: eu-west-1
+    region: us-east-1
     # Availability zone(s), comma-separated, that nodes may be launched in.
     # Nodes will be launched in the first listed availability zone and will
     # be tried in the subsequent availability zones if launching fails.
-    availability_zone: eu-west-1a,eu-west-1b
+    availability_zone: us-east-1a,us-east-1b,us-east-1c
     # Whether to allow node reuse. If set to False, nodes will be terminated
     # instead of stopped.
     cache_stopped_nodes: False # If not present, the default is True.
