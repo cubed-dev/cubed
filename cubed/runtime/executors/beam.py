@@ -82,13 +82,18 @@ class _SingleArgumentStage(beam.PTransform):
 class BeamExecutor(DagExecutor):
     """An execution engine that uses Apache Beam."""
 
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
     @property
     def name(self) -> str:
         return "beam"
 
     def execute_dag(self, dag, callbacks=None, spec=None, compute_id=None, **kwargs):
+        merged_kwargs = {**self.kwargs, **kwargs}
+
         dag = dag.copy()
-        pipeline = beam.Pipeline(**kwargs)
+        pipeline = beam.Pipeline(**merged_kwargs)
 
         for name, node in visit_nodes(dag):
             cubed_pipeline = node["pipeline"]

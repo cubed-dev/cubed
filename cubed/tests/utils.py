@@ -35,8 +35,12 @@ if platform.system() != "Windows":
     MAIN_EXECUTORS.append(create_executor("processes"))
 
 try:
-    ALL_EXECUTORS.append(create_executor("beam"))
-    MAIN_EXECUTORS.append(create_executor("beam"))
+    ALL_EXECUTORS.append(
+        create_executor("beam", executor_options=dict(runner="FnApiRunner"))
+    )
+    MAIN_EXECUTORS.append(
+        create_executor("beam", executor_options=dict(runner="FnApiRunner"))
+    )
 except ImportError:
     pass
 
