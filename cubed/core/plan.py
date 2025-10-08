@@ -560,7 +560,7 @@ def arrays_to_plan(*arrays):
 
 def intermediate_store(spec=None):
     """Return a file path or a store object that is used for storing
-    intemediate data.
+    intermediate data.
 
     By default returns a temporary file path, which may be local or remote.
     """
