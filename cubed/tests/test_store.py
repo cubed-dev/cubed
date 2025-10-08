@@ -5,13 +5,13 @@ from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
-from cubed.storage.backend import backend_storage_name
+from cubed.storage.store import get_storage_name
 
 ZARR_PYTHON_V2 = zarr.__version__[0] == "2"
 
 
 @pytest.mark.skipif(
-    ZARR_PYTHON_V2 or backend_storage_name() == "tensorstore",
+    ZARR_PYTHON_V2 or get_storage_name() == "tensorstore",
     reason="setting an arbitrary Zarr store is not supported for Zarr Python v2, or tensorstore",
 )
 def test_arbitrary_zarr_store():
