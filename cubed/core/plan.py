@@ -102,6 +102,7 @@ class Plan:
 
         first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
         first_cubed_summary = stack_summaries[first_cubed_i]
+        func_name = first_cubed_summary.name
 
         op_name_unique = gensym()
 
@@ -111,9 +112,9 @@ class Plan:
                 op_name_unique,
                 name=op_name_unique,
                 op_name=op_name,
+                func_name=func_name,
                 type="op",
                 stack_summaries=stack_summaries,
-                op_display_name=f"{op_name_unique}\n{first_cubed_summary.name}",
                 hidden=hidden,
             )
             # array
@@ -142,9 +143,9 @@ class Plan:
                 op_name_unique,
                 name=op_name_unique,
                 op_name=op_name,
+                func_name=func_name,
                 type="op",
                 stack_summaries=stack_summaries,
-                op_display_name=f"{op_name_unique}\n{first_cubed_summary.name}",
                 hidden=hidden,
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
@@ -216,7 +217,7 @@ class Plan:
                 name=name,
                 op_name=op_name,
                 type="op",
-                op_display_name=name,
+                func_name="",
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
             )
@@ -388,7 +389,8 @@ class Plan:
             tooltip = f"name: {n}\n"
             node_type = d.get("type", None)
             if node_type == "op":
-                label = d["op_display_name"]
+                func_name = d["func_name"]
+                label = f"{n}\n{func_name}".strip()
                 op_name = d["op_name"]
                 if op_name == "blockwise":
                     d["style"] = '"rounded,filled"'

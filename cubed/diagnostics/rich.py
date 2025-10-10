@@ -44,7 +44,8 @@ class RichProgressBar(Callback):
         progress_tasks = {}
         for name, node in visit_nodes(event.dag):
             num_tasks = node["primitive_op"].num_tasks
-            op_display_name = node["op_display_name"].replace("\n", " ")
+            func_name = node["func_name"]
+            op_display_name = f"{name} {func_name}"
             progress_task = progress.add_task(
                 f"{op_display_name}", start=False, total=num_tasks
             )
