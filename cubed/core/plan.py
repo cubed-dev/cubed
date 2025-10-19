@@ -6,7 +6,7 @@ import tempfile
 import uuid
 from datetime import datetime
 from functools import lru_cache
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional
 
 import networkx as nx
 
@@ -76,8 +76,9 @@ class Plan:
     as the output of one pipeline, then read back as the input to later pipelines.
     """
 
-    def __init__(self, dag):
+    def __init__(self, dag, array_names):
         self.dag = dag
+        self.array_names = array_names
 
     # args from primitive_op onwards are omitted for creation functions when no computation is needed
     @classmethod
@@ -173,21 +174,20 @@ class Plan:
             if hasattr(x, "name"):
                 dag.add_edge(x.name, op_name_unique)
 
-        return Plan(dag)
+        return Plan(dag, (name,))
 
     @classmethod
     def arrays_to_plan(cls, *arrays):
-        return Plan(arrays_to_dag(*arrays))
+        return Plan(arrays_to_dag(*arrays), tuple(a.name for a in arrays))
 
     def optimize(
         self,
         optimize_function: Optional[Callable[..., nx.MultiDiGraph]] = None,
-        array_names: Optional[Tuple[str]] = None,
     ):
         if optimize_function is None:
             optimize_function = multiple_inputs_optimize_dag
-        dag = optimize_function(self.dag, array_names=array_names)
-        return Plan(dag)
+        dag = optimize_function(self.dag, array_names=self.array_names)
+        return Plan(dag, self.array_names)
 
     def _create_lazy_zarr_arrays(self, dag):
         # find all lazy zarr arrays in dag
@@ -272,19 +272,14 @@ class Plan:
         optimize_graph: bool = True,
         optimize_function=None,
         compile_function: Optional[Decorator] = None,
-        array_names=None,
     ) -> "FinalizedPlan":
-        dag = (
-            self.optimize(optimize_function, array_names).dag
-            if optimize_graph
-            else self.dag
-        )
+        dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
         # create a copy since _create_lazy_zarr_arrays mutates the dag
         dag = dag.copy()
         if callable(compile_function):
             dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
-        return FinalizedPlan(nx.freeze(dag))
+        return FinalizedPlan(nx.freeze(dag), array_names=self.array_names)
 
     def execute(
         self,
@@ -294,12 +289,11 @@ class Plan:
         optimize_function=None,
         compile_function=None,
         resume=None,
-        array_names=None,
         spec=None,
         **kwargs,
     ):
         finalized_plan = self._finalize(
-            optimize_graph, optimize_function, compile_function, array_names=array_names
+            optimize_graph, optimize_function, compile_function
         )
         dag = finalized_plan.dag
 
@@ -334,11 +328,8 @@ class Plan:
         optimize_graph=True,
         optimize_function=None,
         show_hidden=False,
-        array_names=None,
     ):
-        finalized_plan = self._finalize(
-            optimize_graph, optimize_function, array_names=array_names
-        )
+        finalized_plan = self._finalize(optimize_graph, optimize_function)
         dag = finalized_plan.dag
         dag = dag.copy()  # make a copy since we mutate the DAG below
 
@@ -507,10 +498,11 @@ class FinalizedPlan:
     4. freezing the final DAG so it can't be changed
     """
 
-    def __init__(self, dag):
+    def __init__(self, dag, array_names):
         self.dag = dag
+        self.array_names = array_names
 
-    def max_projected_mem(self):
+    def max_projected_mem(self) -> int:
         """Return the maximum projected memory across all tasks to execute this plan."""
         projected_mem_values = [
             node["primitive_op"].projected_mem for _, node in visit_nodes(self.dag)
@@ -525,7 +517,7 @@ class FinalizedPlan:
         """Return the number of primitive operations in this plan."""
         return len(list(visit_nodes(self.dag)))
 
-    def num_tasks(self):
+    def num_tasks(self) -> int:
         """Return the number of tasks needed to execute this plan."""
         tasks = 0
         for _, node in visit_nodes(self.dag):
