@@ -15,7 +15,7 @@ DEFAULT_MAX_TOTAL_SOURCE_ARRAYS = 4
 DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS = 10
 
 
-def simple_optimize_dag(dag, array_names=None):
+def simple_optimize_dag(dag, array_names):
     """Apply map blocks fusion."""
 
     # note there is no need to prune the dag, since the way it is built
@@ -41,7 +41,7 @@ def simple_optimize_dag(dag, array_names=None):
 
         # if input is one of the arrays being computed then don't fuse
         op2_input = next(dag.predecessors(op2))
-        if array_names is not None and op2_input in array_names:
+        if op2_input in array_names:
             return False
 
         # if input is used by another node then don't fuse
@@ -159,7 +159,7 @@ def can_fuse_predecessors(
     dag,
     name,
     *,
-    array_names=None,
+    array_names,
     max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
     max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
     always_fuse=None,
@@ -182,18 +182,17 @@ def can_fuse_predecessors(
         return False
 
     # if a predecessor op produces one of the arrays being computed, then don't fuse
-    if array_names is not None:
-        predecessor_array_names = set(
-            array_name for _, array_name, _ in predecessor_ops_and_arrays(dag, name)
+    predecessor_array_names = set(
+        array_name for _, array_name, _ in predecessor_ops_and_arrays(dag, name)
+    )
+    array_names_intersect = set(array_names) & predecessor_array_names
+    if len(array_names_intersect) > 0:
+        logger.debug(
+            "can't fuse %s since predecessor ops produce one or more arrays being computed %s",
+            name,
+            array_names_intersect,
         )
-        array_names_intersect = set(array_names) & predecessor_array_names
-        if len(array_names_intersect) > 0:
-            logger.debug(
-                "can't fuse %s since predecessor ops produce one or more arrays being computed %s",
-                name,
-                array_names_intersect,
-            )
-            return False
+        return False
 
     # if any predecessor ops have multiple outputs then don't fuse
     # TODO: implement "child fusion" (where a multiple output op fuses its children)
@@ -247,7 +246,7 @@ def fuse_predecessors(
     dag,
     name,
     *,
-    array_names=None,
+    array_names,
     max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
     max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
     always_fuse=None,
@@ -302,7 +301,7 @@ def fuse_predecessors(
 def multiple_inputs_optimize_dag(
     dag,
     *,
-    array_names=None,
+    array_names,
     max_total_source_arrays=DEFAULT_MAX_TOTAL_SOURCE_ARRAYS,
     max_total_num_input_blocks=DEFAULT_MAX_TOTAL_NUM_INPUT_BLOCKS,
     always_fuse=None,
@@ -324,7 +323,7 @@ def multiple_inputs_optimize_dag(
     return dag
 
 
-def fuse_all_optimize_dag(dag, array_names=None):
+def fuse_all_optimize_dag(dag, array_names):
     """Force all operations to be fused."""
     dag = dag.copy()
     always_fuse = [op for op in dag.nodes() if op.startswith("op-")]
@@ -333,7 +332,7 @@ def fuse_all_optimize_dag(dag, array_names=None):
     )
 
 
-def fuse_only_optimize_dag(dag, *, array_names=None, only_fuse=None):
+def fuse_only_optimize_dag(dag, *, array_names, only_fuse=None):
     """Force only specified operations to be fused, all others will be left even if they are suitable for fusion."""
     dag = dag.copy()
     always_fuse = only_fuse
