@@ -27,6 +27,7 @@
       ~Spec.executor
       ~Spec.executor_name
       ~Spec.executor_options
+      ~Spec.intermediate_store
       ~Spec.reserved_mem
       ~Spec.storage_options
       ~Spec.work_dir
