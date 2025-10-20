@@ -6,6 +6,7 @@ from donfig.config_obj import expand_environment_variables
 
 from cubed.runtime.create import create_executor
 from cubed.runtime.types import Executor
+from cubed.types import T_Store
 from cubed.utils import convert_to_bytes
 
 
@@ -15,6 +16,8 @@ class Spec:
     def __init__(
         self,
         work_dir: Union[str, None] = None,
+        *,
+        intermediate_store: Union[T_Store, None] = None,
         allowed_mem: Union[int, str, None] = None,
         reserved_mem: Union[int, str, None] = 0,
         executor: Union[Executor, None] = None,
@@ -30,6 +33,8 @@ class Spec:
         ----------
         work_dir : str or None
             The directory path (specified as an fsspec or obstore URL) used for storing intermediate data.
+        intermediate_store : store, optional
+            The Zarr store for intermediate data. Takes precedence over ``work_dir``.
         allowed_mem : int or str, optional
             The total memory available to a worker for running a task, in bytes.
 
@@ -65,6 +70,7 @@ class Spec:
         self._executor_options = executor_options
         self._storage_options = storage_options
         self._zarr_compressor = zarr_compressor
+        self._intermediate_store = intermediate_store
 
     @property
     def work_dir(self) -> Optional[str]:
@@ -118,9 +124,14 @@ class Spec:
         """The compressor used by Zarr for intermediate data."""
         return self._zarr_compressor
 
+    @property
+    def intermediate_store(self) -> Union[dict, str, None]:
+        """The Zarr store for intermediate data. Takes precedence over ``work_dir``."""
+        return self._intermediate_store
+
     def __repr__(self) -> str:
         return (
-            f"cubed.Spec(work_dir={self._work_dir}, allowed_mem={self._allowed_mem}, "
+            f"cubed.Spec(work_dir={self._work_dir}, intermediate_store={self._intermediate_store}, allowed_mem={self._allowed_mem}, "
             f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options}, zarr_compressor={self._zarr_compressor})"
         )
 
@@ -128,6 +139,7 @@ class Spec:
         if isinstance(other, Spec):
             return (
                 self.work_dir == other.work_dir
+                and self.intermediate_store == other.intermediate_store
                 and self.allowed_mem == other.allowed_mem
                 and self.reserved_mem == other.reserved_mem
                 and self.executor == other.executor

@@ -54,7 +54,7 @@ def modal_executor(request):
 
 
 def test_object_bool(tmp_path, executor):
-    spec = cubed.Spec(tmp_path, 100000, executor=executor)
+    spec = cubed.Spec(tmp_path, allowed_mem=100000, executor=executor)
     a = xp.asarray(
         [[False, False, False], [False, False, False], [False, False, False]],
         chunks=(2, 2),
