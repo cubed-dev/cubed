@@ -2,7 +2,7 @@
 
 Cubed aims to tightly manage the amount of memory that each task uses, ensuring that it never exceeds a configured maximum.
 
-The various memory settings and values are illustrated in the following diagaram, and are discussed further below.
+The various memory settings and values are illustrated in the following diagram, and are discussed further below.
 
 ![Memory](../images/memory.svg)
 

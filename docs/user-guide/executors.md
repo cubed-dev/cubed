@@ -2,7 +2,7 @@
 
 Cubed arrays are backed by Zarr arrays, and every chunk in the Zarr array is computed by a task running on a worker, which may be a local or remote process.
 
-Cubed provides a variety of executors for running the tasks in a computation, which are discussed below. Executors are also sometimes referred to as runtimes.
+Cubed provides a variety of executors for running the tasks in a computation, which are discussed below. Executors are also sometimes referred to as _runtimes_.
 
 ## Local single-machine executors
 
