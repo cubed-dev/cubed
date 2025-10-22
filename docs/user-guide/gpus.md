@@ -1,7 +1,7 @@
 # GPU Support
 
 Cubed has experimental support for using GPU-backed ndarrays. With zarr-python's
-[native GPU support], you can load data into GPU memory, perform some cubed
+[native GPU support], you can load data into GPU memory, perform some Cubed
 computation on the GPU, and write the result, while minimizing the number of host
 to device transfers.
 

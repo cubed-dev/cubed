@@ -44,54 +44,76 @@ Similarly, the operation that produces `c` is shown in a lilac colour to signify
 
 ## Callbacks
 
-You can pass callbacks to functions that call `compute`, such as {py:func}`store <cubed.store>` or {py:func}`to_zarr <cubed.to_zarr>`.
+Callbacks are objects that are registered to receive callback events on the client running the Cubed calculation.
+You can pass callbacks to {py:meth}`compute() <cubed.Array.compute()>`, or functions that call `compute`, such as {py:func}`store <cubed.store>` or {py:func}`to_zarr <cubed.to_zarr>`.
+
+Callbacks can also be used as Python context managers.
 
 ### Progress bar
 
 You can display a progress bar to track your computation by passing callbacks to {py:meth}`compute() <cubed.Array.compute()>`:
 
 ```ipython
->>> from cubed.diagnostics.rich import RichProgressBar
->>> progress = RichProgressBar()
->>> c.compute(callbacks=[progress])  # c is the array from above
+>>> from cubed.diagnostics import ProgressBar
+>>> with ProgressBar():
+...     c.compute()  # c is the array from above
+...
   create-arrays 1/1 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
   op-003 add    4/4 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.0% 0:00:00
 ```
 
 The two current progress bar choice are:
-- `from cubed.diagnostics.rich import RichProgressBar`
+- `from cubed.diagnostics import ProgressBar` an alias for `from cubed.diagnostics.rich import RichProgressBar`
 - `from cubed.diagnostics.tqdm import TqdmProgressBar`
 
 
 This will work in Jupyter notebooks, and for all executors.
 
+### Timeline
+The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation.
 
+The timeline callback will write a graphic `timeline.svg` to a directory with the schema `history/compute-{id}`.
+
+```ipython
+>>> from cubed.diagnostics.timeline import TimelineVisualizationCallback
+>>> with TimelineVisualizationCallback():
+...     c.compute()
+...
+```
+
+The following example, which shows a "Quadratic Means" calculation on 1.5TB of data using Lithops (AWS Lambda), shows that we get very good horizontal scaling, since the orange dots are almost vertically aligned:
+
+![Timeline visualization of a computation](../images/qm-timeline.png)
+
+### Memory usage
+The memory usage visualization shows the maximum memory usage for each task, compared to the projected and allowed memory.
+(See <project:user-guide/memory.md> for terminology.)
+
+The memory usage callback will write a graphic `memory.svg` to a directory with the schema `history/compute-{id}`.
+
+```ipython
+>>> from cubed.diagnostics.mem_usage import MemoryVisualizationCallback
+>>> with MemoryVisualizationCallback():
+...     c.compute()
+...
+```
+
+The following example is for the same "Quadratic Means" calculation described above:
+
+![Memory usage visualization of a computation](../images/qm-mem-usage.png)
 
 ### History
 The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [`events.csv`, `plan.csv` and `stats.csv`] to a new directory under the current directory with the schema `history/compute-{id}`.
 
-
 ```ipython
 >>> from cubed.diagnostics.history import HistoryCallback
->>> hist = HistoryCallback()
->>> c.compute(callbacks=[hist])
-```
-
-
-### Timeline
-The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation. (Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.)
-
-The timeline callback will write a graphic `timeline.svg` to a directory with the schema `history/compute-{id}`.
-
-
-```ipython
->>> from cubed.diagnostics.timeline import TimelineVisualizationCallback
->>> timeline_viz = TimelineVisualizationCallback()
->>> c.compute(callbacks=[timeline_viz])
+>>> with HistoryCallback():
+...     c.compute()
+...
 ```
 
 ### Examples in use
-See the [examples](../examples/index.md) for more information about how to use them.
+See the [examples](../examples/index.md) for more information about how to use the callbacks.
 
 ## Memray
 

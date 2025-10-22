@@ -35,7 +35,7 @@ Cubed implements the [Python Array API standard](https://data-apis.org/array-api
 
 Notice that we also specify chunks, just like in Dask Array.
 
-Next we create another array `b` and add to two array together to get `c`.
+Next we create another array `b` and add the two arrays together to get `c`.
 
 ```python
 b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2))
