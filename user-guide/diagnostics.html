@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=c2aeba6f"></script>
+    <script src="../_static/documentation_options.js?v=7b175aca"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -369,8 +369,9 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-the-computation-plan">Visualize the computation plan</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#callbacks">Callbacks</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#progress-bar">Progress bar</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history">History</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline">Timeline</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-usage">Memory usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history">History</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-in-use">Examples in use</a></li>
 </ul>
 </li>
@@ -418,46 +419,67 @@ document.write(`
 </section>
 <section id="callbacks">
 <h2>Callbacks<a class="headerlink" href="#callbacks" title="Link to this heading">#</a></h2>
-<p>You can pass callbacks to functions that call <code class="docutils literal notranslate"><span class="pre">compute</span></code>, such as <a class="reference internal" href="../generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-func docutils literal notranslate"><span class="pre">store</span></code></a> or <a class="reference internal" href="../generated/cubed.to_zarr.html#cubed.to_zarr" title="cubed.to_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_zarr</span></code></a>.</p>
+<p>Callbacks are objects that are registered to receive callback events on the client running the Cubed calculation.
+You can pass callbacks to <a class="reference internal" href="../generated/cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>, or functions that call <code class="docutils literal notranslate"><span class="pre">compute</span></code>, such as <a class="reference internal" href="../generated/cubed.store.html#cubed.store" title="cubed.store"><code class="xref py py-func docutils literal notranslate"><span class="pre">store</span></code></a> or <a class="reference internal" href="../generated/cubed.to_zarr.html#cubed.to_zarr" title="cubed.to_zarr"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_zarr</span></code></a>.</p>
+<p>Callbacks can also be used as Python context managers.</p>
 <section id="progress-bar">
 <h3>Progress bar<a class="headerlink" href="#progress-bar" title="Link to this heading">#</a></h3>
 <p>You can display a progress bar to track your computation by passing callbacks to <a class="reference internal" href="../generated/cubed.Array.compute.html#cubed.Array.compute" title="cubed.Array.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">compute()</span></code></a>:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">progress</span> <span class="o">=</span> <span class="n">RichProgressBar</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress</span><span class="p">])</span>  <span class="c1"># c is the array from above</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">with</span> <span class="n">ProgressBar</span><span class="p">():</span>
+<span class="o">...</span>     <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>  <span class="c1"># c is the array from above</span>
+<span class="o">...</span>
   <span class="n">create</span><span class="o">-</span><span class="n">arrays</span> <span class="mi">1</span><span class="o">/</span><span class="mi">1</span> <span class="err">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="mf">100.0</span><span class="o">%</span> <span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
   <span class="n">op</span><span class="o">-</span><span class="mi">003</span> <span class="n">add</span>    <span class="mi">4</span><span class="o">/</span><span class="mi">4</span> <span class="err">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span> <span class="mf">100.0</span><span class="o">%</span> <span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
 <p>The two current progress bar choice are:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">cubed.diagnostics.rich</span> <span class="pre">import</span> <span class="pre">RichProgressBar</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">cubed.diagnostics</span> <span class="pre">import</span> <span class="pre">ProgressBar</span></code> an alias for <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">cubed.diagnostics.rich</span> <span class="pre">import</span> <span class="pre">RichProgressBar</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">cubed.diagnostics.tqdm</span> <span class="pre">import</span> <span class="pre">TqdmProgressBar</span></code></p></li>
 </ul>
 <p>This will work in Jupyter notebooks, and for all executors.</p>
+</section>
+<section id="timeline">
+<h3>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h3>
+<p>The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation.</p>
+<p>The timeline callback will write a graphic <code class="docutils literal notranslate"><span class="pre">timeline.svg</span></code> to a directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.timeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">with</span> <span class="n">TimelineVisualizationCallback</span><span class="p">():</span>
+<span class="o">...</span>     <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>The following example, which shows a “Quadratic Means” calculation on 1.5TB of data using Lithops (AWS Lambda), shows that we get very good horizontal scaling, since the orange dots are almost vertically aligned:</p>
+<p><img alt="Timeline visualization of a computation" src="../_images/qm-timeline1.png" /></p>
+</section>
+<section id="memory-usage">
+<h3>Memory usage<a class="headerlink" href="#memory-usage" title="Link to this heading">#</a></h3>
+<p>The memory usage visualization shows the maximum memory usage for each task, compared to the projected and allowed memory.
+(See <span class="xref myst"></span> for terminology.)</p>
+<p>The memory usage callback will write a graphic <code class="docutils literal notranslate"><span class="pre">memory.svg</span></code> to a directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.mem_usage</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryVisualizationCallback</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">with</span> <span class="n">MemoryVisualizationCallback</span><span class="p">():</span>
+<span class="o">...</span>     <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>The following example is for the same “Quadratic Means” calculation described above:</p>
+<p><img alt="Memory usage visualization of a computation" src="../_images/qm-mem-usage.png" /></p>
 </section>
 <section id="history">
 <h3>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h3>
 <p>The history callback can be used to understand how long tasks took to run, and how much memory they used. The history callback will write [<code class="docutils literal notranslate"><span class="pre">events.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">plan.csv</span></code> and <code class="docutils literal notranslate"><span class="pre">stats.csv</span></code>] to a new directory under the current directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.history</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistoryCallback</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">hist</span> <span class="o">=</span> <span class="n">HistoryCallback</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">hist</span><span class="p">])</span>
-</pre></div>
-</div>
-</section>
-<section id="timeline">
-<h3>Timeline<a class="headerlink" href="#timeline" title="Link to this heading">#</a></h3>
-<p>The timeline visualization is useful to determine how much time was spent in worker startup, as well as how much stragglers affected the overall time of the computation. (Ideally, we want vertical lines on this plot, which would represent perfect horizontal scaling.)</p>
-<p>The timeline callback will write a graphic <code class="docutils literal notranslate"><span class="pre">timeline.svg</span></code> to a directory with the schema <code class="docutils literal notranslate"><span class="pre">history/compute-{id}</span></code>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.timeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimelineVisualizationCallback</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">timeline_viz</span> <span class="o">=</span> <span class="n">TimelineVisualizationCallback</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">timeline_viz</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">with</span> <span class="n">HistoryCallback</span><span class="p">():</span>
+<span class="o">...</span>     <span class="n">c</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 </section>
 <section id="examples-in-use">
 <h3>Examples in use<a class="headerlink" href="#examples-in-use" title="Link to this heading">#</a></h3>
-<p>See the <a class="reference internal" href="../examples/index.html"><span class="std std-doc">examples</span></a> for more information about how to use them.</p>
+<p>See the <a class="reference internal" href="../examples/index.html"><span class="std std-doc">examples</span></a> for more information about how to use the callbacks.</p>
 </section>
 </section>
 <section id="memray">
@@ -538,8 +560,9 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#visualize-the-computation-plan">Visualize the computation plan</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#callbacks">Callbacks</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#progress-bar">Progress bar</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history">History</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#timeline">Timeline</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-usage">Memory usage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#history">History</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#examples-in-use">Examples in use</a></li>
 </ul>
 </li>

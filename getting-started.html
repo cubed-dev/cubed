@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=c2aeba6f"></script>
+    <script src="_static/documentation_options.js?v=7b175aca"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -406,7 +406,7 @@ document.write(`
 </div>
 <p>Cubed implements the <a class="reference external" href="https://data-apis.org/array-api/latest/">Python Array API standard</a>, which is essentially a subset of NumPy, and is imported as <code class="docutils literal notranslate"><span class="pre">xp</span></code> by convention.</p>
 <p>Notice that we also specify chunks, just like in Dask Array.</p>
-<p>Next we create another array <code class="docutils literal notranslate"><span class="pre">b</span></code> and add to two array together to get <code class="docutils literal notranslate"><span class="pre">c</span></code>.</p>
+<p>Next we create another array <code class="docutils literal notranslate"><span class="pre">b</span></code> and add the two arrays together to get <code class="docutils literal notranslate"><span class="pre">c</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">b</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">chunks</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 <span class="n">c</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </pre></div>

@@ -41,7 +41,7 @@ python add-random.py
 
 This example demonstrates how we can use callbacks to gather information about the computation.
 
-- `RichProgressBar` shows a progress bar for the computation as it is running.
+- `ProgressBar` shows a progress bar for the computation as it is running.
 - `TimelineVisualizationCallback` produces a plot (after the computation has completed) showing the timeline of events in the task lifecycle.
 - `HistoryCallback` produces various stats about the computation once it has completed.
 

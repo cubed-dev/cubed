@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=c2aeba6f"></script>
+    <script src="../_static/documentation_options.js?v=7b175aca"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -383,7 +383,7 @@ document.write(`
   <section id="executors">
 <h1>Executors<a class="headerlink" href="#executors" title="Link to this heading">#</a></h1>
 <p>Cubed arrays are backed by Zarr arrays, and every chunk in the Zarr array is computed by a task running on a worker, which may be a local or remote process.</p>
-<p>Cubed provides a variety of executors for running the tasks in a computation, which are discussed below. Executors are also sometimes referred to as runtimes.</p>
+<p>Cubed provides a variety of executors for running the tasks in a computation, which are discussed below. Executors are also sometimes referred to as <em>runtimes</em>.</p>
 <section id="local-single-machine-executors">
 <h2>Local single-machine executors<a class="headerlink" href="#local-single-machine-executors" title="Link to this heading">#</a></h2>
 <p>If you don’t specify an executor then the local in-process multi-threaded Python executor is used by default. This is called the <code class="docutils literal notranslate"><span class="pre">threads</span></code> executor. It doesn’t require any set up so it is useful for quickly getting started and running on datasets that don’t fit in memory, but that can fit on a single machine’s disk.</p>
