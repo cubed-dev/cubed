@@ -1,0 +1,53 @@
+html {
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-size: 12px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+table {
+  table-layout: fixed;
+  width: 95%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+th {
+  text-align: left;
+  border-bottom: 1px solid #999999;
+}
+
+td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+svg {
+  /* Limit height of array image */
+  max-height: 300px;
+}
+
+#info-container {
+  width: 300px;
+  height: 100vh;
+  float: left;
+  background-color: #f7fafd;
+}
+
+.info-panel {
+  margin-left: 5px;
+}
+
+#graph-container {
+  margin-left: 300px;
+}
+
+#cytoscape-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
