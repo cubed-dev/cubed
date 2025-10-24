@@ -1,5 +1,4 @@
 import zarr
-import zarrs  # noqa: F401
 
 # re-export the Zarr v3 open function
 from cubed.storage.stores.zarr_python_v3 import open_zarr_v3_array  # noqa: F401
