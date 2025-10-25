@@ -24,6 +24,7 @@ from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
     MODAL_EXECUTORS,
+    CallbackCounter,
     TaskCounter,
 )
 
@@ -89,6 +90,36 @@ def test_retries(mocker, spec):
     c = xp.add(a, b)
     assert_array_equal(
         c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+    )
+
+
+@pytest.mark.parametrize("optimize_graph", [True, False])
+@pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
+def test_callback_counts(spec, executor, optimize_graph, compute_arrays_in_parallel):
+    if executor.name == "beam":
+        pytest.skip(f"{executor.name} executor does not support all callbacks")
+
+    callback_counter = CallbackCounter()
+
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
+    c = xp.add(a, b)
+    d = xp.negative(c)
+
+    d.compute(
+        executor=executor,
+        callbacks=[callback_counter],
+        optimize_graph=optimize_graph,
+        compute_arrays_in_parallel=compute_arrays_in_parallel,
+    )
+
+    num_created_arrays = 1 if optimize_graph else 2
+    assert callback_counter.compute_start.total() == 1
+    assert callback_counter.compute_end.total() == 1
+    assert callback_counter.operation_start.total() == num_created_arrays + 1
+    assert callback_counter.operation_end.total() == num_created_arrays + 1
+    assert (
+        callback_counter.task_end.total() == num_created_arrays * 4 + num_created_arrays
     )
 
 

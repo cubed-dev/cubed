@@ -5,7 +5,11 @@ from pyspark.sql import SparkSession
 
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback, DagExecutor
-from cubed.runtime.utils import handle_callbacks, handle_operation_start_callbacks
+from cubed.runtime.utils import (
+    handle_callbacks,
+    handle_operation_end_callbacks,
+    handle_operation_start_callbacks,
+)
 from cubed.spec import Spec
 
 
@@ -82,3 +86,4 @@ class SparkExecutor(DagExecutor):
             if callbacks is not None:
                 for result in results:
                     handle_callbacks(callbacks, result, {"name": name})
+            handle_operation_end_callbacks(callbacks, name)

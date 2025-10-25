@@ -6,7 +6,7 @@ from functools import partial
 from itertools import islice
 from pathlib import Path
 
-from cubed.runtime.types import OperationStartEvent, TaskEndEvent
+from cubed.runtime.types import OperationEndEvent, OperationStartEvent, TaskEndEvent
 from cubed.utils import peak_measured_mem
 
 try:
@@ -99,6 +99,12 @@ def handle_operation_start_callbacks(callbacks, name):
     if callbacks is not None:
         event = OperationStartEvent(name)
         [callback.on_operation_start(event) for callback in callbacks]
+
+
+def handle_operation_end_callbacks(callbacks, name):
+    if callbacks is not None:
+        event = OperationEndEvent(name)
+        [callback.on_operation_end(event) for callback in callbacks]
 
 
 def handle_callbacks(callbacks, result, stats):
