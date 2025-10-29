@@ -1,7 +1,6 @@
 import math
 import platform
 import shutil
-import sys
 from functools import partial, reduce
 
 import pandas as pd
@@ -34,11 +33,8 @@ if platform.system() != "Windows":
 
     # Run with max_tasks_per_child=1 so that each task is run in a new process,
     # allowing us to perform a stronger check on peak memory
-    if sys.version_info >= (3, 11):
-        executor_options = dict(max_tasks_per_child=1)
-        EXECUTORS["processes-single-task"] = create_executor(
-            "processes", executor_options
-        )
+    executor_options = dict(max_tasks_per_child=1)
+    EXECUTORS["processes-single-task"] = create_executor("processes", executor_options)
 
 try:
     executor_options = dict(config=LITHOPS_LOCAL_CONFIG, wait_dur_sec=0.1)
