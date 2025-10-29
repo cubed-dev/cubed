@@ -256,18 +256,11 @@ class ProcessesExecutor(DagExecutor):
         else:
             context = multiprocessing.get_context("spawn")
 
-        # max_tasks_per_child is only supported from Python 3.11
-        max_tasks_per_child = kwargs.pop("max_tasks_per_child", None)
-        if max_tasks_per_child is None:
-            concurrent_executor = ProcessPoolExecutor(
-                max_workers=max_workers, mp_context=context
-            )
-        else:
-            concurrent_executor = ProcessPoolExecutor(
-                max_workers=max_workers,
-                mp_context=context,
-                max_tasks_per_child=max_tasks_per_child,
-            )
+        concurrent_executor = ProcessPoolExecutor(
+            max_workers=max_workers,
+            mp_context=context,
+            max_tasks_per_child=kwargs.pop("max_tasks_per_child", None),
+        )
         try:
             create_futures_func = processes_create_futures_func(
                 concurrent_executor, run_func_processes
