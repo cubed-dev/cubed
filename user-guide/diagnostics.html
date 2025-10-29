@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=01db06bb"></script>
+    <script src="../_static/documentation_options.js?v=f36352c5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -486,7 +486,7 @@ You can pass callbacks to <a class="reference internal" href="../generated/cubed
 <h2>Memray<a class="headerlink" href="#memray" title="Link to this heading">#</a></h2>
 <p><a class="reference external" href="https://github.com/bloomberg/memray">Memray</a>, a memory profiler for Python, can be used to track and view memory allocations when running a single task in a Cubed computation.</p>
 <p>This is not usually needed when using Cubed, but for developers writing new operations, improving projected memory sizes, or for debugging a memory issue, it can be very useful to understand how memory is actually allocated in Cubed.</p>
-<p>To enable Memray memory profiling in Cubed, simply install memray (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">memray</span></code>). Then use a local executor that runs tasks in separate processes, such as <code class="docutils literal notranslate"><span class="pre">processes</span></code> (Python 3.11 or later) or <code class="docutils literal notranslate"><span class="pre">lithops</span></code>. When you run a computation, Cubed will enable Memray for the first task in each operation (so if an array has 100 chunks it will only produce one Memray trace).</p>
+<p>To enable Memray memory profiling in Cubed, simply install memray (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">memray</span></code>). Then use a local executor that runs tasks in separate processes, such as <code class="docutils literal notranslate"><span class="pre">processes</span></code> or <code class="docutils literal notranslate"><span class="pre">lithops</span></code>. When you run a computation, Cubed will enable Memray for the first task in each operation (so if an array has 100 chunks it will only produce one Memray trace).</p>
 <p>Here is an example of a simple addition operation, with 200MB chunks. (It is adapted from <a class="reference external" href="https://github.com/cubed-dev/cubed/blob/main/cubed/tests/test_mem_utilization.py">test_mem_utilization.py</a> in Cubed’s test suite.)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cubed.array_api</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">cubed.random</span>

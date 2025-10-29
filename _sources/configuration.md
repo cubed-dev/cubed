@@ -165,7 +165,7 @@ since it is deliberately designed not to have anything except the most basic fea
 | `batch_size`                 | `None`  | Number of input tasks to submit to be run in parallel. `None` means don't batch.                                                           |
 | `compute_arrays_in_parallel` | `False` | Whether arrays are computed one at a time or in parallel.                                                                                  |
 | `max_workers`                | `None`  | The maximum number of workers to use in the `ProcessPoolExecutor`. Defaults to number of CPU cores.                                        |
-| `max_tasks_per_child`        | `None`  | The number of tasks to run in each child process. See the Python documentation for `concurrent.futures.ProcessPoolExecutor`. (Python 3.11) |
+| `max_tasks_per_child`        | `None`  | The number of tasks to run in each child process. See the Python documentation for `concurrent.futures.ProcessPoolExecutor`. |
 
 Note that `retries` is not currently supported for the `processes` executor.
 
