@@ -14,8 +14,8 @@ from cubed.runtime.utils import (
 from cubed.spec import Spec
 
 
-def make_coiled_function(func, coiled_kwargs):
-    return coiled.function(**coiled_kwargs)(execution_stats(func))
+def make_coiled_function(func, name, coiled_kwargs):
+    return coiled.function(**coiled_kwargs)(execution_stats(func, name=name))
 
 
 class CoiledExecutor(DagExecutor):
@@ -42,7 +42,12 @@ class CoiledExecutor(DagExecutor):
         for name, node in visit_nodes(dag):
             handle_operation_start_callbacks(callbacks, name)
             pipeline = node["pipeline"]
-            coiled_function = make_coiled_function(pipeline.function, merged_kwargs)
+            # this name will show up on the dask dashboard - need to replace '-' as anything after it is suppressed
+            func_name = node["func_name"]
+            op_display_name = f"{name} {func_name}".replace("-", "_")
+            coiled_function = make_coiled_function(
+                pipeline.function, op_display_name, merged_kwargs
+            )
             if minimum_workers is not None:
                 coiled_function.cluster.adapt(minimum=minimum_workers)
             # coiled expects a sequence (it calls `len` on it)
