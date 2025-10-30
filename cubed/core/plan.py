@@ -539,12 +539,12 @@ def arrays_to_dag(*arrays):
     from .array import check_array_specs
 
     check_array_specs(arrays)
-    dags = [x.plan.dag for x in arrays if hasattr(x, "plan")]
+    dags = [x._plan.dag for x in arrays if hasattr(x, "_plan")]
     return nx.compose_all(dags)
 
 
 def arrays_to_plan(*arrays):
-    plans = [x.plan for x in arrays if hasattr(x, "plan")]
+    plans = [x._plan for x in arrays if hasattr(x, "_plan")]
     if len(plans) == 0:
         raise ValueError(f"No plans found for arrays: {arrays}")
     return plans[0].arrays_to_plan(*arrays)

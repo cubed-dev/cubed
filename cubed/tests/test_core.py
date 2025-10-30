@@ -440,11 +440,11 @@ def test_rechunk_intermediate(tmp_path, use_new_impl, factor):
     a = xp.ones((5, 5), chunks=(1, 5), spec=spec)
     b = a.rechunk((5, 1), use_new_impl=use_new_impl)
     assert_array_equal(b.compute(), np.ones((5, 5)))
-    # intermediates = [n for (n, d) in b.plan.dag.nodes(data=True) if "-int" in d["name"]]
+    # intermediates = [n for (n, d) in b._plan.dag.nodes(data=True) if "-int" in d["name"]]
     # assert len(intermediates) == 1
     rechunks = [
         n
-        for (n, d) in b.plan.dag.nodes(data=True)
+        for (n, d) in b._plan.dag.nodes(data=True)
         if d.get("op_name", None) == "rechunk"
     ]
     assert len(rechunks) == 2  # two ops due to intermediate store
@@ -464,7 +464,7 @@ def test_rechunk_merge_chunks_optimization():
     )
     rechunks = [
         n
-        for (n, d) in b.plan.dag.nodes(data=True)
+        for (n, d) in b._plan.dag.nodes(data=True)
         if d.get("op_name", None) == "rechunk"
     ]
     assert len(rechunks) == 0
@@ -579,7 +579,7 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
     # check that there is > 1 blockwise step (after optimization)
-    finalized_plan = b.plan._finalize()
+    finalized_plan = b._plan._finalize()
     blockwises = [
         n
         for (n, d) in finalized_plan.dag.nodes(data=True)
@@ -763,7 +763,7 @@ def test_plan_scaling(tmp_path, factor):
     )
     c = xp.matmul(a, b)
 
-    assert c.plan._finalize().num_tasks() > 0
+    assert c._plan._finalize().num_tasks() > 0
     c.visualize(filename=tmp_path / "c")
 
 
@@ -776,7 +776,7 @@ def test_plan_quad_means(tmp_path, t_length):
     uv = u * v
     m = xp.mean(uv, axis=0, split_every=10)
 
-    assert m.plan._finalize().num_tasks() > 0
+    assert m._plan._finalize().num_tasks() > 0
     m.visualize(
         filename=tmp_path / "quad_means_unoptimized",
         optimize_graph=False,

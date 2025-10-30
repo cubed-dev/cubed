@@ -44,7 +44,7 @@ class CoreArray:
         )
         # get spec from config if not supplied
         self.spec = spec or spec_from_config(config)
-        self.plan = plan
+        self._plan = plan
 
     @property
     def blocks(self):
