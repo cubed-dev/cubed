@@ -65,7 +65,7 @@ class Array(CoreArray):
             grid=grid,
             nbytes=nbytes,
             cbytes=cbytes,
-            arrs_in_plan=f"{self.plan._finalize().num_arrays()} arrays in Plan",
+            arrs_in_plan=f"{self._plan._finalize().num_arrays()} arrays in Plan",
             arrtype="np.ndarray",
         )
 

@@ -11,7 +11,7 @@ from cubed.spec import Spec, spec_from_config
 from cubed.storage.zarr import open_if_lazy_zarr_array
 from cubed.utils import array_memory, itemsize, normalize_chunks
 
-from .plan import arrays_to_plan
+from .plan import FinalizedPlan, arrays_to_plan
 
 sym_counter = 0
 
@@ -44,7 +44,7 @@ class CoreArray:
         )
         # get spec from config if not supplied
         self.spec = spec or spec_from_config(config)
-        self.plan = plan
+        self._plan = plan
 
     @property
     def blocks(self):
@@ -159,6 +159,20 @@ class CoreArray:
         if result:
             return result[0]
 
+    def plan(
+        self,
+        *,
+        optimize_graph=True,
+        optimize_function=None,
+        compile_function=None,
+    ) -> FinalizedPlan:
+        return plan(
+            self,
+            optimize_graph=optimize_graph,
+            optimize_function=optimize_function,
+            compile_function=compile_function,
+        )
+
     def rechunk(
         self: T_ChunkedArray, chunks, *, min_mem=None, use_new_impl=True
     ) -> T_ChunkedArray:
@@ -269,7 +283,13 @@ def compute(
         recomputed. Default is False.
     """
     spec = check_array_specs(arrays)  # guarantees all arrays have same spec
-    plan = arrays_to_plan(*arrays)
+    compile_function = kwargs.pop("compile_function", None)
+    finalized_plan = plan(
+        *arrays,
+        optimize_graph=optimize_graph,
+        optimize_function=optimize_function,
+        compile_function=compile_function,
+    )
     if executor is None:
         executor = arrays[0].spec.executor
         if executor is None:
@@ -286,11 +306,9 @@ def compute(
             all_callbacks.extend(callbacks)
 
     _return_in_memory_array = kwargs.pop("_return_in_memory_array", True)
-    plan.execute(
+    finalized_plan.execute(
         executor=executor,
         callbacks=all_callbacks,
-        optimize_graph=optimize_graph,
-        optimize_function=optimize_function,
         resume=resume,
         spec=spec,
         **kwargs,
@@ -335,13 +353,28 @@ def visualize(
         An IPython SVG image if IPython can be imported (for rendering
         in a notebook), otherwise None.
     """
-    plan = arrays_to_plan(*arrays)
-    return plan.visualize(
-        filename=filename,
-        format=format,
+    finalized_plan = plan(
+        *arrays,
         optimize_graph=optimize_graph,
         optimize_function=optimize_function,
+    )
+    return finalized_plan.visualize(
+        filename=filename,
+        format=format,
         show_hidden=show_hidden,
+    )
+
+
+def plan(
+    *arrays,
+    optimize_graph=True,
+    optimize_function=None,
+    compile_function=None,
+) -> FinalizedPlan:
+    return arrays_to_plan(*arrays)._finalize(
+        optimize_graph=optimize_graph,
+        optimize_function=optimize_function,
+        compile_function=compile_function,
     )
 
 

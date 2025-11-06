@@ -18,7 +18,7 @@ import cubed.random  # noqa: F401
 from .array.nan_functions import nanmean, nansum
 from .array.overlap import map_overlap
 from .array.pad import pad
-from .core.array import compute, measure_reserved_mem, visualize
+from .core.array import compute, measure_reserved_mem, plan, visualize
 from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, rechunk, store, to_zarr
 from .runtime.types import Callback, TaskEndEvent
@@ -40,6 +40,7 @@ __all__ = [
     "nanmean",
     "nansum",
     "pad",
+    "plan",
     "random",
     "rechunk",
     "store",

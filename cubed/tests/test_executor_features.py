@@ -233,7 +233,7 @@ def test_resume(spec, executor):
     d = xp.negative(c)
 
     num_created_arrays = 2  # c, d
-    assert d.plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 8
+    assert d._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 8
 
     task_counter = TaskCounter()
     c.compute(executor=executor, callbacks=[task_counter], optimize_graph=False)

@@ -280,23 +280,33 @@ class Plan:
         if callable(compile_function):
             dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
-        return FinalizedPlan(nx.freeze(dag), array_names=self.array_names)
+        return FinalizedPlan(nx.freeze(dag), self.array_names, optimize_graph)
+
+
+class FinalizedPlan:
+    """A plan that is ready to be run.
+
+    Finalizing a plan involves the following steps:
+    1. optimization (optional)
+    2. adding housekeeping nodes to create arrays
+    3. compiling functions (optional)
+    4. freezing the final DAG so it can't be changed
+    """
+
+    def __init__(self, dag, array_names, optimized):
+        self.dag = dag
+        self.array_names = array_names
+        self.optimized = optimized
 
     def execute(
         self,
         executor=None,
         callbacks=None,
-        optimize_graph=True,
-        optimize_function=None,
-        compile_function=None,
         resume=None,
         spec=None,
         **kwargs,
     ):
-        finalized_plan = self._finalize(
-            optimize_graph, optimize_function, compile_function
-        )
-        dag = finalized_plan.dag
+        dag = self.dag
 
         if resume:
             # mark nodes as computed so they are not visited by visit_nodes
@@ -326,13 +336,9 @@ class Plan:
         filename="cubed",
         format=None,
         rankdir="TB",
-        optimize_graph=True,
-        optimize_function=None,
         show_hidden=False,
     ):
-        finalized_plan = self._finalize(optimize_graph, optimize_function)
-        dag = finalized_plan.dag
-        dag = dag.copy()  # make a copy since we mutate the DAG below
+        dag = self.dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
         dag.remove_edges_from(list(dag.out_edges("arrays")))
@@ -346,10 +352,10 @@ class Plan:
             "rankdir": rankdir,
             "label": (
                 # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
-                rf"num tasks: {finalized_plan.num_tasks()}\l"
-                rf"max projected memory: {memory_repr(finalized_plan.max_projected_mem())}\l"
-                rf"total nbytes written: {memory_repr(finalized_plan.total_nbytes_written())}\l"
-                rf"optimized: {optimize_graph}\l"
+                rf"num tasks: {self.num_tasks()}\l"
+                rf"max projected memory: {memory_repr(self.max_projected_mem())}\l"
+                rf"total nbytes written: {memory_repr(self.total_nbytes_written())}\l"
+                rf"optimized: {self.optimized}\l"
             ),
             "labelloc": "bottom",
             "labeljust": "left",
@@ -489,21 +495,6 @@ class Plan:
             pass
         return None
 
-
-class FinalizedPlan:
-    """A plan that is ready to be run.
-
-    Finalizing a plan involves the following steps:
-    1. optimization (optional)
-    2. adding housekeping nodes to create arrays
-    3. compiling functions (optional)
-    4. freezing the final DAG so it can't be changed
-    """
-
-    def __init__(self, dag, array_names):
-        self.dag = dag
-        self.array_names = array_names
-
     def max_projected_mem(self) -> int:
         """Return the maximum projected memory across all tasks to execute this plan."""
         projected_mem_values = [
@@ -541,12 +532,12 @@ def arrays_to_dag(*arrays):
     from .array import check_array_specs
 
     check_array_specs(arrays)
-    dags = [x.plan.dag for x in arrays if hasattr(x, "plan")]
+    dags = [x._plan.dag for x in arrays if hasattr(x, "_plan")]
     return nx.compose_all(dags)
 
 
 def arrays_to_plan(*arrays):
-    plans = [x.plan for x in arrays if hasattr(x, "plan")]
+    plans = [x._plan for x in arrays if hasattr(x, "_plan")]
     if len(plans) == 0:
         raise ValueError(f"No plans found for arrays: {arrays}")
     return plans[0].arrays_to_plan(*arrays)
