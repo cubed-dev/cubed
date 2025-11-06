@@ -15,6 +15,7 @@
    
       ~Array.__init__
       ~Array.compute
+      ~Array.plan
       ~Array.rechunk
       ~Array.to_svg
       ~Array.visualize
