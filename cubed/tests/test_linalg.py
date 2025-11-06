@@ -12,7 +12,7 @@ def test_qr():
     Q, R = xp.linalg.qr(xp.asarray(A, chunks=(4, 2)))
 
     plan_unopt = arrays_to_plan(Q, R)._finalize()
-    assert plan_unopt.num_primitive_ops() == 4
+    assert plan_unopt.num_primitive_ops == 4
 
     Q, R = cubed.compute(Q, R)
 
@@ -34,7 +34,7 @@ def test_qr_recursion():
 
             found = True
             plan_unopt = arrays_to_plan(Q, R)._finalize()
-            assert plan_unopt.num_primitive_ops() > 4  # more than without recursion
+            assert plan_unopt.num_primitive_ops > 4  # more than without recursion
 
             Q, R = cubed.compute(Q, R)
 
@@ -85,7 +85,7 @@ def test_svd_recursion():
 
             found = True
             plan_unopt = arrays_to_plan(U, S, Vh)._finalize()
-            assert plan_unopt.num_primitive_ops() > 4  # more than without recursion
+            assert plan_unopt.num_primitive_ops > 4  # more than without recursion
 
             U, S, Vh = cubed.compute(U, S, Vh)
 

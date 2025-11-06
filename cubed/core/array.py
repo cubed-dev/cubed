@@ -104,6 +104,11 @@ class CoreArray:
         return self.size * itemsize(self.dtype)
 
     @property
+    def nchunks(self) -> int:
+        """Number of chunks in array"""
+        return reduce(mul, self.numblocks, 1)
+
+    @property
     def itemsize(self) -> int:
         """Length of one array element in bytes"""
         return itemsize(self.dtype)
