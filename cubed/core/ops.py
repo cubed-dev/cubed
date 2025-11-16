@@ -58,7 +58,7 @@ def from_array(x, chunks="auto", asarray=None, spec=None) -> "Array":
         chunks, x.shape, dtype=x.dtype, previous_chunks=previous_chunks
     )
 
-    if isinstance(x, zarr.Array):  # zarr fast path
+    if is_storage_array(x):  # zarr fast path
         from cubed.array_api import Array
 
         name = gensym()

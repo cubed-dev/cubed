@@ -1,12 +1,15 @@
 import dataclasses
 import math
+from itertools import starmap
+from operator import mul
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import tensorstore
+from toolz import reduce
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
-from cubed.utils import join_path
+from cubed.utils import itemsize, join_path
 
 
 @dataclasses.dataclass(frozen=True)
@@ -24,6 +27,23 @@ class TensorStoreArray:
     @property
     def chunks(self) -> tuple[int, ...]:
         return self.array.chunk_layout.read_chunk.shape or ()
+
+    @property
+    def nbytes(self) -> int:
+        return self.size * itemsize(self.dtype)
+
+    @property
+    def _cdata_shape(self) -> T_Shape:
+        return tuple(
+            starmap(
+                lambda s, c: math.ceil(s / c),
+                zip(self.shape, self.chunks, strict=False),
+            )
+        )
+
+    @property
+    def nchunks(self) -> int:
+        return reduce(mul, self._cdata_shape, 1)
 
     @property
     def ndim(self) -> int:
