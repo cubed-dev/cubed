@@ -2,8 +2,7 @@ import math
 
 from cubed.array_api.data_type_functions import isdtype
 from cubed.array_api.dtypes import (
-    _floating_dtypes,
-    _real_floating_dtypes,
+    _integer_dtypes,
     _real_numeric_dtypes,
     _upcast_integral_dtypes,
 )
@@ -96,12 +95,17 @@ def max(x, /, *, axis=None, keepdims=False, split_every=None):
 
 
 def mean(x, /, *, axis=None, keepdims=False, split_every=None):
-    if x.dtype not in _floating_dtypes:
-        raise TypeError("Only floating-point dtypes are allowed in mean")
     # This implementation uses a Zarr group of two arrays to store a
     # pair of fields needed to keep per-chunk counts and totals for computing
     # the mean.
-    dtype = x.dtype
+    if x.dtype in _integer_dtypes:
+        # From the spec: "if the input array x has an integer data type,
+        # the returned array must have the default real-valued floating-point data type"
+        dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)[
+            "real floating"
+        ]
+    else:
+        dtype = x.dtype
     # TODO(#658): Should these be default dtypes?
     if isdtype(x.dtype, "complex floating"):
         intermediate_dtype = [("n", nxp.int64), ("total", nxp.complex128)]
@@ -252,10 +256,16 @@ def var(
     split_every=None,
 ):
     # This implementation follows https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
-
-    if x.dtype not in _real_floating_dtypes:
-        raise TypeError("Only real floating-point dtypes are allowed in var")
-    dtype = x.dtype
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in var")
+    if x.dtype in _integer_dtypes:
+        # From the spec: "if the input array x has an integer data type,
+        # the returned array must have the default real-valued floating-point data type"
+        dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)[
+            "real floating"
+        ]
+    else:
+        dtype = x.dtype
     # TODO(#658): Should these be default dtypes?
     intermediate_dtype = [("n", nxp.int64), ("mu", nxp.float64), ("M2", nxp.float64)]
     extra_func_kwargs = dict(dtype=intermediate_dtype, correction=correction)
