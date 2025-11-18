@@ -38,6 +38,7 @@
       ~Array.itemsize
       ~Array.mT
       ~Array.nbytes
+      ~Array.nchunks
       ~Array.ndim
       ~Array.npartitions
       ~Array.numblocks
