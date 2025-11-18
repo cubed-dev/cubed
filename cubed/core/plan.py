@@ -5,15 +5,16 @@ import shutil
 import tempfile
 import uuid
 from datetime import datetime
+from enum import Enum
 from functools import lru_cache
 from typing import Any, Callable, Dict, Optional
 
 import networkx as nx
 
-from cubed.core.optimization import multiple_inputs_optimize_dag
+from cubed.core.optimization import is_input_array, multiple_inputs_optimize_dag
 from cubed.primitive.blockwise import BlockwiseSpec
 from cubed.primitive.types import PrimitiveOperation
-from cubed.runtime.pipeline import visit_nodes
+from cubed.runtime.pipeline import visit_node_generations
 from cubed.runtime.types import ComputeEndEvent, ComputeStartEvent, CubedPipeline
 from cubed.storage.store import is_storage_array
 from cubed.storage.zarr import LazyZarrArray, open_if_lazy_zarr_array
@@ -283,6 +284,12 @@ class Plan:
         return FinalizedPlan(nx.freeze(dag), self.array_names, optimize_graph)
 
 
+class ArrayRole(Enum):
+    INPUT = "input"
+    INTERMEDIATE = "intermediate"
+    OUTPUT = "output"
+
+
 class FinalizedPlan:
     """A plan that is ready to be run.
 
@@ -297,6 +304,217 @@ class FinalizedPlan:
         self.dag = dag
         self.array_names = array_names
         self.optimized = optimized
+        self._calculate_stats()
+
+        self.input_array_names = []
+        self.intermediate_array_names = []
+        for name, node in self.dag.nodes(data=True):
+            if node.get("type", None) == "array":
+                if is_input_array(self.dag, name):
+                    self.input_array_names.append(name)
+                elif name not in self.array_names:
+                    self.intermediate_array_names.append(name)
+
+    def _calculate_stats(self) -> None:
+        self._num_stages = len(list(visit_node_generations(self.dag)))
+
+        self._allowed_mem = 0
+        self._max_projected_mem = 0
+        self._num_arrays = 0
+        self._num_primitive_ops = 0
+        self._num_tasks = 0
+        self._total_narrays_read = 0
+        self._total_nbytes_read = 0
+        self._total_nchunks_read = 0
+        self._total_narrays_written = 0
+        self._total_nbytes_written = 0
+        self._total_nchunks_written = 0
+        self._total_input_narrays = 0
+        self._total_input_nbytes = 0
+        self._total_input_nchunks = 0
+        self._total_intermediate_narrays = 0
+        self._total_intermediate_nbytes = 0
+        self._total_intermediate_nchunks = 0
+        self._total_output_narrays = 0
+        self._total_output_nbytes = 0
+        self._total_output_nchunks = 0
+        self._total_narrays = 0
+        self._total_nbytes = 0
+        self._total_nchunks = 0
+
+        for name, node in self.dag.nodes(data=True):
+            node_type = node.get("type", None)
+            if node_type == "op":
+                primitive_op = node.get("primitive_op", None)
+                if primitive_op is not None:
+                    # allowed mem is the same for all ops
+                    self._allowed_mem = primitive_op.allowed_mem
+                    self._max_projected_mem = max(
+                        primitive_op.projected_mem, self._max_projected_mem
+                    )
+                    self._num_primitive_ops += 1
+                    self._num_tasks += primitive_op.num_tasks
+            elif node_type == "array":
+                array = node["target"]
+                self._num_arrays += 1
+                if not (isinstance(array, LazyZarrArray) or is_storage_array(array)):
+                    continue  # not materialized
+                self._total_narrays += 1
+                self._total_nbytes += array.nbytes
+                self._total_nchunks += array.nchunks
+                if is_input_array(self.dag, name):
+                    self._total_narrays_read += 1
+                    self._total_nbytes_read += array.nbytes
+                    self._total_nchunks_read += array.nchunks
+                    self._total_input_narrays += 1
+                    self._total_input_nbytes += array.nbytes
+                    self._total_input_nchunks += array.nchunks
+                elif isinstance(array, LazyZarrArray) or is_storage_array(array):
+                    self._total_narrays_written += 1
+                    self._total_nbytes_written += array.nbytes
+                    self._total_nchunks_written += array.nchunks
+                    if name in self.array_names:
+                        self._total_output_narrays += 1
+                        self._total_output_nbytes += array.nbytes
+                        self._total_output_nchunks += array.nchunks
+                    else:
+                        self._total_narrays_read += 1
+                        self._total_nbytes_read += array.nbytes
+                        self._total_nchunks_read += array.nchunks
+                        self._total_intermediate_narrays += 1
+                        self._total_intermediate_nbytes += array.nbytes
+                        self._total_intermediate_nchunks += array.nchunks
+
+    def array_role(self, name) -> ArrayRole:
+        """The role of the array in the computation: an input, intermediate or output."""
+        if name in self.input_array_names:
+            return ArrayRole.INPUT
+        elif name in self.intermediate_array_names:
+            return ArrayRole.INTERMEDIATE
+        elif name in self.array_names:
+            return ArrayRole.OUTPUT
+        else:
+            raise ValueError(f"Plan does not contain an array with name {name}")
+
+    @property
+    def allowed_mem(self) -> int:
+        """The total memory available to a worker for running a task, in bytes."""
+        return self._allowed_mem
+
+    @property
+    def max_projected_mem(self) -> int:
+        """The maximum projected memory across all tasks to execute this plan."""
+        return self._max_projected_mem
+
+    @property
+    def num_arrays(self) -> int:
+        """The number of arrays in this plan."""
+        return self._num_arrays
+
+    @property
+    def num_stages(self) -> int:
+        """The number of stages in this plan (including the initial stage to create arrays)."""
+        return self._num_stages
+
+    @property
+    def num_primitive_ops(self) -> int:
+        """The number of primitive operations in this plan."""
+        return self._num_primitive_ops
+
+    @property
+    def num_tasks(self) -> int:
+        """The number of tasks needed to execute this plan."""
+        return self._num_tasks
+
+    @property
+    def total_narrays_read(self) -> int:
+        """The total number of arrays read from for all materialized arrays in this plan."""
+        return self._total_narrays_read
+
+    @property
+    def total_nbytes_read(self) -> int:
+        """The total number of bytes read for all materialized arrays in this plan."""
+        return self._total_nbytes_read
+
+    @property
+    def total_nchunks_read(self) -> int:
+        """The total number of chunks read for all materialized arrays in this plan."""
+        return self._total_nchunks_read
+
+    @property
+    def total_narrays_written(self) -> int:
+        """The total number of arrays written to for all materialized arrays in this plan."""
+        return self._total_narrays_written
+
+    @property
+    def total_nbytes_written(self) -> int:
+        """The total number of bytes written for all materialized arrays in this plan."""
+        return self._total_nbytes_written
+
+    @property
+    def total_nchunks_written(self) -> int:
+        """The total number of chunks written for all materialized arrays in this plan."""
+        return self._total_nchunks_written
+
+    @property
+    def total_input_narrays(self) -> int:
+        """The total number of materialized input arrays in this plan."""
+        return self._total_input_narrays
+
+    @property
+    def total_input_nbytes(self) -> int:
+        """The total number of bytes for all materialized input arrays in this plan."""
+        return self._total_input_nbytes
+
+    @property
+    def total_input_nchunks(self) -> int:
+        """The total number of chunks for all materialized input arrays in this plan."""
+        return self._total_input_nchunks
+
+    @property
+    def total_intermediate_narrays(self) -> int:
+        """The total number of intermediate arrays in this plan."""
+        return self._total_intermediate_narrays
+
+    @property
+    def total_intermediate_nbytes(self) -> int:
+        """The total number of bytes for all intermediate arrays in this plan."""
+        return self._total_intermediate_nbytes
+
+    @property
+    def total_intermediate_nchunks(self) -> int:
+        """The total number of chunks for all intermediate arrays in this plan."""
+        return self._total_intermediate_nchunks
+
+    @property
+    def total_output_narrays(self) -> int:
+        """The total number of output arrays in this plan."""
+        return self._total_output_narrays
+
+    @property
+    def total_output_nbytes(self) -> int:
+        """The total number of bytes for all output arrays in this plan."""
+        return self._total_output_nbytes
+
+    @property
+    def total_output_nchunks(self) -> int:
+        """The total number of chunks for all output arrays in this plan."""
+        return self._total_output_nchunks
+
+    @property
+    def total_narrays(self) -> int:
+        """The total number of materialized arrays in this plan."""
+        return self._total_narrays
+
+    @property
+    def total_nbytes(self) -> int:
+        """The total number of bytes for all materialized arrays in this plan."""
+        return self._total_nbytes
+
+    @property
+    def total_nchunks(self) -> int:
+        """The total number of chunks for all materialized arrays in this plan."""
+        return self._total_nchunks
 
     def execute(
         self,
@@ -318,7 +536,7 @@ class FinalizedPlan:
         compute_id = f"compute-{datetime.now().strftime('%Y%m%dT%H%M%S.%f')}"
 
         if callbacks is not None:
-            event = ComputeStartEvent(compute_id, dag)
+            event = ComputeStartEventWithPlan(compute_id, dag, self)
             [callback.on_compute_start(event) for callback in callbacks]
         executor.execute_dag(
             dag,
@@ -352,9 +570,9 @@ class FinalizedPlan:
             "rankdir": rankdir,
             "label": (
                 # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
-                rf"num tasks: {self.num_tasks()}\l"
-                rf"max projected memory: {memory_repr(self.max_projected_mem())}\l"
-                rf"total nbytes written: {memory_repr(self.total_nbytes_written())}\l"
+                rf"num tasks: {self.num_tasks}\l"
+                rf"max projected memory: {memory_repr(self.max_projected_mem)}\l"
+                rf"total nbytes written: {memory_repr(self.total_nbytes_written)}\l"
                 rf"optimized: {self.optimized}\l"
             ),
             "labelloc": "bottom",
@@ -495,37 +713,11 @@ class FinalizedPlan:
             pass
         return None
 
-    def max_projected_mem(self) -> int:
-        """Return the maximum projected memory across all tasks to execute this plan."""
-        projected_mem_values = [
-            node["primitive_op"].projected_mem for _, node in visit_nodes(self.dag)
-        ]
-        return max(projected_mem_values) if len(projected_mem_values) > 0 else 0
 
-    def num_arrays(self) -> int:
-        """Return the number of arrays in this plan."""
-        return sum(d.get("type") == "array" for _, d in self.dag.nodes(data=True))
-
-    def num_primitive_ops(self) -> int:
-        """Return the number of primitive operations in this plan."""
-        return len(list(visit_nodes(self.dag)))
-
-    def num_tasks(self) -> int:
-        """Return the number of tasks needed to execute this plan."""
-        tasks = 0
-        for _, node in visit_nodes(self.dag):
-            tasks += node["primitive_op"].num_tasks
-        return tasks
-
-    def total_nbytes_written(self) -> int:
-        """Return the total number of bytes written for all materialized arrays in this plan."""
-        nbytes = 0
-        for _, d in self.dag.nodes(data=True):
-            if d.get("type") == "array":
-                target = d["target"]
-                if isinstance(target, LazyZarrArray):
-                    nbytes += target.nbytes
-        return nbytes
+@dataclasses.dataclass
+class ComputeStartEventWithPlan(ComputeStartEvent):
+    plan: FinalizedPlan
+    """The plan."""
 
 
 def arrays_to_dag(*arrays):

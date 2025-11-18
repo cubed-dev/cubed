@@ -41,17 +41,17 @@ def test_fusion(spec, opt_fn):
 
     num_arrays = 4  # a, b, c, d
     num_created_arrays = 3  # b, c, d (a is not created on disk)
-    plan_unopt = d._plan._finalize(optimize_graph=False)
-    assert plan_unopt.num_arrays() == num_arrays
-    assert plan_unopt.num_tasks() == num_created_arrays + 12
-    assert plan_unopt.total_nbytes_written() == b.nbytes + c.nbytes + d.nbytes
+    plan_unopt = d.plan(optimize_graph=False)
+    assert plan_unopt.num_arrays == num_arrays
+    assert plan_unopt.num_tasks == num_created_arrays + 12
+    assert plan_unopt.total_nbytes_written == b.nbytes + c.nbytes + d.nbytes
 
     num_arrays = 2  # a, d
     num_created_arrays = 1  # d (a is not created on disk)
-    plan_opt = d._plan._finalize(optimize_graph=True, optimize_function=opt_fn)
-    assert plan_opt.num_arrays() == num_arrays
-    assert plan_opt.num_tasks() == num_created_arrays + 4
-    assert plan_opt.total_nbytes_written() == d.nbytes
+    plan_opt = d.plan(optimize_graph=True, optimize_function=opt_fn)
+    assert plan_opt.num_arrays == num_arrays
+    assert plan_opt.num_tasks == num_created_arrays + 4
+    assert plan_opt.total_nbytes_written == d.nbytes
 
     task_counter = TaskCounter()
     result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
@@ -101,12 +101,10 @@ def test_fusion_transpose(spec, opt_fn):
     d = c.T
 
     num_created_arrays = 3  # b, c, d
-    assert (
-        d._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 12
-    )
+    assert d.plan(optimize_graph=False).num_tasks == num_created_arrays + 12
     num_created_arrays = 1  # d
     assert (
-        d._plan._finalize(optimize_graph=True, optimize_function=opt_fn).num_tasks()
+        d.plan(optimize_graph=True, optimize_function=opt_fn).num_tasks
         == num_created_arrays + 4
     )
 
@@ -129,9 +127,9 @@ def test_fusion_map_selection(spec):
     c = xp.negative(b)  # should be fused with b
 
     num_created_arrays = 2  # b, c
-    assert c._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 4
+    assert c.plan(optimize_graph=False).num_tasks == num_created_arrays + 4
     num_created_arrays = 1  # c
-    assert c._plan._finalize(optimize_graph=True).num_tasks() == num_created_arrays + 2
+    assert c.plan(optimize_graph=True).num_tasks == num_created_arrays + 2
 
     task_counter = TaskCounter()
     result = c.compute(callbacks=[task_counter])
@@ -154,11 +152,8 @@ def test_no_fusion(spec):
     opt_fn = simple_optimize_dag
 
     num_created_arrays = 3  # b, c, d
-    assert d._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 3
-    assert (
-        d._plan._finalize(optimize_function=opt_fn).num_tasks()
-        == num_created_arrays + 3
-    )
+    assert d.plan(optimize_graph=False).num_tasks == num_created_arrays + 3
+    assert d.plan(optimize_function=opt_fn).num_tasks == num_created_arrays + 3
 
     task_counter = TaskCounter()
     result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
@@ -179,11 +174,8 @@ def test_no_fusion_multiple_edges(spec):
     opt_fn = simple_optimize_dag
 
     num_created_arrays = 2  # c, d
-    assert d._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 2
-    assert (
-        d._plan._finalize(optimize_function=opt_fn).num_tasks()
-        == num_created_arrays + 2
-    )
+    assert d.plan(optimize_graph=False).num_tasks == num_created_arrays + 2
+    assert d.plan(optimize_function=opt_fn).num_tasks == num_created_arrays + 2
 
     task_counter = TaskCounter()
     result = d.compute(optimize_function=opt_fn, callbacks=[task_counter])
@@ -198,19 +190,16 @@ def test_custom_optimize_function(spec):
     c = xp.astype(b, xp.float32)
     d = xp.negative(c)
 
-    num_tasks_with_no_optimization = d._plan._finalize(optimize_graph=False).num_tasks()
+    num_tasks_with_no_optimization = d.plan(optimize_graph=False).num_tasks
 
-    assert (
-        d._plan._finalize(optimize_graph=True).num_tasks()
-        < num_tasks_with_no_optimization
-    )
+    assert d.plan(optimize_graph=True).num_tasks < num_tasks_with_no_optimization
 
     def custom_optimize_function(dag, array_names):
         # leave DAG unchanged
         return dag
 
     assert (
-        d._plan._finalize(optimize_function=custom_optimize_function).num_tasks()
+        d.plan(optimize_function=custom_optimize_function).num_tasks
         == num_tasks_with_no_optimization
     )
 
@@ -337,12 +326,9 @@ def test_fuse_unary_op(spec):
     assert get_num_input_blocks(optimized_dag, c.name) == (1,)
 
     num_created_arrays = 2  # b, c
-    assert c._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 2
+    assert c.plan(optimize_graph=False).num_tasks == num_created_arrays + 2
     num_created_arrays = 1  # c
-    assert (
-        c._plan._finalize(optimize_function=opt_fn).num_tasks()
-        == num_created_arrays + 1
-    )
+    assert c.plan(optimize_function=opt_fn).num_tasks == num_created_arrays + 1
 
     task_counter = TaskCounter()
     result = c.compute(callbacks=[task_counter], optimize_function=opt_fn)
@@ -381,12 +367,9 @@ def test_fuse_binary_op(spec):
     assert get_num_input_blocks(optimized_dag, e.name) == (1, 1)
 
     num_created_arrays = 3  # c, d, e
-    assert e._plan._finalize(optimize_graph=False).num_tasks() == num_created_arrays + 3
+    assert e.plan(optimize_graph=False).num_tasks == num_created_arrays + 3
     num_created_arrays = 1  # e
-    assert (
-        e._plan._finalize(optimize_function=opt_fn).num_tasks()
-        == num_created_arrays + 1
-    )
+    assert e.plan(optimize_function=opt_fn).num_tasks == num_created_arrays + 1
 
     task_counter = TaskCounter()
     result = e.compute(callbacks=[task_counter], optimize_function=opt_fn)

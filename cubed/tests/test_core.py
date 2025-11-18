@@ -14,6 +14,7 @@ from cubed.array_api.dtypes import _floating_dtypes
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
+from cubed.core.plan import ArrayRole
 from cubed.storage.store import open_storage_array
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
 
@@ -579,14 +580,14 @@ def test_reduction_multiple_rounds(tmp_path, executor):
     a = xp.ones((100, 10), dtype=np.uint8, chunks=(1, 10), spec=spec)
     b = xp.sum(a, axis=0, dtype=np.uint8)
     # check that there is > 1 blockwise step (after optimization)
-    finalized_plan = b._plan._finalize()
+    finalized_plan = b.plan()
     blockwises = [
         n
         for (n, d) in finalized_plan.dag.nodes(data=True)
         if d.get("op_name", None) == "blockwise"
     ]
     assert len(blockwises) > 1
-    assert finalized_plan.max_projected_mem() <= 1000
+    assert finalized_plan.max_projected_mem <= 1000
     assert_array_equal(b.compute(executor=executor), np.ones((100, 10)).sum(axis=0))
 
 
@@ -718,6 +719,62 @@ def test_visualize(tmp_path):
     assert (tmp_path / "dg.svg").exists()
 
 
+def test_plan(tmp_path):
+    store = store = tmp_path / "a.zarr"
+    za = create_zarr(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+        chunks=(2, 2),
+        store=store,
+    )
+    a = cubed.from_array(za)
+    b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float64, chunks=(2, 2))
+    c = a + b
+    d = c * 3
+
+    d.visualize(optimize_graph=False)
+
+    plan = d.plan(optimize_graph=False)
+
+    assert a.name in plan.input_array_names
+    assert b.name in plan.input_array_names
+    assert len(plan.input_array_names) == 3  # number 3 is also an input array
+    assert plan.array_names == (d.name,)
+
+    assert plan.array_role(a.name) == ArrayRole.INPUT
+    assert plan.array_role(b.name) == ArrayRole.INPUT
+    assert plan.array_role(c.name) == ArrayRole.INTERMEDIATE
+    assert plan.array_role(d.name) == ArrayRole.OUTPUT
+
+    assert plan.num_arrays == 5  # a, b, c, d, number 3
+    assert plan.num_stages == 3  # create, c, d
+    assert plan.num_primitive_ops == 3  # create arrays, c, d
+    assert plan.num_tasks == 10  # 2 for create arrays, 4 for c, 4 for d
+
+    assert plan.total_input_narrays == 1  # a
+    assert plan.total_input_nbytes == a.nbytes
+    assert plan.total_input_nchunks == a.nchunks
+
+    assert plan.total_intermediate_narrays == 1  # c
+    assert plan.total_intermediate_nbytes == c.nbytes
+    assert plan.total_intermediate_nchunks == c.nchunks
+
+    assert plan.total_output_narrays == 1  # d
+    assert plan.total_output_nbytes == d.nbytes
+    assert plan.total_output_nchunks == d.nchunks
+
+    assert plan.total_narrays == 3  # a, c, d (b is not materialized)
+    assert plan.total_nbytes == a.nbytes + c.nbytes + d.nbytes
+    assert plan.total_nchunks == a.nchunks + c.nchunks + d.nchunks
+
+    assert plan.total_narrays_read == 2  # a, c
+    assert plan.total_nbytes_read == a.nbytes + c.nbytes
+    assert plan.total_nchunks_read == a.nchunks + c.nchunks
+
+    assert plan.total_narrays_written == 2  # c, d
+    assert plan.total_nbytes_written == c.nbytes + d.nbytes
+    assert plan.total_nchunks_written == c.nchunks + d.nchunks
+
+
 def test_array_pickle(spec, executor):
     a = xp.asarray(
         [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
@@ -763,7 +820,7 @@ def test_plan_scaling(tmp_path, factor):
     )
     c = xp.matmul(a, b)
 
-    assert c._plan._finalize().num_tasks() > 0
+    assert c.plan().num_tasks > 0
     c.visualize(filename=tmp_path / "c")
 
 
@@ -776,7 +833,7 @@ def test_plan_quad_means(tmp_path, t_length):
     uv = u * v
     m = xp.mean(uv, axis=0, split_every=10)
 
-    assert m._plan._finalize().num_tasks() > 0
+    assert m.plan().num_tasks > 0
     m.visualize(
         filename=tmp_path / "quad_means_unoptimized",
         optimize_graph=False,

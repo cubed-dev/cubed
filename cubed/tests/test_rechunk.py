@@ -38,7 +38,7 @@ def test_rechunk_era5(
     assert b.shape == a.shape
 
     # find rechunk ops in plan
-    plan = b._plan._finalize()
+    plan = b.plan()
     rechunks = [
         (n, d)
         for (n, d) in plan.dag.nodes(data=True)

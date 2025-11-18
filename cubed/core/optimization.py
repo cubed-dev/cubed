@@ -134,6 +134,15 @@ def is_primitive_op(node_dict):
     return "primitive_op" in node_dict
 
 
+def is_input_array(dag, name):
+    """Return True if a node is an array that is an input to the graph (i.e. has no predecessor arrays)"""
+    nodes = dict(dag.nodes(data=True))
+    pre_list = list(predecessors_unordered(dag, name))
+    assert len(pre_list) == 1  # each array is produced by a single op
+    pre = pre_list[0]
+    return not is_primitive_op(nodes[pre])
+
+
 def is_fusable_with_predecessors(node_dict):
     """Return True if a node is a primitive op and can be fused with its predecessors."""
     return (
