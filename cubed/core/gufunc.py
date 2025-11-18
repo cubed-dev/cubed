@@ -10,9 +10,11 @@ def apply_gufunc(
     *args,
     axes=None,
     axis=None,
+    keepdims=False,
     output_dtypes=None,
     output_sizes=None,
     vectorize=None,
+    allow_rechunk=False,
     **kwargs,
 ):
     """
@@ -22,7 +24,7 @@ def apply_gufunc(
     `equivalent function <https://docs.dask.org/en/stable/generated/dask.array.gufunc.apply_gufunc.html>`_
     in Dask. Refer there for usage information.
 
-    Current limitations: ``keepdims``, and ``allow_rechunk`` are not supported;
+    Current limitations: ``keepdims=True``, and ``allow_rechunk=True`` are not supported;
     and multiple outputs are not supported.
 
     Cubed assumes that ``func`` will allocate a new output array. However, if it allocates more memory
@@ -30,9 +32,11 @@ def apply_gufunc(
     to the amount needed in bytes (per task).
     """
 
-    # Currently the following parameters cannot be changed
-    # keepdims = False
-    allow_rechunk = False
+    if keepdims:
+        raise NotImplementedError("keepdims is not supported in apply_gufunc")
+
+    # Don't fail immediately if allow_rechunk=True, since rechunking may not be necessary.
+    # However, if rechunking is necessary, the code below with raise an exception.
 
     # based on dask's apply_gufunc
 
@@ -128,23 +132,23 @@ def apply_gufunc(
         # Check that the arrays have same length for same dimensions or dimension `1`
         if set(sizes) | {1} != {1, max(sizes)}:
             raise ValueError(f"Dimension `'{dim}'` with different lengths in arrays")
-        if not allow_rechunk:
-            chunksizes = chunksizess[dim]
-            # Check if core dimensions consist of only one chunk
-            if (dim in core_shapes) and (chunksizes[0][0] < core_shapes[dim]):
-                raise ValueError(
-                    "Core dimension `'{}'` consists of multiple chunks. To fix, rechunk into a single \
-chunk along this dimension or set `allow_rechunk=True`, but beware that this may increase memory usage \
+
+        # Check that chunking is correct, but don't rechunk
+        # TODO(#833): rechunk if allow_rechunk=True
+        chunksizes = chunksizess[dim]
+        # Check if core dimensions consist of only one chunk
+        if (dim in core_shapes) and (chunksizes[0][0] < core_shapes[dim]):
+            raise ValueError(
+                "Core dimension `'{}'` consists of multiple chunks. To fix, rechunk into a single \
+chunk along this dimension, but beware that this may increase memory usage \
 significantly.".format(dim)
-                )
-            # Check if loop dimensions consist of same chunksizes, when they have sizes > 1
-            relevant_chunksizes = list(
-                unique(c for s, c in zip(sizes, chunksizes) if s > 1)
             )
-            if len(relevant_chunksizes) > 1:
-                raise ValueError(
-                    f"Dimension `'{dim}'` with different chunksize present"
-                )
+        # Check if loop dimensions consist of same chunksizes, when they have sizes > 1
+        relevant_chunksizes = list(
+            unique(c for s, c in zip(sizes, chunksizes) if s > 1)
+        )
+        if len(relevant_chunksizes) > 1:
+            raise ValueError(f"Dimension `'{dim}'` with different chunksize present")
 
     # Apply function - use blockwise here
     arginds = list(concat(zip(args, input_dimss)))
