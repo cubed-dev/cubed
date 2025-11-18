@@ -910,6 +910,12 @@ def test_mean_complex():
     assert_array_equal(b.compute(), np.array([1.0+1.0j, 2.0+2.0j, 3.0+3.0j]).mean())
 
 
+def test_mean_int():
+    a = xp.asarray([1, 2, 3], chunks=(2,))
+    b = xp.mean(a)
+    assert_array_equal(b.compute(), np.array([1, 2, 3]).mean())
+
+
 def test_sum(spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.sum(a)
@@ -938,6 +944,12 @@ def test_var(spec, axis, correction, keepdims):
             axis=axis, ddof=correction, keepdims=keepdims
         ),
     )
+
+
+def test_var_int():
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    b = xp.var(a)
+    assert_array_equal(b.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]).var())
 
 
 @pytest.mark.parametrize("axis", [None, 0, 1, (0, 1)])
