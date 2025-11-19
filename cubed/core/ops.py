@@ -395,6 +395,7 @@ def blockwise(
         op.target_array,
         op,
         False,
+        None,
         *source_arrays,
     )
     from cubed.array_api import Array
@@ -555,6 +556,7 @@ def _general_blockwise(
         op.target_array,
         op,
         False,
+        None,
         *source_arrays,
     )
     from cubed.array_api import Array
@@ -975,6 +977,7 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
             op.target_array,
             op,
             False,
+            None,
             x,
         )
         return Array(name, op.target_array, spec, plan)
@@ -987,6 +990,7 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
             op1.target_array,
             op1,
             False,
+            None,
             x,
         )
         x_int = Array(name_int, op1.target_array, spec, plan1)
@@ -998,6 +1002,7 @@ def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
             op2.target_array,
             op2,
             False,
+            None,
             x_int,
         )
         return Array(name, op2.target_array, spec, plan2)

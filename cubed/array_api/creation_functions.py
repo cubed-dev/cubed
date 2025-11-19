@@ -72,7 +72,8 @@ def asarray(
     name = gensym()
     target = virtual_in_memory(a, chunks=chunksize)
 
-    plan = Plan._new(name, "asarray", target)
+    scalar_value = str(a) if a.shape == () else None
+    plan = Plan._new(name, "asarray", target, scalar_value=scalar_value)
     return Array(name, target, spec, plan)
 
 
