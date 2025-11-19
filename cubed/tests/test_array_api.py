@@ -847,6 +847,36 @@ def test_where_scalars():
         xp.where(condition, 0, 1)
 
 
+# Set functions
+
+@pytest.mark.parametrize(("low", "high"), [(0, 10)])
+@pytest.mark.parametrize(
+    ("elements_shape", "elements_chunks"),
+    [((10,), (5,)), ((10,), (3,)), ((4, 5), (3, 2)), ((20, 20), (4, 5))],
+)
+@pytest.mark.parametrize(
+    ("test_shape", "test_chunks"),
+    [((10,), (5,)), ((10,), (3,)), ((4, 5), (3, 2)), ((20, 20), (4, 5))],
+)
+@pytest.mark.parametrize("invert", [True, False])
+def test_isin(
+    low, high, elements_shape, elements_chunks, test_shape, test_chunks, invert
+):
+    # based on dask test
+    rng = np.random.default_rng()
+
+    a1 = rng.integers(low, high, size=elements_shape)
+    c1 = cubed.from_array(a1, chunks=elements_chunks)
+
+    a2 = rng.integers(low, high, size=test_shape) - 5
+    c2 = cubed.from_array(a2, chunks=test_chunks)
+
+    r_a = np.isin(a1, a2, invert=invert)
+    r_c = xp.isin(c1, c2, invert=invert)
+
+    assert_array_equal(r_c, r_a)
+
+
 # Statistical functions
 
 

@@ -272,6 +272,10 @@ from .searching_functions import argmax, argmin, count_nonzero, searchsorted, wh
 
 __all__ += ["argmax", "argmin", "count_nonzero", "searchsorted", "where"]
 
+from .set_functions import isin
+
+__all__ += ["isin"]
+
 from .statistical_functions import (
     cumulative_prod,
     cumulative_sum,

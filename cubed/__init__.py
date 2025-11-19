@@ -341,6 +341,10 @@ from .array_api.searching_functions import (
 
 __all__ += ["argmax", "argmin", "count_nonzero", "searchsorted", "where"]
 
+from .array_api.set_functions import isin
+
+__all__ += ["isin"]
+
 from .array_api.statistical_functions import (
     cumulative_prod,
     cumulative_sum,
