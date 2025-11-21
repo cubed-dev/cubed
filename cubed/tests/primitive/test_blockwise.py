@@ -149,25 +149,23 @@ def test_blockwise_allowed_mem_exceeded(tmp_path, reserved_mem):
     allowed_mem = 100
     target_store = tmp_path / "target.zarr"
 
-    with pytest.raises(
-        ValueError,
-        match=r"Projected blockwise memory \(\d+\) exceeds allowed_mem \(100\), including reserved_mem \(\d+\)",
-    ):
-        blockwise(
-            nxp.linalg.outer,
-            "ij",
-            source1,
-            "i",
-            source2,
-            "j",
-            allowed_mem=allowed_mem,
-            reserved_mem=reserved_mem,
-            target_store=target_store,
-            target_name="target",
-            shape=(3, 3),
-            dtype=np.int64,
-            chunks=(2, 2),
-        )
+    op = blockwise(
+        nxp.linalg.outer,
+        "ij",
+        source1,
+        "i",
+        source2,
+        "j",
+        allowed_mem=allowed_mem,
+        reserved_mem=reserved_mem,
+        target_store=target_store,
+        target_name="target",
+        shape=(3, 3),
+        dtype=np.int64,
+        chunks=(2, 2),
+    )
+
+    assert op.projected_mem > op.allowed_mem
 
 
 def test_general_blockwise(tmp_path, executor):

@@ -271,6 +271,26 @@ class Plan:
 
         return dag
 
+    def _check_projected_mem(self, dag) -> None:
+        op_name = None
+        max_projected_mem_op = None
+        for n, d in dag.nodes(data=True):
+            if "primitive_op" in d:
+                op = d["primitive_op"]
+                if (
+                    max_projected_mem_op is None
+                    or op.projected_mem > max_projected_mem_op.projected_mem
+                ):
+                    op_name = n
+                    max_projected_mem_op = op
+        if max_projected_mem_op is not None:
+            op = max_projected_mem_op
+            if op.projected_mem > op.allowed_mem:
+                raise ValueError(
+                    f"Projected blockwise memory ({memory_repr(op.projected_mem)}) exceeds allowed_mem ({memory_repr(op.allowed_mem)}), "
+                    f"including reserved_mem ({memory_repr(op.reserved_mem)}) for {op_name}"
+                )
+
     @lru_cache  # noqa: B019
     def _finalize(
         self,
@@ -284,6 +304,7 @@ class Plan:
         if callable(compile_function):
             dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
+        self._check_projected_mem(dag)
         return FinalizedPlan(nx.freeze(dag), self.array_names, optimize_graph)
 
 
