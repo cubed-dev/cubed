@@ -6,7 +6,7 @@ import platform
 import sys
 import sysconfig
 import traceback
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import partial
 from itertools import islice
@@ -14,6 +14,7 @@ from math import prod
 from operator import add, mul
 from pathlib import Path
 from posixpath import join
+from types import FrameType
 from typing import Dict, Optional, Tuple, Union, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
@@ -169,22 +170,24 @@ class StackSummary:
     module: str
     array_names_to_variable_names: dict
 
-    def is_cubed(self):
+    def is_cubed(self) -> bool:
         """Return True if this stack frame is a Cubed call."""
-        return self.module.startswith("cubed.") and not self.module.startswith(
-            "cubed.tests."
-        )
+        return (
+            self.module.startswith("cubed.") or self.module.startswith("cubed_xarray.")
+        ) and not self.module.startswith("cubed.tests.")
 
-    def is_on_python_lib_path(self):
+    def is_on_python_lib_path(self) -> bool:
         """Return True if this stack frame is from a library on Python's library path."""
         python_lib_path = sysconfig.get_path("purelib")
 
         return self.filename.startswith(python_lib_path)
 
 
-def extract_stack_summaries(frame, limit=None):
+def extract_stack_summaries(
+    frame: Optional[FrameType], limit: Optional[int] = None
+) -> list[StackSummary]:
     """Like Python's ``StackSummary.extract``, but returns module information."""
-    frame_gen = traceback.walk_stack(frame)
+    frame_gen: Iterable[tuple[FrameType, int]] = traceback.walk_stack(frame)
 
     # from StackSummary.extract
     if limit is None:
@@ -214,22 +217,44 @@ def extract_stack_summaries(frame, limit=None):
     return stack_summaries
 
 
-def extract_array_names(frame):
+def extract_array_names(frame: FrameType) -> dict[str, str]:
     """Look for Cubed arrays in local variables to create a mapping from (internally generated) array names to variable names."""
 
     from cubed import Array
 
-    array_names_to_variable_names = {}
-    for var, arr in frame.f_locals.items():
-        if isinstance(arr, Array):
-            array_names_to_variable_names[arr.name] = var
+    array_names_to_variable_names: dict[str, str] = {}
+    for name, obj in frame.f_locals.items():
+        if name.startswith("_"):
+            # ignore previous output variables like _, __, and _1 (IPython)
+            continue
+        if isinstance(obj, Array):
+            array_names_to_variable_names[obj.name] = name
         elif (
-            type(arr).__module__.split(".")[0] == "xarray"
-            and arr.__class__.__name__ == "DataArray"
+            type(obj).__module__.split(".")[0] == "xarray"
+            and obj.__class__.__name__ == "DataArray"
         ):
-            if isinstance(arr.data, Array):
-                array_names_to_variable_names[arr.data.name] = arr.name
+            if isinstance(obj.data, Array):
+                array_names_to_variable_names[obj.data.name] = name
+        elif (
+            type(obj).__module__.split(".")[0] == "xarray"
+            and obj.__class__.__name__ == "Dataset"
+        ):
+            for var in obj.data_vars:
+                da = obj[var]
+                if isinstance(da.data, Array):
+                    array_names_to_variable_names[da.data.name] = f"{name}.{var}"
     return array_names_to_variable_names
+
+
+def extract_array_names_from_stack_summaries(
+    stacks: list[list[StackSummary]],
+) -> dict[str, str]:
+    array_display_names: dict[str, str] = {}
+    for stack_summaries in stacks:
+        first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
+        caller_summary = stack_summaries[first_cubed_i - 1]
+        array_display_names.update(caller_summary.array_names_to_variable_names)
+    return array_display_names
 
 
 def convert_to_bytes(size: Union[int, float, str]) -> int:

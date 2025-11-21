@@ -20,6 +20,7 @@ from cubed.storage.store import is_storage_array
 from cubed.storage.zarr import LazyZarrArray, open_if_lazy_zarr_array
 from cubed.utils import (
     chunk_memory,
+    extract_array_names_from_stack_summaries,
     extract_stack_summaries,
     is_local_path,
     itemsize,
@@ -90,6 +91,7 @@ class Plan:
         target,
         primitive_op=None,
         hidden=False,
+        scalar_value=None,
         *source_arrays,
     ):
         # create an empty DAG or combine from sources
@@ -137,6 +139,7 @@ class Plan:
                     type="array",
                     target=target,
                     hidden=hidden,
+                    scalar_value=scalar_value,
                 )
                 dag.add_edge(op_name_unique, name)
         else:
@@ -582,21 +585,17 @@ class FinalizedPlan:
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box", "fontsize": "10"}
 
         # do an initial pass to extract array variable names from stack summaries
-        array_display_names = {}
+        stacks = []
         for _, d in dag.nodes(data=True):
             if "stack_summaries" in d:
                 stack_summaries = d["stack_summaries"]
-                first_cubed_i = min(
-                    i for i, s in enumerate(stack_summaries) if s.is_cubed()
-                )
-                caller_summary = stack_summaries[first_cubed_i - 1]
-                array_display_names.update(caller_summary.array_names_to_variable_names)
+                stacks.append(stack_summaries)
         # add current stack info
-        frame = inspect.currentframe().f_back  # go back one in the stack
+        # go back one in the stack to the caller of 'visualize'
+        frame = inspect.currentframe().f_back
         stack_summaries = extract_stack_summaries(frame, limit=10)
-        first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
-        caller_summary = stack_summaries[first_cubed_i - 1]
-        array_display_names.update(caller_summary.array_names_to_variable_names)
+        stacks.append(stack_summaries)
+        array_display_names = extract_array_names_from_stack_summaries(stacks)
 
         # now set node attributes with visualization info
         for n, d in dag.nodes(data=True):
@@ -680,6 +679,10 @@ class FinalizedPlan:
                     var_name = array_display_names[n]
                     label = f"{n}\n{var_name}"
                     tooltip += f"variable: {var_name}\n"
+                if "scalar_value" in d and d["scalar_value"] is not None:
+                    scalar_value = d["scalar_value"]
+                    label += f"\n{scalar_value}"
+                    tooltip += f"value: {scalar_value}\n"
                 tooltip += f"shape: {target.shape}\n"
                 tooltip += f"chunks: {target.chunks}\n"
                 tooltip += f"dtype: {target.dtype}\n"
