@@ -1,3 +1,4 @@
+import os
 import platform
 import random
 from functools import partial
@@ -504,7 +505,11 @@ def test_default_spec_config_override():
     from cubed import config
 
     with config.set(
-        {"spec.allowed_mem": "4GB", "spec.executor_name": "single-threaded"}
+        {
+            "spec.allowed_mem": "4GB",
+            # need to decrease max workers proportionately
+            "spec.executor_options.max_workers": os.cpu_count() // 2,
+        }
     ):
         a = xp.ones((20000, 10000), chunks=(10000, 10000))
         b = xp.negative(a)
