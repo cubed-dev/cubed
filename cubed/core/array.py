@@ -6,6 +6,7 @@ from toolz import map, reduce
 from cubed import config
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
+from cubed.runtime.create import create_executor
 from cubed.runtime.types import Callback, Executor
 from cubed.spec import Spec, spec_from_config
 from cubed.storage.zarr import open_if_lazy_zarr_array
@@ -296,11 +297,9 @@ def compute(
         compile_function=compile_function,
     )
     if executor is None:
-        executor = arrays[0].spec.executor
+        executor = spec.executor
         if executor is None:
-            from cubed.runtime.executors.local import ThreadsExecutor
-
-            executor = ThreadsExecutor()
+            executor = create_executor("threads", spec.executor_options)
 
     # combine any callbacks specified as args with any active callbacks from the context manager
     if callbacks is None and len(Callback.active) == 0:
