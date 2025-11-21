@@ -18,6 +18,7 @@ from cubed.storage.store import is_storage_array
 from cubed.storage.zarr import LazyZarrArray
 from cubed.utils import (
     chunk_memory,
+    extract_array_names_from_stack_summaries,
     extract_stack_summaries,
     memory_repr,
     normalize_chunks,
@@ -234,21 +235,18 @@ def plan_to_cytoscape(
         )
 
     # do an initial pass to extract array variable names from stack summaries
-    array_display_names = {}
+    stacks = []
     for _, d in dag.nodes(data=True):
         if "stack_summaries" in d:
             stack_summaries = d["stack_summaries"]
-            first_cubed_i = min(
-                i for i, s in enumerate(stack_summaries) if s.is_cubed()
-            )
-            caller_summary = stack_summaries[first_cubed_i - 1]
-            array_display_names.update(caller_summary.array_names_to_variable_names)
+            stacks.append(stack_summaries)
     # add current stack info
-    frame = inspect.currentframe().f_back  # go back one in the stack
+    # TODO: following isn't right yet
+    # go back one in the stack to the caller of 'compute'
+    frame = inspect.currentframe().f_back
     stack_summaries = extract_stack_summaries(frame, limit=10)
-    first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
-    caller_summary = stack_summaries[first_cubed_i - 1]
-    array_display_names.update(caller_summary.array_names_to_variable_names)
+    stacks.append(stack_summaries)
+    array_display_names = extract_array_names_from_stack_summaries(stacks)
 
     elements = []
 
