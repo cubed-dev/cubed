@@ -8,6 +8,7 @@ from cubed.primitive.blockwise import (
     fuse,
     fuse_multiple,
 )
+from cubed.storage.virtual import VirtualArray
 
 logger = logging.getLogger(__name__)
 
@@ -152,15 +153,15 @@ def is_fusable_with_predecessors(node_dict):
 
 
 def num_source_arrays(dag, name):
-    """Return the number of (non-hidden) arrays that are inputs to an op.
+    """Return the number of (non-virtual) arrays that are inputs to an op.
 
-    Hidden arrays are used for internal bookkeeping, are very small virtual arrays
-    (empty, or offsets for example), and are not shown on the plan visualization.
-    For these reasons they shouldn't count towards ``max_total_source_arrays``.
+    Virtual arrays are very small arrays that are held in memory and not read from storage,
+    so they shouldn't count towards ``max_total_source_arrays``.
     """
     nodes = dict(dag.nodes(data=True))
     return sum(
-        not nodes[array]["hidden"] for array in predecessors_unordered(dag, name)
+        not isinstance(nodes[array]["target"], VirtualArray)
+        for array in predecessors_unordered(dag, name)
     )
 
 

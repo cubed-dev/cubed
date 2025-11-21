@@ -22,7 +22,7 @@ from cubed.core.optimization import (
 )
 from cubed.core.plan import arrays_to_plan
 from cubed.tests.test_core import sqrts
-from cubed.tests.utils import TaskCounter
+from cubed.tests.utils import TaskCounter, create_zarr
 
 
 @pytest.fixture
@@ -679,15 +679,19 @@ def test_fuse_unary_large_fan_in(spec):
 #          \     /
 #             p
 #
-def test_fuse_large_fan_in_default(spec):
-    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    b = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    c = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    d = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    e = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    f = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    g = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    h = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+def test_fuse_large_fan_in_default(tmp_path, spec):
+    # use zarr input so that they count towards max_total_source_arrays
+    store = tmp_path / "source.zarr"
+    create_zarr(np.ones((2, 2)), chunks=(2, 2), store=store)
+
+    a = cubed.from_zarr(store, spec=spec)
+    b = cubed.from_zarr(store, spec=spec)
+    c = cubed.from_zarr(store, spec=spec)
+    d = cubed.from_zarr(store, spec=spec)
+    e = cubed.from_zarr(store, spec=spec)
+    f = cubed.from_zarr(store, spec=spec)
+    g = cubed.from_zarr(store, spec=spec)
+    h = cubed.from_zarr(store, spec=spec)
 
     i = xp.add(a, b)
     j = xp.add(c, d)
@@ -738,15 +742,19 @@ def test_fuse_large_fan_in_default(spec):
 #          \     /
 #             p
 #
-def test_fuse_large_fan_in_override(spec):
-    a = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    b = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    c = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    d = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    e = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    f = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    g = xp.ones((2, 2), chunks=(2, 2), spec=spec)
-    h = xp.ones((2, 2), chunks=(2, 2), spec=spec)
+def test_fuse_large_fan_in_override(tmp_path, spec):
+    # use zarr input so that they count towards max_total_source_arrays
+    store = tmp_path / "source.zarr"
+    create_zarr(np.ones((2, 2)), chunks=(2, 2), store=store)
+
+    a = cubed.from_zarr(store, spec=spec)
+    b = cubed.from_zarr(store, spec=spec)
+    c = cubed.from_zarr(store, spec=spec)
+    d = cubed.from_zarr(store, spec=spec)
+    e = cubed.from_zarr(store, spec=spec)
+    f = cubed.from_zarr(store, spec=spec)
+    g = cubed.from_zarr(store, spec=spec)
+    h = cubed.from_zarr(store, spec=spec)
 
     i = xp.add(a, b)
     j = xp.add(c, d)
