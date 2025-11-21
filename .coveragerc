@@ -2,6 +2,7 @@
 omit =
     */tests/*
     cubed/array_api/*
+    cubed/diagnostics/dash.py
     cubed/diagnostics/memray.py
     cubed/icechunk.py
     cubed/runtime/executors/beam.py
