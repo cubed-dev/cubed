@@ -11,7 +11,11 @@ from cubed.types import T_DType, T_RegularChunks, T_Shape
 from cubed.utils import array_memory, broadcast_trick, memory_repr
 
 
-class VirtualEmptyArray(ArrayMetadata):
+class VirtualArray(ArrayMetadata):
+    pass
+
+
+class VirtualEmptyArray(VirtualArray):
     """An array that is never materialized (in memory or on disk) and contains empty values."""
 
     def __init__(
@@ -34,7 +38,7 @@ class VirtualEmptyArray(ArrayMetadata):
         return array_memory(self.dtype, (1,))
 
 
-class VirtualFullArray(ArrayMetadata):
+class VirtualFullArray(VirtualArray):
     """An array that is never materialized (in memory or on disk) and contains a single fill value."""
 
     def __init__(
@@ -61,7 +65,7 @@ class VirtualFullArray(ArrayMetadata):
         return array_memory(self.dtype, (1,))
 
 
-class VirtualOffsetsArray(ArrayMetadata):
+class VirtualOffsetsArray(VirtualArray):
     """An array that is never materialized (in memory or on disk) and contains sequentially incrementing integers."""
 
     def __init__(self, shape: T_Shape):
@@ -77,7 +81,7 @@ class VirtualOffsetsArray(ArrayMetadata):
         )
 
 
-class VirtualInMemoryArray(ArrayMetadata):
+class VirtualInMemoryArray(VirtualArray):
     """A small array that is held in memory but never materialized on disk."""
 
     def __init__(
