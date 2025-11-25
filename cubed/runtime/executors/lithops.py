@@ -257,7 +257,7 @@ class LithopsExecutor(DagExecutor):
     """An execution engine that uses Lithops."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
 
     @property
     def name(self) -> str:

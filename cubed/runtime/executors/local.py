@@ -114,7 +114,7 @@ class ThreadsExecutor(DagExecutor):
     """An execution engine that uses Python asyncio."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
 
         # Tell NumPy to use a single thread
         # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy
@@ -204,7 +204,7 @@ class ProcessesExecutor(DagExecutor):
     """An execution engine that uses local processes."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
 
         # Tell NumPy to use a single thread
         # from https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy

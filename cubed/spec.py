@@ -125,14 +125,14 @@ class Spec:
         return self._zarr_compressor
 
     @property
-    def intermediate_store(self) -> Union[dict, str, None]:
+    def intermediate_store(self) -> Union[T_Store, None]:
         """The Zarr store for intermediate data. Takes precedence over ``work_dir``."""
         return self._intermediate_store
 
     def __repr__(self) -> str:
         return (
-            f"cubed.Spec(work_dir={self._work_dir}, intermediate_store={self._intermediate_store}, allowed_mem={self._allowed_mem}, "
-            f"reserved_mem={self._reserved_mem}, executor={self._executor}, storage_options={self._storage_options}, zarr_compressor={self._zarr_compressor})"
+            f"cubed.Spec(work_dir={self.work_dir}, intermediate_store={self.intermediate_store}, allowed_mem={self.allowed_mem}, "
+            f"reserved_mem={self.reserved_mem}, executor={self.executor}, storage_options={self.storage_options}, zarr_compressor={self.zarr_compressor})"
         )
 
     def __eq__(self, other):

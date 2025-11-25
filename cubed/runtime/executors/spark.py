@@ -20,7 +20,6 @@ class SparkExecutor(DagExecutor):
     MIN_MEMORY_MiB = 512
 
     def __init__(self, **kwargs):
-        self._callbacks = None
         super().__init__(**kwargs)
 
     @property
@@ -57,9 +56,6 @@ class SparkExecutor(DagExecutor):
         compute_id: Optional[str] = None,
         **kwargs: Any,
     ):
-        # Store callbacks for later use during computation
-        self._callbacks = callbacks
-
         # Configure Spark memory settings from Spec if provided
         spark_builder = SparkSession.builder
         if spec is not None and hasattr(spec, "allowed_mem") and spec.allowed_mem:
