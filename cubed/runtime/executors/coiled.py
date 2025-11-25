@@ -22,7 +22,7 @@ class CoiledExecutor(DagExecutor):
     """An execution engine that uses Coiled Functions."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
 
     @property
     def name(self) -> str:

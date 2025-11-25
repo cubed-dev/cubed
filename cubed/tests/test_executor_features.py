@@ -73,6 +73,22 @@ def mock_apply_blockwise(*args, **kwargs):
     return apply_blockwise(*args, **kwargs)
 
 
+def test_equality():
+    executor = create_executor("threads")
+    assert executor == create_executor("threads")
+
+    executor_2_max_workers = create_executor(
+        "threads", executor_options=dict(max_workers=2)
+    )
+    assert executor_2_max_workers == create_executor(
+        "threads", executor_options=dict(max_workers=2)
+    )
+    assert executor_2_max_workers != create_executor("threads")
+    assert executor_2_max_workers != create_executor(
+        "threads", executor_options=dict(max_workers=1)
+    )
+
+
 # see tests/runtime for more tests for retries for other executors
 @pytest.mark.skipif(
     platform.system() == "Windows", reason="measuring memory does not run on windows"

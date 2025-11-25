@@ -8,6 +8,18 @@ from cubed.vendor.rechunker.types import Config
 
 
 class DagExecutor:
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def __eq__(self, other):
+        if isinstance(other, DagExecutor):
+            return self.name == other.name and self.kwargs == other.kwargs
+        else:
+            return False
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(kwargs={self.kwargs})"
+
     @property
     def name(self) -> str:
         raise NotImplementedError  # pragma: no cover

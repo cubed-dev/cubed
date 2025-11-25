@@ -59,7 +59,7 @@ class DaskExecutor(DagExecutor):
     """An execution engine that uses Dask Distributed's async API."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
 
     @property
     def name(self) -> str:

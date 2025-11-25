@@ -141,7 +141,7 @@ class ModalExecutor(DagExecutor):
     """An execution engine that uses Modal's async API."""
 
     def __init__(self, **kwargs):
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
 
     @property
     def name(self) -> str:
