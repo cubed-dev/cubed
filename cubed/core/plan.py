@@ -639,7 +639,9 @@ class FinalizedPlan:
 
         if self._ops_exceeding_memory:
             # Build warning text in red
-            warning_lines = ["<BR ALIGN='LEFT'/>⚠ MEMORY EXCEEDED ⚠<BR ALIGN='LEFT'/>"]
+            warning_lines = [
+                "<BR ALIGN='LEFT'/>!!! MEMORY EXCEEDED !!!<BR ALIGN='LEFT'/>"
+            ]
             for op_name, op in self._ops_exceeding_memory:
                 warning_lines.append(
                     f"{op_name}: requires {memory_repr(op.projected_mem)}, "
