@@ -541,6 +541,34 @@ class FinalizedPlan:
         """The total number of chunks for all materialized arrays in this plan."""
         return self._total_nchunks
 
+    @property
+    def exceeds_memory(self) -> bool:
+        """True if any operation in this plan exceeds the allowed memory."""
+        return len(self._ops_exceeding_memory) > 0
+
+    @property
+    def ops_exceeding_memory(self) -> List[Tuple[str, "PrimitiveOperation"]]:
+        """List of (op_name, primitive_op) tuples for operations exceeding memory.
+
+        Sorted by projected memory (highest first).
+        """
+        return self._ops_exceeding_memory
+
+    def validate(self) -> None:
+        """Validate that this plan can be executed.
+
+        Raises
+        ------
+        ValueError
+            If any operation's projected memory exceeds the allowed memory.
+        """
+        if self._ops_exceeding_memory:
+            op_name, op = self._ops_exceeding_memory[0]  # Report worst offender
+            raise ValueError(
+                f"Projected blockwise memory ({memory_repr(op.projected_mem)}) exceeds allowed_mem ({memory_repr(op.allowed_mem)}), "
+                f"including reserved_mem ({memory_repr(op.reserved_mem)}) for {op_name}"
+            )
+
     def execute(
         self,
         executor=None,
