@@ -661,6 +661,7 @@ class FinalizedPlan:
             "labeljust": "left",
             "fontsize": "10",
         }
+
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box", "fontsize": "10"}
 
         # do an initial pass to extract array variable names from stack summaries
