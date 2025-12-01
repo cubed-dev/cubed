@@ -493,6 +493,11 @@ def test_default_spec_allowed_mem_exceeded():
     # default spec fails for large computations
     a = xp.ones((20000, 10000), chunks=(10000, 10000))
     b = xp.negative(a)
+    # plan() succeeds but marks plan as exceeding memory
+    plan = b.plan()
+    assert plan.exceeds_memory
+    assert len(plan.ops_exceeding_memory) == 1
+    # compute() raises the error
     with pytest.raises(
         ValueError,
         match=r"Projected blockwise memory \(.+\) exceeds allowed_mem \(.+\), including reserved_mem \(.+\) for op-\d+",
