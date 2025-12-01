@@ -324,7 +324,7 @@ class FinalizedPlan:
     4. freezing the final DAG so it can't be changed
     """
 
-    def __init__(self, dag, array_names, optimized):
+    def __init__(self, dag, array_names, optimized, ops_exceeding_memory=None):
         self.dag = dag
         self.array_names = array_names
         self.optimized = optimized
