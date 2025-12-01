@@ -283,19 +283,11 @@ class Plan:
         for n, d in dag.nodes(data=True):
             if "primitive_op" in d:
                 op = d["primitive_op"]
-                if (
-                    max_projected_mem_op is None
-                    or op.projected_mem > max_projected_mem_op.projected_mem
-                ):
-                    op_name = n
-                    max_projected_mem_op = op
-        if max_projected_mem_op is not None:
-            op = max_projected_mem_op
-            if op.projected_mem > op.allowed_mem:
-                raise ValueError(
-                    f"Projected blockwise memory ({memory_repr(op.projected_mem)}) exceeds allowed_mem ({memory_repr(op.allowed_mem)}), "
-                    f"including reserved_mem ({memory_repr(op.reserved_mem)}) for {op_name}"
-                )
+                if op.projected_mem > op.allowed_mem:
+                    ops_exceeding.append((n, op))
+        # Sort by projected_mem descending so worst offenders are first
+        ops_exceeding.sort(key=lambda x: x[1].projected_mem, reverse=True)
+        return ops_exceeding
 
     @lru_cache  # noqa: B019
     def _finalize(
