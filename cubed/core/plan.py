@@ -328,6 +328,7 @@ class FinalizedPlan:
         self.dag = dag
         self.array_names = array_names
         self.optimized = optimized
+        self._ops_exceeding_memory = ops_exceeding_memory or []
         self._calculate_stats()
 
         self.input_array_names = []
