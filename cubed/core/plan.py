@@ -271,9 +271,15 @@ class Plan:
 
         return dag
 
-    def _check_projected_mem(self, dag) -> None:
-        op_name = None
-        max_projected_mem_op = None
+    def _find_ops_exceeding_memory(
+        self, dag
+    ) -> List[Tuple[str, "PrimitiveOperation"]]:
+        """Find all operations where projected memory exceeds allowed memory.
+
+        Returns a list of (op_name, primitive_op) tuples for operations that
+        exceed memory limits, sorted by projected memory (highest first).
+        """
+        ops_exceeding = []
         for n, d in dag.nodes(data=True):
             if "primitive_op" in d:
                 op = d["primitive_op"]
