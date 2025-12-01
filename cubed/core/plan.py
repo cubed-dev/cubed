@@ -611,6 +611,15 @@ class FinalizedPlan:
         rankdir="TB",
         show_hidden=False,
     ):
+        if self._ops_exceeding_memory:
+            op_names = [name for name, _ in self._ops_exceeding_memory]
+            warnings.warn(
+                f"Plan has {len(self._ops_exceeding_memory)} operation(s) that exceed allowed memory: {op_names}. "
+                "These are shown in red in the visualization.",
+                stacklevel=2,
+            )
+        ops_exceeding_names = {name for name, _ in self._ops_exceeding_memory}
+
         dag = self.dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
