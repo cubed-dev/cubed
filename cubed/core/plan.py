@@ -302,8 +302,10 @@ class Plan:
         if callable(compile_function):
             dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
-        self._check_projected_mem(dag)
-        return FinalizedPlan(nx.freeze(dag), self.array_names, optimize_graph)
+        ops_exceeding_memory = self._find_ops_exceeding_memory(dag)
+        return FinalizedPlan(
+            nx.freeze(dag), self.array_names, optimize_graph, ops_exceeding_memory
+        )
 
 
 class ArrayRole(Enum):
