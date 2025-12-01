@@ -686,7 +686,11 @@ class FinalizedPlan:
                 func_name = d["func_name"]
                 label = f"{n}\n{func_name}".strip()
                 op_name = d["op_name"]
-                if op_name == "blockwise":
+                if n in ops_exceeding_names:
+                    # operation exceeds memory - show in red
+                    d["style"] = '"rounded,filled"'
+                    d["fillcolor"] = "#ff6b6b"
+                elif op_name == "blockwise":
                     d["style"] = '"rounded,filled"'
                     d["fillcolor"] = "#dcbeff"
                 elif op_name == "rechunk":
