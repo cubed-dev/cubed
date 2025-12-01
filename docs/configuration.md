@@ -222,7 +222,7 @@ Note that `batch_size` is not currently supported for Lithops.
 
 ## Debugging
 
-You can use Donfig's `pprint` method if you want to check which configuration settings are in effect when you code is run:
+You can use [Donfig](https://donfig.readthedocs.io/en/latest/)'s `pprint` method if you want to check which configuration settings are in effect when you code is run:
 
 ```python
 from cubed import config
