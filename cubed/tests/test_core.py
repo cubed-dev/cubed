@@ -502,7 +502,20 @@ def test_default_spec_allowed_mem_exceeded():
         ValueError,
         match=r"Projected blockwise memory \(.+\) exceeds allowed_mem \(.+\), including reserved_mem \(.+\) for op-\d+",
     ):
-        b.plan()
+        b.compute()
+
+
+def test_default_spec_allowed_mem_exceeded_visualize(tmp_path):
+    # visualize works but warns when memory is exceeded
+    import warnings
+
+    a = xp.ones((20000, 10000), chunks=(10000, 10000))
+    b = xp.negative(a)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        b.visualize(filename=str(tmp_path / "cubed"))
+        assert len(w) == 1
+        assert "exceed allowed memory" in str(w[0].message)
 
 
 def test_default_spec_config_override():
