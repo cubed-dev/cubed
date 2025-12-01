@@ -272,9 +272,7 @@ class Plan:
 
         return dag
 
-    def _find_ops_exceeding_memory(
-        self, dag
-    ) -> List[Tuple[str, "PrimitiveOperation"]]:
+    def _find_ops_exceeding_memory(self, dag) -> List[Tuple[str, "PrimitiveOperation"]]:
         """Find all operations where projected memory exceeds allowed memory.
 
         Returns a list of (op_name, primitive_op) tuples for operations that
