@@ -656,13 +656,7 @@ class FinalizedPlan:
 
         dag.graph["graph"] = {
             "rankdir": rankdir,
-            "label": (
-                # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
-                rf"num tasks: {self.num_tasks}\l"
-                rf"max projected memory: {memory_repr(self.max_projected_mem)}\l"
-                rf"total nbytes written: {memory_repr(self.total_nbytes_written)}\l"
-                rf"optimized: {self.optimized}\l"
-            ),
+            "label": label,
             "labelloc": "bottom",
             "labeljust": "left",
             "fontsize": "10",
