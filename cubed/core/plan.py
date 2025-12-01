@@ -577,6 +577,8 @@ class FinalizedPlan:
         spec=None,
         **kwargs,
     ):
+        self.validate()
+
         dag = self.dag
 
         if resume:
