@@ -7,8 +7,8 @@ import uuid
 import warnings
 from datetime import datetime
 from enum import Enum
+from functools import lru_cache
 from typing import Any, Callable, Dict, List, Optional, Tuple
-from typing import Any, Callable, Dict, Optional
 
 import networkx as nx
 
