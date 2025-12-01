@@ -631,6 +631,29 @@ class FinalizedPlan:
                 list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
             )
 
+        # Build the graph label - use HTML-like label for mixed colors if memory exceeded
+        stats_text = (
+            f"num tasks: {self.num_tasks}<BR ALIGN='LEFT'/>"
+            f"max projected memory: {memory_repr(self.max_projected_mem)}<BR ALIGN='LEFT'/>"
+            f"total nbytes written: {memory_repr(self.total_nbytes_written)}<BR ALIGN='LEFT'/>"
+            f"optimized: {self.optimized}<BR ALIGN='LEFT'/>"
+        )
+
+        if self._ops_exceeding_memory:
+            # Build warning text in red
+            warning_lines = ["<BR ALIGN='LEFT'/>⚠ MEMORY EXCEEDED ⚠<BR ALIGN='LEFT'/>"]
+            for op_name, op in self._ops_exceeding_memory:
+                warning_lines.append(
+                    f"{op_name}: requires {memory_repr(op.projected_mem)}, "
+                    f"allowed {memory_repr(op.allowed_mem)}<BR ALIGN='LEFT'/>"
+                )
+            warning_text = "".join(warning_lines)
+            # HTML-like label with mixed colors
+            label = f"<<FONT>{stats_text}</FONT><FONT COLOR='#cc0000'>{warning_text}</FONT>>"
+        else:
+            # Simple HTML label (no warning)
+            label = f"<{stats_text}>"
+
         dag.graph["graph"] = {
             "rankdir": rankdir,
             "label": (
