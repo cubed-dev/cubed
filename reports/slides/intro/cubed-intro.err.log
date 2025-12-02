@@ -113,12 +113,12 @@ During handling of the above exception, another exception occurred:
 [32m    368[39m [43m    [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
 [32m    369[39m [43m[49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:728[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden)[39m
-[32m    726[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
-[32m    727[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
-[32m--> [39m[32m728[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
-[32m    730[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
-[32m    731[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:791[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden)[39m
+[32m    789[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
+[32m    790[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
+[32m--> [39m[32m791[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
+[32m    793[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
+[32m    794[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/pydot/core.py:1730[39m, in [36mDot.write[39m[34m(self, path, prog, format, encoding)[39m
 [32m   1728[39m         f.write(s)
