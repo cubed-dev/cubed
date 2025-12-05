@@ -1,5 +1,5 @@
 try:
-    from cubed.vendor.dask.widgets.widgets import (
+    from cubed.diagnostics.widgets.core import (
         FILTERS,
         TEMPLATE_PATHS,
         get_environment,
