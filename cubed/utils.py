@@ -120,6 +120,11 @@ def memory_repr(num: int) -> str:
     return f"{num:.1e} bytes"
 
 
+def format_int(n: int) -> str:
+    """Format an integer as text using a thousands separator."""
+    return f"{n:,}"
+
+
 def peak_measured_mem() -> int:
     """Measures the peak memory usage in bytes.
 
