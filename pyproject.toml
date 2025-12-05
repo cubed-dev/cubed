@@ -47,6 +47,9 @@ diagnostics = [
     "matplotlib",
     "rich",
     "seaborn",
+    "dash",
+    "dash-cytoscape",
+    "dash-svg",
 ]
 beam = ["apache-beam", "gcsfs"]
 dask = ["dask < 2024.12.0"]
