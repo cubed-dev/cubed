@@ -742,6 +742,13 @@ def test_visualize(tmp_path):
     cubed.visualize(d, g, filename=tmp_path / "dg")
     assert (tmp_path / "dg.svg").exists()
 
+    # cytoscape
+    e.visualize(filename=tmp_path / "e", engine="cytoscape")
+    assert (tmp_path / "e.html").exists()
+
+    cubed.visualize(d, g, filename=tmp_path / "dg", engine="cytoscape")
+    assert (tmp_path / "dg.html").exists()
+
 
 def test_plan(tmp_path):
     store = store = tmp_path / "a.zarr"

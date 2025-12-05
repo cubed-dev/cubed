@@ -8,7 +8,7 @@ import warnings
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 
 import networkx as nx
 
@@ -609,7 +609,16 @@ class FinalizedPlan:
         format=None,
         rankdir="TB",
         show_hidden=False,
+        engine: Literal["cytoscape", "graphviz"] | None = None,
     ):
+        if engine == "cytoscape":
+            return self.visualize_cytoscape(
+                filename,
+                format=format,
+                rankdir=rankdir,
+                show_hidden=show_hidden,
+            )
+
         if self._ops_exceeding_memory:
             op_names = [name for name, _ in self._ops_exceeding_memory]
             warnings.warn(
@@ -799,6 +808,28 @@ class FinalizedPlan:
             # Can't return a display object if no IPython.
             pass
         return None
+
+    def visualize_cytoscape(
+        self,
+        filename="cubed",
+        format=None,
+        rankdir="TB",
+        show_hidden=False,
+    ):
+        from cubed.diagnostics.widgets.plan import create_or_update_plan_widget
+
+        widget = create_or_update_plan_widget(self, rankdir=rankdir)
+
+        if filename is not None:
+            from ipywidgets.embed import embed_minimal_html
+
+            if format is None:
+                format = "html"
+            full_filename = f"{filename}.{format}"
+            embed_minimal_html(
+                full_filename, views=[widget], title="Cubed plan", drop_defaults=False
+            )
+        return widget
 
 
 @dataclasses.dataclass
