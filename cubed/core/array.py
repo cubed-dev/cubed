@@ -1,5 +1,5 @@
 from operator import mul
-from typing import Optional, TypeVar
+from typing import Literal, Optional, TypeVar
 
 from toolz import map, reduce
 
@@ -205,6 +205,7 @@ class CoreArray:
         optimize_graph=True,
         optimize_function=None,
         show_hidden=False,
+        engine: Literal["cytoscape", "graphviz"] | None = None,
     ):
         """Produce a visualization of the computation graph for this array.
 
@@ -238,6 +239,7 @@ class CoreArray:
             optimize_graph=optimize_graph,
             optimize_function=optimize_function,
             show_hidden=show_hidden,
+            engine=engine,
         )
 
     def __getitem__(self: T_ChunkedArray, key, /) -> T_ChunkedArray:
@@ -329,6 +331,7 @@ def visualize(
     optimize_graph=True,
     optimize_function=None,
     show_hidden=False,
+    engine: Literal["cytoscape", "graphviz"] | None = None,
 ):
     """Produce a visualization of the computation graph for multiple arrays.
 
@@ -366,6 +369,7 @@ def visualize(
         filename=filename,
         format=format,
         show_hidden=show_hidden,
+        engine=engine,
     )
 
 
