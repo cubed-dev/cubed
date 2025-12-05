@@ -1,0 +1,64 @@
+<h3>Details</h3>
+<table>
+    <tbody>
+        <tr>
+            <td>Name</td>
+            <td>{{ node_data["name"] }}</td>
+        </tr>
+        {% if node_data["variable_name"] %}
+        <tr>
+            <td>Variable name</td>
+            <td>{{ node_data["variable_name"] }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td>Shape</td>
+            <td>{{ node_data["target"].shape }}</td>
+        </tr>
+        <tr>
+            <td>Chunk shape</td>
+            <td>{{ node_data["target"].chunks }}</td>
+        </tr>
+        <tr>
+            <td>Data type</td>
+            <td>{{ node_data["target"].dtype }}</td>
+        </tr>
+        {% if node_data["chunk_memory"] %}
+        <tr>
+            <td>Chunk memory</td>
+            <td>{{ node_data["chunk_memory"] | memory_repr }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["target"].nbytes %}
+        <tr>
+            <td>Bytes</td>
+            <td>{{ node_data["target"].nbytes | memory_repr }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["target"].nchunks %}
+        <tr>
+            <td>Chunks</td>
+            <td>{{ node_data["target"].nchunks | format_int }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["role"] %}
+        <tr>
+            <td>Role</td>
+            <td>{{ node_data["role"] }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+            <td>Stored</td>
+            <td>{{ node_data["stored"] }}</td>
+        </tr>
+        {% if node_data["store"] %}
+        <tr>
+            <td>Store</td>
+            <td title="{{ node_data["store"] }}">{{ node_data["store"] }}</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+<div style="max-height: 300px">
+{{grid}}
+</div>

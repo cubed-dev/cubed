@@ -6,6 +6,10 @@ try:
         get_template,
     )
 
+    from .plan import LivePlanViewer, PlanWidget
+
+    __all__ = ["LivePlanViewer", "PlanWidget"]
+
 except ImportError as e:
     msg = (
         "Cubed diagnostics requirements are not installed.\n\n"

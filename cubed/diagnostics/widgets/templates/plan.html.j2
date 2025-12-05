@@ -1,0 +1,93 @@
+<h3>Plan</h3>
+<table>
+    <tbody>
+        <tr>
+            <td>Stages</td>
+            <td>{{ plan.num_stages | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Operations</td>
+            <td>{{ plan.num_primitive_ops | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Tasks</td>
+            <td>{{ plan.num_tasks | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Allowed memory</td>
+            <td>{{ plan.allowed_mem | memory_repr }}</td>
+        </tr>
+        <tr>
+            <td>Max projected memory</td>
+            <td>{{ plan.max_projected_mem | memory_repr }}</td>
+        </tr>
+        <tr>
+            <td>Optimized</td>
+            <td>{{ plan.optimized }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Storage</h3>
+<table>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Arrays</th>
+            <th>Bytes</th>
+            <th>Chunks</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Input</td>
+            <td>{{ plan.total_input_narrays | format_int }}</td>
+            <td>{{ plan.total_input_nbytes | memory_repr }}</td>
+            <td>{{ plan.total_input_nchunks | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Intermediate</td>
+            <td>{{ plan.total_intermediate_narrays | format_int }}</td>
+            <td>{{ plan.total_intermediate_nbytes | memory_repr }}</td>
+            <td>{{ plan.total_intermediate_nchunks | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Output</td>
+            <td>{{ plan.total_output_narrays | format_int }}</td>
+            <td>{{ plan.total_output_nbytes | memory_repr }}</td>
+            <td>{{ plan.total_output_nchunks | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Total</td>
+            <td>{{ plan.total_narrays | format_int }}</td>
+            <td>{{ plan.total_nbytes | memory_repr }}</td>
+            <td>{{ plan.total_nchunks | format_int }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>IO</h3>
+<table>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Arrays</th>
+            <th>Bytes</th>
+            <th>Chunks</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Read</td>
+            <td>{{ plan.total_narrays_read | format_int }}</td>
+            <td>{{ plan.total_nbytes_read | memory_repr }}</td>
+            <td>{{ plan.total_nchunks_read | format_int }}</td>
+        </tr>
+        <tr>
+            <td>Write</td>
+            <td>{{ plan.total_narrays_written | format_int }}</td>
+            <td>{{ plan.total_nbytes_written | memory_repr }}</td>
+            <td>{{ plan.total_nchunks_written | format_int }}</td>
+        </tr>
+    </tbody>
+</table>

@@ -47,6 +47,7 @@ diagnostics = [
     "matplotlib",
     "rich",
     "seaborn",
+    "anywidget",
 ]
 beam = ["apache-beam", "gcsfs"]
 dask = ["dask < 2024.12.0"]
