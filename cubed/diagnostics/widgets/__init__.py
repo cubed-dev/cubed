@@ -6,9 +6,10 @@ try:
         get_template,
     )
 
+    from .memory import LiveMemoryViewer, MemoryWidget
     from .plan import LivePlanViewer, PlanWidget
 
-    __all__ = ["LivePlanViewer", "PlanWidget"]
+    __all__ = ["LiveMemoryViewer", "LivePlanViewer", "MemoryWidget", "PlanWidget"]
 
 except ImportError as e:
     msg = (
