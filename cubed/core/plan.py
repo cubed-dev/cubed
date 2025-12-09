@@ -681,7 +681,8 @@ class FinalizedPlan:
                 stacks.append(stack_summaries)
         # add current stack info
         # go back one in the stack to the caller of 'visualize'
-        frame = inspect.currentframe().f_back
+        frame = inspect.currentframe()
+        frame = frame.f_back if frame is not None else frame
         stack_summaries = extract_stack_summaries(frame, limit=10)
         stacks.append(stack_summaries)
         array_display_names = extract_array_names_from_stack_summaries(stacks)

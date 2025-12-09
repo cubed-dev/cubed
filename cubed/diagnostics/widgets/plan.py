@@ -42,9 +42,9 @@ class PlanWidget(anywidget.AnyWidget):
     selected_node = traitlets.Unicode().tag(sync=True)
     _summary_html = traitlets.Unicode().tag(sync=True)
     _node_html_dict = traitlets.Dict({}).tag(sync=True)
-    _cytoscape_elements = traitlets.List([]).tag(sync=True)
+    _cytoscape_elements = traitlets.List([]).tag(sync=True)  # type: ignore[var-annotated]
     _cytoscape_layout = traitlets.Dict({}).tag(sync=True)
-    _cytoscape_style = traitlets.List([]).tag(sync=True)
+    _cytoscape_style = traitlets.List([]).tag(sync=True)  # type: ignore[var-annotated]
     _cytoscape_options = traitlets.Dict({}).tag(sync=True)
 
 
