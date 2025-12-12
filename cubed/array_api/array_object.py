@@ -22,7 +22,6 @@ from cubed.array_api.linear_algebra_functions import matmul
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
-from cubed.diagnostics.widgets import get_template
 from cubed.utils import itemsize, memory_repr
 
 ARRAY_SVG_SIZE = (
@@ -48,6 +47,8 @@ class Array(CoreArray):
         return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
     def _repr_html_(self):
+        from cubed.diagnostics.widgets import get_template
+
         try:
             grid = self.to_svg(size=ARRAY_SVG_SIZE)
         except NotImplementedError:
