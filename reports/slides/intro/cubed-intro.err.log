@@ -76,49 +76,51 @@ During handling of the above exception, another exception occurred:
 [32m      1[39m c = xp.add(a, b)
 [32m----> [39m[32m2[39m [43mc[49m[43m.[49m[43mvisualize[49m[43m([49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:234[39m, in [36mCoreArray.visualize[39m[34m(self, filename, format, optimize_graph, optimize_function, show_hidden)[39m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:235[39m, in [36mCoreArray.visualize[39m[34m(self, filename, format, optimize_graph, optimize_function, show_hidden, engine)[39m
 [32m    201[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(
 [32m    202[39m     [38;5;28mself[39m,
 [32m    203[39m     filename=[33m"[39m[33mcubed[39m[33m"[39m,
-[32m   (...)[39m[32m    207[39m     show_hidden=[38;5;28;01mFalse[39;00m,
-[32m    208[39m ):
-[32m    209[39m [38;5;250m    [39m[33;03m"""Produce a visualization of the computation graph for this array.[39;00m
-[32m    210[39m 
-[32m    211[39m [33;03m    Parameters[39;00m
-[32m   (...)[39m[32m    232[39m [33;03m        in a notebook), otherwise None.[39;00m
-[32m    233[39m [33;03m    """[39;00m
-[32m--> [39m[32m234[39m     [38;5;28;01mreturn[39;00m [43mvisualize[49m[43m([49m
-[32m    235[39m [43m        [49m[38;5;28;43mself[39;49m[43m,[49m
-[32m    236[39m [43m        [49m[43mfilename[49m[43m=[49m[43mfilename[49m[43m,[49m
-[32m    237[39m [43m        [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m,[49m
-[32m    238[39m [43m        [49m[43moptimize_graph[49m[43m=[49m[43moptimize_graph[49m[43m,[49m
-[32m    239[39m [43m        [49m[43moptimize_function[49m[43m=[49m[43moptimize_function[49m[43m,[49m
-[32m    240[39m [43m        [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
-[32m    241[39m [43m    [49m[43m)[49m
+[32m   (...)[39m[32m    208[39m     engine: Literal[[33m"[39m[33mcytoscape[39m[33m"[39m, [33m"[39m[33mgraphviz[39m[33m"[39m] | [38;5;28;01mNone[39;00m = [38;5;28;01mNone[39;00m,
+[32m    209[39m ):
+[32m    210[39m [38;5;250m    [39m[33;03m"""Produce a visualization of the computation graph for this array.[39;00m
+[32m    211[39m 
+[32m    212[39m [33;03m    Parameters[39;00m
+[32m   (...)[39m[32m    233[39m [33;03m        in a notebook), otherwise None.[39;00m
+[32m    234[39m [33;03m    """[39;00m
+[32m--> [39m[32m235[39m     [38;5;28;01mreturn[39;00m [43mvisualize[49m[43m([49m
+[32m    236[39m [43m        [49m[38;5;28;43mself[39;49m[43m,[49m
+[32m    237[39m [43m        [49m[43mfilename[49m[43m=[49m[43mfilename[49m[43m,[49m
+[32m    238[39m [43m        [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m,[49m
+[32m    239[39m [43m        [49m[43moptimize_graph[49m[43m=[49m[43moptimize_graph[49m[43m,[49m
+[32m    240[39m [43m        [49m[43moptimize_function[49m[43m=[49m[43moptimize_function[49m[43m,[49m
+[32m    241[39m [43m        [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
+[32m    242[39m [43m        [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
+[32m    243[39m [43m    [49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:365[39m, in [36mvisualize[39m[34m(filename, format, optimize_graph, optimize_function, show_hidden, *arrays)[39m
-[32m    333[39m [38;5;250m[39m[33;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
-[32m    334[39m 
-[32m    335[39m [33;03mParameters[39;00m
-[32m   (...)[39m[32m    358[39m [33;03m    in a notebook), otherwise None.[39;00m
-[32m    359[39m [33;03m"""[39;00m
-[32m    360[39m finalized_plan = plan(
-[32m    361[39m     *arrays,
-[32m    362[39m     optimize_graph=optimize_graph,
-[32m    363[39m     optimize_function=optimize_function,
-[32m    364[39m )
-[32m--> [39m[32m365[39m [38;5;28;01mreturn[39;00m [43mfinalized_plan[49m[43m.[49m[43mvisualize[49m[43m([49m
-[32m    366[39m [43m    [49m[43mfilename[49m[43m=[49m[43mfilename[49m[43m,[49m
-[32m    367[39m [43m    [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m,[49m
-[32m    368[39m [43m    [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
-[32m    369[39m [43m[49m[43m)[49m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:368[39m, in [36mvisualize[39m[34m(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)[39m
+[32m    336[39m [38;5;250m[39m[33;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
+[32m    337[39m 
+[32m    338[39m [33;03mParameters[39;00m
+[32m   (...)[39m[32m    361[39m [33;03m    in a notebook), otherwise None.[39;00m
+[32m    362[39m [33;03m"""[39;00m
+[32m    363[39m finalized_plan = plan(
+[32m    364[39m     *arrays,
+[32m    365[39m     optimize_graph=optimize_graph,
+[32m    366[39m     optimize_function=optimize_function,
+[32m    367[39m )
+[32m--> [39m[32m368[39m [38;5;28;01mreturn[39;00m [43mfinalized_plan[49m[43m.[49m[43mvisualize[49m[43m([49m
+[32m    369[39m [43m    [49m[43mfilename[49m[43m=[49m[43mfilename[49m[43m,[49m
+[32m    370[39m [43m    [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m,[49m
+[32m    371[39m [43m    [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
+[32m    372[39m [43m    [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
+[32m    373[39m [43m[49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:791[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden)[39m
-[32m    789[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
-[32m    790[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
-[32m--> [39m[32m791[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
-[32m    793[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
-[32m    794[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:801[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
+[32m    799[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
+[32m    800[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
+[32m--> [39m[32m801[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
+[32m    803[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
+[32m    804[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/pydot/core.py:1730[39m, in [36mDot.write[39m[34m(self, path, prog, format, encoding)[39m
 [32m   1728[39m         f.write(s)

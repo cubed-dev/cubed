@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=d385ed55"></script>
+    <script src="../_static/documentation_options.js?v=4663cb17"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -412,485 +412,98 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
-<defs>
-<symbol id="icon-database" viewBox="0 0 32 32">
-<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
-<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-</symbol>
-<symbol id="icon-file-text2" viewBox="0 0 32 32">
-<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
-<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-</symbol>
-</defs>
-</svg>
-<style>/* CSS stylesheet for displaying xarray objects in notebooks */
-
-:root {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base rgba(0, 0, 0, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, white)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 15))
-  );
-}
-
-html[theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-body.vscode-dark {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base, rgba(255, 255, 255, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, #111111)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 15))
-  );
-}
-
-.xr-wrap {
-  display: block !important;
-  min-width: 300px;
-  max-width: 700px;
-  line-height: 1.6;
-}
-
-.xr-text-repr-fallback {
-  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
-  display: none;
-}
-
-.xr-header {
-  padding-top: 6px;
-  padding-bottom: 6px;
-  margin-bottom: 4px;
-  border-bottom: solid 1px var(--xr-border-color);
-}
-
-.xr-header > div,
-.xr-header > ul {
-  display: inline;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.xr-obj-type,
-.xr-obj-name,
-.xr-group-name {
-  margin-left: 2px;
-  margin-right: 10px;
-}
-
-.xr-group-name::before {
-  content: "📁";
-  padding-right: 0.3em;
-}
-
-.xr-group-name,
-.xr-obj-type {
-  color: var(--xr-font-color2);
-}
-
-.xr-sections {
-  padding-left: 0 !important;
-  display: grid;
-  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
-  margin-block-start: 0;
-  margin-block-end: 0;
-}
-
-.xr-section-item {
-  display: contents;
-}
-
-.xr-section-item input {
-  display: inline-block;
-  opacity: 0;
-  height: 0;
-  margin: 0;
-}
-
-.xr-section-item input + label {
-  color: var(--xr-disabled-color);
-  border: 2px solid transparent !important;
-}
-
-.xr-section-item input:enabled + label {
-  cursor: pointer;
-  color: var(--xr-font-color2);
-}
-
-.xr-section-item input:focus + label {
-  border: 2px solid var(--xr-font-color0) !important;
-}
-
-.xr-section-item input:enabled + label:hover {
-  color: var(--xr-font-color0);
-}
-
-.xr-section-summary {
-  grid-column: 1;
-  color: var(--xr-font-color2);
-  font-weight: 500;
-}
-
-.xr-section-summary > span {
-  display: inline-block;
-  padding-left: 0.5em;
-}
-
-.xr-section-summary-in:disabled + label {
-  color: var(--xr-font-color2);
-}
-
-.xr-section-summary-in + label:before {
-  display: inline-block;
-  content: "►";
-  font-size: 11px;
-  width: 15px;
-  text-align: center;
-}
-
-.xr-section-summary-in:disabled + label:before {
-  color: var(--xr-disabled-color);
-}
-
-.xr-section-summary-in:checked + label:before {
-  content: "▼";
-}
-
-.xr-section-summary-in:checked + label > span {
-  display: none;
-}
-
-.xr-section-summary,
-.xr-section-inline-details {
-  padding-top: 4px;
-}
-
-.xr-section-inline-details {
-  grid-column: 2 / -1;
-}
-
-.xr-section-details {
-  display: none;
-  grid-column: 1 / -1;
-  margin-top: 4px;
-  margin-bottom: 5px;
-}
-
-.xr-section-summary-in:checked ~ .xr-section-details {
-  display: contents;
-}
-
-.xr-group-box {
-  display: inline-grid;
-  grid-template-columns: 0px 20px auto;
-  width: 100%;
-}
-
-.xr-group-box-vline {
-  grid-column-start: 1;
-  border-right: 0.2em solid;
-  border-color: var(--xr-border-color);
-  width: 0px;
-}
-
-.xr-group-box-hline {
-  grid-column-start: 2;
-  grid-row-start: 1;
-  height: 1em;
-  width: 20px;
-  border-bottom: 0.2em solid;
-  border-color: var(--xr-border-color);
-}
-
-.xr-group-box-contents {
-  grid-column-start: 3;
-}
-
-.xr-array-wrap {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 20px auto;
-}
-
-.xr-array-wrap > label {
-  grid-column: 1;
-  vertical-align: top;
-}
-
-.xr-preview {
-  color: var(--xr-font-color3);
-}
-
-.xr-array-preview,
-.xr-array-data {
-  padding: 0 5px !important;
-  grid-column: 2;
-}
-
-.xr-array-data,
-.xr-array-in:checked ~ .xr-array-preview {
-  display: none;
-}
-
-.xr-array-in:checked ~ .xr-array-data,
-.xr-array-preview {
-  display: inline-block;
-}
-
-.xr-dim-list {
-  display: inline-block !important;
-  list-style: none;
-  padding: 0 !important;
-  margin: 0;
-}
-
-.xr-dim-list li {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-}
-
-.xr-dim-list:before {
-  content: "(";
-}
-
-.xr-dim-list:after {
-  content: ")";
-}
-
-.xr-dim-list li:not(:last-child):after {
-  content: ",";
-  padding-right: 5px;
-}
-
-.xr-has-index {
-  font-weight: bold;
-}
-
-.xr-var-list,
-.xr-var-item {
-  display: contents;
-}
-
-.xr-var-item > div,
-.xr-var-item label,
-.xr-var-item > .xr-var-name span {
-  background-color: var(--xr-background-color-row-even);
-  border-color: var(--xr-background-color-row-odd);
-  margin-bottom: 0;
-  padding-top: 2px;
-}
-
-.xr-var-item > .xr-var-name:hover span {
-  padding-right: 5px;
-}
-
-.xr-var-list > li:nth-child(odd) > div,
-.xr-var-list > li:nth-child(odd) > label,
-.xr-var-list > li:nth-child(odd) > .xr-var-name span {
-  background-color: var(--xr-background-color-row-odd);
-  border-color: var(--xr-background-color-row-even);
-}
-
-.xr-var-name {
-  grid-column: 1;
-}
-
-.xr-var-dims {
-  grid-column: 2;
-}
-
-.xr-var-dtype {
-  grid-column: 3;
-  text-align: right;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-preview {
-  grid-column: 4;
-}
-
-.xr-index-preview {
-  grid-column: 2 / 5;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-name,
-.xr-var-dims,
-.xr-var-dtype,
-.xr-preview,
-.xr-attrs dt {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 10px;
-}
-
-.xr-var-name:hover,
-.xr-var-dims:hover,
-.xr-var-dtype:hover,
-.xr-attrs dt:hover {
-  overflow: visible;
-  width: auto;
-  z-index: 1;
-}
-
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  display: none;
-  border-top: 2px dotted var(--xr-background-color);
-  padding-bottom: 20px !important;
-  padding-top: 10px !important;
-}
-
-.xr-var-attrs-in + label,
-.xr-var-data-in + label,
-.xr-index-data-in + label {
-  padding: 0 1px;
-}
-
-.xr-var-attrs-in:checked ~ .xr-var-attrs,
-.xr-var-data-in:checked ~ .xr-var-data,
-.xr-index-data-in:checked ~ .xr-index-data {
-  display: block;
-}
-
-.xr-var-data > table {
-  float: right;
-}
-
-.xr-var-data > pre,
-.xr-index-data > pre,
-.xr-var-data > table > tbody > tr {
-  background-color: transparent !important;
-}
-
-.xr-var-name span,
-.xr-var-data,
-.xr-index-name div,
-.xr-index-data,
-.xr-attrs {
-  padding-left: 25px !important;
-}
-
-.xr-attrs,
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  grid-column: 1 / -1;
-}
-
-dl.xr-attrs {
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: 125px auto;
-}
-
-.xr-attrs dt,
-.xr-attrs dd {
-  padding: 0;
-  margin: 0;
-  float: left;
-  padding-right: 10px;
-  width: auto;
-}
-
-.xr-attrs dt {
-  font-weight: normal;
-  grid-column: 1;
-}
-
-.xr-attrs dt:hover span {
-  display: inline-block;
-  background: var(--xr-background-color);
-  padding-right: 10px;
-}
-
-.xr-attrs dd {
-  grid-column: 2;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.xr-icon-database,
-.xr-icon-file-text2,
-.xr-no-icon {
-  display: inline-block;
-  vertical-align: middle;
-  width: 1em;
-  height: 1.5em !important;
-  stroke-width: 0;
-  stroke: currentColor;
-  fill: currentColor;
-}
-
-.xr-var-attrs-in:checked + label > .xr-icon-file-text2,
-.xr-var-data-in:checked + label > .xr-icon-database,
-.xr-index-data-in:checked + label > .xr-icon-database {
-  color: var(--xr-font-color0);
-  filter: drop-shadow(1px 1px 5px var(--xr-font-color2));
-  stroke-width: 0.8px;
-}
-</style><pre class='xr-text-repr-fallback'>&lt;xarray.Dataset&gt; Size: 31MB
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2404,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2402</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">2403</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="ne">-&gt; </span><span class="mi">2404</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:374,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
+<span class="g g-Whitespace">    </span><span class="mi">371</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">372</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+<span class="ne">--&gt; </span><span class="mi">374</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="n">display_default_indexes</span> <span class="o">=</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="s2">&quot;display_default_indexes&quot;</span><span class="p">,</span> <span class="kc">False</span>
+<span class="g g-Whitespace">    </span><span class="mi">378</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">379</span> <span class="n">xindexes</span> <span class="o">=</span> <span class="n">filter_nondefault_indexes</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">380</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
+<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:224,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, max_option_name)</span>
+<span class="g g-Whitespace">    </span><span class="mi">218</span>     <span class="k">if</span> <span class="n">n_items</span> <span class="o">&gt;</span> <span class="n">max_items</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">219</span>         <span class="n">inline_details</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_items</span><span class="si">}</span><span class="s2">)&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="k">return</span> <span class="n">collapsible_section</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">222</span>     <span class="n">name</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">223</span>     <span class="n">inline_details</span><span class="o">=</span><span class="n">inline_details</span><span class="p">,</span>
+<span class="ne">--&gt; </span><span class="mi">224</span>     <span class="n">details</span><span class="o">=</span><span class="n">details_func</span><span class="p">(</span><span class="n">mapping</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">225</span>     <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">227</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">228</span> <span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:134,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:135,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="ne">--&gt; </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:96,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
+<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">95</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">96</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:43,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
+<span class="g g-Whitespace">     </span><span class="mi">42</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">43</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">45</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.progress</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="n">BarColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="n">MofNCompleteColumn</span><span class="p">,</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>     <span class="mi">15</span>     <span class="n">TimeElapsedColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span> <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">17</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;rich&#39;
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;xarray.Dataset&gt; Size: 31MB
 Dimensions:  (time: 2920, lat: 25, lon: 53)
 Coordinates:
   * time     (time) datetime64[ns] 23kB 2013-01-01 ... 2014-12-31T18:00:00
@@ -898,98 +511,10 @@ Coordinates:
   * lon      (lon) float32 212B 200.0 202.5 205.0 207.5 ... 325.0 327.5 330.0
 Data variables:
     air      (time, lat, lon) float64 31MB cubed.Array&lt;chunksize=(2920, 25, 53)&gt;
-Attributes: (5)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-ced2cc7c-e738-4af8-9b62-d7da5b41d64d' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-ced2cc7c-e738-4af8-9b62-d7da5b41d64d' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>time</span>: 2920</li><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-277e09cb-9bc4-4065-9559-d1974f898f29' class='xr-section-summary-in' type='checkbox'  checked><label for='section-277e09cb-9bc4-4065-9559-d1974f898f29' class='xr-section-summary' >Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>time</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>datetime64[ns]</div><div class='xr-var-preview xr-preview'>2013-01-01 ... 2014-12-31T18:00:00</div><input id='attrs-27e33e22-67e4-465a-98a5-b328084efd1a' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-27e33e22-67e4-465a-98a5-b328084efd1a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-e5204202-e0e2-4623-a7b4-41a415afc98c' class='xr-var-data-in' type='checkbox'><label for='data-e5204202-e0e2-4623-a7b4-41a415afc98c' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>time</dd><dt><span>long_name :</span></dt><dd>Time</dd></dl></div><div class='xr-var-data'><pre>array([&#x27;2013-01-01T00:00:00.000000000&#x27;, &#x27;2013-01-01T06:00:00.000000000&#x27;,
-       &#x27;2013-01-01T12:00:00.000000000&#x27;, ..., &#x27;2014-12-31T06:00:00.000000000&#x27;,
-       &#x27;2014-12-31T12:00:00.000000000&#x27;, &#x27;2014-12-31T18:00:00.000000000&#x27;],
-      shape=(2920,), dtype=&#x27;datetime64[ns]&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-93d47e95-a979-4978-a104-d71c3584de7e' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-93d47e95-a979-4978-a104-d71c3584de7e' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-fb3a5413-dc13-4d07-8d98-c9dc4a141201' class='xr-var-data-in' type='checkbox'><label for='data-fb3a5413-dc13-4d07-8d98-c9dc4a141201' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
-       45. , 42.5, 40. , 37.5, 35. , 32.5, 30. , 27.5, 25. , 22.5, 20. , 17.5,
-       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-d265f232-f813-4f99-bc63-19cd7789e67f' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-d265f232-f813-4f99-bc63-19cd7789e67f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-932649c8-406d-4256-8e15-9424bd2f4d1c' class='xr-var-data-in' type='checkbox'><label for='data-932649c8-406d-4256-8e15-9424bd2f4d1c' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
-       225. , 227.5, 230. , 232.5, 235. , 237.5, 240. , 242.5, 245. , 247.5,
-       250. , 252.5, 255. , 257.5, 260. , 262.5, 265. , 267.5, 270. , 272.5,
-       275. , 277.5, 280. , 282.5, 285. , 287.5, 290. , 292.5, 295. , 297.5,
-       300. , 302.5, 305. , 307.5, 310. , 312.5, 315. , 317.5, 320. , 322.5,
-       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-47d0d04f-bb1e-45dd-a440-021afcfed5bc' class='xr-section-summary-in' type='checkbox'  checked><label for='section-47d0d04f-bb1e-45dd-a440-021afcfed5bc' class='xr-section-summary' >Data variables: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>air</span></div><div class='xr-var-dims'>(time, lat, lon)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>cubed.Array&lt;chunksize=(2920, 25, 53)&gt;</div><input id='attrs-8f76a3a6-56bb-452a-803b-a66acc661b1f' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-8f76a3a6-56bb-452a-803b-a66acc661b1f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-7424d470-ef84-4361-be01-23e6bbec5de6' class='xr-var-data-in' type='checkbox'><label for='data-7424d470-ef84-4361-be01-23e6bbec5de6' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div><div class='xr-var-data'><table>
-    <tr>
-        <td>
-            <table>
-                <thead>
-                    <tr>
-                        <td> </td>
-                        <th> Array </th>
-                        <th> Chunk </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <tr>
-                        <th> Bytes </th>
-                        <td> 31.0 MB </td>
-                        <td> 31.0 MB </td>
-                    </tr>
-                    
-                    <tr>
-                        <th> Shape </th>
-                        <td> (2920, 25, 53) </td>
-                        <td> (2920, 25, 53) </td>
-                    </tr>
-                    <tr>
-                        <th> Count </th>
-                        <td> 3 arrays in Plan </td>
-                        <td> 1 Chunks </td>
-                    </tr>
-                    <tr>
-                        <th> Type </th>
-                        <td> float64 </td>
-                        <td> np.ndarray </td>
-                    </tr>
-                </tbody>
-            </table>
-        </td>
-        <td>
-        <svg width="159" height="146" style="stroke:rgb(0,0,0);stroke-width:1" >
-
-  <!-- Horizontal lines -->
-  <line x1="10" y1="0" x2="80" y2="70" style="stroke-width:2" />
-  <line x1="10" y1="25" x2="80" y2="96" style="stroke-width:2" />
-
-  <!-- Vertical lines -->
-  <line x1="10" y1="0" x2="10" y2="25" style="stroke-width:2" />
-  <line x1="80" y1="70" x2="80" y2="96" style="stroke-width:2" />
-
-  <!-- Colored Rectangle -->
-  <polygon points="10.0,0.0 80.58823529411765,70.58823529411765 80.58823529411765,96.00085180870013 10.0,25.41261651458249" style="fill:#ECB172A0;stroke-width:0"/>
-
-  <!-- Horizontal lines -->
-  <line x1="10" y1="0" x2="38" y2="0" style="stroke-width:2" />
-  <line x1="80" y1="70" x2="109" y2="70" style="stroke-width:2" />
-
-  <!-- Vertical lines -->
-  <line x1="10" y1="0" x2="80" y2="70" style="stroke-width:2" />
-  <line x1="38" y1="0" x2="109" y2="70" style="stroke-width:2" />
-
-  <!-- Colored Rectangle -->
-  <polygon points="10.0,0.0 38.48973265594604,0.0 109.0779679500637,70.58823529411765 80.58823529411765,70.58823529411765" style="fill:#ECB172A0;stroke-width:0"/>
-
-  <!-- Horizontal lines -->
-  <line x1="80" y1="70" x2="109" y2="70" style="stroke-width:2" />
-  <line x1="80" y1="96" x2="109" y2="96" style="stroke-width:2" />
-
-  <!-- Vertical lines -->
-  <line x1="80" y1="70" x2="80" y2="96" style="stroke-width:2" />
-  <line x1="109" y1="70" x2="109" y2="96" style="stroke-width:2" />
-
-  <!-- Colored Rectangle -->
-  <polygon points="80.58823529411765,70.58823529411765 109.0779679500637,70.58823529411765 109.0779679500637,96.00085180870013 80.58823529411765,96.00085180870013" style="fill:#ECB172A0;stroke-width:0"/>
-
-  <!-- Text -->
-  <text x="94.833102" y="116.000852" font-size="1.0rem" font-weight="100" text-anchor="middle" >53</text>
-  <text x="129.077968" y="83.294544" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,129.077968,83.294544)">25</text>
-  <text x="35.294118" y="80.706734" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(45,35.294118,80.706734)">2920</text>
-</svg>
-        </td>
-    </tr>
-</table></div></li></ul></div></li><li class='xr-section-item'><input id='section-1d94faa9-6367-4fdb-9afa-6fcdef730ca0' class='xr-section-summary-in' type='checkbox'  ><label for='section-1d94faa9-6367-4fdb-9afa-6fcdef730ca0' class='xr-section-summary' >Attributes: <span>(5)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>Conventions :</span></dt><dd>COARDS</dd><dt><span>title :</span></dt><dd>4x daily NMC reanalysis (1948)</dd><dt><span>description :</span></dt><dd>Data is from NMC initialized reanalysis
-(4x/day).  These are the 0.9950 sigma level values.</dd><dt><span>platform :</span></dt><dd>Model</dd><dt><span>references :</span></dt><dd>http://www.esrl.noaa.gov/psd/data/gridded/data.ncep.reanalysis.html</dd></dl></div></li></ul></div></div></div></div>
+Attributes: (5)
+</pre></div>
+</div>
+</div>
 </div>
 <p>Notice that the <code class="docutils literal notranslate"><span class="pre">air</span></code> data variable is a <code class="docutils literal notranslate"><span class="pre">cubed.Array</span></code>. Since Cubed has a lazy computation model, this array is not loaded from disk until a computation is run.</p>
 </section>
@@ -1003,7 +528,7 @@ Attributes: (5)</pre><div class='xr-wrap' style='display:none'><div class='xr-he
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2474/172254778.py:1: SerializationWarning: saving variable None with floating point data as an integer dtype without any _FillValue to use for NaNs
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2388/172254778.py:1: SerializationWarning: saving variable None with floating point data as an integer dtype without any _FillValue to use for NaNs
   ds.to_zarr(&quot;air_temperature_cubed.zarr&quot;, mode=&quot;w&quot;, consolidated=True);
 /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/zarr/api/asynchronous.py:247: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
   warnings.warn(
@@ -1024,554 +549,82 @@ Attributes: (5)</pre><div class='xr-wrap' style='display:none'><div class='xr-he
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
-<defs>
-<symbol id="icon-database" viewBox="0 0 32 32">
-<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
-<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-</symbol>
-<symbol id="icon-file-text2" viewBox="0 0 32 32">
-<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
-<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-</symbol>
-</defs>
-</svg>
-<style>/* CSS stylesheet for displaying xarray objects in notebooks */
-
-:root {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base rgba(0, 0, 0, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, white)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 15))
-  );
-}
-
-html[theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-body.vscode-dark {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base, rgba(255, 255, 255, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, #111111)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 15))
-  );
-}
-
-.xr-wrap {
-  display: block !important;
-  min-width: 300px;
-  max-width: 700px;
-  line-height: 1.6;
-}
-
-.xr-text-repr-fallback {
-  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
-  display: none;
-}
-
-.xr-header {
-  padding-top: 6px;
-  padding-bottom: 6px;
-  margin-bottom: 4px;
-  border-bottom: solid 1px var(--xr-border-color);
-}
-
-.xr-header > div,
-.xr-header > ul {
-  display: inline;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.xr-obj-type,
-.xr-obj-name,
-.xr-group-name {
-  margin-left: 2px;
-  margin-right: 10px;
-}
-
-.xr-group-name::before {
-  content: "📁";
-  padding-right: 0.3em;
-}
-
-.xr-group-name,
-.xr-obj-type {
-  color: var(--xr-font-color2);
-}
-
-.xr-sections {
-  padding-left: 0 !important;
-  display: grid;
-  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
-  margin-block-start: 0;
-  margin-block-end: 0;
-}
-
-.xr-section-item {
-  display: contents;
-}
-
-.xr-section-item input {
-  display: inline-block;
-  opacity: 0;
-  height: 0;
-  margin: 0;
-}
-
-.xr-section-item input + label {
-  color: var(--xr-disabled-color);
-  border: 2px solid transparent !important;
-}
-
-.xr-section-item input:enabled + label {
-  cursor: pointer;
-  color: var(--xr-font-color2);
-}
-
-.xr-section-item input:focus + label {
-  border: 2px solid var(--xr-font-color0) !important;
-}
-
-.xr-section-item input:enabled + label:hover {
-  color: var(--xr-font-color0);
-}
-
-.xr-section-summary {
-  grid-column: 1;
-  color: var(--xr-font-color2);
-  font-weight: 500;
-}
-
-.xr-section-summary > span {
-  display: inline-block;
-  padding-left: 0.5em;
-}
-
-.xr-section-summary-in:disabled + label {
-  color: var(--xr-font-color2);
-}
-
-.xr-section-summary-in + label:before {
-  display: inline-block;
-  content: "►";
-  font-size: 11px;
-  width: 15px;
-  text-align: center;
-}
-
-.xr-section-summary-in:disabled + label:before {
-  color: var(--xr-disabled-color);
-}
-
-.xr-section-summary-in:checked + label:before {
-  content: "▼";
-}
-
-.xr-section-summary-in:checked + label > span {
-  display: none;
-}
-
-.xr-section-summary,
-.xr-section-inline-details {
-  padding-top: 4px;
-}
-
-.xr-section-inline-details {
-  grid-column: 2 / -1;
-}
-
-.xr-section-details {
-  display: none;
-  grid-column: 1 / -1;
-  margin-top: 4px;
-  margin-bottom: 5px;
-}
-
-.xr-section-summary-in:checked ~ .xr-section-details {
-  display: contents;
-}
-
-.xr-group-box {
-  display: inline-grid;
-  grid-template-columns: 0px 20px auto;
-  width: 100%;
-}
-
-.xr-group-box-vline {
-  grid-column-start: 1;
-  border-right: 0.2em solid;
-  border-color: var(--xr-border-color);
-  width: 0px;
-}
-
-.xr-group-box-hline {
-  grid-column-start: 2;
-  grid-row-start: 1;
-  height: 1em;
-  width: 20px;
-  border-bottom: 0.2em solid;
-  border-color: var(--xr-border-color);
-}
-
-.xr-group-box-contents {
-  grid-column-start: 3;
-}
-
-.xr-array-wrap {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 20px auto;
-}
-
-.xr-array-wrap > label {
-  grid-column: 1;
-  vertical-align: top;
-}
-
-.xr-preview {
-  color: var(--xr-font-color3);
-}
-
-.xr-array-preview,
-.xr-array-data {
-  padding: 0 5px !important;
-  grid-column: 2;
-}
-
-.xr-array-data,
-.xr-array-in:checked ~ .xr-array-preview {
-  display: none;
-}
-
-.xr-array-in:checked ~ .xr-array-data,
-.xr-array-preview {
-  display: inline-block;
-}
-
-.xr-dim-list {
-  display: inline-block !important;
-  list-style: none;
-  padding: 0 !important;
-  margin: 0;
-}
-
-.xr-dim-list li {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-}
-
-.xr-dim-list:before {
-  content: "(";
-}
-
-.xr-dim-list:after {
-  content: ")";
-}
-
-.xr-dim-list li:not(:last-child):after {
-  content: ",";
-  padding-right: 5px;
-}
-
-.xr-has-index {
-  font-weight: bold;
-}
-
-.xr-var-list,
-.xr-var-item {
-  display: contents;
-}
-
-.xr-var-item > div,
-.xr-var-item label,
-.xr-var-item > .xr-var-name span {
-  background-color: var(--xr-background-color-row-even);
-  border-color: var(--xr-background-color-row-odd);
-  margin-bottom: 0;
-  padding-top: 2px;
-}
-
-.xr-var-item > .xr-var-name:hover span {
-  padding-right: 5px;
-}
-
-.xr-var-list > li:nth-child(odd) > div,
-.xr-var-list > li:nth-child(odd) > label,
-.xr-var-list > li:nth-child(odd) > .xr-var-name span {
-  background-color: var(--xr-background-color-row-odd);
-  border-color: var(--xr-background-color-row-even);
-}
-
-.xr-var-name {
-  grid-column: 1;
-}
-
-.xr-var-dims {
-  grid-column: 2;
-}
-
-.xr-var-dtype {
-  grid-column: 3;
-  text-align: right;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-preview {
-  grid-column: 4;
-}
-
-.xr-index-preview {
-  grid-column: 2 / 5;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-name,
-.xr-var-dims,
-.xr-var-dtype,
-.xr-preview,
-.xr-attrs dt {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 10px;
-}
-
-.xr-var-name:hover,
-.xr-var-dims:hover,
-.xr-var-dtype:hover,
-.xr-attrs dt:hover {
-  overflow: visible;
-  width: auto;
-  z-index: 1;
-}
-
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  display: none;
-  border-top: 2px dotted var(--xr-background-color);
-  padding-bottom: 20px !important;
-  padding-top: 10px !important;
-}
-
-.xr-var-attrs-in + label,
-.xr-var-data-in + label,
-.xr-index-data-in + label {
-  padding: 0 1px;
-}
-
-.xr-var-attrs-in:checked ~ .xr-var-attrs,
-.xr-var-data-in:checked ~ .xr-var-data,
-.xr-index-data-in:checked ~ .xr-index-data {
-  display: block;
-}
-
-.xr-var-data > table {
-  float: right;
-}
-
-.xr-var-data > pre,
-.xr-index-data > pre,
-.xr-var-data > table > tbody > tr {
-  background-color: transparent !important;
-}
-
-.xr-var-name span,
-.xr-var-data,
-.xr-index-name div,
-.xr-index-data,
-.xr-attrs {
-  padding-left: 25px !important;
-}
-
-.xr-attrs,
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  grid-column: 1 / -1;
-}
-
-dl.xr-attrs {
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: 125px auto;
-}
-
-.xr-attrs dt,
-.xr-attrs dd {
-  padding: 0;
-  margin: 0;
-  float: left;
-  padding-right: 10px;
-  width: auto;
-}
-
-.xr-attrs dt {
-  font-weight: normal;
-  grid-column: 1;
-}
-
-.xr-attrs dt:hover span {
-  display: inline-block;
-  background: var(--xr-background-color);
-  padding-right: 10px;
-}
-
-.xr-attrs dd {
-  grid-column: 2;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.xr-icon-database,
-.xr-icon-file-text2,
-.xr-no-icon {
-  display: inline-block;
-  vertical-align: middle;
-  width: 1em;
-  height: 1.5em !important;
-  stroke-width: 0;
-  stroke: currentColor;
-  fill: currentColor;
-}
-
-.xr-var-attrs-in:checked + label > .xr-icon-file-text2,
-.xr-var-data-in:checked + label > .xr-icon-database,
-.xr-index-data-in:checked + label > .xr-icon-database {
-  color: var(--xr-font-color0);
-  filter: drop-shadow(1px 1px 5px var(--xr-font-color2));
-  stroke-width: 0.8px;
-}
-</style><pre class='xr-text-repr-fallback'>&lt;xarray.DataArray &#x27;air&#x27; (lat: 25, lon: 53)&gt; Size: 11kB
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/common.py:189,</span> in <span class="ni">AbstractArray._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">    </span><span class="mi">187</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">188</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="ne">--&gt; </span><span class="mi">189</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">array_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:339,</span> in <span class="ni">array_repr</span><span class="nt">(arr)</span>
+<span class="g g-Whitespace">    </span><span class="mi">331</span> <span class="n">arr_name</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">333</span> <span class="n">header_components</span> <span class="o">=</span> <span class="p">[</span>
+<span class="g g-Whitespace">    </span><span class="mi">334</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-type&#39;&gt;</span><span class="si">{</span><span class="n">obj_type</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">335</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-name&#39;&gt;</span><span class="si">{</span><span class="n">arr_name</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">336</span>     <span class="n">format_dims</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">indexed_dims</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">337</span> <span class="p">]</span>
+<span class="ne">--&gt; </span><span class="mi">339</span> <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="n">array_section</span><span class="p">(</span><span class="n">arr</span><span class="p">)]</span>
+<span class="g g-Whitespace">    </span><span class="mi">341</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">342</span>     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:249,</span> in <span class="ni">array_section</span><span class="nt">(obj)</span>
+<span class="g g-Whitespace">    </span><span class="mi">247</span> <span class="n">variable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">248</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">70</span><span class="p">))</span>
+<span class="ne">--&gt; </span><span class="mi">249</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">250</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">252</span> <span class="k">return</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">253</span>     <span class="s2">&quot;&lt;div class=&#39;xr-array-wrap&#39;&gt;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">254</span>     <span class="sa">f</span><span class="s2">&quot;&lt;input id=&#39;</span><span class="si">{</span><span class="n">data_id</span><span class="si">}</span><span class="s2">&#39; class=&#39;xr-array-in&#39; type=&#39;checkbox&#39; </span><span class="si">{</span><span class="n">collapsed</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>    <span class="mi">258</span>     <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">259</span> <span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:43,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
+<span class="g g-Whitespace">     </span><span class="mi">42</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">43</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">45</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.progress</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="n">BarColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="n">MofNCompleteColumn</span><span class="p">,</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>     <span class="mi">15</span>     <span class="n">TimeElapsedColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span> <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">17</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;rich&#39;
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;xarray.DataArray &#39;air&#39; (lat: 25, lon: 53)&gt; Size: 11kB
 cubed.Array&lt;array-012, shape=(25, 53), dtype=float64, chunks=((25,), (53,))&gt;
 Coordinates:
   * lat      (lat) float32 100B 75.0 72.5 70.0 67.5 65.0 ... 22.5 20.0 17.5 15.0
   * lon      (lon) float32 212B 200.0 202.5 205.0 207.5 ... 325.0 327.5 330.0
-Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-0df435b8-af25-430e-abb9-27c9876c7cbd' class='xr-array-in' type='checkbox' checked><label for='section-0df435b8-af25-430e-abb9-27c9876c7cbd' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>cubed.Array&lt;chunksize=(25, 53)&gt;</span></div><div class='xr-array-data'><table>
-    <tr>
-        <td>
-            <table>
-                <thead>
-                    <tr>
-                        <td> </td>
-                        <th> Array </th>
-                        <th> Chunk </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <tr>
-                        <th> Bytes </th>
-                        <td> 10.6 KB </td>
-                        <td> 10.6 KB </td>
-                    </tr>
-                    
-                    <tr>
-                        <th> Shape </th>
-                        <td> (25, 53) </td>
-                        <td> (25, 53) </td>
-                    </tr>
-                    <tr>
-                        <th> Count </th>
-                        <td> 3 arrays in Plan </td>
-                        <td> 1 Chunks </td>
-                    </tr>
-                    <tr>
-                        <th> Type </th>
-                        <td> float64 </td>
-                        <td> np.ndarray </td>
-                    </tr>
-                </tbody>
-            </table>
-        </td>
-        <td>
-        <svg width="170" height="106" style="stroke:rgb(0,0,0);stroke-width:1" >
-
-  <!-- Horizontal lines -->
-  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
-  <line x1="0" y1="56" x2="120" y2="56" style="stroke-width:2" />
-
-  <!-- Vertical lines -->
-  <line x1="0" y1="0" x2="0" y2="56" style="stroke-width:2" />
-  <line x1="120" y1="0" x2="120" y2="56" style="stroke-width:2" />
-
-  <!-- Colored Rectangle -->
-  <polygon points="0.0,0.0 120.0,0.0 120.0,56.60377358490566 0.0,56.60377358490566" style="fill:#ECB172A0;stroke-width:0"/>
-
-  <!-- Text -->
-  <text x="60.000000" y="76.603774" font-size="1.0rem" font-weight="100" text-anchor="middle" >53</text>
-  <text x="140.000000" y="28.301887" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,140.000000,28.301887)">25</text>
-</svg>
-        </td>
-    </tr>
-</table></div></div></li><li class='xr-section-item'><input id='section-0f461632-672e-4645-b0f5-90241a5f1b91' class='xr-section-summary-in' type='checkbox'  checked><label for='section-0f461632-672e-4645-b0f5-90241a5f1b91' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-87bf4dde-c401-4740-8e73-d468e385bbe3' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-87bf4dde-c401-4740-8e73-d468e385bbe3' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-aebb44b6-ef95-40ec-8312-a8ccbd786b4a' class='xr-var-data-in' type='checkbox'><label for='data-aebb44b6-ef95-40ec-8312-a8ccbd786b4a' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
-       45. , 42.5, 40. , 37.5, 35. , 32.5, 30. , 27.5, 25. , 22.5, 20. , 17.5,
-       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-ab29bcc1-faa2-4ec0-8d2e-690dd14d038f' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-ab29bcc1-faa2-4ec0-8d2e-690dd14d038f' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-90b54f4f-9ac5-49df-abac-6ea60d065b19' class='xr-var-data-in' type='checkbox'><label for='data-90b54f4f-9ac5-49df-abac-6ea60d065b19' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
-       225. , 227.5, 230. , 232.5, 235. , 237.5, 240. , 242.5, 245. , 247.5,
-       250. , 252.5, 255. , 257.5, 260. , 262.5, 265. , 267.5, 270. , 272.5,
-       275. , 277.5, 280. , 282.5, 285. , 287.5, 290. , 292.5, 295. , 297.5,
-       300. , 302.5, 305. , 307.5, 310. , 312.5, 315. , 317.5, 320. , 322.5,
-       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-df11f48b-8525-4572-8006-6a6db2fd7716' class='xr-section-summary-in' type='checkbox'  ><label for='section-df11f48b-8525-4572-8006-6a6db2fd7716' class='xr-section-summary' >Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
+Attributes: (11)
+</pre></div>
+</div>
+</div>
 </div>
 <p>To run the computation we need to call <code class="docutils literal notranslate"><span class="pre">compute</span></code>:</p>
 <div class="cell docutils container">
@@ -2076,7 +1129,7 @@ array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
 Coordinates:
   * lat      (lat) float32 100B 75.0 72.5 70.0 67.5 65.0 ... 22.5 20.0 17.5 15.0
   * lon      (lon) float32 212B 200.0 202.5 205.0 207.5 ... 325.0 327.5 330.0
-Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-e82777e2-31fa-483e-8a3d-55531046ab59' class='xr-array-in' type='checkbox' checked><label for='section-e82777e2-31fa-483e-8a3d-55531046ab59' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>260.4 260.2 259.9 259.5 259.0 258.6 ... 297.9 297.8 297.3 297.3 297.3</span></div><div class='xr-array-data'><pre>array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
+Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-db3c72c6-789f-47be-bd39-5e48984a0844' class='xr-array-in' type='checkbox' checked><label for='section-db3c72c6-789f-47be-bd39-5e48984a0844' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>260.4 260.2 259.9 259.5 259.0 258.6 ... 297.9 297.8 297.3 297.3 297.3</span></div><div class='xr-array-data'><pre>array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
         251.93811644, 253.43804795],
        [262.73439384, 262.79397603, 262.74933904, ..., 249.75590411,
         251.58575685, 254.35926027],
@@ -2088,14 +1141,14 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
        [298.12920205, 297.93700685, 297.47039384, ..., 296.85954795,
         296.7770274 , 296.44383562],
        [298.36615068, 298.38573973, 298.11414384, ..., 297.33820548,
-        297.28144521, 297.30510274]], shape=(25, 53))</pre></div></div></li><li class='xr-section-item'><input id='section-05f2e84c-39e8-4857-a848-66c66bd6666d' class='xr-section-summary-in' type='checkbox'  checked><label for='section-05f2e84c-39e8-4857-a848-66c66bd6666d' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-e7c19cff-1467-4610-b2c2-fcf92ec750ad' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-e7c19cff-1467-4610-b2c2-fcf92ec750ad' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d51ba20f-e380-4d6c-8d91-9f1a342c5f47' class='xr-var-data-in' type='checkbox'><label for='data-d51ba20f-e380-4d6c-8d91-9f1a342c5f47' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
+        297.28144521, 297.30510274]], shape=(25, 53))</pre></div></div></li><li class='xr-section-item'><input id='section-930a5c8e-b9a5-481f-bba5-08bc9156feb3' class='xr-section-summary-in' type='checkbox'  checked><label for='section-930a5c8e-b9a5-481f-bba5-08bc9156feb3' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-aecf098e-0e2b-4f50-ac21-85244f2cfe08' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-aecf098e-0e2b-4f50-ac21-85244f2cfe08' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-cb8037da-a5e2-4b01-9701-e893dafee21e' class='xr-var-data-in' type='checkbox'><label for='data-cb8037da-a5e2-4b01-9701-e893dafee21e' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
        45. , 42.5, 40. , 37.5, 35. , 32.5, 30. , 27.5, 25. , 22.5, 20. , 17.5,
-       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-dfc134e4-7aa6-4a1e-beeb-a9e386e8f840' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-dfc134e4-7aa6-4a1e-beeb-a9e386e8f840' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-cead6b65-af34-48e4-b333-4f5bf8d3c434' class='xr-var-data-in' type='checkbox'><label for='data-cead6b65-af34-48e4-b333-4f5bf8d3c434' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
+       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-b65e02cd-fc0c-4134-8a88-0061d3b74eb3' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-b65e02cd-fc0c-4134-8a88-0061d3b74eb3' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-ae3ac74e-c8bc-4723-a8fd-3d4dade8164d' class='xr-var-data-in' type='checkbox'><label for='data-ae3ac74e-c8bc-4723-a8fd-3d4dade8164d' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
        225. , 227.5, 230. , 232.5, 235. , 237.5, 240. , 242.5, 245. , 247.5,
        250. , 252.5, 255. , 257.5, 260. , 262.5, 265. , 267.5, 270. , 272.5,
        275. , 277.5, 280. , 282.5, 285. , 287.5, 290. , 292.5, 295. , 297.5,
        300. , 302.5, 305. , 307.5, 310. , 312.5, 315. , 317.5, 320. , 322.5,
-       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-4f95980a-6cdf-4dd2-8ed8-9e3541d538b5' class='xr-section-summary-in' type='checkbox'  ><label for='section-4f95980a-6cdf-4dd2-8ed8-9e3541d538b5' class='xr-section-summary' >Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
+       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-a3345602-01bb-4cc1-ae37-31984f78625d' class='xr-section-summary-in' type='checkbox'  ><label for='section-a3345602-01bb-4cc1-ae37-31984f78625d' class='xr-section-summary' >Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
 </div>
 <p>This is fine for outputs that fit in memory like the example here, but sometimes we want to write the output of the computation to Zarr, which we do by calling <code class="docutils literal notranslate"><span class="pre">to_zarr</span></code> on the dataset instead of <code class="docutils literal notranslate"><span class="pre">compute</span></code>:</p>
 <div class="cell docutils container">
@@ -2121,555 +1174,107 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
-<defs>
-<symbol id="icon-database" viewBox="0 0 32 32">
-<path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
-<path d="M16 17c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-<path d="M16 26c-8.837 0-16-2.239-16-5v6c0 2.761 7.163 5 16 5s16-2.239 16-5v-6c0 2.761-7.163 5-16 5z"></path>
-</symbol>
-<symbol id="icon-file-text2" viewBox="0 0 32 32">
-<path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
-<path d="M23 26h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 22h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-<path d="M23 18h-14c-0.552 0-1-0.448-1-1s0.448-1 1-1h14c0.552 0 1 0.448 1 1s-0.448 1-1 1z"></path>
-</symbol>
-</defs>
-</svg>
-<style>/* CSS stylesheet for displaying xarray objects in notebooks */
-
-:root {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base rgba(0, 0, 0, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(0, 0, 0, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, white)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, white) h s calc(l - 15))
-  );
-}
-
-html[theme="dark"],
-html[data-theme="dark"],
-body[data-theme="dark"],
-body.vscode-dark {
-  --xr-font-color0: var(
-    --jp-content-font-color0,
-    var(--pst-color-text-base, rgba(255, 255, 255, 1))
-  );
-  --xr-font-color2: var(
-    --jp-content-font-color2,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.54))
-  );
-  --xr-font-color3: var(
-    --jp-content-font-color3,
-    var(--pst-color-text-base, rgba(255, 255, 255, 0.38))
-  );
-  --xr-border-color: var(
-    --jp-border-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 10))
-  );
-  --xr-disabled-color: var(
-    --jp-layout-color3,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 40))
-  );
-  --xr-background-color: var(
-    --jp-layout-color0,
-    var(--pst-color-on-background, #111111)
-  );
-  --xr-background-color-row-even: var(
-    --jp-layout-color1,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 5))
-  );
-  --xr-background-color-row-odd: var(
-    --jp-layout-color2,
-    hsl(from var(--pst-color-on-background, #111111) h s calc(l + 15))
-  );
-}
-
-.xr-wrap {
-  display: block !important;
-  min-width: 300px;
-  max-width: 700px;
-  line-height: 1.6;
-}
-
-.xr-text-repr-fallback {
-  /* fallback to plain text repr when CSS is not injected (untrusted notebook) */
-  display: none;
-}
-
-.xr-header {
-  padding-top: 6px;
-  padding-bottom: 6px;
-  margin-bottom: 4px;
-  border-bottom: solid 1px var(--xr-border-color);
-}
-
-.xr-header > div,
-.xr-header > ul {
-  display: inline;
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.xr-obj-type,
-.xr-obj-name,
-.xr-group-name {
-  margin-left: 2px;
-  margin-right: 10px;
-}
-
-.xr-group-name::before {
-  content: "📁";
-  padding-right: 0.3em;
-}
-
-.xr-group-name,
-.xr-obj-type {
-  color: var(--xr-font-color2);
-}
-
-.xr-sections {
-  padding-left: 0 !important;
-  display: grid;
-  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
-  margin-block-start: 0;
-  margin-block-end: 0;
-}
-
-.xr-section-item {
-  display: contents;
-}
-
-.xr-section-item input {
-  display: inline-block;
-  opacity: 0;
-  height: 0;
-  margin: 0;
-}
-
-.xr-section-item input + label {
-  color: var(--xr-disabled-color);
-  border: 2px solid transparent !important;
-}
-
-.xr-section-item input:enabled + label {
-  cursor: pointer;
-  color: var(--xr-font-color2);
-}
-
-.xr-section-item input:focus + label {
-  border: 2px solid var(--xr-font-color0) !important;
-}
-
-.xr-section-item input:enabled + label:hover {
-  color: var(--xr-font-color0);
-}
-
-.xr-section-summary {
-  grid-column: 1;
-  color: var(--xr-font-color2);
-  font-weight: 500;
-}
-
-.xr-section-summary > span {
-  display: inline-block;
-  padding-left: 0.5em;
-}
-
-.xr-section-summary-in:disabled + label {
-  color: var(--xr-font-color2);
-}
-
-.xr-section-summary-in + label:before {
-  display: inline-block;
-  content: "►";
-  font-size: 11px;
-  width: 15px;
-  text-align: center;
-}
-
-.xr-section-summary-in:disabled + label:before {
-  color: var(--xr-disabled-color);
-}
-
-.xr-section-summary-in:checked + label:before {
-  content: "▼";
-}
-
-.xr-section-summary-in:checked + label > span {
-  display: none;
-}
-
-.xr-section-summary,
-.xr-section-inline-details {
-  padding-top: 4px;
-}
-
-.xr-section-inline-details {
-  grid-column: 2 / -1;
-}
-
-.xr-section-details {
-  display: none;
-  grid-column: 1 / -1;
-  margin-top: 4px;
-  margin-bottom: 5px;
-}
-
-.xr-section-summary-in:checked ~ .xr-section-details {
-  display: contents;
-}
-
-.xr-group-box {
-  display: inline-grid;
-  grid-template-columns: 0px 20px auto;
-  width: 100%;
-}
-
-.xr-group-box-vline {
-  grid-column-start: 1;
-  border-right: 0.2em solid;
-  border-color: var(--xr-border-color);
-  width: 0px;
-}
-
-.xr-group-box-hline {
-  grid-column-start: 2;
-  grid-row-start: 1;
-  height: 1em;
-  width: 20px;
-  border-bottom: 0.2em solid;
-  border-color: var(--xr-border-color);
-}
-
-.xr-group-box-contents {
-  grid-column-start: 3;
-}
-
-.xr-array-wrap {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 20px auto;
-}
-
-.xr-array-wrap > label {
-  grid-column: 1;
-  vertical-align: top;
-}
-
-.xr-preview {
-  color: var(--xr-font-color3);
-}
-
-.xr-array-preview,
-.xr-array-data {
-  padding: 0 5px !important;
-  grid-column: 2;
-}
-
-.xr-array-data,
-.xr-array-in:checked ~ .xr-array-preview {
-  display: none;
-}
-
-.xr-array-in:checked ~ .xr-array-data,
-.xr-array-preview {
-  display: inline-block;
-}
-
-.xr-dim-list {
-  display: inline-block !important;
-  list-style: none;
-  padding: 0 !important;
-  margin: 0;
-}
-
-.xr-dim-list li {
-  display: inline-block;
-  padding: 0;
-  margin: 0;
-}
-
-.xr-dim-list:before {
-  content: "(";
-}
-
-.xr-dim-list:after {
-  content: ")";
-}
-
-.xr-dim-list li:not(:last-child):after {
-  content: ",";
-  padding-right: 5px;
-}
-
-.xr-has-index {
-  font-weight: bold;
-}
-
-.xr-var-list,
-.xr-var-item {
-  display: contents;
-}
-
-.xr-var-item > div,
-.xr-var-item label,
-.xr-var-item > .xr-var-name span {
-  background-color: var(--xr-background-color-row-even);
-  border-color: var(--xr-background-color-row-odd);
-  margin-bottom: 0;
-  padding-top: 2px;
-}
-
-.xr-var-item > .xr-var-name:hover span {
-  padding-right: 5px;
-}
-
-.xr-var-list > li:nth-child(odd) > div,
-.xr-var-list > li:nth-child(odd) > label,
-.xr-var-list > li:nth-child(odd) > .xr-var-name span {
-  background-color: var(--xr-background-color-row-odd);
-  border-color: var(--xr-background-color-row-even);
-}
-
-.xr-var-name {
-  grid-column: 1;
-}
-
-.xr-var-dims {
-  grid-column: 2;
-}
-
-.xr-var-dtype {
-  grid-column: 3;
-  text-align: right;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-preview {
-  grid-column: 4;
-}
-
-.xr-index-preview {
-  grid-column: 2 / 5;
-  color: var(--xr-font-color2);
-}
-
-.xr-var-name,
-.xr-var-dims,
-.xr-var-dtype,
-.xr-preview,
-.xr-attrs dt {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 10px;
-}
-
-.xr-var-name:hover,
-.xr-var-dims:hover,
-.xr-var-dtype:hover,
-.xr-attrs dt:hover {
-  overflow: visible;
-  width: auto;
-  z-index: 1;
-}
-
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  display: none;
-  border-top: 2px dotted var(--xr-background-color);
-  padding-bottom: 20px !important;
-  padding-top: 10px !important;
-}
-
-.xr-var-attrs-in + label,
-.xr-var-data-in + label,
-.xr-index-data-in + label {
-  padding: 0 1px;
-}
-
-.xr-var-attrs-in:checked ~ .xr-var-attrs,
-.xr-var-data-in:checked ~ .xr-var-data,
-.xr-index-data-in:checked ~ .xr-index-data {
-  display: block;
-}
-
-.xr-var-data > table {
-  float: right;
-}
-
-.xr-var-data > pre,
-.xr-index-data > pre,
-.xr-var-data > table > tbody > tr {
-  background-color: transparent !important;
-}
-
-.xr-var-name span,
-.xr-var-data,
-.xr-index-name div,
-.xr-index-data,
-.xr-attrs {
-  padding-left: 25px !important;
-}
-
-.xr-attrs,
-.xr-var-attrs,
-.xr-var-data,
-.xr-index-data {
-  grid-column: 1 / -1;
-}
-
-dl.xr-attrs {
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: 125px auto;
-}
-
-.xr-attrs dt,
-.xr-attrs dd {
-  padding: 0;
-  margin: 0;
-  float: left;
-  padding-right: 10px;
-  width: auto;
-}
-
-.xr-attrs dt {
-  font-weight: normal;
-  grid-column: 1;
-}
-
-.xr-attrs dt:hover span {
-  display: inline-block;
-  background: var(--xr-background-color);
-  padding-right: 10px;
-}
-
-.xr-attrs dd {
-  grid-column: 2;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.xr-icon-database,
-.xr-icon-file-text2,
-.xr-no-icon {
-  display: inline-block;
-  vertical-align: middle;
-  width: 1em;
-  height: 1.5em !important;
-  stroke-width: 0;
-  stroke: currentColor;
-  fill: currentColor;
-}
-
-.xr-var-attrs-in:checked + label > .xr-icon-file-text2,
-.xr-var-data-in:checked + label > .xr-icon-database,
-.xr-index-data-in:checked + label > .xr-icon-database {
-  color: var(--xr-font-color0);
-  filter: drop-shadow(1px 1px 5px var(--xr-font-color2));
-  stroke-width: 0.8px;
-}
-</style><pre class='xr-text-repr-fallback'>&lt;xarray.Dataset&gt; Size: 11kB
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2404,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2402</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">2403</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="ne">-&gt; </span><span class="mi">2404</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:374,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
+<span class="g g-Whitespace">    </span><span class="mi">371</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">372</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+<span class="ne">--&gt; </span><span class="mi">374</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="n">display_default_indexes</span> <span class="o">=</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="s2">&quot;display_default_indexes&quot;</span><span class="p">,</span> <span class="kc">False</span>
+<span class="g g-Whitespace">    </span><span class="mi">378</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">379</span> <span class="n">xindexes</span> <span class="o">=</span> <span class="n">filter_nondefault_indexes</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">380</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
+<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:224,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, max_option_name)</span>
+<span class="g g-Whitespace">    </span><span class="mi">218</span>     <span class="k">if</span> <span class="n">n_items</span> <span class="o">&gt;</span> <span class="n">max_items</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">219</span>         <span class="n">inline_details</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_items</span><span class="si">}</span><span class="s2">)&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="k">return</span> <span class="n">collapsible_section</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">222</span>     <span class="n">name</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">223</span>     <span class="n">inline_details</span><span class="o">=</span><span class="n">inline_details</span><span class="p">,</span>
+<span class="ne">--&gt; </span><span class="mi">224</span>     <span class="n">details</span><span class="o">=</span><span class="n">details_func</span><span class="p">(</span><span class="n">mapping</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">225</span>     <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">227</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">228</span> <span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:134,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:135,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="ne">--&gt; </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:96,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
+<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">95</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">96</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">98</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">99</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:43,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
+<span class="g g-Whitespace">     </span><span class="mi">42</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">43</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">45</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.progress</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="n">BarColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="n">MofNCompleteColumn</span><span class="p">,</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>     <span class="mi">15</span>     <span class="n">TimeElapsedColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span> <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">17</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;rich&#39;
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;xarray.Dataset&gt; Size: 11kB
 Dimensions:  (lat: 25, lon: 53)
 Coordinates:
   * lat      (lat) float32 100B 75.0 72.5 70.0 67.5 65.0 ... 22.5 20.0 17.5 15.0
   * lon      (lon) float32 212B 200.0 202.5 205.0 207.5 ... 325.0 327.5 330.0
 Data variables:
-    air      (lat, lon) float64 11kB cubed.Array&lt;chunksize=(25, 53)&gt;</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-8ed33810-5ce7-4f23-89c7-80ae0db43b1e' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-8ed33810-5ce7-4f23-89c7-80ae0db43b1e' class='xr-section-summary'  title='Expand/collapse section'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><div class='xr-section-details'></div></li><li class='xr-section-item'><input id='section-45596758-535a-4e74-8c97-06cc175b35d5' class='xr-section-summary-in' type='checkbox'  checked><label for='section-45596758-535a-4e74-8c97-06cc175b35d5' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-5c9b04aa-3dc2-4214-8e4c-60ef3f888425' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-5c9b04aa-3dc2-4214-8e4c-60ef3f888425' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-1954a3af-b0e0-40f6-8047-591ef276af85' class='xr-var-data-in' type='checkbox'><label for='data-1954a3af-b0e0-40f6-8047-591ef276af85' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
-       45. , 42.5, 40. , 37.5, 35. , 32.5, 30. , 27.5, 25. , 22.5, 20. , 17.5,
-       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-239f1b2c-7afa-4376-bce7-0c66af397cb9' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-239f1b2c-7afa-4376-bce7-0c66af397cb9' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-24c5a5c2-4a30-4924-87e7-d6a57611ab93' class='xr-var-data-in' type='checkbox'><label for='data-24c5a5c2-4a30-4924-87e7-d6a57611ab93' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
-       225. , 227.5, 230. , 232.5, 235. , 237.5, 240. , 242.5, 245. , 247.5,
-       250. , 252.5, 255. , 257.5, 260. , 262.5, 265. , 267.5, 270. , 272.5,
-       275. , 277.5, 280. , 282.5, 285. , 287.5, 290. , 292.5, 295. , 297.5,
-       300. , 302.5, 305. , 307.5, 310. , 312.5, 315. , 317.5, 320. , 322.5,
-       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-c66e1288-340f-4f73-ab27-89e619da15b0' class='xr-section-summary-in' type='checkbox'  checked><label for='section-c66e1288-340f-4f73-ab27-89e619da15b0' class='xr-section-summary' >Data variables: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>air</span></div><div class='xr-var-dims'>(lat, lon)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>cubed.Array&lt;chunksize=(25, 53)&gt;</div><input id='attrs-799be4e2-f489-4851-96f6-8912c71ab35a' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-799be4e2-f489-4851-96f6-8912c71ab35a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-554d6a1d-d558-417f-8220-b04a498055d7' class='xr-var-data-in' type='checkbox'><label for='data-554d6a1d-d558-417f-8220-b04a498055d7' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16000366210938, 322.1000061035156]</dd></dl></div><div class='xr-var-data'><table>
-    <tr>
-        <td>
-            <table>
-                <thead>
-                    <tr>
-                        <td> </td>
-                        <th> Array </th>
-                        <th> Chunk </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <tr>
-                        <th> Bytes </th>
-                        <td> 10.6 KB </td>
-                        <td> 10.6 KB </td>
-                    </tr>
-                    
-                    <tr>
-                        <th> Shape </th>
-                        <td> (25, 53) </td>
-                        <td> (25, 53) </td>
-                    </tr>
-                    <tr>
-                        <th> Count </th>
-                        <td> 3 arrays in Plan </td>
-                        <td> 1 Chunks </td>
-                    </tr>
-                    <tr>
-                        <th> Type </th>
-                        <td> float64 </td>
-                        <td> np.ndarray </td>
-                    </tr>
-                </tbody>
-            </table>
-        </td>
-        <td>
-        <svg width="170" height="106" style="stroke:rgb(0,0,0);stroke-width:1" >
-
-  <!-- Horizontal lines -->
-  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
-  <line x1="0" y1="56" x2="120" y2="56" style="stroke-width:2" />
-
-  <!-- Vertical lines -->
-  <line x1="0" y1="0" x2="0" y2="56" style="stroke-width:2" />
-  <line x1="120" y1="0" x2="120" y2="56" style="stroke-width:2" />
-
-  <!-- Colored Rectangle -->
-  <polygon points="0.0,0.0 120.0,0.0 120.0,56.60377358490566 0.0,56.60377358490566" style="fill:#ECB172A0;stroke-width:0"/>
-
-  <!-- Text -->
-  <text x="60.000000" y="76.603774" font-size="1.0rem" font-weight="100" text-anchor="middle" >53</text>
-  <text x="140.000000" y="28.301887" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(0,140.000000,28.301887)">25</text>
-</svg>
-        </td>
-    </tr>
-</table></div></li></ul></div></li></ul></div></div></div></div>
+    air      (lat, lon) float64 11kB cubed.Array&lt;chunksize=(25, 53)&gt;
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>

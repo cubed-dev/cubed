@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=d385ed55"></script>
+    <script src="../_static/documentation_options.js?v=4663cb17"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -402,7 +402,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  <span class=" -Color -Color-Faint">2025-12-10T11:09:05.350729Z</span> <span class=" -Color -Color-Yellow"> WARN</span> <span class=" -Color -Color-Bold -Color-Bold-Yellow">icechunk::storage::object_store</span><span class=" -Color -Color-Yellow">: The LocalFileSystem storage is not safe for concurrent commits. If more than one thread/process will attempt to commit at the same time, prefer using object stores.</span>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  <span class=" -Color -Color-Faint">2025-12-12T12:06:18.931979Z</span> <span class=" -Color -Color-Yellow"> WARN</span> <span class=" -Color -Color-Bold -Color-Bold-Yellow">icechunk::storage::object_store</span><span class=" -Color -Color-Yellow">: The LocalFileSystem storage is not safe for concurrent commits. If more than one thread/process will attempt to commit at the same time, prefer using object stores.</span>
     <span class=" -Color -Color-Faint">at</span> icechunk/src/storage/object_store.rs:80
 </pre></div>
 </div>
@@ -443,7 +443,7 @@ The API follows that of <a class="reference internal" href="../generated/cubed.s
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;6BP6V1G8J0ZE8MZP5S4G&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;6QPN1475EP905XN9MDYG&#39;
 </pre></div>
 </div>
 </div>
@@ -481,7 +481,7 @@ The API follows that of <a class="reference internal" href="../generated/cubed.s
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>H101F7XTZP23ZYJRX8C0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>7Z5WJV09HMP6KH633SQ0
 </pre></div>
 </div>
 </div>
@@ -497,82 +497,43 @@ The API follows that of <a class="reference internal" href="../generated/cubed.s
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-    <tr>
-        <td>
-            <table>
-                <thead>
-                    <tr>
-                        <td> </td>
-                        <th> Array </th>
-                        <th> Chunk </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <tr>
-                        <th> Bytes </th>
-                        <td> 80.0 KB </td>
-                        <td> 800 bytes </td>
-                    </tr>
-                    
-                    <tr>
-                        <th> Shape </th>
-                        <td> (100, 100) </td>
-                        <td> (10, 10) </td>
-                    </tr>
-                    <tr>
-                        <th> Count </th>
-                        <td> 1 arrays in Plan </td>
-                        <td> 100 Chunks </td>
-                    </tr>
-                    <tr>
-                        <th> Type </th>
-                        <td> float64 </td>
-                        <td> np.ndarray </td>
-                    </tr>
-                </tbody>
-            </table>
-        </td>
-        <td>
-        <svg width="170" height="170" style="stroke:rgb(0,0,0);stroke-width:1" >
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
+<span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
 
-  <!-- Horizontal lines -->
-  <line x1="0" y1="0" x2="120" y2="0" style="stroke-width:2" />
-  <line x1="0" y1="12" x2="120" y2="12" />
-  <line x1="0" y1="24" x2="120" y2="24" />
-  <line x1="0" y1="36" x2="120" y2="36" />
-  <line x1="0" y1="48" x2="120" y2="48" />
-  <line x1="0" y1="60" x2="120" y2="60" />
-  <line x1="0" y1="72" x2="120" y2="72" />
-  <line x1="0" y1="84" x2="120" y2="84" />
-  <line x1="0" y1="96" x2="120" y2="96" />
-  <line x1="0" y1="108" x2="120" y2="108" />
-  <line x1="0" y1="120" x2="120" y2="120" style="stroke-width:2" />
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
+<span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
+<span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
 
-  <!-- Vertical lines -->
-  <line x1="0" y1="0" x2="0" y2="120" style="stroke-width:2" />
-  <line x1="12" y1="0" x2="12" y2="120" />
-  <line x1="24" y1="0" x2="24" y2="120" />
-  <line x1="36" y1="0" x2="36" y2="120" />
-  <line x1="48" y1="0" x2="48" y2="120" />
-  <line x1="60" y1="0" x2="60" y2="120" />
-  <line x1="72" y1="0" x2="72" y2="120" />
-  <line x1="84" y1="0" x2="84" y2="120" />
-  <line x1="96" y1="0" x2="96" y2="120" />
-  <line x1="108" y1="0" x2="108" y2="120" />
-  <line x1="120" y1="0" x2="120" y2="120" style="stroke-width:2" />
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
 
-  <!-- Colored Rectangle -->
-  <polygon points="0.0,0.0 120.0,0.0 120.0,120.0 0.0,120.0" style="fill:#ECB172A0;stroke-width:0"/>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
+<span class="g g-Whitespace">      </span><span class="mi">7</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.progress</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="n">BarColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="n">MofNCompleteColumn</span><span class="p">,</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>     <span class="mi">15</span>     <span class="n">TimeElapsedColumn</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span> <span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">17</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
 
-  <!-- Text -->
-  <text x="60.000000" y="140.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" >100</text>
-  <text x="140.000000" y="60.000000" font-size="1.0rem" font-weight="100" text-anchor="middle" transform="rotate(-90,140.000000,60.000000)">100</text>
-</svg>
-        </td>
-    </tr>
-</table></div></div>
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;rich&#39;
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>cubed.Array&lt;array-005, shape=(100, 100), dtype=float64, chunks=((10, 10, 10, 10, 10, 10, 10, 10, 10, 10), (10, 10, 10, 10, 10, 10, 10, 10, 10, 10))&gt;
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 </section>
