@@ -8,10 +8,11 @@ function render({ model, el }) {
     el.classList.add("vega-vis");
     el.appendChild(div);
 
-    // TODO: add holding text "Memory widget waiting for computation to start..."
+   div.innerHTML = "Memory widget waiting for computation to start..."
 
     model.on("msg:custom", msg => {
         if (msg.type === "on_compute_start") {
+            div.innerHTML = "";
 
             const num_tasks = model.get("_num_tasks");
             const allowed_mem = model.get("_allowed_mem");

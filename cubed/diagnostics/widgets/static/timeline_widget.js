@@ -8,10 +8,11 @@ function render({ model, el }) {
     el.classList.add("vega-vis");
     el.appendChild(div);
 
-    // TODO: add holding text "Timeline widget waiting for computation to start..."
+    div.innerHTML = "Timeline widget waiting for computation to start..."
 
     model.on("msg:custom", msg => {
         if (msg.type === "on_compute_start") {
+            div.innerHTML = "";
 
             const vlSpec = {
                 "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
