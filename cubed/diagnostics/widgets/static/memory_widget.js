@@ -8,7 +8,7 @@ function render({ model, el }) {
     el.classList.add("vega-vis");
     el.appendChild(div);
 
-   div.innerHTML = "Memory widget waiting for computation to start..."
+    div.innerHTML = "Memory widget waiting for computation to start..."
 
     model.on("msg:custom", msg => {
         if (msg.type === "on_compute_start") {
@@ -32,26 +32,47 @@ function render({ model, el }) {
                     {
 
                         "data": {
-                            "values": [{"allowed_mem": allowed_mem}]
+                            "values": projected_mem_by_op,
+                        },
+                        "transform": [
+                            { "calculate": "datum.start_task_index - 0.5", "as": "x" },
+                            { "calculate": "datum.end_task_index - 0.5", "as": "x2" }
+                        ],
+                        "mark": "bar",
+                        "encoding": {
+                            "x": { "field": "x", "bin": { "binned": true }, "scale": { "domain": xDomain } },
+                            "x2": { "field": "x2" },
+                            "y": { "field": "projected_mem", "type": "quantitative" },
+                            "color": {
+                                "value": "#dcbeff",
+                            },
+                            "tooltip": [{ "field": "name", "type": "nominal", "title": "Operation" }]
+                        }
+
+                    },
+                    {
+
+                        "data": {
+                            "values": [{ "allowed_mem": allowed_mem }]
                         },
                         "mark": "rule",
                         "encoding": {
                             "y": { "field": "allowed_mem", "type": "quantitative" },
                             "color": {
                                 "datum": "allowed_mem",
-                                // specify the legend colours here
+                                // specify the legend colours here (alphabetical order: allowed, reserved, projected)
                                 "scale": {
-                                    "range": ["#e06666", "#a9a9a9", "green"],
+                                    "range": ["#e6194B", "#a9a9a9", "#3cb44b"],
                                 },
-                                // "sort": ["allowed_mem", "projected_mem", "reserved_mem"],
                             },
+                            "strokeWidth": { "value": 3 },
+                            "tooltip": [{ "field": "allowed_mem", "type": "quantitative", "title": "Allowed mem (MB)" }],
                         },
-
                     },
                     {
 
                         "data": {
-                            "values": [{"reserved_mem": reserved_mem}]
+                            "values": [{ "reserved_mem": reserved_mem }]
                         },
                         "mark": "rule",
                         "encoding": {
@@ -59,6 +80,8 @@ function render({ model, el }) {
                             "color": {
                                 "datum": "reserved_mem",
                             },
+                            "strokeWidth": { "value": 3 },
+                            "tooltip": [{ "field": "reserved_mem", "type": "quantitative", "title": "Reserved mem (MB)" }],
                         },
 
                     },
@@ -71,29 +94,18 @@ function render({ model, el }) {
                             { "calculate": "datum.start_task_index - 0.5", "as": "x" },
                             { "calculate": "datum.end_task_index - 0.5", "as": "x2" }
                         ],
-                        "layer": [
-                            {
-                                "mark": "bar",
-                                "encoding": {
-                                    "x": { "field": "x", "bin": { "binned": true }, "scale": { "domain": xDomain } },
-                                    "x2": { "field": "x2" },
-                                    "y": { "field": "projected_mem", "type": "quantitative" },
-                                    "opacity": { "value": 0.2 },
-                                    "tooltip": { "field": "name", "type": "nominal" }
-                                }
+                        "mark": "rule",
+                        "encoding": {
+                            "x": { "field": "x", "type": "quantitative", "scale": { "domain": xDomain } },
+                            "x2": { "field": "x2", "type": "quantitative" },
+                            "y": { "field": "projected_mem", "type": "quantitative" },
+                            "color": {
+                                "datum": "projected_mem",
                             },
-                            {
-                                "mark": "rule",
-                                "encoding": {
-                                    "x": { "field": "x", "type": "quantitative", "scale": { "domain": xDomain } },
-                                    "x2": { "field": "x2", "type": "quantitative" },
-                                    "y": { "field": "projected_mem", "type": "quantitative" },
-                                    "color": {
-                                        "datum": "projected_mem",
-                                    }
-                                }
-                            },
-                        ],
+                            "strokeWidth": { "value": 3 },
+                            "tooltip": [{ "field": "projected_mem", "type": "quantitative", "title": "Projected mem (MB)" }],
+                        }
+
                     },
                     {
 
@@ -107,12 +119,12 @@ function render({ model, el }) {
                             "y": { "field": "actual_mem", "type": "quantitative", "title": "Task memory (MB)" },
                             "color": {
                                 "condition": [
-                                    { "test": `datum['actual_mem'] > ${allowed_mem}`, "value": "#e06666" },
-                                    { "test": "datum['actual_mem'] > datum['projected_mem']", "value": "#f6b26b" },
+                                    { "test": `datum['actual_mem'] > ${allowed_mem}`, "value": "#e6194B" },
+                                    { "test": "datum['actual_mem'] > datum['projected_mem']", "value": "#ffe119" },
                                 ],
-                                "value": "#9fc5e8",
+                                "value": "#4363d8",
                             },
-                            "tooltip": { "field": "name", "type": "nominal" }
+                            "tooltip": [{ "field": "actual_mem", "type": "quantitative", "title": "Actual mem (MB)" }],
                         }
                     },
                 ],

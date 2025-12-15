@@ -7,6 +7,7 @@ from IPython.display import display
 
 from cubed.core.optimization import successors_unordered
 from cubed.core.plan import ArrayRole
+from cubed.diagnostics.colors import BEIGE, BLACK, GREY, LAVENDER, MINT, WHITE
 from cubed.diagnostics.widgets import get_template
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback
@@ -21,17 +22,17 @@ from cubed.utils import (
 )
 from cubed.vendor.dask.array.svg import svg
 
-LINE_COLOR = "black"
-VIRTUAL_LINE_COLOR = "#c7c7c7"
+LINE_COLOR = BLACK
+VIRTUAL_LINE_COLOR = GREY
 
-INITIALIZED_ARRAY_BACKGROUND_COLOR = "white"
-STORED_ARRAY_BACKGROUND_COLOR = "#aaffc3"
-VIRTUAL_ARRAY_BACKGROUND_COLOR = "#e0e0e0"
+INITIALIZED_ARRAY_BACKGROUND_COLOR = WHITE
+STORED_ARRAY_BACKGROUND_COLOR = MINT
+VIRTUAL_ARRAY_BACKGROUND_COLOR = GREY
 
-PRIMITIVE_OP_BACKGROUND_COLOR = "#dcbeff"
-VIRTUAL_OP_BACKGROUND_COLOR = "#e0e0e0"
+PRIMITIVE_OP_BACKGROUND_COLOR = LAVENDER
+VIRTUAL_OP_BACKGROUND_COLOR = GREY
 
-HIGHLIGHT_COLOR = "#c9dbfd"
+HIGHLIGHT_COLOR = BEIGE
 
 
 class PlanWidget(anywidget.AnyWidget):

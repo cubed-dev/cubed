@@ -37,7 +37,7 @@ function render({ model, el }) {
                         "type": "nominal",
                         "title": null,
                         "legend": { "orient": "top-left" },
-                        "scale": { "range": ["red", "orange", "blue", "green"], },
+                        "scale": { "range": ["#e6194B", "#ffe119", "#4363d8", "#3cb44b"], },
                         "sort": ["task create", "function start", "function end", "task_result"],
                     },
                 }
