@@ -8,7 +8,14 @@ import numpy as np
 
 from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.core.array import CoreArray
-from cubed.core.ops import general_blockwise, map_selection, merge_chunks
+from cubed.core.ops import (
+    _create_zarr_indexer,
+    general_blockwise,
+    map_blocks,
+    map_selection,
+    map_selection_update,
+    merge_chunks,
+)
 from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.utils import array_size, normalize_chunks
 
@@ -289,3 +296,113 @@ class BlockView:
         The number of blocks per axis.
         """
         return self.array.numblocks
+
+
+def setitem(x, key, value, /) -> None:
+    from cubed import Array
+
+    if isinstance(value, Array) and value.size == 1:
+        value = as_pyscalar(value)
+
+    if isinstance(value, (bool, int, float, complex)):
+        out = setitem_scalar(x, key, value)
+    else:
+        out = setitem_array(x, key, value)
+
+    # mutate the array
+    x._plan = out._plan
+
+
+def as_pyscalar(x):
+    # based on https://github.com/data-apis/array-api/issues/815
+
+    import cubed
+
+    if x.size != 1:
+        raise ValueError("Can't convert array with size!=1 to a python scalar")
+
+    axes = tuple(i for i, a in enumerate(x.shape) if a == 1)
+    if len(axes) > 0:
+        x = cubed.squeeze(x, axis=axes)
+    if cubed.isdtype(x.dtype, "real floating"):
+        return float(x)
+    elif cubed.isdtype(x.dtype, "complex floating"):
+        return complex(x)
+    elif cubed.isdtype(x.dtype, "integral"):
+        return int(x)
+    elif cubed.isdtype(x.dtype, "bool"):
+        return bool(x)
+    else:
+        raise ValueError(f"Can't convert array with dtype {x.dtype} to a python scalar")
+
+
+def setitem_scalar(source: "Array", key, value):
+    """Set scalar value on Zarr array indexing by key."""
+
+    from cubed import Array
+
+    # check that value is a scalar, so we don't have to worry about chunk selection, broadcasting, etc
+    if isinstance(value, Array):
+        raise NotImplementedError("Only scalar values are supported for set")
+
+    chunks = source.chunks
+    idx = ndindex.ndindex(key)
+    idx = idx.expand(source.shape)
+    selection = idx.raw
+    indexer = _create_zarr_indexer(selection, source.shape, source.chunksize)
+    output_blocks = map(
+        lambda chunk_projection: list(chunk_projection[0]), list(indexer)
+    )
+    chunk_selections = {cp.chunk_coords: cp.chunk_selection for cp in indexer}
+
+    return map_blocks(
+        _setitem_scalar,
+        source,
+        dtype=source.dtype,
+        chunks=chunks,
+        output_blocks=output_blocks,
+        value=value,
+        chunk_selections=chunk_selections,
+    )
+
+
+def _setitem_scalar(a, value=None, chunk_selections=None, block_id=None):
+    a[chunk_selections[block_id]] = value
+    return a
+
+
+def setitem_array(source: "Array", key, value):
+    """Set value on Zarr array indexing by key."""
+
+    idx = ndindex.ndindex(key)
+    idx = idx.expand(source.shape)
+    selection = idx.raw
+    indexer = _create_zarr_indexer(selection, source.shape, source.chunksize)
+    chunk_selections = {cp.chunk_coords: cp.chunk_selection for cp in indexer}
+    chunk_out_selections = {cp.chunk_coords: cp.out_selection for cp in indexer}
+
+    def selection_function(out_key):
+        out_coords = out_key.coords
+        return chunk_out_selections[out_coords]
+
+    max_num_input_blocks = 1  # TODO
+
+    out = map_selection_update(
+        _setitem_array,
+        selection_function,
+        value,
+        source,
+        source.shape,
+        source.dtype,
+        source.chunks,
+        max_num_input_blocks=max_num_input_blocks,
+        chunk_selections=chunk_selections,
+    )
+
+    return out
+
+
+def _setitem_array(a, out, chunk_selections=None, block_id=None):
+    if block_id in chunk_selections:
+        out[chunk_selections[block_id]] = a
+    return out

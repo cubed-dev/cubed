@@ -109,3 +109,41 @@ def test_blocks():
         x.blocks[[0, 1], [0, 1]]
     with pytest.raises(IndexError, match="out of bounds"):
         x.blocks[100, 100]
+
+
+def test_setitem_scalar(spec):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(3, 3),
+        spec=spec,
+    )
+    a[:, 1] = -1
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    x[:, 1] = -1
+    assert_array_equal(a.compute(), x)
+
+
+def test_setitem_single_element_array(spec):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(3, 3),
+        spec=spec,
+    )
+    b = xp.asarray([-1], spec=spec)
+    a[:, 1] = b
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    x[:, 1] = -1
+    assert_array_equal(a.compute(), x)
+
+
+def test_setitem_array(spec):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(3, 3),
+        spec=spec,
+    )
+    b = xp.asarray([-1, -1, -1, -1], chunks=(3,), spec=spec)
+    a[:, 1] = b
+    x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+    x[:, 1] = -1
+    assert_array_equal(a.compute(), x)

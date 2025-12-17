@@ -244,6 +244,11 @@ class CoreArray:
 
         return index(self, key)
 
+    def __setitem__(self: T_ChunkedArray, key, value, /) -> None:
+        from cubed.core.indexing import setitem
+
+        setitem(self, key, value)
+
     def __repr__(self):
         return f"cubed.core.CoreArray<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 

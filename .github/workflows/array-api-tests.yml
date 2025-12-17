@@ -123,7 +123,6 @@ jobs:
           array_api_tests/test_signatures.py::test_func_signature[take_along_axis]
           array_api_tests/test_signatures.py::test_array_method_signature[__dlpack__]
           array_api_tests/test_signatures.py::test_array_method_signature[__dlpack_device__]
-          array_api_tests/test_signatures.py::test_array_method_signature[__setitem__]
           array_api_tests/test_signatures.py::test_array_method_signature[to_device]
 
           # edge case failures (https://github.com/cubed-dev/cubed/issues/420)
@@ -144,7 +143,6 @@ jobs:
           array_api_tests/test_manipulation_functions.py::TestExpandDims::test_expand_dims_tuples
 
           # not implemented
-          array_api_tests/test_array_object.py::test_setitem
           array_api_tests/test_array_object.py::test_setitem_masking
           array_api_tests/test_creation_functions.py::test_asarray_arrays
           array_api_tests/test_indexing_functions.py::test_take_along_axis
