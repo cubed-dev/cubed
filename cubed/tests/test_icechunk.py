@@ -90,3 +90,49 @@ def test_store_icechunk(icechunk_storage, executor):
     assert_array_equal(
         cubed.from_array(group["a"])[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     )
+
+
+def test_store_icechunk_region(icechunk_storage, executor):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+    )
+    create_icechunk(
+        np.zeros((5, 5), dtype=int),
+        icechunk_storage,
+        chunks=(2, 2),
+    )
+
+    # note that the same zarr store is overwritten in the following tests
+
+    repo = Repository.open(storage=icechunk_storage)
+    session = repo.writable_session("main")
+    fork = session.fork()
+    store = fork.store
+    group = zarr.open_group(store=store)
+    target = group.get("a")
+    region = (slice(0, 2), slice(0, 2))
+    merged_session = store_icechunk(
+        sources=a[:2, :2], targets=target, regions=region, executor=executor
+    )
+    session.merge(merged_session)
+    session.commit("commit 1")
+
+    # reopen store and check contents of array
+    repo = Repository.open(icechunk_storage)
+    session = repo.readonly_session(branch="main")
+    store = session.store
+
+    group = zarr.open_group(store=store, mode="r")
+    assert_array_equal(
+        cubed.from_array(group["a"])[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 0],
+                [5, 6, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+            ]
+        ),
+    )

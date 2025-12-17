@@ -17,6 +17,7 @@ def store_icechunk(
     *,
     sources: Union["Array", Sequence["Array"]],
     targets: List[zarr.Array],
+    regions: tuple[slice, ...] | list[tuple[slice, ...]] | None = None,
     executor=None,
     **kwargs: Any,
 ) -> ForkSession:
@@ -32,10 +33,23 @@ def store_icechunk(
             f"Different number of sources ({len(sources)}) and targets ({len(targets)})"
         )
 
+    if isinstance(regions, tuple) or regions is None:
+        regions_list = [regions] * len(sources)
+    else:
+        regions_list = list(regions)
+        if len(sources) != len(regions_list):
+            raise ValueError(
+                f"Different number of sources [{len(sources)}] and "
+                f"targets [{len(targets)}] than regions [{len(regions_list)}]"
+            )
+
     arrays = []
-    for source, target in zip(sources, targets):
+    for source, target, region in zip(sources, targets, regions_list):
         array = _store_array(
-            source, target, blockwise_kwargs=dict(return_writes_stores=True)
+            source,
+            target,
+            region=region,
+            blockwise_kwargs=dict(return_writes_stores=True),
         )
         arrays.append(array)
 
