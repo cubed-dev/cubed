@@ -180,7 +180,9 @@ def store(
     compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
 
 
-def _store_array(source: "Array", target, path=None, region=None):
+def _store_array(
+    source: "Array", target, path=None, region=None, blockwise_kwargs=None
+):
     if target is not None and not is_storage_array(target):
         target = lazy_zarr_array(
             target,
@@ -192,6 +194,7 @@ def _store_array(source: "Array", target, path=None, region=None):
     if target is None and region is not None:
         raise ValueError("Target store must be specified when setting a region")
     identity = lambda a: a
+    blockwise_kwargs = blockwise_kwargs or {}
     if region is None or all(r == slice(None) for r in region):
         ind = tuple(range(source.ndim))
         return blockwise(
@@ -202,6 +205,7 @@ def _store_array(source: "Array", target, path=None, region=None):
             dtype=source.dtype,
             align_arrays=False,
             target_store=target,
+            **blockwise_kwargs,
         )
     else:
         # treat a region as an offset within the target store
@@ -239,6 +243,7 @@ def _store_array(source: "Array", target, path=None, region=None):
             chunkss=[chunks],
             target_stores=[target],
             output_blocks=output_blocks,
+            **blockwise_kwargs,
         )
         from cubed import Array
 

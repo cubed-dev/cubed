@@ -6,7 +6,7 @@ from icechunk.session import ForkSession
 
 from cubed import compute
 from cubed.core.array import CoreArray
-from cubed.core.ops import blockwise
+from cubed.core.ops import _store_array
 from cubed.runtime.types import Callback
 
 if TYPE_CHECKING:
@@ -34,17 +34,8 @@ def store_icechunk(
 
     arrays = []
     for source, target in zip(sources, targets):
-        identity = lambda a: a
-        ind = tuple(range(source.ndim))
-        array = blockwise(
-            identity,
-            ind,
-            source,
-            ind,
-            dtype=source.dtype,
-            align_arrays=False,
-            target_store=target,
-            return_writes_stores=True,
+        array = _store_array(
+            source, target, blockwise_kwargs=dict(return_writes_stores=True)
         )
         arrays.append(array)
 
