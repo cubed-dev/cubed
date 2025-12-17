@@ -93,7 +93,7 @@ def _from_array(block, input_array, outchunks=None, asarray=None, block_id=None)
     return out
 
 
-def from_zarr(store, path=None, spec=None) -> "Array":
+def from_zarr(store, path=None, spec=None, mode="r") -> "Array":
     """Load an array from Zarr storage.
 
     Parameters
@@ -114,7 +114,7 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     spec = spec or spec_from_config(config)
     target = open_storage_array(
         store,
-        mode="r",
+        mode=mode,
         path=path,
         storage_options=spec.storage_options,
     )
