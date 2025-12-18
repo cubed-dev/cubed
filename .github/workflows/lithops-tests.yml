@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "macos-latest"]
+        os: ["ubuntu-24.04", "ubuntu-22.04", "macos-latest"]
         python-version: ["3.11"]
 
     steps:
@@ -42,4 +42,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -vs
+          pytest -vs -o log_cli=true --log-cli-level=DEBUG
