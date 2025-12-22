@@ -6,9 +6,18 @@ try:
         get_template,
     )
 
+    from .memory import LiveMemoryViewer, MemoryWidget
     from .plan import LivePlanViewer, PlanWidget
+    from .timeline import LiveTimelineViewer, TimelineWidget
 
-    __all__ = ["LivePlanViewer", "PlanWidget"]
+    __all__ = [
+        "LiveMemoryViewer",
+        "LivePlanViewer",
+        "LiveTimelineViewer",
+        "MemoryWidget",
+        "PlanWidget",
+        "TimelineWidget",
+    ]
 
 except ImportError as e:
     msg = (

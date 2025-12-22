@@ -13,6 +13,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 import networkx as nx
 
 from cubed.core.optimization import is_input_array, multiple_inputs_optimize_dag
+from cubed.diagnostics.colors import APRICOT, LAVENDER, RED
 from cubed.primitive.blockwise import BlockwiseSpec
 from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_node_generations
@@ -658,7 +659,9 @@ class FinalizedPlan:
                 )
             warning_text = "".join(warning_lines)
             # HTML-like label with mixed colors
-            label = f"<<FONT>{stats_text}</FONT><FONT COLOR='#cc0000'>{warning_text}</FONT>>"
+            label = (
+                f"<<FONT>{stats_text}</FONT><FONT COLOR='{RED}'>{warning_text}</FONT>>"
+            )
         else:
             # Simple HTML label (no warning)
             label = f"<{stats_text}>"
@@ -699,13 +702,10 @@ class FinalizedPlan:
                 if n in ops_exceeding_names:
                     # operation exceeds memory - show in red
                     d["style"] = '"rounded,filled"'
-                    d["fillcolor"] = "#ff6b6b"
-                elif op_name == "blockwise":
+                    d["fillcolor"] = RED
+                elif op_name == "blockwise" or op_name == "rechunk":
                     d["style"] = '"rounded,filled"'
-                    d["fillcolor"] = "#dcbeff"
-                elif op_name == "rechunk":
-                    d["style"] = '"rounded,filled"'
-                    d["fillcolor"] = "#aaffc3"
+                    d["fillcolor"] = LAVENDER
                 else:
                     # creation function
                     d["style"] = "rounded"
@@ -768,7 +768,7 @@ class FinalizedPlan:
                 # materialized arrays are light orange, virtual arrays are white
                 if isinstance(target, LazyZarrArray) or is_storage_array(target):
                     d["style"] = "filled"
-                    d["fillcolor"] = "#ffd8b1"
+                    d["fillcolor"] = APRICOT
                 if n in array_display_names:
                     var_name = array_display_names[n]
                     label = f"{n}\n{var_name}"

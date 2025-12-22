@@ -18,10 +18,13 @@ class MemoryWarningCallback(Callback):
 
     def on_task_end(self, event):
         allowed_mem = self.ops[event.name].allowed_mem
-        if (
-            event.peak_measured_mem_end is not None
-            and event.peak_measured_mem_end > allowed_mem
-        ):
+        if event.peak_measured_mem_end is None:
+            warnings.warn(
+                "Peak memory usage is not measured by the current executor",
+                UserWarning,
+                stacklevel=2,
+            )
+        elif event.peak_measured_mem_end > allowed_mem:
             self.counter.update({event.name: 1})
 
     def on_compute_end(self, event):
