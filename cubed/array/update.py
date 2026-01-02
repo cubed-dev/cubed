@@ -142,7 +142,7 @@ def set2_(source: "Array", key, value):
     print("region.raw", region.raw)
 
     # store the updated source region array back to the original source
-    return _store_array(source_region_updated, source, region=region.raw)
+    return _store_array(source_region_updated, source._zarray, region=region.raw)
 
 
 def set0_(source: "Array", key, value):
@@ -154,7 +154,7 @@ def set0_(source: "Array", key, value):
     indexer = _create_zarr_indexer(selection, source.shape, source.chunksize)
     chunk_selections = {cp.chunk_coords: cp.chunk_selection for cp in indexer}
 
-    # TODO: generalize to map over source and target (not just a scalar value)
+    # TODO: generalize to map over source and target (i.e. not just a scalar value)
     return map_blocks(
         _set,
         source,
