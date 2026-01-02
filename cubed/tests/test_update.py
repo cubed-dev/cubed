@@ -69,6 +69,7 @@ def test_set_scalar(tmp_path):
     )
     a = cubed.from_zarr(store, mode="r+")
     c = set2_(a, (slice(None), 2), -1)
+    c.visualize(optimize_graph=False)
     c.compute(_return_in_memory_array=False)  # don't load into memory
     # za[(slice(None), 2)] = -1  # direct Zarr way (not distributed)
 
