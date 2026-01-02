@@ -4,7 +4,7 @@ import pytest
 import cubed
 import cubed.array_api as xp
 from cubed._testing import assert_array_equal
-from cubed.array.update import append, set_scalar
+from cubed.array.update import append, set2_
 from cubed.storage.store import open_storage_array
 from cubed.tests.utils import create_zarr
 
@@ -68,7 +68,7 @@ def test_set_scalar(tmp_path):
         store=store,
     )
     a = cubed.from_zarr(store, mode="r+")
-    c = set_scalar(a, (slice(None), 2), -1)
+    c = set2_(a, (slice(None), 2), -1)
     c.compute(_return_in_memory_array=False)  # don't load into memory
     # za[(slice(None), 2)] = -1  # direct Zarr way (not distributed)
 

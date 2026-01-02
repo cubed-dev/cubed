@@ -97,3 +97,69 @@ def set_scalar(source: "Array", key, value):
 def _set(a, value=None, chunk_selections=None, block_id=None):
     a[chunk_selections[block_id]] = value
     return a
+
+
+def set2_(source: "Array", key, value):
+    """Set value on Zarr array indexing by key."""
+
+    # assume that value is a scalar, so we don't have to worry about chunk selection, broadcasting, etc
+    if isinstance(value, Array):
+        raise NotImplementedError("Only scalar values are supported for set")
+
+    if not is_storage_array(source._zarray):
+        raise ValueError("Array must be a Zarr array to perform in-place set operation")
+
+    idx = ndindex.ndindex(key)
+    idx = idx.expand(source.shape)
+    selection = idx.raw
+    print(selection, source.shape, source.chunksize)
+
+    # idea: find region (chunks) that need updating
+    chunk_size = ndindex.ChunkSize(source.chunksize)
+    region = chunk_size.containing_block(selection, source.shape)
+    print(region)
+
+    subchunks = chunk_size.as_subchunks(selection, source.shape)
+    for c in subchunks:
+        # c is the slicing to get a chunk, and idx.as_subindex(c) is the slicing of the chunk
+        # not quite what we want?
+        print(c, idx.as_subindex(c))
+
+    idx_region = ndindex.ndindex(region).expand(source.shape)
+    idx_within_region = idx.as_subindex(idx_region)
+    print("idx_within_region", idx_within_region)
+
+    # then get source array for the region
+    source_region = source[region.raw]
+
+    # update the source region array
+    # TODO: use code like set_ but which 1) updates whole array, 2) isn't in-place (Cubed will optimize)
+    key0 = idx_within_region.raw
+    source_region_updated = set0_(source_region, key0, value)
+
+    print("source_region_updated", source_region_updated)
+    print("source", source)
+    print("region.raw", region.raw)
+
+    # store the updated source region array back to the original source
+    return _store_array(source_region_updated, source, region=region.raw)
+
+
+def set0_(source: "Array", key, value):
+    """Set value on Zarr array indexing by key."""
+
+    idx = ndindex.ndindex(key)
+    idx = idx.expand(source.shape)
+    selection = idx.raw
+    indexer = _create_zarr_indexer(selection, source.shape, source.chunksize)
+    chunk_selections = {cp.chunk_coords: cp.chunk_selection for cp in indexer}
+
+    # note the returned array should only really have compute called on it
+    return map_blocks(
+        _set,
+        source,
+        dtype=source.dtype,
+        chunks=source.chunks,
+        value=value,
+        chunk_selections=chunk_selections,
+    )
