@@ -154,7 +154,7 @@ def set0_(source: "Array", key, value):
     indexer = _create_zarr_indexer(selection, source.shape, source.chunksize)
     chunk_selections = {cp.chunk_coords: cp.chunk_selection for cp in indexer}
 
-    # note the returned array should only really have compute called on it
+    # TODO: generalize to map over source and target (not just a scalar value)
     return map_blocks(
         _set,
         source,
