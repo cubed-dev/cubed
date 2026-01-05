@@ -190,7 +190,13 @@ def test_to_zarr_array(tmp_path, spec, executor):
 
 def test_to_zarr_region(tmp_path, spec, executor):
     a = xp.asarray(
-        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        [
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15, 16],
+            [17, 18, 19, 20],
+        ],
         chunks=(2, 2),
         spec=spec,
     )
@@ -268,6 +274,22 @@ def test_to_zarr_region(tmp_path, spec, executor):
                 [1, 2, 1, 2, 1],
                 [5, 6, 5, 6, 5],
                 [0, 0, 9, 10, 9],
+            ]
+        ),
+    )
+
+    region = (slice(None), slice(4, 5))
+    cubed.to_zarr(a[:, 0:1], z, region=region, executor=executor)
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(
+        res[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 1],
+                [5, 6, 0, 0, 5],
+                [1, 2, 1, 2, 9],
+                [5, 6, 5, 6, 13],
+                [0, 0, 9, 10, 17],
             ]
         ),
     )
