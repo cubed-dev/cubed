@@ -243,6 +243,7 @@ def _store_array(
             chunkss=[chunks],
             target_stores=[target],
             output_blocks=output_blocks,
+            num_tasks=source.npartitions,
             **blockwise_kwargs,
         )
         from cubed import Array
