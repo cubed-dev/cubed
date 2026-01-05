@@ -13,7 +13,13 @@ import cubed.random
 from cubed._testing import assert_array_equal
 from cubed.array_api.dtypes import _floating_dtypes
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
+from cubed.core.ops import (
+    _store_array,
+    general_blockwise,
+    merge_chunks,
+    partial_reduce,
+    tree_reduce,
+)
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.core.plan import ArrayRole
 from cubed.storage.store import open_storage_array
@@ -197,6 +203,11 @@ def test_to_zarr_region(tmp_path, spec, executor):
     # note that the same zarr store is overwritten in the following tests
 
     region = (slice(0, 2), slice(0, 2))
+
+    # need to use internal _store_array function to access plan
+    # since to_zarr is eager
+    assert _store_array(a[:2, :2], z, region=region).plan().num_tasks == 1
+
     cubed.to_zarr(a[:2, :2], z, region=region, executor=executor)
     res = open_storage_array(store, mode="r")
     assert_array_equal(res[region], np.array([[1, 2], [5, 6]]))
