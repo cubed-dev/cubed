@@ -13,7 +13,6 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 import networkx as nx
 
 from cubed.core.optimization import is_input_array, multiple_inputs_optimize_dag
-from cubed.diagnostics.colors import APRICOT, LAVENDER, RED
 from cubed.primitive.blockwise import BlockwiseSpec
 from cubed.primitive.types import PrimitiveOperation
 from cubed.runtime.pipeline import visit_node_generations
@@ -612,6 +611,8 @@ class FinalizedPlan:
         show_hidden=False,
         engine: Literal["cytoscape", "graphviz"] | None = None,
     ):
+        from cubed.diagnostics.colors import APRICOT, LAVENDER, RED
+
         if engine == "cytoscape":
             return self.visualize_cytoscape(
                 filename,
