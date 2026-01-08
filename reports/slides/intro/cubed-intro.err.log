@@ -1,7 +1,7 @@
 Traceback (most recent call last):
   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
     executenb(
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/nbclient/client.py", line 1319, in execute
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/nbclient/client.py", line 1323, in execute
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
@@ -24,54 +24,7 @@ c.visualize()
 
 
 [31m---------------------------------------------------------------------------[39m
-[31mFileNotFoundError[39m                         Traceback (most recent call last)
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/pydot/core.py:1824[39m, in [36mDot.create[39m[34m(self, prog, format, encoding)[39m
-[32m   1823[39m [38;5;28;01mtry[39;00m:
-[32m-> [39m[32m1824[39m     stdout_data, stderr_data, process = [43mcall_graphviz[49m[43m([49m
-[32m   1825[39m [43m        [49m[43mprogram[49m[43m=[49m[43mprog[49m[43m,[49m
-[32m   1826[39m [43m        [49m[43marguments[49m[43m=[49m[43marguments[49m[43m,[49m
-[32m   1827[39m [43m        [49m[43mworking_dir[49m[43m=[49m[43mtmp_dir[49m[43m,[49m
-[32m   1828[39m [43m    [49m[43m)[49m
-[32m   1829[39m [38;5;28;01mexcept[39;00m [38;5;167;01mOSError[39;00m [38;5;28;01mas[39;00m e:
-
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/pydot/core.py:249[39m, in [36mcall_graphviz[39m[34m(program, arguments, working_dir, **kwargs)[39m
-[32m    247[39m program_with_args = [program] + arguments
-[32m--> [39m[32m249[39m process = [43msubprocess[49m[43m.[49m[43mPopen[49m[43m([49m
-[32m    250[39m [43m    [49m[43mprogram_with_args[49m[43m,[49m
-[32m    251[39m [43m    [49m[43menv[49m[43m=[49m[43menv[49m[43m,[49m
-[32m    252[39m [43m    [49m[43mcwd[49m[43m=[49m[43mworking_dir[49m[43m,[49m
-[32m    253[39m [43m    [49m[43mshell[49m[43m=[49m[38;5;28;43;01mFalse[39;49;00m[43m,[49m
-[32m    254[39m [43m    [49m[43mstderr[49m[43m=[49m[43msubprocess[49m[43m.[49m[43mPIPE[49m[43m,[49m
-[32m    255[39m [43m    [49m[43mstdout[49m[43m=[49m[43msubprocess[49m[43m.[49m[43mPIPE[49m[43m,[49m
-[32m    256[39m [43m    [49m[43m*[49m[43m*[49m[43mkwargs[49m[43m,[49m
-[32m    257[39m [43m[49m[43m)[49m
-[32m    258[39m stdout_data, stderr_data = process.communicate()
-
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/subprocess.py:1026[39m, in [36mPopen.__init__[39m[34m(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, user, group, extra_groups, encoding, errors, text, umask, pipesize, process_group)[39m
-[32m   1023[39m             [38;5;28mself[39m.stderr = io.TextIOWrapper([38;5;28mself[39m.stderr,
-[32m   1024[39m                     encoding=encoding, errors=errors)
-[32m-> [39m[32m1026[39m     [38;5;28;43mself[39;49m[43m.[49m[43m_execute_child[49m[43m([49m[43margs[49m[43m,[49m[43m [49m[43mexecutable[49m[43m,[49m[43m [49m[43mpreexec_fn[49m[43m,[49m[43m [49m[43mclose_fds[49m[43m,[49m
-[32m   1027[39m [43m                        [49m[43mpass_fds[49m[43m,[49m[43m [49m[43mcwd[49m[43m,[49m[43m [49m[43menv[49m[43m,[49m
-[32m   1028[39m [43m                        [49m[43mstartupinfo[49m[43m,[49m[43m [49m[43mcreationflags[49m[43m,[49m[43m [49m[43mshell[49m[43m,[49m
-[32m   1029[39m [43m                        [49m[43mp2cread[49m[43m,[49m[43m [49m[43mp2cwrite[49m[43m,[49m
-[32m   1030[39m [43m                        [49m[43mc2pread[49m[43m,[49m[43m [49m[43mc2pwrite[49m[43m,[49m
-[32m   1031[39m [43m                        [49m[43merrread[49m[43m,[49m[43m [49m[43merrwrite[49m[43m,[49m
-[32m   1032[39m [43m                        [49m[43mrestore_signals[49m[43m,[49m
-[32m   1033[39m [43m                        [49m[43mgid[49m[43m,[49m[43m [49m[43mgids[49m[43m,[49m[43m [49m[43muid[49m[43m,[49m[43m [49m[43mumask[49m[43m,[49m
-[32m   1034[39m [43m                        [49m[43mstart_new_session[49m[43m,[49m[43m [49m[43mprocess_group[49m[43m)[49m
-[32m   1035[39m [38;5;28;01mexcept[39;00m:
-[32m   1036[39m     [38;5;66;03m# Cleanup if the child failed starting.[39;00m
-
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/subprocess.py:1955[39m, in [36mPopen._execute_child[39m[34m(self, args, executable, preexec_fn, close_fds, pass_fds, cwd, env, startupinfo, creationflags, shell, p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite, restore_signals, gid, gids, uid, umask, start_new_session, process_group)[39m
-[32m   1954[39m [38;5;28;01mif[39;00m err_filename [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m [38;5;28;01mNone[39;00m:
-[32m-> [39m[32m1955[39m     [38;5;28;01mraise[39;00m child_exception_type(errno_num, err_msg, err_filename)
-[32m   1956[39m [38;5;28;01melse[39;00m:
-
-[31mFileNotFoundError[39m: [Errno 2] No such file or directory: 'dot'
-
-During handling of the above exception, another exception occurred:
-
-[31mFileNotFoundError[39m                         Traceback (most recent call last)
+[31mModuleNotFoundError[39m                       Traceback (most recent call last)
 [36mCell[39m[36m [39m[32mIn[4][39m[32m, line 2[39m
 [32m      1[39m c = xp.add(a, b)
 [32m----> [39m[32m2[39m [43mc[49m[43m.[49m[43mvisualize[49m[43m([49m[43m)[49m
@@ -115,26 +68,35 @@ During handling of the above exception, another exception occurred:
 [32m    372[39m [43m    [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
 [32m    373[39m [43m[49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:801[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
-[32m    799[39m     [38;5;28mformat[39m = [33m"[39m[33msvg[39m[33m"[39m
-[32m    800[39m full_filename = [33mf[39m[33m"[39m[38;5;132;01m{[39;00mfilename[38;5;132;01m}[39;00m[33m.[39m[38;5;132;01m{[39;00m[38;5;28mformat[39m[38;5;132;01m}[39;00m[33m"[39m
-[32m--> [39m[32m801[39m [43mgv[49m[43m.[49m[43mwrite[49m[43m([49m[43mfull_filename[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m)[49m
-[32m    803[39m [38;5;28;01mtry[39;00m:  [38;5;66;03m# pragma: no cover[39;00m
-[32m    804[39m     [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mIPython[39;00m[34;01m.[39;00m[34;01mdisplay[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mdisplay[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:614[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
+[32m    606[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(
+[32m    607[39m     [38;5;28mself[39m,
+[32m    608[39m     filename=[33m"[39m[33mcubed[39m[33m"[39m,
+[32m   (...)[39m[32m    612[39m     engine: Literal[[33m"[39m[33mcytoscape[39m[33m"[39m, [33m"[39m[33mgraphviz[39m[33m"[39m] | [38;5;28;01mNone[39;00m = [38;5;28;01mNone[39;00m,
+[32m    613[39m ):
+[32m--> [39m[32m614[39m     [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mcubed[39;00m[34;01m.[39;00m[34;01mdiagnostics[39;00m[34;01m.[39;00m[34;01mcolors[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m APRICOT, LAVENDER, RED
+[32m    616[39m     [38;5;28;01mif[39;00m engine == [33m"[39m[33mcytoscape[39m[33m"[39m:
+[32m    617[39m         [38;5;28;01mreturn[39;00m [38;5;28mself[39m.visualize_cytoscape(
+[32m    618[39m             filename,
+[32m    619[39m             [38;5;28mformat[39m=[38;5;28mformat[39m,
+[32m    620[39m             rankdir=rankdir,
+[32m    621[39m             show_hidden=show_hidden,
+[32m    622[39m         )
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/pydot/core.py:1730[39m, in [36mDot.write[39m[34m(self, path, prog, format, encoding)[39m
-[32m   1728[39m         f.write(s)
-[32m   1729[39m [38;5;28;01melse[39;00m:
-[32m-> [39m[32m1730[39m     s = [38;5;28;43mself[39;49m[43m.[49m[43mcreate[49m[43m([49m[43mprog[49m[43m,[49m[43m [49m[38;5;28;43mformat[39;49m[43m,[49m[43m [49m[43mencoding[49m[43m=[49m[43mencoding[49m[43m)[49m
-[32m   1731[39m     [38;5;28;01mwith[39;00m [38;5;28mopen[39m(path, mode=[33m"[39m[33mwb[39m[33m"[39m) [38;5;28;01mas[39;00m f:
-[32m   1732[39m         f.write(s)  [38;5;66;03m# type: ignore[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/diagnostics/__init__.py:1[39m
+[32m----> [39m[32m1[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01m.[39;00m[34;01mrich[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m RichProgressBar [38;5;28;01mas[39;00m ProgressBar
+[32m      3[39m __all__ = [[33m"[39m[33mProgressBar[39m[33m"[39m]
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/pydot/core.py:1833[39m, in [36mDot.create[39m[34m(self, prog, format, encoding)[39m
-[32m   1831[39m     args = [38;5;28mlist[39m(e.args)  [38;5;66;03m# type: ignore[39;00m
-[32m   1832[39m     args[[32m1[39m] = [33mf[39m[33m'[39m[33m"[39m[38;5;132;01m{[39;00mprog[38;5;132;01m}[39;00m[33m"[39m[33m not found in path.[39m[33m'[39m  [38;5;66;03m# type: ignore[39;00m
-[32m-> [39m[32m1833[39m     [38;5;28;01mraise[39;00m [38;5;167;01mOSError[39;00m(*args)
-[32m   1834[39m [38;5;28;01melse[39;00m:
-[32m   1835[39m     [38;5;28;01mraise[39;00m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/diagnostics/rich.py:6[39m
+[32m      3[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mtime[39;00m
+[32m      4[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mcontextlib[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m contextmanager
+[32m----> [39m[32m6[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrich[39;00m[34;01m.[39;00m[34;01mconsole[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m RenderableType
+[32m      7[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrich[39;00m[34;01m.[39;00m[34;01mprogress[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m (
+[32m      8[39m     BarColumn,
+[32m      9[39m     MofNCompleteColumn,
+[32m   (...)[39m[32m     15[39m     TimeElapsedColumn,
+[32m     16[39m )
+[32m     17[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrich[39;00m[34;01m.[39;00m[34;01mtext[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m Text
 
-[31mFileNotFoundError[39m: [Errno 2] "dot" not found in path.
+[31mModuleNotFoundError[39m: No module named 'rich'
 
