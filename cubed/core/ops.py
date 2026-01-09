@@ -212,11 +212,16 @@ def _store_array(
         shape = target.shape
         chunks = target.chunks
         for i, (sl, cs) in enumerate(zip(region, chunks)):
-            if sl.start % cs != 0 or (sl.stop % cs != 0 and sl.stop != shape[i]):
+            if (sl.start is not None and sl.start % cs != 0) or (
+                sl.stop is not None and sl.stop % cs != 0 and sl.stop != shape[i]
+            ):
                 raise ValueError(
                     f"Region {region} does not align with target chunks {chunks}"
                 )
-        block_offsets = [sl.start // cs for sl, cs in zip(region, chunks)]
+        block_offsets = [
+            (0 if sl.start is None else sl.start // cs)
+            for sl, cs in zip(region, chunks)
+        ]
 
         def key_function(out_key):
             out_coords = out_key[1:]
