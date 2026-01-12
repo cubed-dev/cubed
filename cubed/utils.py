@@ -245,10 +245,9 @@ def extract_array_names(frame: FrameType) -> dict[str, str]:
             type(obj).__module__.split(".")[0] == "xarray"
             and obj.__class__.__name__ == "Dataset"
         ):
-            for var in obj.variables:
-                da = obj[var]
-                if isinstance(da._data, Array):
-                    array_names_to_variable_names[da._data.name] = f"{name}.{var}"
+            for var_name, var in obj.variables:
+                if isinstance(var._data, Array):
+                    array_names_to_variable_names[var._data.name] = f"{name}.{var_name}"
     return array_names_to_variable_names
 
 
