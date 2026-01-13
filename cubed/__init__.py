@@ -20,9 +20,23 @@ from .array.overlap import map_overlap
 from .array.pad import pad
 from .core.array import compute, measure_reserved_mem, plan, visualize
 from .core.gufunc import apply_gufunc
-from .core.ops import from_array, from_zarr, map_blocks, rechunk, store, to_zarr
+from .core.ops import (
+    from_array,
+    from_manifest,
+    from_zarr,
+    map_blocks,
+    rechunk,
+    store,
+    to_zarr,
+)
 from .runtime.types import Callback, TaskEndEvent
 from .spec import Spec
+
+try:
+    from .virtualizarr import from_virtual_array
+except ImportError:
+    # VirtualiZarr integration is optional
+    from_virtual_array = None
 
 __all__ = [
     "__version__",
@@ -33,6 +47,8 @@ __all__ = [
     "compute",
     "config",
     "from_array",
+    "from_manifest",
+    "from_virtual_array",
     "from_zarr",
     "map_blocks",
     "map_overlap",
