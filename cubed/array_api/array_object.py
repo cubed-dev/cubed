@@ -23,7 +23,6 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
 from cubed.utils import itemsize, memory_repr
-from cubed.vendor.dask.widgets import get_template
 
 ARRAY_SVG_SIZE = (
     120  # cubed doesn't have a config module like dask does so hard-code this for now
@@ -48,6 +47,8 @@ class Array(CoreArray):
         return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
     def _repr_html_(self):
+        from cubed.diagnostics.widgets import get_template
+
         try:
             grid = self.to_svg(size=ARRAY_SVG_SIZE)
         except NotImplementedError:

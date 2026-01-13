@@ -351,7 +351,9 @@ def store(
     compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
 
 
-def _store_array(source: "Array", target, path=None, region=None):
+def _store_array(
+    source: "Array", target, path=None, region=None, blockwise_kwargs=None
+):
     if target is not None and not is_storage_array(target):
         target = lazy_zarr_array(
             target,
@@ -363,6 +365,7 @@ def _store_array(source: "Array", target, path=None, region=None):
     if target is None and region is not None:
         raise ValueError("Target store must be specified when setting a region")
     identity = lambda a: a
+    blockwise_kwargs = blockwise_kwargs or {}
     if region is None or all(r == slice(None) for r in region):
         ind = tuple(range(source.ndim))
         return blockwise(
@@ -373,17 +376,23 @@ def _store_array(source: "Array", target, path=None, region=None):
             dtype=source.dtype,
             align_arrays=False,
             target_store=target,
+            **blockwise_kwargs,
         )
     else:
         # treat a region as an offset within the target store
         shape = target.shape
         chunks = target.chunks
         for i, (sl, cs) in enumerate(zip(region, chunks)):
-            if sl.start % cs != 0 or (sl.stop % cs != 0 and sl.stop != shape[i]):
+            if (sl.start is not None and sl.start % cs != 0) or (
+                sl.stop is not None and sl.stop % cs != 0 and sl.stop != shape[i]
+            ):
                 raise ValueError(
                     f"Region {region} does not align with target chunks {chunks}"
                 )
-        block_offsets = [sl.start // cs for sl, cs in zip(region, chunks)]
+        block_offsets = [
+            (0 if sl.start is None else sl.start // cs)
+            for sl, cs in zip(region, chunks)
+        ]
 
         def key_function(out_key):
             out_coords = out_key[1:]
@@ -410,6 +419,8 @@ def _store_array(source: "Array", target, path=None, region=None):
             chunkss=[chunks],
             target_stores=[target],
             output_blocks=output_blocks,
+            num_tasks=source.npartitions,
+            **blockwise_kwargs,
         )
         from cubed import Array
 

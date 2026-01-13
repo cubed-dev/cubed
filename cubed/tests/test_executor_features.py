@@ -17,6 +17,8 @@ from cubed.diagnostics.mem_warn import MemoryWarningCallback
 from cubed.diagnostics.rich import RichProgressBar
 from cubed.diagnostics.timeline import TimelineVisualizationCallback
 from cubed.diagnostics.tqdm import TqdmProgressBar
+from cubed.diagnostics.widgets import LivePlanViewer, LiveTimelineViewer
+from cubed.diagnostics.widgets.memory import LiveMemoryViewer
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.create import create_executor
 from cubed.storage.store import get_storage_name
@@ -163,6 +165,20 @@ def test_callbacks(spec, executor):
 
     num_created_arrays = 1
     assert task_counter.value == num_created_arrays + 4
+
+
+def test_widget_callbacks(executor):
+    if executor.name != "processes":
+        pytest.skip(f"{executor.name} executor does not support LiveMemoryViewer")
+    # test following indirectly by checking they don't cause a failure
+    # note that the javascript part is *not* tested
+    with LivePlanViewer(), LiveMemoryViewer(), LiveTimelineViewer():
+        a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+        b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2))
+        c = xp.add(a, b)
+        assert_array_equal(
+            c.compute(executor=executor), np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
+        )
 
 
 def test_callbacks_as_context_managers(spec, executor):

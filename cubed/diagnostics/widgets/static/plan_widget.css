@@ -1,0 +1,40 @@
+.plan-widget {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+}
+
+.plan-widget-sidebar {
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 12px;
+    background-color: #f7fafd;
+    padding: 5px;
+}
+
+.plan-widget-sidebar table {
+    table-layout: fixed;
+    width: 95%;
+    border-collapse: collapse;
+    white-space: nowrap;
+}
+
+.plan-widget-sidebar th {
+    text-align: left;
+    border-bottom: 1px solid #999999;
+}
+
+.plan-widget-sidebar td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.plan-widget-graph-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.plan-widget-graph-controls button {
+    margin: 2px;
+    padding: 2px
+}

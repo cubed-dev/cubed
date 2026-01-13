@@ -1,0 +1,15 @@
+# From https://sashamaps.net/docs/resources/20-colors/
+
+RED = "#e6194B"
+GREEN = "#3cb44b"
+YELLOW = "#ffe119"
+BLUE = "#4363d8"
+ORANGE = "#f58231"
+CYAN = "#42d4f4"
+LAVENDER = "#dcbeff"
+BEIGE = "#fffac8"
+MINT = "#aaffc3"
+APRICOT = "#ffd8b1"
+GREY = "#a9a9a9"
+WHITE = "#ffffff"
+BLACK = "#000000"

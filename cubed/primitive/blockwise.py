@@ -296,6 +296,7 @@ def general_blockwise(
     target_chunks_: Optional[T_RegularChunks] = None,
     return_writes_stores: bool = False,
     output_blocks: Optional[Iterator[List[int]]] = None,
+    num_tasks=None,
     **kwargs,
 ) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -418,7 +419,8 @@ def general_blockwise(
         output_blocks = map(
             list, itertools.product(*[range(len(c)) for c in chunks_normal])
         )
-    num_tasks = math.prod(len(c) for c in chunks_normal)
+    if num_tasks is None:
+        num_tasks = math.prod(len(c) for c in chunks_normal)
 
     pipeline = CubedPipeline(
         apply_blockwise,
