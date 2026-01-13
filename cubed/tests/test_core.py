@@ -113,6 +113,222 @@ def test_from_zarr(tmp_path, spec, executor, path):
     )
 
 
+def test_from_manifest_basic(spec, executor):
+    """Test from_manifest with a simple in-memory chunk store."""
+    # Create a simple manifest: 2x2 chunks of a 4x4 array
+    data = np.arange(16).reshape(4, 4)
+    chunk_store = {
+        (0, 0): data[0:2, 0:2],
+        (0, 1): data[0:2, 2:4],
+        (1, 0): data[2:4, 0:2],
+        (1, 1): data[2:4, 2:4],
+    }
+
+    def load_chunk(chunk_key):
+        return chunk_store[chunk_key].copy()
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(4, 4),
+        dtype=np.int64,
+        chunks=(2, 2),
+        spec=spec,
+    )
+
+    assert a.shape == (4, 4)
+    assert a.dtype == np.int64
+    assert a.chunks == ((2, 2), (2, 2))
+    assert_array_equal(a.compute(executor=executor), data)
+
+
+def test_from_manifest_irregular_chunks(spec, executor):
+    """Test from_manifest with irregular (edge) chunks."""
+    # 5x5 array with 2x2 chunks (edges will be smaller)
+    data = np.arange(25).reshape(5, 5)
+
+    def load_chunk(chunk_key):
+        i, j = chunk_key
+        row_start, row_end = i * 2, min((i + 1) * 2, 5)
+        col_start, col_end = j * 2, min((j + 1) * 2, 5)
+        return data[row_start:row_end, col_start:col_end].copy()
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(5, 5),
+        dtype=np.int64,
+        chunks=(2, 2),
+        spec=spec,
+    )
+
+    assert a.shape == (5, 5)
+    assert_array_equal(a.compute(executor=executor), data)
+
+
+def test_from_manifest_1d(spec, executor):
+    """Test from_manifest with 1D array."""
+    data = np.arange(10)
+
+    def load_chunk(chunk_key):
+        i = chunk_key[0]
+        start, end = i * 3, min((i + 1) * 3, 10)
+        return data[start:end].copy()
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(10,),
+        dtype=np.int64,
+        chunks=(3,),
+        spec=spec,
+    )
+
+    assert a.shape == (10,)
+    assert_array_equal(a.compute(executor=executor), data)
+
+
+def test_from_manifest_operations(spec, executor):
+    """Test that from_manifest arrays work with cubed operations."""
+    data = np.arange(16).reshape(4, 4)
+
+    def load_chunk(chunk_key):
+        i, j = chunk_key
+        return data[i * 2 : (i + 1) * 2, j * 2 : (j + 1) * 2].copy()
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(4, 4),
+        dtype=np.int64,
+        chunks=(2, 2),
+        spec=spec,
+    )
+
+    # Test various operations
+    b = a + 10
+    assert_array_equal(b.compute(executor=executor), data + 10)
+
+    c = xp.sum(a, axis=0)
+    assert_array_equal(c.compute(executor=executor), data.sum(axis=0))
+
+    d = a * 2
+    assert_array_equal(d.compute(executor=executor), data * 2)
+
+
+def test_from_manifest_with_rechunk(spec, executor):
+    """Test rechunking a from_manifest array."""
+    data = np.arange(16).reshape(4, 4)
+
+    def load_chunk(chunk_key):
+        i, j = chunk_key
+        return data[i * 2 : (i + 1) * 2, j * 2 : (j + 1) * 2].copy()
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(4, 4),
+        dtype=np.int64,
+        chunks=(2, 2),
+        spec=spec,
+    )
+
+    # Rechunk to different size
+    b = cubed.rechunk(a, chunks=(4, 2))
+    assert b.chunks == ((4,), (2, 2))
+    assert_array_equal(b.compute(executor=executor), data)
+
+
+def test_from_manifest_not_callable(spec):
+    """Test that from_manifest raises error if load_chunk is not callable."""
+    with pytest.raises(TypeError, match="load_chunk must be callable"):
+        cubed.from_manifest(
+            "not_callable",
+            shape=(4, 4),
+            dtype=np.int64,
+            chunks=(2, 2),
+            spec=spec,
+        )
+
+
+def test_from_manifest_serialization(spec, executor):
+    """Test that load_chunk callback is properly serialized."""
+    import cloudpickle
+
+    data = np.arange(16).reshape(4, 4)
+
+    def load_chunk(chunk_key):
+        # Use data from closure - must be serializable
+        i, j = chunk_key
+        return data[i * 2 : (i + 1) * 2, j * 2 : (j + 1) * 2].copy()
+
+    # Verify callback can be pickled with cloudpickle
+    pickled = cloudpickle.dumps(load_chunk)
+    unpickled = cloudpickle.loads(pickled)
+    assert_array_equal(unpickled((0, 0)), data[0:2, 0:2])
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(4, 4),
+        dtype=np.int64,
+        chunks=(2, 2),
+        spec=spec,
+    )
+
+    assert_array_equal(a.compute(executor=executor), data)
+
+
+def test_from_manifest_dtypes(spec, executor):
+    """Test from_manifest with different dtypes."""
+    for dtype in [np.float32, np.float64, np.int32, np.complex64]:
+        data = np.arange(4, dtype=dtype).reshape(2, 2)
+
+        def load_chunk(chunk_key, data=data):
+            return data[
+                chunk_key[0] : chunk_key[0] + 2, chunk_key[1] : chunk_key[1] + 2
+            ].copy()
+
+        a = cubed.from_manifest(
+            load_chunk,
+            shape=(2, 2),
+            dtype=dtype,
+            chunks=(2, 2),
+            spec=spec,
+        )
+
+        result = a.compute(executor=executor)
+        assert result.dtype == dtype
+        assert_array_equal(result, data)
+
+
+def test_from_manifest_with_files(tmp_path, spec, executor):
+    """Test from_manifest loading chunks from files (VirtualiZarr-like use case)."""
+    # Create a simulated manifest where chunks are stored in separate files
+    data = np.arange(16).reshape(4, 4)
+
+    # Save chunks to files
+    chunk_dir = tmp_path / "chunks"
+    chunk_dir.mkdir()
+
+    manifest = {}
+    for i in range(2):
+        for j in range(2):
+            chunk_data = data[i * 2 : (i + 1) * 2, j * 2 : (j + 1) * 2]
+            chunk_file = chunk_dir / f"chunk_{i}_{j}.npy"
+            np.save(chunk_file, chunk_data)
+            manifest[(i, j)] = str(chunk_file)
+
+    # Create a loader that reads from the manifest
+    def load_chunk(chunk_key):
+        chunk_file = manifest[chunk_key]
+        return np.load(chunk_file)
+
+    a = cubed.from_manifest(
+        load_chunk,
+        shape=(4, 4),
+        dtype=np.int64,
+        chunks=(2, 2),
+        spec=spec,
+    )
+
+    assert_array_equal(a.compute(executor=executor), data)
+
+
 def test_store(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
 
