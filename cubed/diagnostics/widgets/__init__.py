@@ -1,10 +1,23 @@
 try:
-    from cubed.vendor.dask.widgets.widgets import (
+    from cubed.diagnostics.widgets.core import (
         FILTERS,
         TEMPLATE_PATHS,
         get_environment,
         get_template,
     )
+
+    from .memory import LiveMemoryViewer, MemoryWidget
+    from .plan import LivePlanViewer, PlanWidget
+    from .timeline import LiveTimelineViewer, TimelineWidget
+
+    __all__ = [
+        "LiveMemoryViewer",
+        "LivePlanViewer",
+        "LiveTimelineViewer",
+        "MemoryWidget",
+        "PlanWidget",
+        "TimelineWidget",
+    ]
 
 except ImportError as e:
     msg = (

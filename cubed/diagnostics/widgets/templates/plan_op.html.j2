@@ -1,0 +1,51 @@
+<h3>Details</h3>
+<table>
+    <tbody>
+        <tr>
+            <td>Name</td>
+            <td>{{ node_data["name"] }}</td>
+        </tr>
+        <tr>
+            <td>Operation</td>
+            <td>{{ node_data["op_name"] }}</td>
+        </tr>
+        {% if node_data["primitive_op"] %}
+        <tr>
+            <td>Projected memory</td>
+            <td>{{ node_data["primitive_op"].projected_mem | memory_repr }}</td>
+        </tr>
+        <tr>
+            <td>Tasks</td>
+            <td>{{ node_data["primitive_op"].num_tasks | format_int }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["primitive_op"] and node_data["primitive_op"].write_chunks %}
+        <tr>
+            <td>Write chunk shape</td>
+            <td>{{ node_data["primitive_op"].write_chunks }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["pipeline"] and node_data["pipeline"].config %}
+        <tr>
+            <td>Num input blocks</td>
+            <td>{{ node_data["pipeline"].config.num_input_blocks }}</td>
+        </tr>
+        <tr>
+            <td>Num output blocks</td>
+            <td>{{ node_data["pipeline"].config.num_output_blocks }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["calls"] %}
+        <tr>
+            <td>Calls</td>
+            <td title="{{ node_data["calls"] | html_escape }}">{{ node_data["calls"] | html_escape }}</td>
+        </tr>
+        {% endif %}
+        {% if node_data["line"] %}
+        <tr>
+            <td>Line</td>
+            <td>{{ node_data["line"] | html_escape }}</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>

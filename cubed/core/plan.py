@@ -4,10 +4,11 @@ import inspect
 import shutil
 import tempfile
 import uuid
+import warnings
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
 
 import networkx as nx
 
@@ -271,25 +272,21 @@ class Plan:
 
         return dag
 
-    def _check_projected_mem(self, dag) -> None:
-        op_name = None
-        max_projected_mem_op = None
+    def _find_ops_exceeding_memory(self, dag) -> List[Tuple[str, "PrimitiveOperation"]]:
+        """Find all operations where projected memory exceeds allowed memory.
+
+        Returns a list of (op_name, primitive_op) tuples for operations that
+        exceed memory limits, sorted by projected memory (highest first).
+        """
+        ops_exceeding = []
         for n, d in dag.nodes(data=True):
             if "primitive_op" in d:
                 op = d["primitive_op"]
-                if (
-                    max_projected_mem_op is None
-                    or op.projected_mem > max_projected_mem_op.projected_mem
-                ):
-                    op_name = n
-                    max_projected_mem_op = op
-        if max_projected_mem_op is not None:
-            op = max_projected_mem_op
-            if op.projected_mem > op.allowed_mem:
-                raise ValueError(
-                    f"Projected blockwise memory ({memory_repr(op.projected_mem)}) exceeds allowed_mem ({memory_repr(op.allowed_mem)}), "
-                    f"including reserved_mem ({memory_repr(op.reserved_mem)}) for {op_name}"
-                )
+                if op.projected_mem > op.allowed_mem:
+                    ops_exceeding.append((n, op))
+        # Sort by projected_mem descending so worst offenders are first
+        ops_exceeding.sort(key=lambda x: x[1].projected_mem, reverse=True)
+        return ops_exceeding
 
     @lru_cache  # noqa: B019
     def _finalize(
@@ -304,8 +301,10 @@ class Plan:
         if callable(compile_function):
             dag = self._compile_blockwise(dag, compile_function)
         dag = self._create_lazy_zarr_arrays(dag)
-        self._check_projected_mem(dag)
-        return FinalizedPlan(nx.freeze(dag), self.array_names, optimize_graph)
+        ops_exceeding_memory = self._find_ops_exceeding_memory(dag)
+        return FinalizedPlan(
+            nx.freeze(dag), self.array_names, optimize_graph, ops_exceeding_memory
+        )
 
 
 class ArrayRole(Enum):
@@ -324,10 +323,11 @@ class FinalizedPlan:
     4. freezing the final DAG so it can't be changed
     """
 
-    def __init__(self, dag, array_names, optimized):
+    def __init__(self, dag, array_names, optimized, ops_exceeding_memory=None):
         self.dag = dag
         self.array_names = array_names
         self.optimized = optimized
+        self._ops_exceeding_memory = ops_exceeding_memory or []
         self._calculate_stats()
 
         self.input_array_names = []
@@ -540,6 +540,34 @@ class FinalizedPlan:
         """The total number of chunks for all materialized arrays in this plan."""
         return self._total_nchunks
 
+    @property
+    def exceeds_memory(self) -> bool:
+        """True if any operation in this plan exceeds the allowed memory."""
+        return len(self._ops_exceeding_memory) > 0
+
+    @property
+    def ops_exceeding_memory(self) -> List[Tuple[str, "PrimitiveOperation"]]:
+        """List of (op_name, primitive_op) tuples for operations exceeding memory.
+
+        Sorted by projected memory (highest first).
+        """
+        return self._ops_exceeding_memory
+
+    def validate(self) -> None:
+        """Validate that this plan can be executed.
+
+        Raises
+        ------
+        ValueError
+            If any operation's projected memory exceeds the allowed memory.
+        """
+        if self._ops_exceeding_memory:
+            op_name, op = self._ops_exceeding_memory[0]  # Report worst offender
+            raise ValueError(
+                f"Projected blockwise memory ({memory_repr(op.projected_mem)}) exceeds allowed_mem ({memory_repr(op.allowed_mem)}), "
+                f"including reserved_mem ({memory_repr(op.reserved_mem)}) for {op_name}"
+            )
+
     def execute(
         self,
         executor=None,
@@ -548,6 +576,8 @@ class FinalizedPlan:
         spec=None,
         **kwargs,
     ):
+        self.validate()
+
         dag = self.dag
 
         if resume:
@@ -579,7 +609,27 @@ class FinalizedPlan:
         format=None,
         rankdir="TB",
         show_hidden=False,
+        engine: Literal["cytoscape", "graphviz"] | None = None,
     ):
+        from cubed.diagnostics.colors import APRICOT, LAVENDER, RED
+
+        if engine == "cytoscape":
+            return self.visualize_cytoscape(
+                filename,
+                format=format,
+                rankdir=rankdir,
+                show_hidden=show_hidden,
+            )
+
+        if self._ops_exceeding_memory:
+            op_names = [name for name, _ in self._ops_exceeding_memory]
+            warnings.warn(
+                f"Plan has {len(self._ops_exceeding_memory)} operation(s) that exceed allowed memory: {op_names}. "
+                "These are shown in red in the visualization.",
+                stacklevel=2,
+            )
+        ops_exceeding_names = {name for name, _ in self._ops_exceeding_memory}
+
         dag = self.dag.copy()  # make a copy since we mutate the DAG below
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
@@ -590,19 +640,41 @@ class FinalizedPlan:
                 list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
             )
 
+        # Build the graph label - use HTML-like label for mixed colors if memory exceeded
+        stats_text = (
+            f"num tasks: {self.num_tasks}<BR ALIGN='LEFT'/>"
+            f"max projected memory: {memory_repr(self.max_projected_mem)}<BR ALIGN='LEFT'/>"
+            f"total nbytes written: {memory_repr(self.total_nbytes_written)}<BR ALIGN='LEFT'/>"
+            f"optimized: {self.optimized}<BR ALIGN='LEFT'/>"
+        )
+
+        if self._ops_exceeding_memory:
+            # Build warning text in red
+            warning_lines = [
+                "<BR ALIGN='LEFT'/>!!! MEMORY EXCEEDED !!!<BR ALIGN='LEFT'/>"
+            ]
+            for op_name, op in self._ops_exceeding_memory:
+                warning_lines.append(
+                    f"{op_name}: requires {memory_repr(op.projected_mem)}, "
+                    f"allowed {memory_repr(op.allowed_mem)}<BR ALIGN='LEFT'/>"
+                )
+            warning_text = "".join(warning_lines)
+            # HTML-like label with mixed colors
+            label = (
+                f"<<FONT>{stats_text}</FONT><FONT COLOR='{RED}'>{warning_text}</FONT>>"
+            )
+        else:
+            # Simple HTML label (no warning)
+            label = f"<{stats_text}>"
+
         dag.graph["graph"] = {
             "rankdir": rankdir,
-            "label": (
-                # note that \l is used to left-justify each line (see https://www.graphviz.org/docs/attrs/nojustify/)
-                rf"num tasks: {self.num_tasks}\l"
-                rf"max projected memory: {memory_repr(self.max_projected_mem)}\l"
-                rf"total nbytes written: {memory_repr(self.total_nbytes_written)}\l"
-                rf"optimized: {self.optimized}\l"
-            ),
+            "label": label,
             "labelloc": "bottom",
             "labeljust": "left",
             "fontsize": "10",
         }
+
         dag.graph["node"] = {"fontname": "helvetica", "shape": "box", "fontsize": "10"}
 
         # do an initial pass to extract array variable names from stack summaries
@@ -613,7 +685,8 @@ class FinalizedPlan:
                 stacks.append(stack_summaries)
         # add current stack info
         # go back one in the stack to the caller of 'visualize'
-        frame = inspect.currentframe().f_back
+        frame = inspect.currentframe()
+        frame = frame.f_back if frame is not None else frame
         stack_summaries = extract_stack_summaries(frame, limit=10)
         stacks.append(stack_summaries)
         array_display_names = extract_array_names_from_stack_summaries(stacks)
@@ -627,12 +700,13 @@ class FinalizedPlan:
                 func_name = d["func_name"]
                 label = f"{n}\n{func_name}".strip()
                 op_name = d["op_name"]
-                if op_name == "blockwise":
+                if n in ops_exceeding_names:
+                    # operation exceeds memory - show in red
                     d["style"] = '"rounded,filled"'
-                    d["fillcolor"] = "#dcbeff"
-                elif op_name == "rechunk":
+                    d["fillcolor"] = RED
+                elif op_name == "blockwise" or op_name == "rechunk":
                     d["style"] = '"rounded,filled"'
-                    d["fillcolor"] = "#aaffc3"
+                    d["fillcolor"] = LAVENDER
                 else:
                     # creation function
                     d["style"] = "rounded"
@@ -695,7 +769,7 @@ class FinalizedPlan:
                 # materialized arrays are light orange, virtual arrays are white
                 if isinstance(target, LazyZarrArray) or is_storage_array(target):
                     d["style"] = "filled"
-                    d["fillcolor"] = "#ffd8b1"
+                    d["fillcolor"] = APRICOT
                 if n in array_display_names:
                     var_name = array_display_names[n]
                     label = f"{n}\n{var_name}"
@@ -736,6 +810,28 @@ class FinalizedPlan:
             # Can't return a display object if no IPython.
             pass
         return None
+
+    def visualize_cytoscape(
+        self,
+        filename="cubed",
+        format=None,
+        rankdir="TB",
+        show_hidden=False,
+    ):
+        from cubed.diagnostics.widgets.plan import create_or_update_plan_widget
+
+        widget = create_or_update_plan_widget(self, rankdir=rankdir)
+
+        if filename is not None:
+            from ipywidgets.embed import embed_minimal_html
+
+            if format is None:
+                format = "html"
+            full_filename = f"{filename}.{format}"
+            embed_minimal_html(
+                full_filename, views=[widget], title="Cubed plan", drop_defaults=False
+            )
+        return widget
 
 
 @dataclasses.dataclass

@@ -13,7 +13,13 @@ import cubed.random
 from cubed._testing import assert_array_equal
 from cubed.array_api.dtypes import _floating_dtypes
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import general_blockwise, merge_chunks, partial_reduce, tree_reduce
+from cubed.core.ops import (
+    _store_array,
+    general_blockwise,
+    merge_chunks,
+    partial_reduce,
+    tree_reduce,
+)
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.core.plan import ArrayRole
 from cubed.storage.store import open_storage_array
@@ -400,7 +406,13 @@ def test_to_zarr_array(tmp_path, spec, executor):
 
 def test_to_zarr_region(tmp_path, spec, executor):
     a = xp.asarray(
-        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        [
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
+            [13, 14, 15, 16],
+            [17, 18, 19, 20],
+        ],
         chunks=(2, 2),
         spec=spec,
     )
@@ -413,6 +425,11 @@ def test_to_zarr_region(tmp_path, spec, executor):
     # note that the same zarr store is overwritten in the following tests
 
     region = (slice(0, 2), slice(0, 2))
+
+    # need to use internal _store_array function to access plan
+    # since to_zarr is eager
+    assert _store_array(a[:2, :2], z, region=region).plan().num_tasks == 1
+
     cubed.to_zarr(a[:2, :2], z, region=region, executor=executor)
     res = open_storage_array(store, mode="r")
     assert_array_equal(res[region], np.array([[1, 2], [5, 6]]))
@@ -473,6 +490,22 @@ def test_to_zarr_region(tmp_path, spec, executor):
                 [1, 2, 1, 2, 1],
                 [5, 6, 5, 6, 5],
                 [0, 0, 9, 10, 9],
+            ]
+        ),
+    )
+
+    region = (slice(None), slice(4, 5))
+    cubed.to_zarr(a[:, 0:1], z, region=region, executor=executor)
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(
+        res[:],
+        np.array(
+            [
+                [1, 2, 0, 0, 1],
+                [5, 6, 0, 0, 5],
+                [1, 2, 1, 2, 9],
+                [5, 6, 5, 6, 13],
+                [0, 0, 9, 10, 17],
             ]
         ),
     )
@@ -709,11 +742,29 @@ def test_default_spec_allowed_mem_exceeded():
     # default spec fails for large computations
     a = xp.ones((20000, 10000), chunks=(10000, 10000))
     b = xp.negative(a)
+    # plan() succeeds but marks plan as exceeding memory
+    plan = b.plan()
+    assert plan.exceeds_memory
+    assert len(plan.ops_exceeding_memory) == 1
+    # compute() raises the error
     with pytest.raises(
         ValueError,
         match=r"Projected blockwise memory \(.+\) exceeds allowed_mem \(.+\), including reserved_mem \(.+\) for op-\d+",
     ):
-        b.plan()
+        b.compute()
+
+
+def test_default_spec_allowed_mem_exceeded_visualize(tmp_path):
+    # visualize works but warns when memory is exceeded
+    import warnings
+
+    a = xp.ones((20000, 10000), chunks=(10000, 10000))
+    b = xp.negative(a)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        b.visualize(filename=str(tmp_path / "cubed"))
+        assert len(w) == 1
+        assert "exceed allowed memory" in str(w[0].message)
 
 
 def test_default_spec_config_override():
@@ -939,6 +990,13 @@ def test_visualize(tmp_path):
     # multiple arrays
     cubed.visualize(d, g, filename=tmp_path / "dg")
     assert (tmp_path / "dg.svg").exists()
+
+    # cytoscape
+    e.visualize(filename=tmp_path / "e", engine="cytoscape")
+    assert (tmp_path / "e.html").exists()
+
+    cubed.visualize(d, g, filename=tmp_path / "dg", engine="cytoscape")
+    assert (tmp_path / "dg.html").exists()
 
 
 def test_plan(tmp_path):
