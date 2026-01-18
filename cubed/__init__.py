@@ -22,6 +22,7 @@ from .core.array import compute, measure_reserved_mem, plan, visualize
 from .core.gufunc import apply_gufunc
 from .core.ops import from_array, from_zarr, map_blocks, rechunk, store, to_zarr
 from .runtime.types import Callback, TaskEndEvent
+from .runtime.utils import raise_if_computes
 from .spec import Spec
 
 __all__ = [
@@ -41,6 +42,7 @@ __all__ = [
     "nansum",
     "pad",
     "plan",
+    "raise_if_computes",
     "random",
     "rechunk",
     "store",

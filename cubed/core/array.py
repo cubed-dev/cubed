@@ -299,9 +299,15 @@ def compute(
         compile_function=compile_function,
     )
     if executor is None:
-        executor = spec.executor
-        if executor is None:
-            executor = create_executor("threads", spec.executor_options)
+        from cubed import config
+
+        if "executor_name" in config:
+            # see e.g. raise-if-computes executor
+            executor = create_executor(config["executor_name"])
+        else:
+            executor = spec.executor
+            if executor is None:
+                executor = create_executor("threads", spec.executor_options)
 
     # combine any callbacks specified as args with any active callbacks from the context manager
     if callbacks is None and len(Callback.active) == 0:
