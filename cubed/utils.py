@@ -240,7 +240,7 @@ def extract_array_names(frame: FrameType) -> dict[str, str]:
         ):
             # Note: We use ._data here instead of .data to avoid eager loading inside xarray.open_dataset internals - see https://github.com/cubed-dev/cubed/issues/855
             if isinstance(obj.variable._data, Array):
-                array_names_to_variable_names[obj._data.name] = name
+                array_names_to_variable_names[obj.variable._data.name] = name
         elif (
             type(obj).__module__.split(".")[0] == "xarray"
             and obj.__class__.__name__ == "Dataset"
