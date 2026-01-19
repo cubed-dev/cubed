@@ -127,6 +127,14 @@ def handle_callbacks(callbacks, result, stats):
         [callback.on_task_end(event) for callback in callbacks]
 
 
+def raise_if_computes():
+    """Returns a context manager for testing that ``compute`` is not called."""
+    from cubed import config
+
+    # note that this is not set on the spec, see compute() in array.py
+    return config.set({"executor_name": "raise-if-computes"})
+
+
 # Like asyncio.run(), but works in a Jupyter notebook
 # Based on https://stackoverflow.com/a/75341431
 def asyncio_run(coro):

@@ -22,6 +22,7 @@ from cubed.core.ops import (
 )
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.core.plan import ArrayRole
+from cubed.runtime.utils import raise_if_computes
 from cubed.storage.store import open_storage_array
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
 
@@ -591,6 +592,28 @@ def test_different_specs(tmp_path):
         ValueError, match="Arrays must have same spec in single computation"
     ):
         xp.add(a, b)
+
+
+def test_raise_if_computes():
+    # shouldn't raise since compute has not been called
+    with raise_if_computes():
+        a = xp.ones((3, 3), chunks=(2, 2))
+        b = xp.negative(a)
+
+    # should raise since compute is called
+    with pytest.raises(RuntimeError):
+        with raise_if_computes():
+            b.compute()
+
+    # shouldn't raise since we are outside the context manager
+    assert_array_equal(b.compute(), -np.ones((3, 3)))
+
+    # should raise since compute is called
+    c = xp.ones((3, 3), chunks=(2, 2))
+    d = xp.negative(c)
+    with pytest.raises(RuntimeError):
+        with raise_if_computes():
+            d.compute()
 
 
 @pytest.mark.parametrize(
