@@ -256,9 +256,13 @@ def extract_array_names_from_stack_summaries(
 ) -> dict[str, str]:
     array_display_names: dict[str, str] = {}
     for stack_summaries in stacks:
+        # Look for array names outside cubed, prioritizing those near top of stack.
+        # E.g. if user code defines a variable v1 referring to an array, and passes
+        # it to a utility function that assigns the array locally to v2 then v1 takes
+        # priority.
         first_cubed_i = min(i for i, s in enumerate(stack_summaries) if s.is_cubed())
-        caller_summary = stack_summaries[first_cubed_i - 1]
-        array_display_names.update(caller_summary.array_names_to_variable_names)
+        for caller_summary in reversed(stack_summaries[:first_cubed_i]):
+            array_display_names.update(caller_summary.array_names_to_variable_names)
     return array_display_names
 
 
