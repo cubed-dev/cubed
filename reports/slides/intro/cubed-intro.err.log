@@ -50,23 +50,23 @@ c.visualize()
 [32m    242[39m [43m        [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
 [32m    243[39m [43m    [49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:368[39m, in [36mvisualize[39m[34m(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)[39m
-[32m    336[39m [38;5;250m[39m[33;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
-[32m    337[39m 
-[32m    338[39m [33;03mParameters[39;00m
-[32m   (...)[39m[32m    361[39m [33;03m    in a notebook), otherwise None.[39;00m
-[32m    362[39m [33;03m"""[39;00m
-[32m    363[39m finalized_plan = plan(
-[32m    364[39m     *arrays,
-[32m    365[39m     optimize_graph=optimize_graph,
-[32m    366[39m     optimize_function=optimize_function,
-[32m    367[39m )
-[32m--> [39m[32m368[39m [38;5;28;01mreturn[39;00m [43mfinalized_plan[49m[43m.[49m[43mvisualize[49m[43m([49m
-[32m    369[39m [43m    [49m[43mfilename[49m[43m=[49m[43mfilename[49m[43m,[49m
-[32m    370[39m [43m    [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m,[49m
-[32m    371[39m [43m    [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
-[32m    372[39m [43m    [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
-[32m    373[39m [43m[49m[43m)[49m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:374[39m, in [36mvisualize[39m[34m(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)[39m
+[32m    342[39m [38;5;250m[39m[33;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
+[32m    343[39m 
+[32m    344[39m [33;03mParameters[39;00m
+[32m   (...)[39m[32m    367[39m [33;03m    in a notebook), otherwise None.[39;00m
+[32m    368[39m [33;03m"""[39;00m
+[32m    369[39m finalized_plan = plan(
+[32m    370[39m     *arrays,
+[32m    371[39m     optimize_graph=optimize_graph,
+[32m    372[39m     optimize_function=optimize_function,
+[32m    373[39m )
+[32m--> [39m[32m374[39m [38;5;28;01mreturn[39;00m [43mfinalized_plan[49m[43m.[49m[43mvisualize[49m[43m([49m
+[32m    375[39m [43m    [49m[43mfilename[49m[43m=[49m[43mfilename[49m[43m,[49m
+[32m    376[39m [43m    [49m[38;5;28;43mformat[39;49m[43m=[49m[38;5;28;43mformat[39;49m[43m,[49m
+[32m    377[39m [43m    [49m[43mshow_hidden[49m[43m=[49m[43mshow_hidden[49m[43m,[49m
+[32m    378[39m [43m    [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
+[32m    379[39m [43m[49m[43m)[49m
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:614[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
 [32m    606[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(

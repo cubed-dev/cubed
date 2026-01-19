@@ -85,3 +85,4 @@ Runtime
     Spec
     TaskEndEvent
     measure_reserved_mem
+    raise_if_computes

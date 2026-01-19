@@ -38,9 +38,9 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=845d9ee7"></script>
-    <script src="../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/documentation_options.js?v=57dd71fd"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'slides/intro/cubed-intro';</script>
@@ -205,6 +205,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../generated/cubed.Spec.html">cubed.Spec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/cubed.TaskEndEvent.html">cubed.TaskEndEvent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../generated/cubed.measure_reserved_mem.html">cubed.measure_reserved_mem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../generated/cubed.raise_if_computes.html">cubed.raise_if_computes</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../../array-api.html">Python Array API</a></li>
@@ -511,23 +512,23 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">242</span>         <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">243</span>     <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:368,</span> in <span class="ni">visualize</span><span class="nt">(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)</span>
-<span class="g g-Whitespace">    </span><span class="mi">336</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Produce a visualization of the computation graph for multiple arrays.</span>
-<span class="g g-Whitespace">    </span><span class="mi">337</span><span class="sd"> </span>
-<span class="g g-Whitespace">    </span><span class="mi">338</span><span class="sd"> Parameters</span>
-<span class="sd">   (...)    361     in a notebook), otherwise None.</span>
-<span class="g g-Whitespace">    </span><span class="mi">362</span><span class="sd"> &quot;&quot;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">363</span> <span class="n">finalized_plan</span> <span class="o">=</span> <span class="n">plan</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">364</span>     <span class="o">*</span><span class="n">arrays</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">365</span>     <span class="n">optimize_graph</span><span class="o">=</span><span class="n">optimize_graph</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">366</span>     <span class="n">optimize_function</span><span class="o">=</span><span class="n">optimize_function</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">367</span> <span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">368</span> <span class="k">return</span> <span class="n">finalized_plan</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">369</span>     <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">370</span>     <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">371</span>     <span class="n">show_hidden</span><span class="o">=</span><span class="n">show_hidden</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">372</span>     <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:374,</span> in <span class="ni">visualize</span><span class="nt">(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)</span>
+<span class="g g-Whitespace">    </span><span class="mi">342</span><span class="w"> </span><span class="sd">&quot;&quot;&quot;Produce a visualization of the computation graph for multiple arrays.</span>
+<span class="g g-Whitespace">    </span><span class="mi">343</span><span class="sd"> </span>
+<span class="g g-Whitespace">    </span><span class="mi">344</span><span class="sd"> Parameters</span>
+<span class="sd">   (...)    367     in a notebook), otherwise None.</span>
+<span class="g g-Whitespace">    </span><span class="mi">368</span><span class="sd"> &quot;&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">369</span> <span class="n">finalized_plan</span> <span class="o">=</span> <span class="n">plan</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">370</span>     <span class="o">*</span><span class="n">arrays</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">371</span>     <span class="n">optimize_graph</span><span class="o">=</span><span class="n">optimize_graph</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">372</span>     <span class="n">optimize_function</span><span class="o">=</span><span class="n">optimize_function</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">373</span> <span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">374</span> <span class="k">return</span> <span class="n">finalized_plan</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">375</span>     <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span>     <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="n">show_hidden</span><span class="o">=</span><span class="n">show_hidden</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">378</span>     <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">379</span> <span class="p">)</span>
 
 <span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:614,</span> in <span class="ni">FinalizedPlan.visualize</span><span class="nt">(self, filename, format, rankdir, show_hidden, engine)</span>
 <span class="g g-Whitespace">    </span><span class="mi">606</span> <span class="k">def</span><span class="w"> </span><span class="nf">visualize</span><span class="p">(</span>
