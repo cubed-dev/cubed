@@ -3,13 +3,14 @@ from cubed.backend_array_api import namespace as nxp
 
 class __array_namespace_info__:
     def capabilities(self):
-        return {
+        cap = {
             "boolean indexing": False,  # not supported in Cubed (#73)
             "data-dependent shapes": False,  # not supported in Cubed
-            "max dimensions": nxp.__array_namespace_info__().capabilities()[
-                "max dimensions"
-            ],
         }
+        nxp_cap = nxp.__array_namespace_info__().capabilities()
+        if "max dimensions" in nxp_cap:
+            cap["max dimensions"] = nxp_cap["max dimensions"]
+        return cap
 
     # devices and dtypes are determined by the backend array API
 
