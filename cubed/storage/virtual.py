@@ -2,7 +2,6 @@ from numbers import Integral
 from typing import Any
 
 import numpy as np
-from ndindex import ndindex
 
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
@@ -27,6 +26,8 @@ class VirtualEmptyArray(VirtualArray):
         super().__init__(shape, dtype, chunks)
 
     def __getitem__(self, key):
+        from ndindex import ndindex  # import as needed to avoid slow 'import cubed'
+
         idx = ndindex[key]
         newshape = idx.newshape(self.shape)
         # use broadcast trick so array chunks only occupy a single value in memory
@@ -52,6 +53,8 @@ class VirtualFullArray(VirtualArray):
         self.fill_value = fill_value
 
     def __getitem__(self, key):
+        from ndindex import ndindex  # import as needed to avoid slow 'import cubed'
+
         idx = ndindex[key]
         newshape = idx.newshape(self.shape)
         # use broadcast trick so array chunks only occupy a single value in memory
