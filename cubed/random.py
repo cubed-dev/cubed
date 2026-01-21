@@ -1,7 +1,5 @@
 import random as pyrandom
 
-from numpy.random import Generator, Philox
-
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.ops import map_blocks
@@ -27,6 +25,9 @@ def random(size, *, dtype=nxp.float64, chunks=None, spec=None):
 
 
 def _random(x, numblocks=None, root_seed=None, dtype=nxp.float64, block_id=None):
+    # import as needed to avoid slow 'import cubed'
+    from numpy.random import Generator, Philox
+
     stream_id = block_id_to_offset(block_id, numblocks)
     rg = Generator(Philox(key=root_seed + stream_id))
     out = rg.random(x.shape, dtype=dtype)

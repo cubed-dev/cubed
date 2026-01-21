@@ -4,7 +4,7 @@ from importlib import import_module
 import numpy as np
 
 # The array implementation used for backend operations is stored in the
-# namespace variable, and defaults to array_api_compat.nump, unless it
+# namespace variable, and defaults to numpy, unless it
 # is overridden by an environment variable.
 # It must be compatible with the Python Array API standard, although
 # some extra functions are used too (e.g. nan functions),
@@ -29,9 +29,9 @@ if "CUBED_BACKEND_ARRAY_API_MODULE" in os.environ:
     namespace = xp
 
 else:
-    import array_api_compat.numpy
+    import numpy
 
-    namespace = array_api_compat.numpy
+    namespace = numpy
     xp_name = "numpy"
 
 
