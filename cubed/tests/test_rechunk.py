@@ -2,6 +2,7 @@ import pytest
 
 import cubed
 import cubed as xp
+from cubed.core.ops import _store_array
 
 
 @pytest.mark.parametrize(
@@ -85,3 +86,24 @@ def test_rechunk_era5_chunk_sizes(spec):
         ((22528, 41, 109), (22528, 10, 30)),
         ((350640, 10, 30), (350640, 10, 10)),
     ]
+
+
+def test_rechunk_and_store():
+    # from https://github.com/cubed-dev/cubed/issues/859
+    shape = (394488, 778, 706)
+    source_chunks = (24, 778, 706)
+    target_chunks = (43800, 5, 5)
+    spec = cubed.Spec(allowed_mem="5GB")
+
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+    b = a.rechunk(target_chunks)
+
+    num_tasks = b.plan().num_tasks
+
+    # simulate what to_zarr or store does
+    c = _store_array(b, None)
+
+    c.visualize()
+
+    # store should not change number of tasks
+    assert c.plan().num_tasks == num_tasks
