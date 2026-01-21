@@ -18,6 +18,9 @@ from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_a
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, intermediate_store
+from cubed.core.rechunk import (
+    multistage_rechunking_plan as cubed_multistage_rechunking_plan,
+)
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -1034,6 +1037,7 @@ def rechunk_new(x, chunks, *, min_mem=None):
     """
     out = x
     for copy_chunks, target_chunks in _rechunk_plan(x, chunks, min_mem=min_mem):
+        print(f"_rechunk copy_chunks={copy_chunks}, target_chunks={target_chunks}")
         out = _rechunk(out, copy_chunks, target_chunks)
     return out
 
@@ -1078,6 +1082,7 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
     )
 
     for i, stage in enumerate(stages):
+        print("_rechunk_plan", i, stage)
         last_stage = i == len(stages) - 1
         read_chunks, int_chunks, write_chunks = stage
 
@@ -1089,6 +1094,72 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
         else:
             yield read_chunks, int_chunks
             yield write_chunks, target_chunks_
+
+
+def _rechunk_plan2(x, chunks, *, min_mem=None):
+    if isinstance(chunks, dict):
+        chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
+        for i in range(x.ndim):
+            if i not in chunks:
+                chunks[i] = x.chunks[i]
+            elif chunks[i] is None:
+                chunks[i] = x.chunks[i]
+    if isinstance(chunks, (tuple, list)):
+        chunks = tuple(lc if lc is not None else rc for lc, rc in zip(chunks, x.chunks))
+
+    normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
+    if x.chunks == normalized_chunks:
+        return
+    # normalizing takes care of dict args for chunks
+    target_chunks = to_chunksize(normalized_chunks)
+
+    spec = x.spec
+    source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
+
+    # rechunker doesn't take account of uncompressed and compressed copies of the
+    # input and output array chunk/selection, so adjust appropriately:
+    #  1 input array plus copies to read that array from storage,
+    #  1 array for processing,
+    #  1 output array plus copies to write that array to storage
+    buffer_copies = get_buffer_copies(spec)
+    total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
+    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
+    if min_mem is None:
+        min_mem = min(rechunker_max_mem // 20, x.nbytes)
+    stages = cubed_multistage_rechunking_plan(
+        shape=x.shape,
+        source_chunks=source_chunks,
+        target_chunks=target_chunks,
+        itemsize=itemsize(x.dtype),
+        min_mem=min_mem,
+        max_mem=rechunker_max_mem,
+    )
+
+    for i, stage in enumerate(stages):
+        print("_rechunk_plan", i, stage)
+        last_stage = i == len(stages) - 1
+        read_chunks, int_chunks, write_chunks = stage
+
+        # Use target chunks for last stage
+        target_chunks_ = target_chunks if last_stage else write_chunks
+
+        if read_chunks == write_chunks:
+            yield read_chunks, target_chunks_
+        else:
+            yield read_chunks, int_chunks
+            yield write_chunks, target_chunks_
+
+
+def _rechunk_plan3(x, chunks, *, min_mem=None):
+    for copy_chunks, target_chunks in _rechunk_plan2(x, chunks, min_mem=min_mem):
+        yield _fix_copy_chunks(x.shape, copy_chunks, target_chunks), target_chunks
+
+
+def _fix_copy_chunks(shape, copy_chunks, target_chunks):
+    return tuple(
+        cc if (cc == n) or (cc % tc == 0) else (cc // tc) * tc
+        for n, cc, tc in zip(shape, copy_chunks, target_chunks)
+    )
 
 
 def _rechunk(x, copy_chunks, target_chunks):
@@ -1104,7 +1175,9 @@ def _rechunk(x, copy_chunks, target_chunks):
 
     def selection_function(out_key):
         out_coords = out_key[1:]
-        return get_item(normalized_copy_chunks, out_coords)
+        sel = get_item(normalized_copy_chunks, out_coords)
+        print(f"{x.name} selection: out_coords={out_coords}, sel={sel}")
+        return sel
 
     max_num_input_blocks = math.prod(
         math.ceil(c1 / c0) for c0, c1 in zip(x.chunksize, copy_chunks)

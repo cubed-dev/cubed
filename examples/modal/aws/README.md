@@ -13,7 +13,7 @@
 4. Install a Python environment by running the following from this directory:
 
 ```shell
-conda create --name cubed-modal-aws-examples -y python=3.11
+conda create --name cubed-modal-aws-examples -y python=3.12
 conda activate cubed-modal-aws-examples
 pip install 'cubed[modal]'
 export CUBED_SPEC__EXECUTOR_OPTIONS__REQUIREMENTS_FILE=$(pwd)/requirements.txt
@@ -28,3 +28,12 @@ export CUBED_CONFIG=$(pwd)/modal/aws
 ```
 
 Then you can run the examples in the [docs](https://cubed-dev.github.io/cubed/examples/index.html).
+
+
+### Notebook
+
+```shell
+pip install 'jupyter[notebook]'
+jupyter notebook
+# then open and run rechunk.ipynb
+```
