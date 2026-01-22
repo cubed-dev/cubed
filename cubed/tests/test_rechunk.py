@@ -3,6 +3,17 @@ import pytest
 import cubed
 import cubed as xp
 from cubed.core.ops import _store_array
+from cubed.core.rechunk import (
+    calculate_regular_stage_chunks,
+    multistage_regular_rechunking_plan,
+    multspace,
+    verify_chunk_compatibility,
+)
+from cubed.utils import itemsize
+from cubed.vendor.rechunker.algorithm import (
+    calculate_stage_chunks,
+    multistage_rechunking_plan,
+)
 
 
 @pytest.mark.parametrize(
@@ -13,10 +24,11 @@ from cubed.core.ops import _store_array
         "expected_max_output_blocks",
     ),
     [
-        (None, 3, 16, 15),  # multistage rechunk - more stages, lower fan in/out
+        (None, 5, 7, 9),  # multistage rechunk - more stages, lower fan in/out
         (0, 1, 3771, 3460),  # single stage rechunk - very high fan in/out
     ],
 )
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_rechunk_era5(
     tmp_path,
     min_mem,
@@ -78,12 +90,17 @@ def test_rechunk_era5_chunk_sizes(spec):
 
     from cubed.core.ops import _rechunk_plan
 
-    assert list(_rechunk_plan(a, target_chunks)) == [
-        ((93, 721, 1440), (93, 173, 396)),
-        ((1447, 173, 396), (1447, 173, 396)),
-        ((1447, 173, 396), (1447, 41, 109)),
-        ((22528, 41, 109), (22528, 41, 109)),
-        ((22528, 41, 109), (22528, 10, 30)),
+    rechunk_plan = list(_rechunk_plan(a, target_chunks))
+    assert rechunk_plan == [
+        ((93, 721, 1440), (93, 240, 480)),
+        ((465, 240, 480), (465, 240, 480)),
+        ((465, 240, 480), (465, 120, 240)),
+        ((2325, 120, 240), (2325, 120, 240)),
+        ((2325, 120, 240), (2325, 40, 120)),
+        ((11625, 40, 120), (11625, 40, 120)),
+        ((11625, 40, 120), (11625, 20, 60)),
+        ((58125, 20, 60), (58125, 20, 60)),
+        ((58125, 20, 60), (58125, 10, 30)),
         ((350640, 10, 30), (350640, 10, 10)),
     ]
 
@@ -107,3 +124,101 @@ def test_rechunk_and_store():
 
     # store should not change number of tasks
     assert c.plan().num_tasks == num_tasks
+
+
+def test_rechunk_hypothesis_generated_bug():
+    rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
+    shape, source_chunks, target_chunks = rechunk_shapes
+
+    spec = cubed.Spec(allowed_mem=8000000 / 10)
+    a = xp.ones(shape, chunks=source_chunks, spec=spec)
+
+    from cubed.core.ops import _rechunk_plan
+
+    rechunk_plan = list(_rechunk_plan(a, target_chunks))
+    assert rechunk_plan == [((30, 376), (15, 376)), ((15, 1001), (5, 146))]
+    for copy_chunks, target_chunks in rechunk_plan:
+        verify_chunk_compatibility(shape, copy_chunks, target_chunks)
+
+
+@pytest.mark.parametrize(
+    ("start", "stop", "num", "expected"),
+    [
+        (1, 1000, 2, [10, 100]),
+        (1000, 1, 2, [100, 10]),
+        (1, 1000, 0, []),
+        (25, 25, 1, [25]),
+        (24, 43800, 3, [144, 1008, 6048]),
+    ],
+)
+def test_multspace(start, stop, num, expected):
+    result = multspace(start, stop, num)
+
+    assert len(result) == num
+    assert result == expected
+
+    # check that each value is a multiple of the smallest
+    smallest = min(start, stop)
+    assert all(val % smallest == 0 for val in result)
+
+
+def test_calculate_stage_chunks():
+    # era5
+    # shape = (350640, 721, 1440)
+    # source_chunks = (31, 721, 1440)
+    target_chunks = (350640, 10, 10)
+
+    read_chunks = (93, 721, 1440)
+
+    # cubed algorithm produces regular chunkings:
+    # 1395 and 22320 are multiples of 93 (from read chunks)
+    # 160 and 40 are multiples of 10 (from target chunks)
+    # 250 and 50 are multiples of 10 (from target chunks)
+    stage_chunks = calculate_regular_stage_chunks(
+        read_chunks, target_chunks, stage_count=3
+    )
+    assert stage_chunks == [(1395, 160, 250), (22320, 40, 50)]
+
+    # whereas the rechunker algorithm does not produce regular chunkings
+    stage_chunks = calculate_stage_chunks(read_chunks, target_chunks, stage_count=3)
+    assert stage_chunks == [(1447, 173, 274), (22528, 41, 52)]
+
+
+def test_multistage_rechunking_plan():
+    # era5
+    shape = (350640, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (350640, 10, 10)
+    min_mem = 25000000
+    max_mem = 500000000
+
+    stages = multistage_rechunking_plan(
+        shape, source_chunks, target_chunks, itemsize(xp.float32), min_mem, max_mem
+    )
+    assert stages == [
+        ((93, 721, 1440), (93, 173, 396), (1447, 173, 396)),
+        ((1447, 173, 396), (1447, 41, 109), (22528, 41, 109)),
+        ((22528, 41, 109), (22528, 10, 30), (350640, 10, 30)),
+    ]
+
+    with pytest.raises(AssertionError, match="do not evenly slice target chunks"):  # noqa: PT012
+        for stage in stages:
+            read_chunks, int_chunks, write_chunks = stage
+            verify_chunk_compatibility(shape, read_chunks, int_chunks)
+
+    stages = multistage_regular_rechunking_plan(
+        shape, source_chunks, target_chunks, itemsize(xp.float32), min_mem, max_mem
+    )
+    assert stages == [
+        ((93, 721, 1440), (93, 240, 480), (465, 240, 480)),
+        ((465, 240, 480), (465, 120, 240), (2325, 120, 240)),
+        ((2325, 120, 240), (2325, 40, 120), (11625, 40, 120)),
+        ((11625, 40, 120), (11625, 20, 60), (58125, 20, 60)),
+        ((58125, 20, 60), (58125, 10, 30), (350640, 10, 30)),
+    ]
+    for i, stage in enumerate(stages):
+        last_stage = i == len(stages) - 1
+        read_chunks, int_chunks, write_chunks = stage
+        verify_chunk_compatibility(shape, read_chunks, int_chunks)
+        if last_stage:
+            verify_chunk_compatibility(shape, write_chunks, target_chunks)
