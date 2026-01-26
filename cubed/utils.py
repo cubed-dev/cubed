@@ -238,16 +238,16 @@ def extract_array_names(frame: FrameType) -> dict[str, str]:
             type(obj).__module__.split(".")[0] == "xarray"
             and obj.__class__.__name__ == "DataArray"
         ):
-            if isinstance(obj.data, Array):
-                array_names_to_variable_names[obj.data.name] = name
+            # Note: We use ._data here instead of .data to avoid eager loading inside xarray.open_dataset internals - see https://github.com/cubed-dev/cubed/issues/855
+            if isinstance(obj.variable._data, Array):
+                array_names_to_variable_names[obj.variable._data.name] = name
         elif (
             type(obj).__module__.split(".")[0] == "xarray"
             and obj.__class__.__name__ == "Dataset"
         ):
-            for var in obj.data_vars:
-                da = obj[var]
-                if isinstance(da.data, Array):
-                    array_names_to_variable_names[da.data.name] = f"{name}.{var}"
+            for var_name, var in obj.variables.items():
+                if isinstance(var._data, Array):
+                    array_names_to_variable_names[var._data.name] = f"{name}.{var_name}"
     return array_names_to_variable_names
 
 
