@@ -8,7 +8,7 @@ from cubed.storage.zarr import T_ZarrArray, open_if_lazy_zarr_array
 from cubed.types import T_RegularChunks
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class PrimitiveOperation:
     """Encapsulates metadata about a ``blockwise`` or ``rechunk`` primitive operation."""
 
