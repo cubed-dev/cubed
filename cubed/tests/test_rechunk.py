@@ -4,7 +4,7 @@ import cubed
 import cubed as xp
 from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.ops import _store_array
+from cubed.core.ops import _store_array, split_chunksizes
 from cubed.core.rechunk import (
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
@@ -147,6 +147,23 @@ def test_rechunk_hypothesis_generated_bug():
     assert_array_equal(b.compute(), nxp.ones(shape))
 
 
+def test_rechunk_hypothesis_generated_bug_allow_irregular():
+    rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
+    shape, source_chunks, target_chunks = rechunk_shapes
+
+    spec = cubed.Spec(allowed_mem=8000000 / 10)
+    a = xp.ones(shape, chunks=source_chunks, spec=spec)
+
+    from cubed.core.ops import _rechunk_plan
+
+    rechunk_plan = list(_rechunk_plan(a, target_chunks, allow_irregular=True))
+    assert rechunk_plan == [((38, 376), (15, 376)), ((15, 1001), (5, 146))]
+
+    b = a.rechunk((5, 146), allow_irregular=True)
+
+    assert_array_equal(b.compute(), nxp.ones(shape))
+
+
 @pytest.mark.parametrize(
     ("start", "stop", "num", "expected"),
     [
@@ -228,3 +245,12 @@ def test_multistage_rechunking_plan():
         verify_chunk_compatibility(shape, read_chunks, int_chunks)
         if last_stage:
             verify_chunk_compatibility(shape, write_chunks, target_chunks)
+
+
+def test_split_chunksizes():
+    assert split_chunksizes(10, 2, 4) == (2, 2, 2, 2, 2)
+    assert split_chunksizes(10, 2, 3) == (2, 1, 1, 2, 2, 1, 1)
+    # from example in _count_intermediate_chunks doc
+    assert split_chunksizes(20, 5, 7) == (5, 2, 3, 4, 1, 5)
+    # from hypothesis generated bug (above)
+    assert split_chunksizes(1001, 38, 15)[:8] == (15, 15, 8, 7, 15, 15, 1, 14)

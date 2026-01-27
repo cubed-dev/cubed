@@ -46,10 +46,7 @@ def chunk_memory(arr) -> int:
     """Calculate the amount of memory in bytes that a single chunk uses."""
     if hasattr(arr, "chunkmem"):
         return arr.chunkmem
-    return array_memory(
-        arr.dtype,
-        to_chunksize(normalize_chunks(arr.chunks, shape=arr.shape, dtype=arr.dtype)),
-    )
+    return array_memory(arr.dtype, largest_chunk(arr.chunks))
 
 
 def array_size(shape: T_Shape) -> int:
@@ -169,6 +166,13 @@ def to_chunksize(chunkset: T_RectangularChunks) -> T_RegularChunks:
 
 def numblocks(chunks: T_RectangularChunks) -> Tuple[int, ...]:
     return tuple(map(len, chunks))
+
+
+def largest_chunk(chunks: T_RegularChunks | T_RectangularChunks) -> T_RegularChunks:
+    if (len(chunks) == 0) or isinstance(chunks[0], int):
+        return chunks
+    else:
+        return tuple(max(c, default=1) for c in chunks)
 
 
 @dataclass
