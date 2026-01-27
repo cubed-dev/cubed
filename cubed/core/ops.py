@@ -183,7 +183,12 @@ def store(
 def _store_array(
     source: "Array", target, path=None, region=None, blockwise_kwargs=None
 ):
-    if target is not None and not is_storage_array(target):
+    if target is None:
+        if region is not None:
+            raise ValueError("Target store must be specified when setting a region")
+        else:
+            return source
+    if not is_storage_array(target):
         target = lazy_zarr_array(
             target,
             shape=source.shape,
@@ -191,8 +196,6 @@ def _store_array(
             chunks=source.chunksize,
             path=path,
         )
-    if target is None and region is not None:
-        raise ValueError("Target store must be specified when setting a region")
     identity = lambda a: a
     blockwise_kwargs = blockwise_kwargs or {}
     if region is None or all(r == slice(None) for r in region):
