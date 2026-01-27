@@ -74,7 +74,8 @@ def _multspace(start, stop, num):
     vals = np.geomspace(start, stop, num + 2)
     vint = 1
     for v in vals:
-        vint = floor(v / vint) * vint
+        # next value is int multiple closest to geomspace value (rounded down)
+        vint = max(floor(v / vint) * vint, 1)
         yield vint
 
 
