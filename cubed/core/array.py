@@ -179,9 +179,7 @@ class CoreArray:
             compile_function=compile_function,
         )
 
-    def rechunk(
-        self: T_ChunkedArray, chunks, *, min_mem=None, use_new_impl=True
-    ) -> T_ChunkedArray:
+    def rechunk(self: T_ChunkedArray, chunks, *, min_mem=None) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
         Parameters
@@ -196,7 +194,7 @@ class CoreArray:
         """
         from cubed.core.ops import rechunk
 
-        return rechunk(self, chunks, min_mem=min_mem, use_new_impl=use_new_impl)
+        return rechunk(self, chunks, min_mem=min_mem)
 
     def visualize(
         self,
