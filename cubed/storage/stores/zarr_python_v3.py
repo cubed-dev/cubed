@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Literal, Optional
 
 import zarr
+from zarr.core.sync import sync
+from zarr.storage._common import make_store_path
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
@@ -60,13 +62,22 @@ def open_zarr_v3_array(
         chunks = (chunks,)
 
     if dtype is None or not hasattr(dtype, "fields") or dtype.fields is None:
-        return zarr.open(
-            store=store,
-            mode=mode,
+        if mode in ("r", "r+"):
+            return zarr.open(
+                store=store,
+                mode=mode,
+                shape=shape,
+                dtype=dtype,
+                chunks=chunks,
+                path=path,
+            )
+
+        spath = sync(make_store_path(store, path=path))
+        return zarr.create_array(
+            store=spath,
             shape=shape,
             dtype=dtype,
             chunks=chunks,
-            path=path,
         )
 
     assert mode is not None
