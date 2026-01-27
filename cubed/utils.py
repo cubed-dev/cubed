@@ -1,7 +1,6 @@
 import collections
 import inspect
 import itertools
-import numbers
 import platform
 import sys
 import sysconfig
@@ -386,8 +385,8 @@ def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> Tuple[int, ...]
     if shape is None:
         raise TypeError("shape is None")
 
-    if isinstance(shape, numbers.Integral):
-        shape = (int(shape),)
+    if isinstance(shape, int):
+        shape = (shape,)
 
     shape = cast(Tuple[int, ...], shape)
     shape = tuple(int(s) for s in shape)
