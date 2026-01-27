@@ -46,7 +46,7 @@ def test_rechunk_era5(
     spec = cubed.Spec(allowed_mem="2.5GB")
 
     a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
-    b = a.rechunk(target_chunks, min_mem=min_mem, use_new_impl=True)
+    b = a.rechunk(target_chunks, min_mem=min_mem)
 
     b.visualize(filename=tmp_path / "rechunk_era5")
 
