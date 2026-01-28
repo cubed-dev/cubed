@@ -2,6 +2,8 @@ import pytest
 
 import cubed
 import cubed as xp
+from cubed._testing import assert_array_equal
+from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import _store_array
 from cubed.core.rechunk import (
     calculate_regular_stage_chunks,
@@ -139,6 +141,10 @@ def test_rechunk_hypothesis_generated_bug():
     assert rechunk_plan == [((30, 376), (15, 376)), ((15, 1001), (5, 146))]
     for copy_chunks, target_chunks in rechunk_plan:
         verify_chunk_compatibility(shape, copy_chunks, target_chunks)
+
+    b = a.rechunk((5, 146))
+
+    assert_array_equal(b.compute(), nxp.ones(shape))
 
 
 @pytest.mark.parametrize(
