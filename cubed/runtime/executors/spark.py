@@ -19,7 +19,7 @@ class SparkExecutor(DagExecutor):
     # Minimum memory allowed for Spark (512MB)
     MIN_MEMORY_MiB = 512
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     @property

@@ -131,7 +131,7 @@ def _setup_array_rechunk(
 
     read_chunks, int_chunks, write_chunks = rechunking_plan(
         shape,
-        source_chunks,
+        source_chunks,  # type: ignore
         target_chunks,
         itemsize(dtype),
         max_mem,

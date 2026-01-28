@@ -42,7 +42,7 @@ class SingleThreadedExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         for name, node in visit_nodes(dag):
             handle_operation_start_callbacks(callbacks, name)
@@ -57,7 +57,8 @@ class SingleThreadedExecutor(DagExecutor):
                 )
                 if callbacks is not None:
                     event = TaskEndEvent(name=name, result=result)
-                    [callback.on_task_end(event) for callback in callbacks]
+                    for callback in callbacks:
+                        callback.on_task_end(event)
             handle_operation_end_callbacks(callbacks, name)
 
 
@@ -81,7 +82,7 @@ def unpickle_and_call(f, inp, **kwargs):
     return f(inp, **kwargs)
 
 
-def check_runtime_memory(spec, max_workers):
+def check_runtime_memory(spec: Optional[Spec], max_workers: int) -> None:
     allowed_mem = spec.allowed_mem if spec is not None else None
     total_mem = psutil.virtual_memory().total
     if allowed_mem is not None:
@@ -113,7 +114,7 @@ def threads_create_futures_func(
 class ThreadsExecutor(DagExecutor):
     """An execution engine that uses Python asyncio."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         # Tell NumPy to use a single thread
@@ -133,7 +134,7 @@ class ThreadsExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
         asyncio_run(
@@ -152,7 +153,7 @@ class ThreadsExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         spec: Optional[Spec] = None,
         compute_arrays_in_parallel: Optional[bool] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         max_workers = kwargs.pop("max_workers", os.cpu_count())
         if spec is not None:
@@ -203,7 +204,7 @@ def processes_create_futures_func(concurrent_executor, function: Callable[..., A
 class ProcessesExecutor(DagExecutor):
     """An execution engine that uses local processes."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         # Tell NumPy to use a single thread
@@ -223,7 +224,7 @@ class ProcessesExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
         asyncio_run(
@@ -242,7 +243,7 @@ class ProcessesExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         spec: Optional[Spec] = None,
         compute_arrays_in_parallel: Optional[bool] = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         max_workers = kwargs.pop("max_workers", os.cpu_count())
         if spec is not None:

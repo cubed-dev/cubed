@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
 import ray
 from networkx import MultiDiGraph
@@ -14,7 +14,7 @@ from cubed.spec import Spec
 class RayExecutor(DagExecutor):
     """An execution engine that uses Ray."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     @property

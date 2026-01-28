@@ -14,7 +14,7 @@ from operator import add, mul
 from pathlib import Path
 from posixpath import join
 from types import FrameType
-from typing import Dict, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, Optional, Tuple, Union, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
@@ -23,7 +23,14 @@ from toolz import reduce
 
 from cubed.backend_array_api import backend_dtype_to_numpy_dtype
 from cubed.backend_array_api import namespace as nxp
-from cubed.types import T_Chunks, T_DType, T_RectangularChunks, T_RegularChunks, T_Shape
+from cubed.types import (
+    T_Chunks,
+    T_DType,
+    T_RectangularChunks,
+    T_RegularChunks,
+    T_Shape,
+    T_StandardArray,
+)
 from cubed.vendor.dask.array.core import _check_regular_chunks
 from cubed.vendor.dask.array.core import normalize_chunks as dask_normalize_chunks
 
@@ -360,14 +367,18 @@ def map_nested(func, seq):
         return func(seq)
 
 
-def _broadcast_trick_inner(func, shape, *args, **kwargs):
+def _broadcast_trick_inner(
+    func: Callable[..., T_StandardArray], shape: T_Shape, *args: Any, **kwargs: Any
+) -> T_StandardArray:
     # cupy-specific hack. numpy is happy with hardcoded shape=().
     null_shape = () if shape == () else 1
 
     return nxp.broadcast_to(func(*args, shape=null_shape, **kwargs), shape)
 
 
-def broadcast_trick(func):
+def broadcast_trick(
+    func: Callable[..., T_StandardArray],
+) -> Callable[..., T_StandardArray]:
     """Apply Dask's broadcast trick to array API functions that produce arrays
     containing a single value to save space in memory.
 
@@ -375,11 +386,11 @@ def broadcast_trick(func):
     """
     inner = partial(_broadcast_trick_inner, func)
     inner.__doc__ = func.__doc__
-    inner.__name__ = func.__name__
+    inner.__name__ = func.__name__  # type: ignore[attr-defined]
     return inner
 
 
-def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> Tuple[int, ...]:
+def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> T_Shape:
     """Normalize a `shape` argument to a tuple of ints."""
 
     if shape is None:

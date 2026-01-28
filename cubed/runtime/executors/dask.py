@@ -58,7 +58,7 @@ def dask_create_futures_func(
 class DaskExecutor(DagExecutor):
     """An execution engine that uses Dask Distributed's async API."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
     @property

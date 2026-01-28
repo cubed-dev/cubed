@@ -591,7 +591,8 @@ class FinalizedPlan:
 
         if callbacks is not None:
             event = ComputeStartEventWithPlan(compute_id, dag, self)
-            [callback.on_compute_start(event) for callback in callbacks]
+            for callback in callbacks:
+                callback.on_compute_start(event)
         executor.execute_dag(
             dag,
             compute_id=compute_id,
@@ -601,7 +602,8 @@ class FinalizedPlan:
         )
         if callbacks is not None:
             event = ComputeEndEvent(compute_id, dag)
-            [callback.on_compute_end(event) for callback in callbacks]
+            for callback in callbacks:
+                callback.on_compute_end(event)
 
     def visualize(
         self,
