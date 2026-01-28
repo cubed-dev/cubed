@@ -18,6 +18,7 @@ from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_a
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, intermediate_store
+from cubed.core.rechunk import multistage_regular_rechunking_plan
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -39,7 +40,6 @@ from cubed.utils import numblocks as compute_numblocks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
 from cubed.vendor.dask.utils import has_keyword
-from cubed.vendor.rechunker.algorithm import multistage_rechunking_plan
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array
@@ -1071,7 +1071,7 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
     rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
-    stages = multistage_rechunking_plan(
+    stages = multistage_regular_rechunking_plan(
         shape=x.shape,
         source_chunks=source_chunks,
         target_chunks=target_chunks,
