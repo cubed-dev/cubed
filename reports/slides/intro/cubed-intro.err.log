@@ -68,20 +68,20 @@ c.visualize()
 [32m    378[39m [43m    [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
 [32m    379[39m [43m[49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:614[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
-[32m    606[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(
-[32m    607[39m     [38;5;28mself[39m,
-[32m    608[39m     filename=[33m"[39m[33mcubed[39m[33m"[39m,
-[32m   (...)[39m[32m    612[39m     engine: Literal[[33m"[39m[33mcytoscape[39m[33m"[39m, [33m"[39m[33mgraphviz[39m[33m"[39m] | [38;5;28;01mNone[39;00m = [38;5;28;01mNone[39;00m,
-[32m    613[39m ):
-[32m--> [39m[32m614[39m     [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mcubed[39;00m[34;01m.[39;00m[34;01mdiagnostics[39;00m[34;01m.[39;00m[34;01mcolors[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m APRICOT, LAVENDER, RED
-[32m    616[39m     [38;5;28;01mif[39;00m engine == [33m"[39m[33mcytoscape[39m[33m"[39m:
-[32m    617[39m         [38;5;28;01mreturn[39;00m [38;5;28mself[39m.visualize_cytoscape(
-[32m    618[39m             filename,
-[32m    619[39m             [38;5;28mformat[39m=[38;5;28mformat[39m,
-[32m    620[39m             rankdir=rankdir,
-[32m    621[39m             show_hidden=show_hidden,
-[32m    622[39m         )
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:616[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
+[32m    608[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(
+[32m    609[39m     [38;5;28mself[39m,
+[32m    610[39m     filename=[33m"[39m[33mcubed[39m[33m"[39m,
+[32m   (...)[39m[32m    614[39m     engine: Literal[[33m"[39m[33mcytoscape[39m[33m"[39m, [33m"[39m[33mgraphviz[39m[33m"[39m] | [38;5;28;01mNone[39;00m = [38;5;28;01mNone[39;00m,
+[32m    615[39m ):
+[32m--> [39m[32m616[39m     [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mcubed[39;00m[34;01m.[39;00m[34;01mdiagnostics[39;00m[34;01m.[39;00m[34;01mcolors[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m APRICOT, LAVENDER, RED
+[32m    618[39m     [38;5;28;01mif[39;00m engine == [33m"[39m[33mcytoscape[39m[33m"[39m:
+[32m    619[39m         [38;5;28;01mreturn[39;00m [38;5;28mself[39m.visualize_cytoscape(
+[32m    620[39m             filename,
+[32m    621[39m             [38;5;28mformat[39m=[38;5;28mformat[39m,
+[32m    622[39m             rankdir=rankdir,
+[32m    623[39m             show_hidden=show_hidden,
+[32m    624[39m         )
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/diagnostics/__init__.py:1[39m
 [32m----> [39m[32m1[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01m.[39;00m[34;01mrich[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m RichProgressBar [38;5;28;01mas[39;00m ProgressBar
