@@ -22,7 +22,6 @@ from cubed.core.rechunk import multistage_regular_rechunking_plan
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
-from cubed.primitive.rechunk import rechunk as primitive_rechunk
 from cubed.spec import spec_from_config
 from cubed.storage.store import is_storage_array, open_storage_array
 from cubed.storage.zarr import lazy_zarr_array
@@ -928,101 +927,7 @@ def map_direct(
     )
 
 
-def rechunk(x, chunks, *, target_store=None, min_mem=None, use_new_impl=True):
-    """Change the chunking of an array without changing its shape or data.
-
-    Parameters
-    ----------
-    chunks : tuple
-        The desired chunks of the array after rechunking.
-
-    Returns
-    -------
-    cubed.Array
-        An array with the desired chunks.
-    """
-    if use_new_impl:
-        return rechunk_new(x, chunks, min_mem=min_mem)
-
-    if isinstance(chunks, dict):
-        chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
-        for i in range(x.ndim):
-            if i not in chunks:
-                chunks[i] = x.chunks[i]
-            elif chunks[i] is None:
-                chunks[i] = x.chunks[i]
-    if isinstance(chunks, (tuple, list)):
-        chunks = tuple(lc if lc is not None else rc for lc, rc in zip(chunks, x.chunks))
-
-    normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
-    if x.chunks == normalized_chunks:
-        return x
-    # normalizing takes care of dict args for chunks
-    target_chunks = to_chunksize(normalized_chunks)
-
-    # merge chunks special case
-    if all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunks)):
-        return merge_chunks(x, target_chunks)
-
-    name = gensym()
-    spec = x.spec
-    if target_store is None:
-        target_store = intermediate_store(spec=spec)
-    name_int = f"{name}-int"
-    ops = primitive_rechunk(
-        x._zarray,
-        source_array_name=x.name,
-        int_array_name=name_int,
-        target_array_name=name,
-        target_chunks=target_chunks,
-        allowed_mem=spec.allowed_mem,
-        reserved_mem=spec.reserved_mem,
-        target_store=target_store,
-        storage_options=spec.storage_options,
-    )
-
-    from cubed.array_api import Array
-
-    if len(ops) == 1:
-        op = ops[0]
-        plan = Plan._new(
-            name,
-            "rechunk",
-            op.target_array,
-            op,
-            False,
-            None,
-            x,
-        )
-        return Array(name, op.target_array, spec, plan)
-
-    else:
-        op1 = ops[0]
-        plan1 = Plan._new(
-            name_int,
-            "rechunk",
-            op1.target_array,
-            op1,
-            False,
-            None,
-            x,
-        )
-        x_int = Array(name_int, op1.target_array, spec, plan1)
-
-        op2 = ops[1]
-        plan2 = Plan._new(
-            name,
-            "rechunk",
-            op2.target_array,
-            op2,
-            False,
-            None,
-            x_int,
-        )
-        return Array(name, op2.target_array, spec, plan2)
-
-
-def rechunk_new(x, chunks, *, min_mem=None):
+def rechunk(x, chunks, *, min_mem=None):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters

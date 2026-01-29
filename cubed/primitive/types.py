@@ -56,11 +56,3 @@ class CubedArrayProxy:
 
     def open(self) -> zarr.Array:
         return open_if_lazy_zarr_array(self.array)
-
-
-@dataclass(frozen=True)
-class CubedCopySpec:
-    """Generalisation of rechunker ``CopySpec`` with support for ``LazyZarrArray``."""
-
-    read: CubedArrayProxy
-    write: CubedArrayProxy

@@ -77,7 +77,7 @@ def test_rechunk_era5(tmp_path, spec, executor):
         a = cubed.random.random(
             test_shape, dtype=xp.float32, chunks=source_chunks, spec=spec
         )
-        b = a.rechunk(target_chunks, use_new_impl=True)
+        b = a.rechunk(target_chunks)
 
         run_operation(tmp_path, executor, f"rechunk_era5_stage_{i}", b)
 
