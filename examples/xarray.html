@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=42e3ebd9"></script>
+    <script src="../_static/documentation_options.js?v=31a7634e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -422,63 +422,64 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
 <span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2404,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
-<span class="g g-Whitespace">   </span><span class="mi">2402</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">2403</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
-<span class="ne">-&gt; </span><span class="mi">2404</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2417,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2415</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">2416</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="ne">-&gt; </span><span class="mi">2417</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:374,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
-<span class="g g-Whitespace">    </span><span class="mi">371</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">372</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
-<span class="ne">--&gt; </span><span class="mi">374</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
-<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="n">display_default_indexes</span> <span class="o">=</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="s2">&quot;display_default_indexes&quot;</span><span class="p">,</span> <span class="kc">False</span>
-<span class="g g-Whitespace">    </span><span class="mi">378</span> <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">379</span> <span class="n">xindexes</span> <span class="o">=</span> <span class="n">filter_nondefault_indexes</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">380</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
-<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:379,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+<span class="ne">--&gt; </span><span class="mi">379</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
+<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="n">display_default_indexes</span> <span class="o">=</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">382</span>     <span class="s2">&quot;display_default_indexes&quot;</span><span class="p">,</span> <span class="kc">False</span>
+<span class="g g-Whitespace">    </span><span class="mi">383</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">384</span> <span class="n">xindexes</span> <span class="o">=</span> <span class="n">filter_nondefault_indexes</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">385</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:224,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, max_option_name)</span>
-<span class="g g-Whitespace">    </span><span class="mi">218</span>     <span class="k">if</span> <span class="n">n_items</span> <span class="o">&gt;</span> <span class="n">max_items</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">219</span>         <span class="n">inline_details</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_items</span><span class="si">}</span><span class="s2">)&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="k">return</span> <span class="n">collapsible_section</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">222</span>     <span class="n">name</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">223</span>     <span class="n">inline_details</span><span class="o">=</span><span class="n">inline_details</span><span class="p">,</span>
-<span class="ne">--&gt; </span><span class="mi">224</span>     <span class="n">details</span><span class="o">=</span><span class="n">details_func</span><span class="p">(</span><span class="n">mapping</span><span class="p">),</span>
-<span class="g g-Whitespace">    </span><span class="mi">225</span>     <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">227</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">228</span> <span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:225,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">218</span> <span class="n">expanded</span> <span class="o">=</span> <span class="n">max_items_collapse</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">219</span>     <span class="n">expand_option_name</span><span class="p">,</span> <span class="n">n_items</span> <span class="o">&lt;</span> <span class="n">max_items_collapse</span>
+<span class="g g-Whitespace">    </span><span class="mi">220</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="n">collapsed</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">expanded</span>
+<span class="g g-Whitespace">    </span><span class="mi">223</span> <span class="k">return</span> <span class="n">collapsible_section</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">224</span>     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span>
+<span class="ne">--&gt; </span><span class="mi">225</span>     <span class="n">details</span><span class="o">=</span><span class="n">details_func</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">227</span>     <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">228</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">229</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:134,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
-<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="ne">--&gt; </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
-<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:136,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    138         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:135,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
-<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<span class="ne">--&gt; </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
-<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:137,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="ne">--&gt; </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    138         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:96,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
-<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
-<span class="g g-Whitespace">     </span><span class="mi">95</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
-<span class="ne">---&gt; </span><span class="mi">96</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">98</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">99</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:98,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
+<span class="g g-Whitespace">     </span><span class="mi">96</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">97</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">98</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:43,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
-<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
-<span class="g g-Whitespace">     </span><span class="mi">42</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
-<span class="ne">---&gt; </span><span class="mi">43</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
-<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
-<span class="g g-Whitespace">     </span><span class="mi">45</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">45</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">46</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">47</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 
 <span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -529,7 +530,7 @@ Attributes: (5)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2478/172254778.py:1: SerializationWarning: saving variable None with floating point data as an integer dtype without any _FillValue to use for NaNs
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2464/172254778.py:1: SerializationWarning: saving variable None with floating point data as an integer dtype without any _FillValue to use for NaNs
   ds.to_zarr(&quot;air_temperature_cubed.zarr&quot;, mode=&quot;w&quot;, consolidated=True);
 /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/zarr/api/asynchronous.py:247: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
   warnings.warn(
@@ -564,34 +565,34 @@ Attributes: (5)
 <span class="g g-Whitespace">    </span><span class="mi">188</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 <span class="ne">--&gt; </span><span class="mi">189</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">array_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:339,</span> in <span class="ni">array_repr</span><span class="nt">(arr)</span>
-<span class="g g-Whitespace">    </span><span class="mi">331</span> <span class="n">arr_name</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">333</span> <span class="n">header_components</span> <span class="o">=</span> <span class="p">[</span>
-<span class="g g-Whitespace">    </span><span class="mi">334</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-type&#39;&gt;</span><span class="si">{</span><span class="n">obj_type</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">335</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-name&#39;&gt;</span><span class="si">{</span><span class="n">arr_name</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">336</span>     <span class="n">format_dims</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">indexed_dims</span><span class="p">),</span>
-<span class="g g-Whitespace">    </span><span class="mi">337</span> <span class="p">]</span>
-<span class="ne">--&gt; </span><span class="mi">339</span> <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="n">array_section</span><span class="p">(</span><span class="n">arr</span><span class="p">)]</span>
-<span class="g g-Whitespace">    </span><span class="mi">341</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
-<span class="g g-Whitespace">    </span><span class="mi">342</span>     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:344,</span> in <span class="ni">array_repr</span><span class="nt">(arr)</span>
+<span class="g g-Whitespace">    </span><span class="mi">336</span> <span class="n">arr_name</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">338</span> <span class="n">header_components</span> <span class="o">=</span> <span class="p">[</span>
+<span class="g g-Whitespace">    </span><span class="mi">339</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-type&#39;&gt;</span><span class="si">{</span><span class="n">obj_type</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">340</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-name&#39;&gt;</span><span class="si">{</span><span class="n">arr_name</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">341</span>     <span class="n">format_dims</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="n">indexed_dims</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">342</span> <span class="p">]</span>
+<span class="ne">--&gt; </span><span class="mi">344</span> <span class="n">sections</span> <span class="o">=</span> <span class="p">[</span><span class="n">array_section</span><span class="p">(</span><span class="n">arr</span><span class="p">)]</span>
+<span class="g g-Whitespace">    </span><span class="mi">346</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
+<span class="g g-Whitespace">    </span><span class="mi">347</span>     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:249,</span> in <span class="ni">array_section</span><span class="nt">(obj)</span>
-<span class="g g-Whitespace">    </span><span class="mi">247</span> <span class="n">variable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">248</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">70</span><span class="p">))</span>
-<span class="ne">--&gt; </span><span class="mi">249</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">250</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">252</span> <span class="k">return</span> <span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">253</span>     <span class="s2">&quot;&lt;div class=&#39;xr-array-wrap&#39;&gt;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">254</span>     <span class="sa">f</span><span class="s2">&quot;&lt;input id=&#39;</span><span class="si">{</span><span class="n">data_id</span><span class="si">}</span><span class="s2">&#39; class=&#39;xr-array-in&#39; type=&#39;checkbox&#39; </span><span class="si">{</span><span class="n">collapsed</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
-   <span class="p">(</span><span class="o">...</span><span class="p">)</span>    <span class="mi">258</span>     <span class="s2">&quot;&lt;/div&gt;&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">259</span> <span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:250,</span> in <span class="ni">array_section</span><span class="nt">(obj)</span>
+<span class="g g-Whitespace">    </span><span class="mi">248</span> <span class="n">variable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">249</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">70</span><span class="p">))</span>
+<span class="ne">--&gt; </span><span class="mi">250</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">251</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">253</span> <span class="k">return</span> <span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">254</span>     <span class="s2">&quot;&lt;div class=&#39;xr-array-wrap&#39;&gt;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">255</span>     <span class="sa">f</span><span class="s2">&quot;&lt;input id=&#39;</span><span class="si">{</span><span class="n">data_id</span><span class="si">}</span><span class="s2">&#39; class=&#39;xr-array-in&#39; type=&#39;checkbox&#39; </span><span class="si">{</span><span class="n">collapsed</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+   <span class="p">(</span><span class="o">...</span><span class="p">)</span>    <span class="mi">259</span>     <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+<span class="g g-Whitespace">    </span><span class="mi">260</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:43,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
-<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
-<span class="g g-Whitespace">     </span><span class="mi">42</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
-<span class="ne">---&gt; </span><span class="mi">43</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
-<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
-<span class="g g-Whitespace">     </span><span class="mi">45</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">45</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">46</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">47</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 
 <span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -730,6 +731,7 @@ body.vscode-dark {
   min-width: 300px;
   max-width: 700px;
   line-height: 1.6;
+  padding-bottom: 4px;
 }
 
 .xr-text-repr-fallback {
@@ -740,8 +742,11 @@ body.vscode-dark {
 .xr-header {
   padding-top: 6px;
   padding-bottom: 6px;
-  margin-bottom: 4px;
+}
+
+.xr-header {
   border-bottom: solid 1px var(--xr-border-color);
+  margin-bottom: 4px;
 }
 
 .xr-header > div,
@@ -752,20 +757,15 @@ body.vscode-dark {
 }
 
 .xr-obj-type,
-.xr-obj-name,
-.xr-group-name {
+.xr-obj-name {
   margin-left: 2px;
   margin-right: 10px;
 }
 
-.xr-group-name::before {
-  content: "📁";
-  padding-right: 0.3em;
-}
-
-.xr-group-name,
-.xr-obj-type {
+.xr-obj-type,
+.xr-group-box-contents > label {
   color: var(--xr-font-color2);
+  display: block;
 }
 
 .xr-sections {
@@ -780,28 +780,39 @@ body.vscode-dark {
   display: contents;
 }
 
-.xr-section-item input {
-  display: inline-block;
+.xr-section-item > input,
+.xr-group-box-contents > input,
+.xr-array-wrap > input {
+  display: block;
   opacity: 0;
   height: 0;
   margin: 0;
 }
 
-.xr-section-item input + label {
+.xr-section-item > input + label,
+.xr-var-item > input + label {
   color: var(--xr-disabled-color);
-  border: 2px solid transparent !important;
 }
 
-.xr-section-item input:enabled + label {
+.xr-section-item > input:enabled + label,
+.xr-var-item > input:enabled + label,
+.xr-array-wrap > input:enabled + label,
+.xr-group-box-contents > input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
 }
 
-.xr-section-item input:focus + label {
-  border: 2px solid var(--xr-font-color0) !important;
+.xr-section-item > input:focus-visible + label,
+.xr-var-item > input:focus-visible + label,
+.xr-array-wrap > input:focus-visible + label,
+.xr-group-box-contents > input:focus-visible + label {
+  outline: auto;
 }
 
-.xr-section-item input:enabled + label:hover {
+.xr-section-item > input:enabled + label:hover,
+.xr-var-item > input:enabled + label:hover,
+.xr-array-wrap > input:enabled + label:hover,
+.xr-group-box-contents > input:enabled + label:hover {
   color: var(--xr-font-color0);
 }
 
@@ -809,11 +820,25 @@ body.vscode-dark {
   grid-column: 1;
   color: var(--xr-font-color2);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.xr-section-summary > em {
+  font-weight: normal;
+}
+
+.xr-span-grid {
+  grid-column-end: -1;
 }
 
 .xr-section-summary > span {
   display: inline-block;
-  padding-left: 0.5em;
+  padding-left: 0.3em;
+}
+
+.xr-group-box-contents > input:checked + label > span {
+  display: inline-block;
+  padding-left: 0.6em;
 }
 
 .xr-section-summary-in:disabled + label {
@@ -841,7 +866,8 @@ body.vscode-dark {
 }
 
 .xr-section-summary,
-.xr-section-inline-details {
+.xr-section-inline-details,
+.xr-group-box-contents > label {
   padding-top: 4px;
 }
 
@@ -850,20 +876,29 @@ body.vscode-dark {
 }
 
 .xr-section-details {
-  display: none;
   grid-column: 1 / -1;
   margin-top: 4px;
   margin-bottom: 5px;
+}
+
+.xr-section-summary-in ~ .xr-section-details {
+  display: none;
 }
 
 .xr-section-summary-in:checked ~ .xr-section-details {
   display: contents;
 }
 
+.xr-children {
+  display: inline-grid;
+  grid-template-columns: 100%;
+  grid-column: 1 / -1;
+  padding-top: 4px;
+}
+
 .xr-group-box {
   display: inline-grid;
-  grid-template-columns: 0px 20px auto;
-  width: 100%;
+  grid-template-columns: 0px 30px auto;
 }
 
 .xr-group-box-vline {
@@ -877,13 +912,43 @@ body.vscode-dark {
   grid-column-start: 2;
   grid-row-start: 1;
   height: 1em;
-  width: 20px;
+  width: 26px;
   border-bottom: 0.2em solid;
   border-color: var(--xr-border-color);
 }
 
 .xr-group-box-contents {
   grid-column-start: 3;
+  padding-bottom: 4px;
+}
+
+.xr-group-box-contents > label::before {
+  content: "📂";
+  padding-right: 0.3em;
+}
+
+.xr-group-box-contents > input:checked + label::before {
+  content: "📁";
+}
+
+.xr-group-box-contents > input:checked + label {
+  padding-bottom: 0px;
+}
+
+.xr-group-box-contents > input:checked ~ .xr-sections {
+  display: none;
+}
+
+.xr-group-box-contents > input + label > span {
+  display: none;
+}
+
+.xr-group-box-ellipsis {
+  font-size: 1.4em;
+  font-weight: 900;
+  color: var(--xr-font-color2);
+  letter-spacing: 0.15em;
+  cursor: default;
 }
 
 .xr-array-wrap {
@@ -1130,7 +1195,7 @@ array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
 Coordinates:
   * lat      (lat) float32 100B 75.0 72.5 70.0 67.5 65.0 ... 22.5 20.0 17.5 15.0
   * lon      (lon) float32 212B 200.0 202.5 205.0 207.5 ... 325.0 327.5 330.0
-Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-97dbba4e-36dd-4d6a-a8d3-314b40cfe331' class='xr-array-in' type='checkbox' checked><label for='section-97dbba4e-36dd-4d6a-a8d3-314b40cfe331' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>260.4 260.2 259.9 259.5 259.0 258.6 ... 297.9 297.8 297.3 297.3 297.3</span></div><div class='xr-array-data'><pre>array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
+Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-e2080432-5fd2-45bc-b5a3-70be1a20536b' class='xr-array-in' type='checkbox' checked><label for='section-e2080432-5fd2-45bc-b5a3-70be1a20536b' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>260.4 260.2 259.9 259.5 259.0 258.6 ... 297.9 297.8 297.3 297.3 297.3</span></div><div class='xr-array-data'><pre>array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
         251.93811644, 253.43804795],
        [262.73439384, 262.79397603, 262.74933904, ..., 249.75590411,
         251.58575685, 254.35926027],
@@ -1142,14 +1207,14 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
        [298.12920205, 297.93700685, 297.47039384, ..., 296.85954795,
         296.7770274 , 296.44383562],
        [298.36615068, 298.38573973, 298.11414384, ..., 297.33820548,
-        297.28144521, 297.30510274]], shape=(25, 53))</pre></div></div></li><li class='xr-section-item'><input id='section-dfac4b3f-3dc9-42b8-816a-b4cb8f79b575' class='xr-section-summary-in' type='checkbox'  checked><label for='section-dfac4b3f-3dc9-42b8-816a-b4cb8f79b575' class='xr-section-summary' >Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-495d39d3-c171-4169-a5c1-f3cc3f5df759' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-495d39d3-c171-4169-a5c1-f3cc3f5df759' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0456e127-0eaf-46af-9ee0-040fd2a95960' class='xr-var-data-in' type='checkbox'><label for='data-0456e127-0eaf-46af-9ee0-040fd2a95960' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
+        297.28144521, 297.30510274]], shape=(25, 53))</pre></div></div></li><li class='xr-section-item'><input id='section-f92a7e9c-0abb-4464-8bba-31b71cfd0a93' class='xr-section-summary-in' type='checkbox' checked /><label for='section-f92a7e9c-0abb-4464-8bba-31b71cfd0a93' class='xr-section-summary' title='Expand/collapse section'>Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-9d6f7d43-658b-45cd-afca-3bbcb93c4a7b' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-9d6f7d43-658b-45cd-afca-3bbcb93c4a7b' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-491d0831-2a53-4c14-ba33-cfcc2fcafc00' class='xr-var-data-in' type='checkbox'><label for='data-491d0831-2a53-4c14-ba33-cfcc2fcafc00' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
        45. , 42.5, 40. , 37.5, 35. , 32.5, 30. , 27.5, 25. , 22.5, 20. , 17.5,
-       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-879bc5c0-4231-4ff4-b23d-6fe55dbbd97b' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-879bc5c0-4231-4ff4-b23d-6fe55dbbd97b' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0e32b44d-8672-4cb8-87ee-fc6f58a72d99' class='xr-var-data-in' type='checkbox'><label for='data-0e32b44d-8672-4cb8-87ee-fc6f58a72d99' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
+       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-195cda27-9b25-46fd-9142-964fa2f557de' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-195cda27-9b25-46fd-9142-964fa2f557de' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-9c05796b-e5e2-452c-b306-4e691ce169ca' class='xr-var-data-in' type='checkbox'><label for='data-9c05796b-e5e2-452c-b306-4e691ce169ca' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
        225. , 227.5, 230. , 232.5, 235. , 237.5, 240. , 242.5, 245. , 247.5,
        250. , 252.5, 255. , 257.5, 260. , 262.5, 265. , 267.5, 270. , 272.5,
        275. , 277.5, 280. , 282.5, 285. , 287.5, 290. , 292.5, 295. , 297.5,
        300. , 302.5, 305. , 307.5, 310. , 312.5, 315. , 317.5, 320. , 322.5,
-       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-22da1f6b-3718-4a11-bb3c-62a9fc431c30' class='xr-section-summary-in' type='checkbox'  ><label for='section-22da1f6b-3718-4a11-bb3c-62a9fc431c30' class='xr-section-summary' >Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
+       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-fafe3ba4-e24b-4b8f-9e4b-5b447d472f19' class='xr-section-summary-in' type='checkbox' /><label for='section-fafe3ba4-e24b-4b8f-9e4b-5b447d472f19' class='xr-section-summary' title='Expand/collapse section'>Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
 </div>
 <p>This is fine for outputs that fit in memory like the example here, but sometimes we want to write the output of the computation to Zarr, which we do by calling <code class="docutils literal notranslate"><span class="pre">to_zarr</span></code> on the dataset instead of <code class="docutils literal notranslate"><span class="pre">compute</span></code>:</p>
 <div class="cell docutils container">
@@ -1184,63 +1249,64 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 <span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
 <span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2404,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
-<span class="g g-Whitespace">   </span><span class="mi">2402</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
-<span class="g g-Whitespace">   </span><span class="mi">2403</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
-<span class="ne">-&gt; </span><span class="mi">2404</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2417,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
+<span class="g g-Whitespace">   </span><span class="mi">2415</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+<span class="g g-Whitespace">   </span><span class="mi">2416</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="ne">-&gt; </span><span class="mi">2417</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:374,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
-<span class="g g-Whitespace">    </span><span class="mi">371</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">372</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
-<span class="ne">--&gt; </span><span class="mi">374</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
-<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="n">display_default_indexes</span> <span class="o">=</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="s2">&quot;display_default_indexes&quot;</span><span class="p">,</span> <span class="kc">False</span>
-<span class="g g-Whitespace">    </span><span class="mi">378</span> <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">379</span> <span class="n">xindexes</span> <span class="o">=</span> <span class="n">filter_nondefault_indexes</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">380</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
-<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:379,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
+<span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+<span class="ne">--&gt; </span><span class="mi">379</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
+<span class="g g-Whitespace">    </span><span class="mi">381</span> <span class="n">display_default_indexes</span> <span class="o">=</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">382</span>     <span class="s2">&quot;display_default_indexes&quot;</span><span class="p">,</span> <span class="kc">False</span>
+<span class="g g-Whitespace">    </span><span class="mi">383</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">384</span> <span class="n">xindexes</span> <span class="o">=</span> <span class="n">filter_nondefault_indexes</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">385</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
+<span class="g g-Whitespace">    </span><span class="mi">386</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:224,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, max_option_name)</span>
-<span class="g g-Whitespace">    </span><span class="mi">218</span>     <span class="k">if</span> <span class="n">n_items</span> <span class="o">&gt;</span> <span class="n">max_items</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">219</span>         <span class="n">inline_details</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">max_items</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_items</span><span class="si">}</span><span class="s2">)&quot;</span>
-<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="k">return</span> <span class="n">collapsible_section</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">222</span>     <span class="n">name</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">223</span>     <span class="n">inline_details</span><span class="o">=</span><span class="n">inline_details</span><span class="p">,</span>
-<span class="ne">--&gt; </span><span class="mi">224</span>     <span class="n">details</span><span class="o">=</span><span class="n">details_func</span><span class="p">(</span><span class="n">mapping</span><span class="p">),</span>
-<span class="g g-Whitespace">    </span><span class="mi">225</span>     <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">227</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">228</span> <span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:225,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, **kwargs)</span>
+<span class="g g-Whitespace">    </span><span class="mi">218</span> <span class="n">expanded</span> <span class="o">=</span> <span class="n">max_items_collapse</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">219</span>     <span class="n">expand_option_name</span><span class="p">,</span> <span class="n">n_items</span> <span class="o">&lt;</span> <span class="n">max_items_collapse</span>
+<span class="g g-Whitespace">    </span><span class="mi">220</span> <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">221</span> <span class="n">collapsed</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">expanded</span>
+<span class="g g-Whitespace">    </span><span class="mi">223</span> <span class="k">return</span> <span class="n">collapsible_section</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">224</span>     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span>
+<span class="ne">--&gt; </span><span class="mi">225</span>     <span class="n">details</span><span class="o">=</span><span class="n">details_func</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">226</span>     <span class="n">n_items</span><span class="o">=</span><span class="n">n_items</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">227</span>     <span class="n">enabled</span><span class="o">=</span><span class="n">enabled</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">228</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">229</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:134,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
-<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="ne">--&gt; </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<span class="g g-Whitespace">    </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
-<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:136,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="ne">--&gt; </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="g g-Whitespace">    </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    138         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:135,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
-<span class="g g-Whitespace">    </span><span class="mi">133</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">134</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-<span class="ne">--&gt; </span><span class="mi">135</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
-<span class="nn">    136         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
-<span class="g g-Whitespace">    </span><span class="mi">137</span>     <span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:137,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
+<span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+<span class="ne">--&gt; </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
+<span class="nn">    138         for k, v</span> in <span class="ni">variables.items</span><span class="nt">()</span>
+<span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:96,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
-<span class="g g-Whitespace">     </span><span class="mi">94</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
-<span class="g g-Whitespace">     </span><span class="mi">95</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
-<span class="ne">---&gt; </span><span class="mi">96</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">98</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">99</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:98,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
+<span class="g g-Whitespace">     </span><span class="mi">96</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">97</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+<span class="ne">---&gt; </span><span class="mi">98</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">100</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">101</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:43,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
-<span class="g g-Whitespace">     </span><span class="mi">41</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
-<span class="g g-Whitespace">     </span><span class="mi">42</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
-<span class="ne">---&gt; </span><span class="mi">43</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
-<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
-<span class="g g-Whitespace">     </span><span class="mi">45</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
+<span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
+<span class="ne">---&gt; </span><span class="mi">45</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+<span class="g g-Whitespace">     </span><span class="mi">46</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
+<span class="g g-Whitespace">     </span><span class="mi">47</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 
 <span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
