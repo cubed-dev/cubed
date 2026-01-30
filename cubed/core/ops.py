@@ -1100,7 +1100,8 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
             yield read_chunks, target_chunks_
         else:
             yield read_chunks, int_chunks
-            yield write_chunks, target_chunks_
+            if last_stage:
+                yield write_chunks, target_chunks_
 
 
 def _rechunk(x, copy_chunks, target_chunks):
