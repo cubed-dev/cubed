@@ -20,7 +20,14 @@ from cubed.primitive.types import CubedArrayProxy, PrimitiveOperation
 from cubed.runtime.types import CubedPipeline
 from cubed.storage.store import is_storage_array
 from cubed.storage.zarr import LazyZarrArray, T_ZarrArray, lazy_zarr_array
-from cubed.types import T_Chunks, T_DType, T_RegularChunks, T_Shape, T_Store
+from cubed.types import (
+    T_Chunks,
+    T_DType,
+    T_RectangularChunks,
+    T_RegularChunks,
+    T_Shape,
+    T_Store,
+)
 from cubed.utils import (
     array_memory,
     chunk_memory,
@@ -415,17 +422,14 @@ def general_blockwise(
     )
 
     # this must be an iterator of lists, not of tuples, otherwise lithops breaks
-    if output_blocks is None:
-        output_blocks = map(
-            list, itertools.product(*[range(len(c)) for c in chunks_normal])
-        )
+    mappable = output_blocks if output_blocks is not None else ChunkKeys(chunks_normal)
     if num_tasks is None:
         num_tasks = math.prod(len(c) for c in chunks_normal)
 
     pipeline = CubedPipeline(
         apply_blockwise,
         gensym("apply_blockwise"),
-        output_blocks,
+        mappable,
         spec,
     )
     return PrimitiveOperation(
@@ -440,6 +444,17 @@ def general_blockwise(
         fusable_with_successors=fusable_with_successors,
         write_chunks=chunksize,
     )
+
+
+# use this wrapper to avoid itertools.product pickle error
+class ChunkKeys(Iterable[List[int]]):
+    def __init__(self, chunks_normal: T_RectangularChunks):
+        self.chunks_normal = chunks_normal
+
+    def __iter__(self):
+        return map(
+            list, itertools.product(*[range(len(c)) for c in self.chunks_normal])
+        )
 
 
 # Code for fusing blockwise operations

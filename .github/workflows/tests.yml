@@ -24,6 +24,8 @@ jobs:
             python-version: "3.12"
           - os: "ubuntu-latest"
             python-version: "3.13"
+          - os: "ubuntu-latest"
+            python-version: "3.14"
 
     steps:
       - name: Checkout source

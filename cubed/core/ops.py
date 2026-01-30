@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import product
 from numbers import Integral, Number
-from typing import TYPE_CHECKING, Any, Callable, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Sequence, Tuple, Union
 from warnings import warn
 
 import numpy as np
@@ -237,10 +237,19 @@ def _store_array(
             raise ValueError(
                 f"Source array shape {source.shape} does not match region shape {indexer.shape}"
             )
-        # TODO(#800): make Zarr indexer pickle-able so we don't have to materialize all the block IDs
-        output_blocks = map(
-            lambda chunk_projection: list(chunk_projection[0]), list(indexer)
-        )
+
+        # use this wrapper to avoid generator pickle error
+        class OutputBlocksIterable(Iterable[List[int]]):
+            def __init__(self, region, shape, chunks):
+                self.region = region
+                self.shape = shape
+                self.chunks = chunks
+
+            def __iter__(self):
+                indexer = _create_zarr_indexer(region, shape, chunks)
+                return map(lambda chunk_projection: list(chunk_projection[0]), indexer)
+
+        output_blocks = OutputBlocksIterable(region, shape, chunks)
 
         out = general_blockwise(
             identity,
