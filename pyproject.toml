@@ -83,6 +83,7 @@ coiled = [
 test = [
     "cubed[diagnostics]",
     "dill",
+    "hypothesis",
     "numpy_groupies",
     "obstore",
     "pytest",
