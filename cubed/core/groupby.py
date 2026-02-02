@@ -179,7 +179,7 @@ def groupby_blockwise(
     target_chunks = normalize_chunks(chunks, shape, dtype=dtype)
 
     def selection_function(out_key):
-        out_coords = out_key[1:]
+        out_coords = out_key.coords
         block_id = out_coords
         return get_item(read_chunks, block_id)
 

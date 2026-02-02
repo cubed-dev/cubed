@@ -4,6 +4,7 @@ from typing import Iterator
 
 from cubed.primitive.blockwise import (
     BlockwiseSpec,
+    ChunkKey,
     fuse_blockwise_specs,
     make_fused_key_function,
 )
@@ -11,17 +12,17 @@ from cubed.utils import map_nested
 
 
 def make_map_blocks_key_function(*names):
-    def key_function(out_key):
-        out_coords = out_key[1:]
-        return tuple((name, *out_coords) for name in names)
+    def key_function(out_key: ChunkKey):
+        out_coords = out_key.coords
+        return tuple(ChunkKey(name, out_coords) for name in names)
 
     return key_function
 
 
 def make_combine_blocks_list_key_function(name, numblocks, split_every):
     # similar to the key function in partial_reduce
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def key_function(out_key: ChunkKey):
+        out_coords = out_key.coords
 
         # return a tuple with a single item that is a list of input keys to be combined
         in_keys = [
@@ -33,15 +34,15 @@ def make_combine_blocks_list_key_function(name, numblocks, split_every):
             )
             for bi in out_coords
         ]
-        return ([(name,) + tuple(p) for p in product(*in_keys)],)
+        return ([ChunkKey(name, tuple(p)) for p in product(*in_keys)],)
 
     return key_function
 
 
 def make_combine_blocks_iter_key_function(name, numblocks, split_every):
     # similar to the key function in partial_reduce
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def key_function(out_key: ChunkKey):
+        out_coords = out_key.coords
 
         # return a tuple with a single item that is an iterator of input keys to be combined
         in_keys = [
@@ -53,7 +54,7 @@ def make_combine_blocks_iter_key_function(name, numblocks, split_every):
             )
             for bi in out_coords
         ]
-        return (iter([(name,) + tuple(p) for p in product(*in_keys)]),)
+        return (iter([ChunkKey(name, tuple(p)) for p in product(*in_keys)]),)
 
     return key_function
 
@@ -75,7 +76,8 @@ def sum_iter(x):
 
 
 def check_key_function(key_function, out_coords, expected_str):
-    res = key_function(("out",) + out_coords)
+    res = key_function(ChunkKey("out", out_coords))
+    assert isinstance(res, tuple)
 
     assert str(tuple(iter_repr_nested(r) for r in res)) == expected_str
 
@@ -200,13 +202,15 @@ def test_fuse_key_function_multiple_multiple():
 
 def apply_blockwise(input_data, out_coords, bw_spec):
     args = []
-    out_key = ("out",) + tuple(out_coords)  # array name is ignored by key_function
+    out_key = ChunkKey(
+        "out", tuple(out_coords)
+    )  # array name is ignored by key_function
     in_keys = bw_spec.key_function(out_key)
     for in_key in in_keys:
         # just return the (1D) coord as a value
         def get_data(key):
-            name = key[0]
-            index = key[1]  # 1d index
+            name = key.name
+            index = key.coords[0]  # 1d index
             return input_data[name][index]
 
         arg = map_nested(get_data, in_key)

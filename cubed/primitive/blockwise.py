@@ -54,6 +54,23 @@ def gensym(name: str) -> str:
 
 
 @dataclass(frozen=True)
+class ChunkKey:
+    """Specifies a chunk in a (named) array by chunk coords."""
+
+    name: str
+    coords: tuple[int, ...]
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def __str__(self) -> str:
+        return str((self.name,) + self.coords)
+
+
+ChunkKeyCollection = ChunkKey | List[ChunkKey] | Iterator[ChunkKey]
+
+
+@dataclass(frozen=True)
 class BlockwiseSpec:
     """Specification for how to run blockwise on an array.
 
@@ -82,7 +99,7 @@ class BlockwiseSpec:
         Note that the order of the entries must correspond to the order of the outputs created by the function.
     """
 
-    key_function: Callable[..., Any]
+    key_function: Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]]
     function: Callable[..., Any]
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
@@ -132,7 +149,7 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
 
     # get array chunks for input keys, preserving any nested list structure
     get_chunk_config = partial(get_chunk, config=config)
-    out_key = ("out",) + out_coords_tuple  # array name is ignored by key_function
+    out_key = ChunkKey("out", out_coords_tuple)  # array name is ignored by key_function
     name_chunk_inds = list(config.key_function(out_key))
     args = map_nested(get_chunk_config, name_chunk_inds)
 
@@ -149,8 +166,8 @@ def key_to_slices(
 
 def get_chunk(in_key, config):
     """Read a chunk from the named array"""
-    name = in_key[0]
-    in_coords = in_key[1:]
+    name = in_key.name
+    in_coords = in_key.coords
     arr = config.reads_map[name].open()
     selection = key_to_slices(in_coords, arr)
     arg = arr[selection]
@@ -279,7 +296,7 @@ def blockwise(
 
 def general_blockwise(
     func: Callable[..., Any],
-    key_function: Callable[..., Any],
+    key_function: Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]],
     *arrays: Any,
     allowed_mem: int,
     reserved_mem: int,
@@ -748,8 +765,13 @@ def fuse_blockwise_specs(
     )
 
 
-def apply_blockwise_key_func(key_function, arg):
+def apply_blockwise_key_func(
+    key_function: Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]],
+    arg: ChunkKeyCollection,
+) -> tuple[ChunkKeyCollection, ...]:
     if isinstance(arg, tuple):
+        raise ValueError("Tuples are no longer supported for chunk keys")
+    elif isinstance(arg, ChunkKey):
         return key_function(arg)
     else:
         # more than one input block is being read from arg
@@ -779,9 +801,13 @@ def apply_blockwise_func(func, is_iterable, *args):
 
 
 def make_fused_key_function(
-    key_function, predecessor_key_functions, predecessor_funcs_nargs
-):
-    def fused_key_func(out_key):
+    key_function: Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]],
+    predecessor_key_functions: list[
+        Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]]
+    ],
+    predecessor_funcs_nargs: list[int],
+) -> Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]]:
+    def fused_key_func(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
         args = key_function(out_key)
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
@@ -789,7 +815,7 @@ def make_fused_key_function(
             for pkf, a in zip(predecessor_key_functions, args, strict=True)
             for item in apply_blockwise_key_func(pkf, a)
         )
-        return split_into(func_args, predecessor_funcs_nargs)
+        return tuple(item for item in split_into(func_args, predecessor_funcs_nargs))
 
     return fused_key_func
 
@@ -829,7 +855,7 @@ def make_blockwise_key_function(
     *arrind_pairs: Any,
     numblocks: Dict[str, Tuple[int, ...]],
     new_axes: Optional[Dict[int, int]] = None,
-) -> Callable[[List[int]], Any]:
+) -> Callable[[ChunkKey], tuple[Any, ...]]:
     """Make a function that is the equivalent of make_blockwise_graph."""
 
     new_axes = new_axes or {}
@@ -858,8 +884,8 @@ def make_blockwise_key_function(
                     "without specifying drop_axis, or rechunk first."
                 )
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def key_function(out_key: ChunkKey) -> tuple[Any, ...]:
+        out_coords = out_key.coords
 
         # from Dask make_blockwise_graph
         deps = set()
@@ -896,7 +922,7 @@ def make_blockwise_key_function_flattened(
     *arrind_pairs: Any,
     numblocks: Dict[str, Tuple[int, ...]],
     new_axes: Optional[Dict[int, int]] = None,
-) -> Callable[[List[int]], Any]:
+) -> Callable[[ChunkKey], tuple[ChunkKeyCollection, ...]]:
     # TODO: make this a part of make_blockwise_key_function?
     key_function = make_blockwise_key_function(
         func, output, out_indices, *arrind_pairs, numblocks=numblocks, new_axes=new_axes
@@ -907,6 +933,6 @@ def make_blockwise_key_function_flattened(
         # flatten (nested) lists indicating contraction
         if isinstance(in_keys[0], list):
             in_keys = list(flatten(in_keys))
-        return in_keys
+        return tuple(ChunkKey(in_key[0], in_key[1:]) for in_key in in_keys)
 
     return blockwise_fn_flattened

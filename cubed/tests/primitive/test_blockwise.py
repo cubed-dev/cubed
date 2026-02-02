@@ -4,6 +4,8 @@ import pytest
 from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.primitive.blockwise import (
+    ChunkKey,
+    ChunkKeyCollection,
     blockwise,
     general_blockwise,
     make_blockwise_key_function,
@@ -185,15 +187,15 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+        out_coords = out_key.coords
 
         k = merge_factor
         out_coord = out_coords[0]  # this is just 1d
         # return a tuple with a single item that is the list of input keys to be merged
         return (
             [
-                (in_name, out_coord * k + i)
+                ChunkKey(in_name, (out_coord * k + i,))
                 for i in range(k)
                 if out_coord * k + i < numblocks
             ],
@@ -244,13 +246,13 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
         yield np.sqrt(x)
         yield -np.sqrt(x)
 
-    def block_function(out_key):
-        out_coords = out_key[1:]
-        return ((in_name, *out_coords),)
+    def key_function(out_key):
+        out_coords = out_key.coords
+        return (ChunkKey(in_name, out_coords),)
 
     op = general_blockwise(
         sqrts,
-        block_function,
+        key_function,
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
@@ -306,9 +308,9 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
         yield np.sqrt(x)
         yield -np.sqrt(x)
 
-    def block_function(out_key):
-        out_coords = out_key[1:]
-        return ((in_name, *out_coords),)
+    def key_function(out_key):
+        out_coords = out_key.coords
+        return (ChunkKey(in_name, out_coords),)
 
     with pytest.raises(
         ValueError,
@@ -316,7 +318,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
     ):
         general_blockwise(
             sqrts,
-            block_function,
+            key_function,
             source,
             allowed_mem=allowed_mem,
             reserved_mem=0,
@@ -403,4 +405,4 @@ def test_make_blockwise_key_function_contract_0d():
 
 def check_consistent_with_graph(key_fn, graph):
     for k, v in graph.items():
-        assert key_fn(k) == v
+        assert key_fn(ChunkKey(k[0], k[1:])) == v
