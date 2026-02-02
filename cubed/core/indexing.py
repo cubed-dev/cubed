@@ -9,6 +9,7 @@ from toolz import accumulate, map
 from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.core.array import CoreArray
 from cubed.core.ops import general_blockwise, map_selection, merge_chunks
+from cubed.primitive.blockwise import ChunkKey, ChunkKeyCollection
 from cubed.utils import array_size, normalize_chunks
 
 if TYPE_CHECKING:
@@ -107,7 +108,7 @@ def index(x, key):
         # use map_selection (which uses general_blockwise) to allow more opportunities for optimization than map_direct
 
         def selection_function(out_key):
-            out_coords = out_key[1:]
+            out_coords = out_key.coords
             return _target_chunk_selection(target_chunks, out_coords, selection)
 
         max_num_input_blocks = _index_num_input_blocks(
@@ -250,12 +251,12 @@ class BlockView:
                     "Only integer, slice, or int array indexes are supported."
                 )
 
-        def key_function(out_key):
-            out_coords = out_key[1:]
+        def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+            out_coords = out_key.coords
             in_coords = tuple(
                 get_dim_index(ia, bi) for ia, bi in zip(idx.args, out_coords)
             )
-            return ((self.array.name, *in_coords),)
+            return (ChunkKey(self.array.name, in_coords),)
 
         out = general_blockwise(
             identity,

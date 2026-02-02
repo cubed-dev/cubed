@@ -62,7 +62,7 @@ def map_overlap(
     x = args[0]  # TODO: support multiple input arrays
 
     def selection_function(out_key):
-        out_coords = out_key[1:]
+        out_coords = out_key.coords
         block_id = out_coords
         return get_item_with_depth(x.chunks, block_id, depth[0])
 
