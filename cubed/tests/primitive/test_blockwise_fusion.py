@@ -60,6 +60,17 @@ def make_combine_blocks_iter_key_function(name, numblocks, split_every):
     return key_function
 
 
+def make_alternate_blocks_key_function(name1, name2):
+    # similar to the key function for stack
+    def key_function(out_key: ChunkKey):
+        out_coords = out_key.coords
+        index = out_coords[0]  # 1d index
+        name = name1 if index % 2 == 0 else name2
+        return FunctionArgs(ChunkKey(name, out_coords))
+
+    return key_function
+
+
 def negative(x):
     assert isinstance(x, int)
     return -x
@@ -162,6 +173,15 @@ def test_combine_blocks_iter_key_function():
     check_key_function(key_function, (0,), "(<('a', 0), ('a', 1)>,)")
     check_key_function(key_function, (1,), "(<('a', 2), ('a', 3)>,)")
     check_key_function(key_function, (2,), "(<('a', 4)>,)")
+
+
+def test_alternate_blocks_key_function():
+    key_function = make_alternate_blocks_key_function("a", "b")
+
+    check_key_function(key_function, (0,), "(('a', 0),)")
+    check_key_function(key_function, (1,), "(('b', 1),)")
+    check_key_function(key_function, (2,), "(('a', 2),)")
+    check_key_function(key_function, (3,), "(('b', 3),)")
 
 
 def test_fuse_key_function_map_blocks_linear():
