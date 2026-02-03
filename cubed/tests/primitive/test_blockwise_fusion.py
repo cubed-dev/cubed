@@ -92,6 +92,8 @@ def check_key_function(key_function, out_coords, expected_str):
     res = key_function(ChunkKey("out", out_coords))
     assert isinstance(res, FunctionArgs)
 
+    # TODO change to
+    # assert str(iter_repr_nested(res)) == expected_str
     assert str(tuple(iter_repr_nested(r) for r in res.args)) == expected_str
 
 
@@ -304,21 +306,18 @@ def test_fuse_key_function_map_blocks_alternate_blocks_key_function():
 
 
 def apply_blockwise(input_data, out_coords, bw_spec):
-    args = []
+    # just return the (1D) coord as a value
+    def get_data(key):
+        name = key.name
+        index = key.coords[0]  # 1d index
+        return input_data[name][index]
+
     out_key = ChunkKey(
         "out", tuple(out_coords)
     )  # array name is ignored by key_function
-    in_keys = bw_spec.key_function(out_key).args
-    for in_key in in_keys:
-        # just return the (1D) coord as a value
-        def get_data(key):
-            name = key.name
-            index = key.coords[0]  # 1d index
-            return input_data[name][index]
-
-        arg = map_nested(get_data, in_key)
-        args.append(arg)
-    return bw_spec.function(*args)
+    in_keys = bw_spec.key_function(out_key)
+    fargs = map_nested(get_data, in_keys)
+    return bw_spec.function(*fargs.args)
 
 
 def test_apply_blockwise():
