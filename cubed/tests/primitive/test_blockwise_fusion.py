@@ -164,7 +164,7 @@ def test_combine_blocks_iter_key_function():
     check_key_function(key_function, (2,), "(<('a', 4)>,)")
 
 
-def test_fuse_key_function_single_chain():
+def test_fuse_key_function_map_blocks_linear():
     key_function1 = make_map_blocks_key_function("a")
     key_function2 = make_map_blocks_key_function("b")
     key_function3 = make_map_blocks_key_function("c")
@@ -177,16 +177,7 @@ def test_fuse_key_function_single_chain():
     check_key_function(fused_key_function, (1,), "(≪≪('a', 1)≫≫,)")
 
 
-def test_fuse_key_function_single_branching():
-    key_function1 = make_map_blocks_key_function("a", "b")
-    key_function2 = make_map_blocks_key_function("c")
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [2])
-
-    check_key_function(fused_key_function, (0,), "(≪('a', 0), ('b', 0)≫,)")
-    check_key_function(fused_key_function, (1,), "(≪('a', 1), ('b', 1)≫,)")
-
-
-def test_fuse_key_function_single_branching_complex():
+def test_fuse_key_function_map_blocks_branching():
     key_function1 = make_map_blocks_key_function("a", "b")
     key_function2 = make_map_blocks_key_function("c")
     key_function3 = make_map_blocks_key_function("d", "e")
@@ -198,7 +189,7 @@ def test_fuse_key_function_single_branching_complex():
     check_key_function(fused_key_function, (1,), "(≪('a', 1), ('b', 1)≫, ≪('c', 1)≫)")
 
 
-def test_fuse_key_function_single_multiple_list():
+def test_fuse_key_function_map_blocks_combine_blocks_list():
     key_function1 = make_map_blocks_key_function("a")
     key_function2 = make_combine_blocks_list_key_function(
         "b", numblocks=5, split_every=2
@@ -210,7 +201,7 @@ def test_fuse_key_function_single_multiple_list():
     check_key_function(fused_key_function, (2,), "(≪[('a', 4)]≫,)")
 
 
-def test_fuse_key_function_single_multiple_iter():
+def test_fuse_key_function_map_blocks_combine_blocks_iter():
     key_function1 = make_map_blocks_key_function("a")
     key_function2 = make_combine_blocks_iter_key_function(
         "b", numblocks=5, split_every=2
@@ -222,7 +213,7 @@ def test_fuse_key_function_single_multiple_iter():
     check_key_function(fused_key_function, (2,), "(≪<('a', 4)>≫,)")
 
 
-def test_fuse_key_function_multiple_list_single():
+def test_fuse_key_function_combine_blocks_list_map_blocks():
     key_function1 = make_combine_blocks_list_key_function(
         "a", numblocks=5, split_every=2
     )
@@ -234,7 +225,7 @@ def test_fuse_key_function_multiple_list_single():
     check_key_function(fused_key_function, (2,), "(≪[('a', 4)]≫,)")
 
 
-def test_fuse_key_function_multiple_iter_single():
+def test_fuse_key_function_combine_blocks_iter_map_blocks():
     key_function1 = make_combine_blocks_iter_key_function(
         "a", numblocks=5, split_every=2
     )
@@ -246,7 +237,22 @@ def test_fuse_key_function_multiple_iter_single():
     check_key_function(fused_key_function, (2,), "(≪<('a', 4)>≫,)")
 
 
-def test_fuse_key_function_multiple_multiple():
+def test_fuse_key_function_combine_blocks_list_combine_blocks_list():
+    key_function1 = make_combine_blocks_list_key_function(
+        "a", numblocks=5, split_every=2
+    )
+    key_function2 = make_combine_blocks_list_key_function(
+        "b", numblocks=3, split_every=2
+    )
+    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
+
+    check_key_function(
+        fused_key_function, (0,), "(≪[[('a', 0), ('a', 1)], [('a', 2), ('a', 3)]]≫,)"
+    )
+    check_key_function(fused_key_function, (1,), "(≪[[('a', 4)]]≫,)")
+
+
+def test_fuse_key_function_combine_blocks_iter_combine_blocks_iter():
     key_function1 = make_combine_blocks_iter_key_function(
         "a", numblocks=5, split_every=2
     )
