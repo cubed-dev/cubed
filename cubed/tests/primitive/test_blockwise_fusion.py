@@ -177,6 +177,27 @@ def test_fuse_key_function_single_chain():
     check_key_function(fused_key_function, (1,), "(≪≪('a', 1)≫≫,)")
 
 
+def test_fuse_key_function_single_branching():
+    key_function1 = make_map_blocks_key_function("a", "b")
+    key_function2 = make_map_blocks_key_function("c")
+    fused_key_function = make_fused_key_function(key_function2, [key_function1], [2])
+
+    check_key_function(fused_key_function, (0,), "(≪('a', 0), ('b', 0)≫,)")
+    check_key_function(fused_key_function, (1,), "(≪('a', 1), ('b', 1)≫,)")
+
+
+def test_fuse_key_function_single_branching_complex():
+    key_function1 = make_map_blocks_key_function("a", "b")
+    key_function2 = make_map_blocks_key_function("c")
+    key_function3 = make_map_blocks_key_function("d", "e")
+    fused_key_function = make_fused_key_function(
+        key_function3, [key_function1, key_function2], [2, 1]
+    )
+
+    check_key_function(fused_key_function, (0,), "(≪('a', 0), ('b', 0)≫, ≪('c', 0)≫)")
+    check_key_function(fused_key_function, (1,), "(≪('a', 1), ('b', 1)≫, ≪('c', 1)≫)")
+
+
 def test_fuse_key_function_single_multiple_list():
     key_function1 = make_map_blocks_key_function("a")
     key_function2 = make_combine_blocks_list_key_function(
