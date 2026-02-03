@@ -9,7 +9,7 @@ from cubed.primitive.blockwise import (
     fuse_blockwise_specs,
     make_fused_key_function,
 )
-from cubed.utils import map_nested
+from cubed.utils import SplitList, map_nested
 
 
 def make_map_blocks_key_function(*names):
@@ -87,6 +87,8 @@ def iter_repr_nested(seq):
     # convert nested iterators to lists
     if isinstance(seq, list):
         return [iter_repr_nested(item) for item in seq]
+    elif isinstance(seq, SplitList):
+        return SplitList([iter_repr_nested(item) for item in seq.list])
     elif isinstance(seq, Iterator):
         return IteratorWithRepr([iter_repr_nested(item) for item in seq])
     else:
@@ -171,8 +173,8 @@ def test_fuse_key_function_single_chain():
         key_function3, [fused_key_function], [1]
     )
 
-    check_key_function(fused_key_function, (0,), "([[('a', 0)]],)")
-    check_key_function(fused_key_function, (1,), "([[('a', 1)]],)")
+    check_key_function(fused_key_function, (0,), "(≪≪('a', 0)≫≫,)")
+    check_key_function(fused_key_function, (1,), "(≪≪('a', 1)≫≫,)")
 
 
 def test_fuse_key_function_single_multiple_list():
@@ -182,9 +184,9 @@ def test_fuse_key_function_single_multiple_list():
     )
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "([[('a', 0), ('a', 1)]],)")
-    check_key_function(fused_key_function, (1,), "([[('a', 2), ('a', 3)]],)")
-    check_key_function(fused_key_function, (2,), "([[('a', 4)]],)")
+    check_key_function(fused_key_function, (0,), "(≪[('a', 0), ('a', 1)]≫,)")
+    check_key_function(fused_key_function, (1,), "(≪[('a', 2), ('a', 3)]≫,)")
+    check_key_function(fused_key_function, (2,), "(≪[('a', 4)]≫,)")
 
 
 def test_fuse_key_function_single_multiple_iter():
@@ -194,9 +196,9 @@ def test_fuse_key_function_single_multiple_iter():
     )
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "([<('a', 0), ('a', 1)>],)")
-    check_key_function(fused_key_function, (1,), "([<('a', 2), ('a', 3)>],)")
-    check_key_function(fused_key_function, (2,), "([<('a', 4)>],)")
+    check_key_function(fused_key_function, (0,), "(≪<('a', 0), ('a', 1)>≫,)")
+    check_key_function(fused_key_function, (1,), "(≪<('a', 2), ('a', 3)>≫,)")
+    check_key_function(fused_key_function, (2,), "(≪<('a', 4)>≫,)")
 
 
 def test_fuse_key_function_multiple_list_single():
@@ -206,9 +208,9 @@ def test_fuse_key_function_multiple_list_single():
     key_function2 = make_map_blocks_key_function("b")
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "([[('a', 0), ('a', 1)]],)")
-    check_key_function(fused_key_function, (1,), "([[('a', 2), ('a', 3)]],)")
-    check_key_function(fused_key_function, (2,), "([[('a', 4)]],)")
+    check_key_function(fused_key_function, (0,), "(≪[('a', 0), ('a', 1)]≫,)")
+    check_key_function(fused_key_function, (1,), "(≪[('a', 2), ('a', 3)]≫,)")
+    check_key_function(fused_key_function, (2,), "(≪[('a', 4)]≫,)")
 
 
 def test_fuse_key_function_multiple_iter_single():
@@ -218,9 +220,9 @@ def test_fuse_key_function_multiple_iter_single():
     key_function2 = make_map_blocks_key_function("b")
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "([<('a', 0), ('a', 1)>],)")
-    check_key_function(fused_key_function, (1,), "([<('a', 2), ('a', 3)>],)")
-    check_key_function(fused_key_function, (2,), "([<('a', 4)>],)")
+    check_key_function(fused_key_function, (0,), "(≪<('a', 0), ('a', 1)>≫,)")
+    check_key_function(fused_key_function, (1,), "(≪<('a', 2), ('a', 3)>≫,)")
+    check_key_function(fused_key_function, (2,), "(≪<('a', 4)>≫,)")
 
 
 def test_fuse_key_function_multiple_multiple():
@@ -233,9 +235,9 @@ def test_fuse_key_function_multiple_multiple():
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
     check_key_function(
-        fused_key_function, (0,), "([<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>],)"
+        fused_key_function, (0,), "(≪<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>≫,)"
     )
-    check_key_function(fused_key_function, (1,), "([<<('a', 4)>>],)")
+    check_key_function(fused_key_function, (1,), "(≪<<('a', 4)>>≫,)")
 
 
 def apply_blockwise(input_data, out_coords, bw_spec):
@@ -243,7 +245,7 @@ def apply_blockwise(input_data, out_coords, bw_spec):
     out_key = ChunkKey(
         "out", tuple(out_coords)
     )  # array name is ignored by key_function
-    in_keys = bw_spec.key_function(out_key)
+    in_keys = bw_spec.key_function(out_key).args
     for in_key in in_keys:
         # just return the (1D) coord as a value
         def get_data(key):

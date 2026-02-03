@@ -332,13 +332,24 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
         raise ValueError(f"Invalid value: {size}. Must be a positive value")
 
 
+class SplitList:
+    def __init__(self, list) -> None:
+        self.list = list
+
+    def __repr__(self):
+        return "≪" + ", ".join(repr(v) for v in self.list) + "≫"
+
+    def __str__(self):
+        return "≪" + ", ".join(str(v) for v in self.list) + "≫"
+
+
 # Based on more_itertools
 def split_into(iterable, sizes):
     """Yield a list of sequential items from *iterable* of length 'n' for each
     integer 'n' in *sizes*."""
     it = iter(iterable)
     for size in sizes:
-        yield list(islice(it, size))
+        yield SplitList(list(islice(it, size)))
 
 
 def map_nested(func, seq):

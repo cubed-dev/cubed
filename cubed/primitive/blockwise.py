@@ -787,7 +787,7 @@ def apply_blockwise_key_func(
             return FunctionArgs(
                 *tuple(
                     list(item)
-                    for item in zip(*(key_function(a) for a in arg), strict=True)
+                    for item in zip(*(key_function(a).args for a in arg), strict=True)
                 )
             )
         else:
@@ -796,7 +796,7 @@ def apply_blockwise_key_func(
             return FunctionArgs(
                 *tuple(
                     iter(list(item))
-                    for item in zip(*(key_function(a) for a in arg), strict=True)
+                    for item in zip(*(key_function(a).args for a in arg), strict=True)
                 )
             )
 
