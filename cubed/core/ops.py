@@ -20,7 +20,7 @@ from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
 from cubed.core.rechunk import multistage_regular_rechunking_plan
-from cubed.primitive.blockwise import ChunkKey, ChunkKeyCollection
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs, KeyFunctionResult
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -234,10 +234,12 @@ def _store_array(
             for sl, cs in zip(region, chunks)
         ]
 
-        def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+        def key_function(out_key: ChunkKey) -> KeyFunctionResult:
             out_coords = out_key.coords
             in_coords = tuple(bi - off for bi, off in zip(out_coords, block_offsets))
-            return (ChunkKey(source.name, in_coords),)
+            return FunctionArgs(
+                ChunkKey(source.name, in_coords), output_name=out_key.name
+            )
 
         # calculate output block ids from region selection
         indexer = _create_zarr_indexer(region, shape, chunks)
@@ -469,7 +471,10 @@ def general_blockwise(
             def wrap(out_key):
                 out_coords = out_key.coords
                 offset_in_key = (ChunkKey(offsets.name, out_coords),)
-                return key_function(out_key) + offset_in_key
+                return FunctionArgs(
+                    *(key_function(out_key).args + offset_in_key),
+                    output_name=out_key.name,
+                )
 
             return wrap
 
@@ -719,14 +724,17 @@ def map_selection(
         The maximum number of input blocks read from the input array.
     """
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         # compute the selection on x required to get the relevant chunk for out_key
         in_sel = selection_function(out_key)
 
         # use a Zarr indexer to convert selection to input coordinates
         indexer = _create_zarr_indexer(in_sel, x.shape, x.chunksize)
 
-        return (iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),)
+        return FunctionArgs(
+            iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),
+            output_name=out_key.name,
+        )
 
     num_input_blocks = (max_num_input_blocks,)
     iterable_input_blocks = (True,)
@@ -1288,7 +1296,7 @@ def partial_reduce(
     )
     shape = tuple(map(sum, chunks))
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
 
         # return a tuple with a single item that is an iterator of input keys to be merged
@@ -1301,7 +1309,10 @@ def partial_reduce(
             )
             for i, bi in enumerate(out_coords)
         ]
-        return (iter([ChunkKey(x.name, tuple(p)) for p in product(*in_keys)]),)
+        return FunctionArgs(
+            iter([ChunkKey(x.name, tuple(p)) for p in product(*in_keys)]),
+            output_name=out_key.name,
+        )
 
     # Since key_function returns an iterator of input keys, the the array chunks passed to
     # _partial_reduce are retrieved one at a time. However, we need an extra chunk of memory
@@ -1607,14 +1618,15 @@ def scan(
     #    Use general_blockwise with a key function since the chunks of increment and scanned aren't aligned anymore.
     assert increment.shape[axis] == scanned.numblocks[axis]
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         inc_coords = tuple(
             bi // split_every if i == axis else bi for i, bi in enumerate(out_coords)
         )
-        return (
+        return FunctionArgs(
             ChunkKey(scanned.name, out_coords),
             ChunkKey(increment.name, inc_coords),
+            output_name=out_key.name,
         )
 
     def _scan_binop(scn, inc, block_id=None, **kwargs):

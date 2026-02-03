@@ -22,7 +22,7 @@ from cubed.core.ops import (
 )
 from cubed.core.optimization import fuse_all_optimize_dag, multiple_inputs_optimize_dag
 from cubed.core.plan import ArrayRole
-from cubed.primitive.blockwise import ChunkKey
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.runtime.utils import raise_if_computes
 from cubed.storage.store import open_storage_array
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
@@ -1035,7 +1035,7 @@ def sqrts(x):
         yield -nxp.sqrt(x)
 
     def key_function(out_key):
-        return (ChunkKey(x.name, out_key.coords),)
+        return FunctionArgs(ChunkKey(x.name, out_key.coords), output_name=out_key.name)
 
     return general_blockwise(
         _sqrts,

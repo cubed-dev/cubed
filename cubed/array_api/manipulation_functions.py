@@ -20,7 +20,7 @@ from cubed.core.ops import (
     map_blocks,
     map_selection,
 )
-from cubed.primitive.blockwise import ChunkKey, ChunkKeyCollection
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs, KeyFunctionResult
 from cubed.utils import (
     block_id_to_offset,
     get_item,
@@ -152,7 +152,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
     else:
         chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         block_id = out_coords
 
@@ -177,7 +177,9 @@ def concat(arrays, /, *, axis=0, chunks=None):
 
             in_keys.extend([ChunkKey(a.name, cp.chunk_coords) for cp in indexer])
 
-        return (iter(tuple(in_key for in_key in in_keys)),)
+        return FunctionArgs(
+            iter(tuple(in_key for in_key in in_keys)), output_name=out_key.name
+        )
 
     num_input_blocks = (1,) * len(arrays)
     iterable_input_blocks = (True,) * len(arrays)
@@ -413,12 +415,12 @@ def repeat(x, repeats, /, *, axis=0):
     # This implementation calls nxp.repeat in every output block, which is 'repeats' times
     # more than necessary than if we had a primitive op that could write multiple blocks.
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         in_coords = tuple(
             bi // repeats if i == axis else bi for i, bi in enumerate(out_coords)
         )
-        return (ChunkKey(x.name, in_coords),)
+        return FunctionArgs(ChunkKey(x.name, in_coords), output_name=out_key.name)
 
     # extra memory from calling 'nxp.repeat' on a chunk
     extra_projected_mem = x.chunkmem * repeats
@@ -489,13 +491,14 @@ def reshape_chunks(x, shape, chunks):
     # use an empty template (handles smaller end chunks)
     template = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         offset = block_id_to_offset(out_coords, template.numblocks)
         in_coords = offset_to_block_id(offset, x.numblocks)
-        return (
+        return FunctionArgs(
             ChunkKey(x.name, in_coords),
             ChunkKey(template.name, out_coords),
+            output_name=out_key.name,
         )
 
     return general_blockwise(
@@ -571,10 +574,13 @@ def stack(arrays, /, *, axis=0):
 
     array_names = [a.name for a in arrays]
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         in_name = array_names[out_coords[axis]]
-        return (ChunkKey(in_name, out_coords[:axis] + out_coords[(axis + 1) :]),)
+        return FunctionArgs(
+            ChunkKey(in_name, out_coords[:axis] + out_coords[(axis + 1) :]),
+            output_name=out_key.name,
+        )
 
     # We have to mark this as fusable_with_predecessors=False since the number of input args to
     # the _read_stack_chunk function is *not* the same as the number of
@@ -626,13 +632,16 @@ def unstack(x, /, *, axis=0):
     dtype = x.dtype
     chunks = x.chunks[:axis] + x.chunks[axis + 1 :]
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         all_in_coords = tuple(
             out_coords[:axis] + (i,) + out_coords[axis:]
             for i in range(x.numblocks[axis])
         )
-        return tuple(ChunkKey(x.name, in_coords) for in_coords in all_in_coords)
+        return FunctionArgs(
+            *tuple(ChunkKey(x.name, in_coords) for in_coords in all_in_coords),
+            output_name=out_key.name,
+        )
 
     return general_blockwise(
         _unstack_chunk,

@@ -5,7 +5,8 @@ from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.primitive.blockwise import (
     ChunkKey,
-    ChunkKeyCollection,
+    FunctionArgs,
+    KeyFunctionResult,
     blockwise,
     general_blockwise,
     make_blockwise_key_function,
@@ -187,18 +188,18 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
 
         k = merge_factor
         out_coord = out_coords[0]  # this is just 1d
         # return a tuple with a single item that is the list of input keys to be merged
-        return (
+        return FunctionArgs(
             [
                 ChunkKey(in_name, (out_coord * k + i,))
                 for i in range(k)
                 if out_coord * k + i < numblocks
-            ],
+            ]
         )
 
     op = general_blockwise(
