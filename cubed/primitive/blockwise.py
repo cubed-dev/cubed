@@ -810,7 +810,7 @@ def apply_blockwise_func(func, is_iterable, *args):
 def make_fused_key_function(
     key_function: Callable[[ChunkKey], KeyFunctionResult],
     predecessor_key_functions: list[Callable[[ChunkKey], KeyFunctionResult]],
-    predecessor_funcs_nargs: list[int],
+    predecessor_funcs_nargs: list[int],  # TODO: not needed?
 ) -> Callable[[ChunkKey], KeyFunctionResult]:
     def fused_key_func(out_key: ChunkKey) -> KeyFunctionResult:
         args = key_function(out_key).args
@@ -819,7 +819,7 @@ def make_fused_key_function(
             apply_blockwise_key_func(pkf, a)
             for pkf, a in zip(predecessor_key_functions, args, strict=True)
         )
-        return FunctionArgs(*func_args)
+        return FunctionArgs(*func_args)  # note this adds a layer of nesting
 
     return fused_key_func
 
