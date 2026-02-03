@@ -2,6 +2,8 @@ import collections.abc
 from itertools import product
 from typing import Iterator
 
+import pytest
+
 from cubed.primitive.blockwise import (
     BlockwiseSpec,
     ChunkKey,
@@ -285,6 +287,21 @@ def test_fuse_key_function_combine_blocks_iter_combine_blocks_iter():
         fused_key_function, (0,), "(≪<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>≫,)"
     )
     check_key_function(fused_key_function, (1,), "(≪<<('a', 4)>>≫,)")
+
+
+@pytest.mark.xfail(reason="https://github.com/cubed-dev/cubed/issues/414")
+def test_fuse_key_function_map_blocks_alternate_blocks_key_function():
+    key_function1 = make_map_blocks_key_function("a")
+    key_function2 = make_map_blocks_key_function("b")
+    key_function3 = make_alternate_blocks_key_function("c", "d")
+    fused_key_function = make_fused_key_function(
+        key_function3, [key_function1, key_function2], [1, 1]
+    )
+
+    check_key_function(fused_key_function, (0,), "(('a', 0),)")
+    check_key_function(fused_key_function, (1,), "(('b', 1),)")
+    check_key_function(fused_key_function, (2,), "(('a', 2),)")
+    check_key_function(fused_key_function, (3,), "(('b', 3),)")
 
 
 def apply_blockwise(input_data, out_coords, bw_spec):
