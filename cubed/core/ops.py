@@ -19,7 +19,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, compute, gensym
 from cubed.core.plan import Plan, intermediate_store
 from cubed.core.rechunk import multistage_regular_rechunking_plan
-from cubed.primitive.blockwise import ChunkKey, ChunkKeyCollection
+from cubed.primitive.blockwise import ChunkKey, KeyFunctionResult
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -226,7 +226,7 @@ def _store_array(
             for sl, cs in zip(region, chunks)
         ]
 
-        def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+        def key_function(out_key: ChunkKey) -> KeyFunctionResult:
             out_coords = out_key.coords
             in_coords = tuple(bi - off for bi, off in zip(out_coords, block_offsets))
             return (ChunkKey(source.name, in_coords),)
@@ -701,7 +701,7 @@ def map_selection(
         The maximum number of input blocks read from the input array.
     """
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         # compute the selection on x required to get the relevant chunk for out_key
         in_sel = selection_function(out_key)
 
@@ -1270,7 +1270,7 @@ def partial_reduce(
     )
     shape = tuple(map(sum, chunks))
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
 
         # return a tuple with a single item that is an iterator of input keys to be merged
@@ -1589,7 +1589,7 @@ def scan(
     #    Use general_blockwise with a key function since the chunks of increment and scanned aren't aligned anymore.
     assert increment.shape[axis] == scanned.numblocks[axis]
 
-    def key_function(out_key: ChunkKey) -> tuple[ChunkKeyCollection, ...]:
+    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
         out_coords = out_key.coords
         inc_coords = tuple(
             bi // split_every if i == axis else bi for i, bi in enumerate(out_coords)
