@@ -161,6 +161,19 @@ def test_combine_blocks_iter_key_function():
     check_key_function(key_function, (2,), "(<('a', 4)>,)")
 
 
+def test_fuse_key_function_single_chain():
+    key_function1 = make_map_blocks_key_function("a")
+    key_function2 = make_map_blocks_key_function("b")
+    key_function3 = make_map_blocks_key_function("c")
+    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
+    fused_key_function = make_fused_key_function(
+        key_function3, [fused_key_function], [1]
+    )
+
+    check_key_function(fused_key_function, (0,), "([[('a', 0)]],)")
+    check_key_function(fused_key_function, (1,), "([[('a', 1)]],)")
+
+
 def test_fuse_key_function_single_multiple():
     key_function1 = make_map_blocks_key_function("a")
     key_function2 = make_combine_blocks_iter_key_function(
