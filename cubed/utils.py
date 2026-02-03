@@ -385,7 +385,9 @@ def map_nested(func, seq):
     if isinstance(seq, list):
         return [map_nested(func, item) for item in seq]
     elif isinstance(seq, FunctionArgs):
-        return FunctionArgs(*[map_nested(func, item) for item in seq.args])
+        # return FunctionArgs(*[map_nested(func, item) for item in seq.args])
+        # remove FunctionArgs
+        return [map_nested(func, item) for item in seq.args]
     elif isinstance(seq, Iterator):
         return map(lambda item: map_nested(func, item), seq)
     else:

@@ -314,8 +314,8 @@ def apply_blockwise(input_data, out_coords, bw_spec):
         "out", tuple(out_coords)
     )  # array name is ignored by key_function
     in_keys = bw_spec.key_function(out_key)
-    fargs = map_nested(get_data, in_keys)
-    return bw_spec.function(*fargs.args)
+    args = map_nested(get_data, in_keys)
+    return bw_spec.function(*args)
 
 
 def test_apply_blockwise():

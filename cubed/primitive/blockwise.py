@@ -778,22 +778,26 @@ def apply_blockwise_key_func(
     else:
         # more than one input block is being read from arg
         assert isinstance(arg, (list, Iterator))
+
         if isinstance(arg, list):
-            return FunctionArgs(
-                *tuple(
-                    list(item)
-                    for item in zip(*(key_function(a).args for a in arg), strict=True)
-                )
-            )
+            return [apply_blockwise_key_func(key_function, item) for item in arg]
+        # if isinstance(arg, list):
+        #     return FunctionArgs(
+        #         *tuple(
+        #             list(item)
+        #             for item in zip(*(key_function(a).args for a in arg), strict=True)
+        #         )
+        #     )
         else:
             # Return iterators to avoid materializing all array blocks at
             # once.
-            return FunctionArgs(
-                *tuple(
-                    iter(list(item))
-                    for item in zip(*(key_function(a).args for a in arg), strict=True)
-                )
-            )
+            return map(lambda item: apply_blockwise_key_func(key_function, item), arg)
+            # return FunctionArgs(
+            #     *tuple(
+            #         iter(list(item))
+            #         for item in zip(*(key_function(a).args for a in arg), strict=True)
+            #     )
+            # )
 
 
 def apply_blockwise_func(func, is_iterable, *args):
@@ -829,7 +833,7 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
             apply_blockwise_func(
-                pf, iterable_input_blocks[i], *a.args
+                pf, iterable_input_blocks[i], *a
             )  # a is a FunctionArgs
             for i, (pf, a) in enumerate(zip(predecessor_functions, args, strict=True))
         ]
