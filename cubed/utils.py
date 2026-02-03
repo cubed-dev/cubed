@@ -372,6 +372,8 @@ def map_nested(func, seq):
     """
     if isinstance(seq, list):
         return [map_nested(func, item) for item in seq]
+    elif isinstance(seq, SplitList):
+        return SplitList([map_nested(func, item) for item in seq.list])
     elif isinstance(seq, Iterator):
         return map(lambda item: map_nested(func, item), seq)
     else:

@@ -836,7 +836,9 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
     def fused_func_single(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_blockwise_func(pf, iterable_input_blocks[i], *a)
+            apply_blockwise_func(
+                pf, iterable_input_blocks[i], *a.list
+            )  # a is a SplitList
             for i, (pf, a) in enumerate(zip(predecessor_functions, args, strict=True))
         ]
         return function(*func_args)
