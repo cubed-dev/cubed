@@ -29,6 +29,7 @@ from cubed.types import (
     T_Store,
 )
 from cubed.utils import (
+    FunctionArgs,
     array_memory,
     chunk_memory,
     get_item,
@@ -65,11 +66,6 @@ class ChunkKey:
 
     def __str__(self) -> str:
         return str((self.name,) + self.coords)
-
-
-class FunctionArgs:
-    def __init__(self, *args) -> None:
-        self.args = args
 
 
 KeyFunctionResult = Any
@@ -837,8 +833,8 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
             apply_blockwise_func(
-                pf, iterable_input_blocks[i], *a.list
-            )  # a is a SplitList
+                pf, iterable_input_blocks[i], *a.args
+            )  # a is a FunctionArgs
             for i, (pf, a) in enumerate(zip(predecessor_functions, args, strict=True))
         ]
         return function(*func_args)

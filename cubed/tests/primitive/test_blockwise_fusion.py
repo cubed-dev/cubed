@@ -7,11 +7,10 @@ import pytest
 from cubed.primitive.blockwise import (
     BlockwiseSpec,
     ChunkKey,
-    FunctionArgs,
     fuse_blockwise_specs,
     make_fused_key_function,
 )
-from cubed.utils import SplitList, map_nested
+from cubed.utils import FunctionArgs, map_nested
 
 
 def make_map_blocks_key_function(*names):
@@ -100,8 +99,8 @@ def iter_repr_nested(seq):
     # convert nested iterators to lists
     if isinstance(seq, list):
         return [iter_repr_nested(item) for item in seq]
-    elif isinstance(seq, SplitList):
-        return SplitList([iter_repr_nested(item) for item in seq.list])
+    elif isinstance(seq, FunctionArgs):
+        return FunctionArgs(*[iter_repr_nested(item) for item in seq.args])
     elif isinstance(seq, Iterator):
         return IteratorWithRepr([iter_repr_nested(item) for item in seq])
     else:

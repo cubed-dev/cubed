@@ -333,15 +333,26 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
 
 
 # TODO: maybe call this GroupedArgs or NestedGroupedArgs?
-class SplitList:
-    def __init__(self, list) -> None:
-        self.list = list
+# class SplitList:
+#     def __init__(self, list) -> None:
+#         self.list = list
+
+#     def __repr__(self):
+#         return "≪" + ", ".join(repr(v) for v in self.list) + "≫"
+
+#     def __str__(self):
+#         return "≪" + ", ".join(str(v) for v in self.list) + "≫"
+
+
+class FunctionArgs:
+    def __init__(self, *args) -> None:
+        self.args = args
 
     def __repr__(self):
-        return "≪" + ", ".join(repr(v) for v in self.list) + "≫"
+        return "≪" + ", ".join(repr(v) for v in self.args) + "≫"
 
     def __str__(self):
-        return "≪" + ", ".join(str(v) for v in self.list) + "≫"
+        return "≪" + ", ".join(str(v) for v in self.args) + "≫"
 
 
 # Based on more_itertools
@@ -350,7 +361,7 @@ def split_into(iterable, sizes):
     integer 'n' in *sizes*."""
     it = iter(iterable)
     for size in sizes:
-        yield SplitList(list(islice(it, size)))
+        yield FunctionArgs(*list(islice(it, size)))
 
 
 def map_nested(func, seq):
@@ -373,8 +384,8 @@ def map_nested(func, seq):
     """
     if isinstance(seq, list):
         return [map_nested(func, item) for item in seq]
-    elif isinstance(seq, SplitList):
-        return SplitList([map_nested(func, item) for item in seq.list])
+    elif isinstance(seq, FunctionArgs):
+        return FunctionArgs(*[map_nested(func, item) for item in seq.args])
     elif isinstance(seq, Iterator):
         return map(lambda item: map_nested(func, item), seq)
     else:
