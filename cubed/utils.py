@@ -332,6 +332,7 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
         raise ValueError(f"Invalid value: {size}. Must be a positive value")
 
 
+# TODO: maybe call this GroupedArgs or NestedGroupedArgs?
 class SplitList:
     def __init__(self, list) -> None:
         self.list = list
