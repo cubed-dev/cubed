@@ -35,7 +35,6 @@ from cubed.utils import (
     get_item,
     map_nested,
     normalize_chunks,
-    split_into,
     to_chunksize,
 )
 from cubed.utils import numblocks as compute_numblocks
@@ -817,13 +816,10 @@ def make_fused_key_function(
         args = key_function(out_key).args
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
-            item
+            apply_blockwise_key_func(pkf, a)
             for pkf, a in zip(predecessor_key_functions, args, strict=True)
-            for item in apply_blockwise_key_func(pkf, a).args
         )
-        return FunctionArgs(
-            *tuple(item for item in split_into(func_args, predecessor_funcs_nargs))
-        )
+        return FunctionArgs(*func_args)
 
     return fused_key_func
 
