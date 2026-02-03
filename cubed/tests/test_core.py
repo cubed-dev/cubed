@@ -26,6 +26,7 @@ from cubed.primitive.blockwise import ChunkKey
 from cubed.runtime.utils import raise_if_computes
 from cubed.storage.store import open_storage_array
 from cubed.tests.utils import ALL_EXECUTORS, MAIN_EXECUTORS, TaskCounter, create_zarr
+from cubed.utils import FunctionArgs
 
 
 @pytest.fixture
@@ -981,7 +982,7 @@ def sqrts(x):
         yield -nxp.sqrt(x)
 
     def key_function(out_key):
-        return (ChunkKey(x.name, out_key.coords),)
+        return FunctionArgs(ChunkKey(x.name, out_key.coords))
 
     return general_blockwise(
         _sqrts,

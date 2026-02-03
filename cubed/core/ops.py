@@ -453,7 +453,7 @@ def general_blockwise(
             def wrap(out_key):
                 out_coords = out_key.coords
                 offset_in_key = (ChunkKey(offsets.name, out_coords),)
-                return key_function(out_key) + offset_in_key
+                return FunctionArgs(*(key_function(out_key).args + offset_in_key))
 
             return wrap
 

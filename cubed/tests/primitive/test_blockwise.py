@@ -249,7 +249,7 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
 
     def key_function(out_key):
         out_coords = out_key.coords
-        return (ChunkKey(in_name, out_coords),)
+        return FunctionArgs(ChunkKey(in_name, out_coords))
 
     op = general_blockwise(
         sqrts,
@@ -311,7 +311,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
 
     def key_function(out_key):
         out_coords = out_key.coords
-        return (ChunkKey(in_name, out_coords),)
+        return FunctionArgs(ChunkKey(in_name, out_coords))
 
     with pytest.raises(
         ValueError,

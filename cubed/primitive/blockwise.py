@@ -152,10 +152,10 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
     # get array chunks for input keys, preserving any nested list structure
     get_chunk_config = partial(get_chunk, config=config)
     out_key = ChunkKey("out", out_coords_tuple)  # array name is ignored by key_function
-    name_chunk_inds = list(config.key_function(out_key))
-    args = map_nested(get_chunk_config, name_chunk_inds)
+    name_chunk_inds = config.key_function(out_key)
+    fargs = map_nested(get_chunk_config, name_chunk_inds)
 
-    return config.function(*args)
+    return config.function(*fargs.args)
 
 
 def key_to_slices(
@@ -839,7 +839,9 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
     def fused_func_generator(*args):
         # args are grouped appropriately so they can be called by each predecessor function
         func_args = [
-            apply_blockwise_func(pf, iterable_input_blocks[i], *a)
+            apply_blockwise_func(
+                pf, iterable_input_blocks[i], *a.args
+            )  # a is a FunctionArgs
             for i, (pf, a) in enumerate(zip(predecessor_functions, args, strict=True))
         ]
         yield from function(*func_args)
@@ -939,6 +941,6 @@ def make_blockwise_key_function_flattened(
         # flatten (nested) lists indicating contraction
         if isinstance(in_keys[0], list):
             in_keys = list(flatten(in_keys))
-        return tuple(ChunkKey(in_key[0], in_key[1:]) for in_key in in_keys)
+        return FunctionArgs(*(ChunkKey(in_key[0], in_key[1:]) for in_key in in_keys))
 
     return blockwise_fn_flattened
