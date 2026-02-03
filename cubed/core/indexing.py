@@ -9,7 +9,7 @@ from toolz import accumulate, map
 from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.core.array import CoreArray
 from cubed.core.ops import general_blockwise, map_selection, merge_chunks
-from cubed.primitive.blockwise import ChunkKey, KeyFunctionResult
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs, KeyFunctionResult
 from cubed.utils import array_size, normalize_chunks
 
 if TYPE_CHECKING:
@@ -256,7 +256,7 @@ class BlockView:
             in_coords = tuple(
                 get_dim_index(ia, bi) for ia, bi in zip(idx.args, out_coords)
             )
-            return (ChunkKey(self.array.name, in_coords),)
+            return FunctionArgs(ChunkKey(self.array.name, in_coords))
 
         out = general_blockwise(
             identity,

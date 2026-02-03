@@ -67,6 +67,11 @@ class ChunkKey:
         return str((self.name,) + self.coords)
 
 
+class FunctionArgs:
+    def __init__(self, *args) -> None:
+        self.args = args
+
+
 KeyFunctionResult = Any
 
 ChunkKeyCollection = ChunkKey | List[ChunkKey] | Iterator[ChunkKey]
@@ -779,15 +784,20 @@ def apply_blockwise_key_func(
         # more than one input block is being read from arg
         assert isinstance(arg, (list, Iterator))
         if isinstance(arg, list):
-            return tuple(
-                list(item) for item in zip(*(key_function(a) for a in arg), strict=True)
+            return FunctionArgs(
+                *tuple(
+                    list(item)
+                    for item in zip(*(key_function(a) for a in arg), strict=True)
+                )
             )
         else:
             # Return iterators to avoid materializing all array blocks at
             # once.
-            return tuple(
-                iter(list(item))
-                for item in zip(*(key_function(a) for a in arg), strict=True)
+            return FunctionArgs(
+                *tuple(
+                    iter(list(item))
+                    for item in zip(*(key_function(a) for a in arg), strict=True)
+                )
             )
 
 
@@ -808,14 +818,16 @@ def make_fused_key_function(
     predecessor_funcs_nargs: list[int],
 ) -> Callable[[ChunkKey], KeyFunctionResult]:
     def fused_key_func(out_key: ChunkKey) -> KeyFunctionResult:
-        args = key_function(out_key)
+        args = key_function(out_key).args
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
             item
             for pkf, a in zip(predecessor_key_functions, args, strict=True)
-            for item in apply_blockwise_key_func(pkf, a)
+            for item in apply_blockwise_key_func(pkf, a).args
         )
-        return tuple(item for item in split_into(func_args, predecessor_funcs_nargs))
+        return FunctionArgs(
+            *tuple(item for item in split_into(func_args, predecessor_funcs_nargs))
+        )
 
     return fused_key_func
 

@@ -5,6 +5,7 @@ from typing import Iterator
 from cubed.primitive.blockwise import (
     BlockwiseSpec,
     ChunkKey,
+    FunctionArgs,
     fuse_blockwise_specs,
     make_fused_key_function,
 )
@@ -14,7 +15,7 @@ from cubed.utils import map_nested
 def make_map_blocks_key_function(*names):
     def key_function(out_key: ChunkKey):
         out_coords = out_key.coords
-        return tuple(ChunkKey(name, out_coords) for name in names)
+        return FunctionArgs(*tuple(ChunkKey(name, out_coords) for name in names))
 
     return key_function
 
@@ -34,7 +35,7 @@ def make_combine_blocks_list_key_function(name, numblocks, split_every):
             )
             for bi in out_coords
         ]
-        return ([ChunkKey(name, tuple(p)) for p in product(*in_keys)],)
+        return FunctionArgs([ChunkKey(name, tuple(p)) for p in product(*in_keys)])
 
     return key_function
 
@@ -54,7 +55,7 @@ def make_combine_blocks_iter_key_function(name, numblocks, split_every):
             )
             for bi in out_coords
         ]
-        return (iter([ChunkKey(name, tuple(p)) for p in product(*in_keys)]),)
+        return FunctionArgs(iter([ChunkKey(name, tuple(p)) for p in product(*in_keys)]))
 
     return key_function
 
@@ -77,9 +78,9 @@ def sum_iter(x):
 
 def check_key_function(key_function, out_coords, expected_str):
     res = key_function(ChunkKey("out", out_coords))
-    assert isinstance(res, tuple)
+    assert isinstance(res, FunctionArgs)
 
-    assert str(tuple(iter_repr_nested(r) for r in res)) == expected_str
+    assert str(tuple(iter_repr_nested(r) for r in res.args)) == expected_str
 
 
 def iter_repr_nested(seq):
