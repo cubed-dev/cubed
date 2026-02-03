@@ -92,9 +92,7 @@ def check_key_function(key_function, out_coords, expected_str):
     res = key_function(ChunkKey("out", out_coords))
     assert isinstance(res, FunctionArgs)
 
-    # TODO change to
-    # assert str(iter_repr_nested(res)) == expected_str
-    assert str(tuple(iter_repr_nested(r) for r in res.args)) == expected_str
+    assert str(iter_repr_nested(res)) == expected_str
 
 
 def iter_repr_nested(seq):
@@ -147,15 +145,15 @@ def make_blockwise_spec(
 def test_map_blocks_key_function():
     key_function = make_map_blocks_key_function("a")
 
-    check_key_function(key_function, (0,), "(('a', 0),)")
-    check_key_function(key_function, (1,), "(('a', 1),)")
+    check_key_function(key_function, (0,), "≪('a', 0)≫")
+    check_key_function(key_function, (1,), "≪('a', 1)≫")
 
 
 def test_map_blocks_multiple_inputs_key_function():
     key_function = make_map_blocks_key_function("a", "b")
 
-    check_key_function(key_function, (0,), "(('a', 0), ('b', 0))")
-    check_key_function(key_function, (1,), "(('a', 1), ('b', 1))")
+    check_key_function(key_function, (0,), "≪('a', 0), ('b', 0)≫")
+    check_key_function(key_function, (1,), "≪('a', 1), ('b', 1)≫")
 
 
 def test_combine_blocks_list_key_function():
@@ -163,9 +161,9 @@ def test_combine_blocks_list_key_function():
         "a", numblocks=5, split_every=2
     )
 
-    check_key_function(key_function, (0,), "([('a', 0), ('a', 1)],)")
-    check_key_function(key_function, (1,), "([('a', 2), ('a', 3)],)")
-    check_key_function(key_function, (2,), "([('a', 4)],)")
+    check_key_function(key_function, (0,), "≪[('a', 0), ('a', 1)]≫")
+    check_key_function(key_function, (1,), "≪[('a', 2), ('a', 3)]≫")
+    check_key_function(key_function, (2,), "≪[('a', 4)]≫")
 
 
 def test_combine_blocks_iter_key_function():
@@ -173,18 +171,18 @@ def test_combine_blocks_iter_key_function():
         "a", numblocks=5, split_every=2
     )
 
-    check_key_function(key_function, (0,), "(<('a', 0), ('a', 1)>,)")
-    check_key_function(key_function, (1,), "(<('a', 2), ('a', 3)>,)")
-    check_key_function(key_function, (2,), "(<('a', 4)>,)")
+    check_key_function(key_function, (0,), "≪<('a', 0), ('a', 1)>≫")
+    check_key_function(key_function, (1,), "≪<('a', 2), ('a', 3)>≫")
+    check_key_function(key_function, (2,), "≪<('a', 4)>≫")
 
 
 def test_alternate_blocks_key_function():
     key_function = make_alternate_blocks_key_function("a", "b")
 
-    check_key_function(key_function, (0,), "(('a', 0),)")
-    check_key_function(key_function, (1,), "(('b', 1),)")
-    check_key_function(key_function, (2,), "(('a', 2),)")
-    check_key_function(key_function, (3,), "(('b', 3),)")
+    check_key_function(key_function, (0,), "≪('a', 0)≫")
+    check_key_function(key_function, (1,), "≪('b', 1)≫")
+    check_key_function(key_function, (2,), "≪('a', 2)≫")
+    check_key_function(key_function, (3,), "≪('b', 3)≫")
 
 
 def test_fuse_key_function_map_blocks_linear():
@@ -196,8 +194,8 @@ def test_fuse_key_function_map_blocks_linear():
         key_function3, [fused_key_function], [1]
     )
 
-    check_key_function(fused_key_function, (0,), "(≪≪('a', 0)≫≫,)")
-    check_key_function(fused_key_function, (1,), "(≪≪('a', 1)≫≫,)")
+    check_key_function(fused_key_function, (0,), "≪≪≪('a', 0)≫≫≫")
+    check_key_function(fused_key_function, (1,), "≪≪≪('a', 1)≫≫≫")
 
 
 def test_fuse_key_function_map_blocks_branching():
@@ -208,8 +206,8 @@ def test_fuse_key_function_map_blocks_branching():
         key_function3, [key_function1, key_function2], [2, 1]
     )
 
-    check_key_function(fused_key_function, (0,), "(≪('a', 0), ('b', 0)≫, ≪('c', 0)≫)")
-    check_key_function(fused_key_function, (1,), "(≪('a', 1), ('b', 1)≫, ≪('c', 1)≫)")
+    check_key_function(fused_key_function, (0,), "≪≪('a', 0), ('b', 0)≫, ≪('c', 0)≫≫")
+    check_key_function(fused_key_function, (1,), "≪≪('a', 1), ('b', 1)≫, ≪('c', 1)≫≫")
 
 
 def test_fuse_key_function_map_blocks_combine_blocks_list():
@@ -219,9 +217,9 @@ def test_fuse_key_function_map_blocks_combine_blocks_list():
     )
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "(≪[('a', 0), ('a', 1)]≫,)")
-    check_key_function(fused_key_function, (1,), "(≪[('a', 2), ('a', 3)]≫,)")
-    check_key_function(fused_key_function, (2,), "(≪[('a', 4)]≫,)")
+    check_key_function(fused_key_function, (0,), "≪≪[('a', 0), ('a', 1)]≫≫")
+    check_key_function(fused_key_function, (1,), "≪≪[('a', 2), ('a', 3)]≫≫")
+    check_key_function(fused_key_function, (2,), "≪≪[('a', 4)]≫≫")
 
 
 def test_fuse_key_function_map_blocks_combine_blocks_iter():
@@ -231,9 +229,9 @@ def test_fuse_key_function_map_blocks_combine_blocks_iter():
     )
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "(≪<('a', 0), ('a', 1)>≫,)")
-    check_key_function(fused_key_function, (1,), "(≪<('a', 2), ('a', 3)>≫,)")
-    check_key_function(fused_key_function, (2,), "(≪<('a', 4)>≫,)")
+    check_key_function(fused_key_function, (0,), "≪≪<('a', 0), ('a', 1)>≫≫")
+    check_key_function(fused_key_function, (1,), "≪≪<('a', 2), ('a', 3)>≫≫")
+    check_key_function(fused_key_function, (2,), "≪≪<('a', 4)>≫≫")
 
 
 def test_fuse_key_function_combine_blocks_list_map_blocks():
@@ -243,9 +241,9 @@ def test_fuse_key_function_combine_blocks_list_map_blocks():
     key_function2 = make_map_blocks_key_function("b")
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "(≪[('a', 0), ('a', 1)]≫,)")
-    check_key_function(fused_key_function, (1,), "(≪[('a', 2), ('a', 3)]≫,)")
-    check_key_function(fused_key_function, (2,), "(≪[('a', 4)]≫,)")
+    check_key_function(fused_key_function, (0,), "≪≪[('a', 0), ('a', 1)]≫≫")
+    check_key_function(fused_key_function, (1,), "≪≪[('a', 2), ('a', 3)]≫≫")
+    check_key_function(fused_key_function, (2,), "≪≪[('a', 4)]≫≫")
 
 
 def test_fuse_key_function_combine_blocks_iter_map_blocks():
@@ -255,9 +253,9 @@ def test_fuse_key_function_combine_blocks_iter_map_blocks():
     key_function2 = make_map_blocks_key_function("b")
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
-    check_key_function(fused_key_function, (0,), "(≪<('a', 0), ('a', 1)>≫,)")
-    check_key_function(fused_key_function, (1,), "(≪<('a', 2), ('a', 3)>≫,)")
-    check_key_function(fused_key_function, (2,), "(≪<('a', 4)>≫,)")
+    check_key_function(fused_key_function, (0,), "≪≪<('a', 0), ('a', 1)>≫≫")
+    check_key_function(fused_key_function, (1,), "≪≪<('a', 2), ('a', 3)>≫≫")
+    check_key_function(fused_key_function, (2,), "≪≪<('a', 4)>≫≫")
 
 
 def test_fuse_key_function_combine_blocks_list_combine_blocks_list():
@@ -270,9 +268,9 @@ def test_fuse_key_function_combine_blocks_list_combine_blocks_list():
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
     check_key_function(
-        fused_key_function, (0,), "(≪[[('a', 0), ('a', 1)], [('a', 2), ('a', 3)]]≫,)"
+        fused_key_function, (0,), "≪≪[[('a', 0), ('a', 1)], [('a', 2), ('a', 3)]]≫≫"
     )
-    check_key_function(fused_key_function, (1,), "(≪[[('a', 4)]]≫,)")
+    check_key_function(fused_key_function, (1,), "≪≪[[('a', 4)]]≫≫")
 
 
 def test_fuse_key_function_combine_blocks_iter_combine_blocks_iter():
@@ -285,9 +283,9 @@ def test_fuse_key_function_combine_blocks_iter_combine_blocks_iter():
     fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
 
     check_key_function(
-        fused_key_function, (0,), "(≪<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>≫,)"
+        fused_key_function, (0,), "≪≪<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>≫≫"
     )
-    check_key_function(fused_key_function, (1,), "(≪<<('a', 4)>>≫,)")
+    check_key_function(fused_key_function, (1,), "≪≪<<('a', 4)>>≫≫")
 
 
 @pytest.mark.xfail(reason="https://github.com/cubed-dev/cubed/issues/414")
@@ -299,10 +297,10 @@ def test_fuse_key_function_map_blocks_alternate_blocks_key_function():
         key_function3, [key_function1, key_function2], [1, 1]
     )
 
-    check_key_function(fused_key_function, (0,), "(('a', 0),)")
-    check_key_function(fused_key_function, (1,), "(('b', 1),)")
-    check_key_function(fused_key_function, (2,), "(('a', 2),)")
-    check_key_function(fused_key_function, (3,), "(('b', 3),)")
+    check_key_function(fused_key_function, (0,), "≪('a', 0)≫")
+    check_key_function(fused_key_function, (1,), "≪('b', 1)≫")
+    check_key_function(fused_key_function, (2,), "≪('a', 2)≫")
+    check_key_function(fused_key_function, (3,), "≪('b', 3)≫")
 
 
 def apply_blockwise(input_data, out_coords, bw_spec):
