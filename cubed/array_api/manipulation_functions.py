@@ -275,7 +275,7 @@ def _chunk_slices(
         arr_sel_offset += cp.out_selection[axis].stop
 
 
-def expand_dims(x, /, *, axis):
+def expand_dims(x, /, axis):
     if not isinstance(axis, tuple):
         axis = (axis,)
     ndim_new = len(axis) + x.ndim

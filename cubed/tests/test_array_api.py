@@ -581,10 +581,11 @@ def test_concat_incompatible_shapes(spec):
     xp.concat([a, b], axis=1)  # OK
 
 
-def test_expand_dims(spec, executor):
+@pytest.mark.parametrize("axis", [0, 1, (0, 1), (2, 0)])
+def test_expand_dims(spec, axis):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
-    b = xp.expand_dims(a, axis=0)
-    assert_array_equal(b.compute(executor=executor), np.expand_dims([1, 2, 3], 0))
+    b = xp.expand_dims(a, axis=axis)
+    assert_array_equal(b.compute(), np.expand_dims([1, 2, 3], axis))
 
 
 @pytest.mark.parametrize(
