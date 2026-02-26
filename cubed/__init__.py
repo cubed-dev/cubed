@@ -301,6 +301,7 @@ __all__ += ["matmul", "matrix_transpose", "tensordot", "vecdot"]
 
 from .array_api.manipulation_functions import (
     broadcast_arrays,
+    broadcast_shapes,
     broadcast_to,
     concat,
     expand_dims,
@@ -318,6 +319,7 @@ from .array_api.manipulation_functions import (
 
 __all__ += [
     "broadcast_arrays",
+    "broadcast_shapes",
     "broadcast_to",
     "concat",
     "expand_dims",
