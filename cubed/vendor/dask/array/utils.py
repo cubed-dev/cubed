@@ -1,7 +1,7 @@
 import numbers
 
 import numpy as np
-
+from numpy.exceptions import AxisError
 
 def validate_axis(axis, ndim):
     """Validate an input to axis= keywords"""
@@ -10,7 +10,7 @@ def validate_axis(axis, ndim):
     if not isinstance(axis, numbers.Integral):
         raise TypeError("Axis value must be an integer, got %s" % axis)
     if axis < -ndim or axis >= ndim:
-        raise np.AxisError(
+        raise AxisError(
             "Axis %d is out of bounds for array of dimension %d" % (axis, ndim)
         )
     if axis < 0:
