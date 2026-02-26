@@ -55,6 +55,9 @@ def searchsorted(x1, x2, /, *, side="left", sorter=None):
     if x1.ndim != 1:
         raise ValueError("Input array x1 must be one dimensional")
 
+    if isinstance(x2, int | float | complex):
+        x2 = asarray(x2, spec=x1.spec)
+
     if sorter is not None:
         raise NotImplementedError(
             "searchsorted with a sorter argument is not supported"
@@ -97,7 +100,7 @@ def _searchsorted(x, y, side):
     # of telling which block is being operated on (unlike map_blocks),
     # so set all 0 values to a special value and set back at the end of searchsorted
     res = nxp.where(res == 0, -1, res)
-    return res[nxp.newaxis, :]
+    return res[nxp.newaxis, ...]
 
 
 def where(condition, x1, x2, /):
