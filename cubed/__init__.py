@@ -377,6 +377,6 @@ __all__ += ["all", "any", "diff"]
 
 # extensions
 
-from .array_api import linalg
+from .array_api import fft, linalg
 
-__all__ += ["linalg"]
+__all__ += ["fft", "linalg"]
