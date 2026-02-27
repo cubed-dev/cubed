@@ -1,6 +1,6 @@
 ## Array API Coverage Implementation Status
 
-Cubed supports version [2024.12](https://data-apis.org/array-api/2024.12/index.html) of the Python array API standard, with a few exceptions noted below. The [Fourier transform functions](https://data-apis.org/array-api/2024.12/extensions/fourier_transform_functions.html) are *not* supported.
+Cubed supports version [2025.12](https://data-apis.org/array-api/2025.12/index.html) of the Python array API standard, with a few exceptions noted below. The [Fourier transform functions](https://data-apis.org/array-api/2025.12/extensions/fourier_transform_functions.html) are *not* supported.
 
 This table shows which parts of the the [Array API](https://data-apis.org/array-api/latest/API_specification/index.html) have been implemented in Cubed, and which ones are missing. The version column shows the version when the feature was added to the standard, for version 2022.12 or later.
 
@@ -55,6 +55,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `tensordot`         | :white_check_mark: |            |                              |
 |                          | `vecdot`            | :white_check_mark: |            |                              |
 | Manipulation Functions   | `broadcast_arrays`  | :white_check_mark: |            |                              |
+|                          | `broadcast_shapes`  | :white_check_mark: | 2025.12    |                              |
 |                          | `broadcast_to`      | :white_check_mark: |            |                              |
 |                          | `concat`            | :white_check_mark: |            |                              |
 |                          | `expand_dims`       | :white_check_mark: |            |                              |
@@ -73,7 +74,8 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
 |                          | `searchsorted`      | :white_check_mark: | 2023.12    |                              |
 |                          | `where`             | :white_check_mark: |            |                              |
-| Set Functions            | `unique_all`        | :x:                |            | Shape is data dependent      |
+| Set Functions            | `isin`              | :x:                | 2025.12    |                              |
+|                          | `unique_all`        | :x:                |            | Shape is data dependent      |
 |                          | `unique_counts`     | :x:                |            | Shape is data dependent      |
 |                          | `unique_inverse`    | :x:                |            | Shape is data dependent      |
 |                          | `unique_values`     | :x:                |            | Shape is data dependent      |
@@ -94,7 +96,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 
 ### Linear Algebra Extension
 
-A few of the [linear algebra extension](https://data-apis.org/array-api/2022.12/extensions/linear_algebra_functions.html) functions are supported, as indicated in this table.
+A few of the [linear algebra extension](https://data-apis.org/array-api/2025.12/extensions/linear_algebra_functions.html) functions are supported, as indicated in this table.
 
 | Category                 | Object/Function     | Implemented        | Version    | Notes                        |
 | ------------------------ | ------------------- | ------------------ | ---------- | ---------------------------- |
@@ -102,7 +104,9 @@ A few of the [linear algebra extension](https://data-apis.org/array-api/2022.12/
 |                          | `cross`             | :x:                |            |                              |
 |                          | `det`               | :x:                |            |                              |
 |                          | `diagonal`          | :x:                |            |                              |
+|                          | `eig`               | :x:                |            |                              |
 |                          | `eigh`              | :x:                |            |                              |
+|                          | `eigvals`           | :x:                |            |                              |
 |                          | `eigvalsh`          | :x:                |            |                              |
 |                          | `inv`               | :x:                |            |                              |
 |                          | `matmul`            | :white_check_mark: |            |                              |
