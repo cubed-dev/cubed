@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: data-apis/array-api-tests
-          ref: '2025.05.23'
+          ref: '2026.02.26'
           path: array-api-tests
           submodules: "true"
       - name: Set up Python ${{ matrix.python-version }}
