@@ -52,7 +52,7 @@ __all__ = [
 
 # Array API
 
-__array_api_version__ = "2024.12"
+__array_api_version__ = "2025.12"
 
 from .array_api.inspection import __array_namespace_info__
 
@@ -301,6 +301,7 @@ __all__ += ["matmul", "matrix_transpose", "tensordot", "vecdot"]
 
 from .array_api.manipulation_functions import (
     broadcast_arrays,
+    broadcast_shapes,
     broadcast_to,
     concat,
     expand_dims,
@@ -318,6 +319,7 @@ from .array_api.manipulation_functions import (
 
 __all__ += [
     "broadcast_arrays",
+    "broadcast_shapes",
     "broadcast_to",
     "concat",
     "expand_dims",

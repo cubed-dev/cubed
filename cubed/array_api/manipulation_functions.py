@@ -1,7 +1,6 @@
 from bisect import bisect
 from operator import add, mul
 
-import numpy as np
 import tlz
 from toolz import reduce
 
@@ -41,12 +40,16 @@ def broadcast_arrays(*arrays):
     uc_args = tlz.concat(zip(arrays, inds))
     _, args = unify_chunks(*uc_args, warn=False)
 
-    shape = np.broadcast_shapes(*(e.shape for e in args))
+    shape = broadcast_shapes(*(e.shape for e in args))
     chunks = broadcast_chunks(*(e.chunks for e in args))
 
     result = tuple(broadcast_to(e, shape=shape, chunks=chunks) for e in args)
 
     return result
+
+
+def broadcast_shapes(*shapes):
+    return nxp.broadcast_shapes(*shapes)
 
 
 def broadcast_to(x, /, shape, *, chunks=None):
@@ -272,7 +275,7 @@ def _chunk_slices(
         arr_sel_offset += cp.out_selection[axis].stop
 
 
-def expand_dims(x, /, *, axis):
+def expand_dims(x, /, axis):
     if not isinstance(axis, tuple):
         axis = (axis,)
     ndim_new = len(axis) + x.ndim
