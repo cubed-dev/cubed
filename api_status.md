@@ -74,7 +74,7 @@ This table shows which parts of the the [Array API](https://data-apis.org/array-
 |                          | `nonzero`           | :x:                |            | Shape is data dependent      |
 |                          | `searchsorted`      | :white_check_mark: | 2023.12    |                              |
 |                          | `where`             | :white_check_mark: |            |                              |
-| Set Functions            | `isin`              | :x:                | 2025.12    |                              |
+| Set Functions            | `isin`              | :white_check_mark: | 2025.12    |                              |
 |                          | `unique_all`        | :x:                |            | Shape is data dependent      |
 |                          | `unique_counts`     | :x:                |            | Shape is data dependent      |
 |                          | `unique_inverse`    | :x:                |            | Shape is data dependent      |
