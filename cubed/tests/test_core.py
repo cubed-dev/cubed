@@ -132,6 +132,41 @@ def test_store(tmp_path, spec, executor):
     assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+def test_store_lazy_compute(tmp_path, spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+
+    store = tmp_path / "source.zarr"
+    target = open_storage_array(
+        store, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
+    )
+
+    (b,) = cubed.store(a, target, compute=False)
+
+    # target has not been computed yet
+    with pytest.raises(AssertionError):
+        assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+    b.compute()
+    assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
+def test_store_lazy_compute_more(tmp_path, spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+
+    store = tmp_path / "source.zarr"
+    target = open_storage_array(
+        store, mode="w", shape=a.shape, dtype=a.dtype, chunks=a.chunksize
+    )
+
+    (b,) = cubed.store(a, target, compute=False)
+
+    # do a further computation and check that store has not been optimized away
+    c = b + 1
+    res = c.compute()
+    assert_array_equal(target[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+    assert_array_equal(res, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) + 1)
+
+
 def test_store_multiple(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
