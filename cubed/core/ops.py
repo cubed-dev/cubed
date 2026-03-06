@@ -16,7 +16,8 @@ from toolz import map
 from cubed import config
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_array
 from cubed.backend_array_api import namespace as nxp
-from cubed.core.array import CoreArray, check_array_specs, compute, gensym
+from cubed.core.array import CoreArray, check_array_specs, gensym
+from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
 from cubed.core.rechunk import multistage_regular_rechunking_plan
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
@@ -128,15 +129,14 @@ def store(
     sources: Union["Array", Sequence["Array"]],
     targets,
     regions: tuple[slice, ...] | list[tuple[slice, ...]] | None = None,
+    compute: bool = True,
+    *,
     executor=None,
     **kwargs,
 ):
     """Save source arrays to array-like objects.
 
     In the current implementation ``targets`` must be Zarr arrays.
-
-    Note that this operation is eager, and will run the computation
-    immediately.
 
     Parameters
     ----------
@@ -146,6 +146,8 @@ def store(
         Zarr arrays to write to
     regions : tuple of slices or list of tuple of slices, optional
         The regions of data that should be written to in targets.
+    compute : boolean, optional
+        If True compute immediately, return tuple of arrays otherwise.
     executor : cubed.runtime.types.Executor, optional
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
@@ -176,7 +178,12 @@ def store(
     for source, target, region in zip(sources, targets, regions_list):
         array = _store_array(source, target, region=region)
         arrays.append(array)
-    compute(*arrays, executor=executor, _return_in_memory_array=False, **kwargs)
+    if compute:
+        compute_arrays(
+            *arrays, executor=executor, _return_in_memory_array=False, **kwargs
+        )
+    else:
+        return tuple(arrays)
 
 
 def _store_array(
@@ -207,6 +214,7 @@ def _store_array(
             dtype=source.dtype,
             align_arrays=False,
             target_store=target,
+            fusable_with_successors=False,
             **blockwise_kwargs,
         )
     else:
@@ -260,6 +268,7 @@ def _store_array(
             target_stores=[target],
             output_blocks=output_blocks,
             num_tasks=source.npartitions,
+            fusable_with_successors=False,
             **blockwise_kwargs,
         )
         from cubed import Array

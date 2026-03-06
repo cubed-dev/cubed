@@ -121,7 +121,12 @@ def predecessor_ops_and_arrays(dag, name):
         pre_list = list(predecessors_unordered(dag, input))
         assert len(pre_list) == 1  # each array is produced by a single op
         pre = pre_list[0]
-        can_fuse = is_primitive_op(nodes[pre]) and out_degree_unique(dag, input) == 1
+        node_dict = nodes[pre]
+        can_fuse = (
+            is_primitive_op(node_dict)
+            and node_dict["primitive_op"].fusable_with_successors
+            and out_degree_unique(dag, input) == 1
+        )
         yield pre, input, can_fuse
 
 
