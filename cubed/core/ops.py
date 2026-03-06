@@ -591,8 +591,10 @@ def _general_blockwise(
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
     """Apply a function elementwise to array arguments, respecting broadcasting."""
+    from cubed.array_api.manipulation_functions import broadcast_shapes
+
     shapes = [arg.shape for arg in args]
-    out_ndim = len(np.broadcast_shapes(*shapes))
+    out_ndim = len(broadcast_shapes(*shapes))
     expr_inds = tuple(range(out_ndim))[::-1]
     if dtype is None:
         raise ValueError("dtype must be specified for elemwise")

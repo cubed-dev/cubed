@@ -267,7 +267,7 @@ def meshgrid(*arrays, indexing="xy") -> List["Array"]:
     if indexing == "xy" and len(arrs) > 1:
         grid[0], grid[1] = grid[1], grid[0]
 
-    return grid
+    return tuple(grid)
 
 
 def ones(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":

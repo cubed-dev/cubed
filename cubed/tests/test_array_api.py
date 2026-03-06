@@ -581,10 +581,11 @@ def test_concat_incompatible_shapes(spec):
     xp.concat([a, b], axis=1)  # OK
 
 
-def test_expand_dims(spec, executor):
+@pytest.mark.parametrize("axis", [0, 1, (0, 1), (2, 0)])
+def test_expand_dims(spec, axis):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
-    b = xp.expand_dims(a, axis=0)
-    assert_array_equal(b.compute(executor=executor), np.expand_dims([1, 2, 3], 0))
+    b = xp.expand_dims(a, axis=axis)
+    assert_array_equal(b.compute(), np.expand_dims([1, 2, 3], axis))
 
 
 @pytest.mark.parametrize(
@@ -823,6 +824,21 @@ def test_searchsorted(x1, x1_chunks, x2, x2_chunks, side):
 
     assert out.shape == x2d.shape
     assert out.chunks == x2d.chunks
+    assert_array_equal(out.compute(), np.searchsorted(x1, x2, side=side))
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_searchsorted_scalar(side):
+    x1 = np.array([-10, 0, 10, 20, 30])
+    x2 = 11
+
+    x1d = xp.asarray(x1, chunks=3)
+    x2d = x2
+
+    out = xp.searchsorted(x1d, x2d, side=side)
+
+    assert out.shape == ()
+    assert out.chunks == ()
     assert_array_equal(out.compute(), np.searchsorted(x1, x2, side=side))
 
 
