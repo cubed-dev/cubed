@@ -277,7 +277,9 @@ def _store_array(
         return out
 
 
-def to_zarr(x: "Array", store, path=None, region=None, executor=None, **kwargs):
+def to_zarr(
+    x: "Array", store, path=None, region=None, compute=True, *, executor=None, **kwargs
+):
     """Save an array to Zarr storage.
 
     Note that this operation is eager, and will run the computation
@@ -293,12 +295,17 @@ def to_zarr(x: "Array", store, path=None, region=None, executor=None, **kwargs):
         Group path
     region : tuple of slices, optional
         The region of data that should be written to in target.
+    compute : boolean, optional
+        If True compute immediately, return array otherwise.
     executor : cubed.runtime.types.Executor, optional
         The executor to use to run the computation.
         Defaults to using the in-process Python executor.
     """
     out = _store_array(x, store, path=path, region=region)
-    out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
+    if compute:
+        out.compute(executor=executor, _return_in_memory_array=False, **kwargs)
+    else:
+        return out
 
 
 def blockwise(
