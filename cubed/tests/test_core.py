@@ -224,6 +224,25 @@ def test_to_zarr_array(tmp_path, spec, executor):
     assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+def test_to_zarr_lazy_compute(tmp_path, spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    store = tmp_path / "output.zarr"
+    z = create_zarr(
+        np.zeros(a.shape, dtype=a.dtype),
+        chunks=(2, 2),
+        store=store,
+    )
+    b = cubed.to_zarr(a, z, compute=False)
+    # target has not been computed yet
+    res = open_storage_array(store, mode="r")
+    with pytest.raises(AssertionError):
+        assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+    b.compute()
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
 def test_to_zarr_region(tmp_path, spec, executor):
     a = xp.asarray(
         [
