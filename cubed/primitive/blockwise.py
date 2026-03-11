@@ -32,7 +32,6 @@ from cubed.utils import (
     array_memory,
     chunk_memory,
     get_item,
-    map_nested,
     normalize_chunks,
     split_into,
     to_chunksize,
@@ -150,10 +149,16 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
     # get array chunks for input keys, preserving any nested list structure
     get_chunk_config = partial(get_chunk, config=config)
     out_key = ChunkKey("out", out_coords_tuple)  # array name is ignored by key_function
-    name_chunk_inds = list(config.key_function(out_key))
-    args = map_nested(get_chunk_config, name_chunk_inds)
+    # name_chunk_inds = list(config.key_function(out_key))
+    # args = map_nested(get_chunk_config, name_chunk_inds)
 
-    return config.function(*args)
+    from blockwise_ng.blockwise import map_nested
+
+    name_chunk_inds = config.key_function(out_key)
+    fargs = map_nested(get_chunk_config, name_chunk_inds)
+
+    # return config.function(*args)
+    return config.function(*fargs.args)
 
 
 def key_to_slices(
@@ -761,17 +766,19 @@ def fuse_blockwise_specs(
 
     predecessor_funcs_nargs = [bws.function_nargs for bws in predecessor_bw_specs]
 
-    fused_key_func = make_fused_key_function(
-        bw_spec.key_function,
-        [bws.key_function for bws in predecessor_bw_specs],
-        predecessor_funcs_nargs,
-    )
+    from blockwise_ng.blockwise import make_fused_function, make_fused_key_function
 
-    fused_func = make_fused_function(
-        bw_spec.function,
-        [bws.function for bws in predecessor_bw_specs],
-        bw_spec.iterable_input_blocks,
+    predecessor_key_functions_dict = {}
+    predecessor_functions_dict = {}
+    for bws in predecessor_bw_specs:
+        for name in bws.writes_map.keys():
+            predecessor_key_functions_dict[name] = bws.key_function
+            predecessor_functions_dict[name] = bws.function
+
+    fused_key_func = make_fused_key_function(
+        bw_spec.key_function, predecessor_key_functions_dict
     )
+    fused_func = make_fused_function(bw_spec.function, predecessor_functions_dict)
 
     fused_function_nargs = bw_spec.function_nargs
     num_input_blocks = bw_spec.num_input_blocks
