@@ -6,7 +6,6 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.primitive.blockwise import (
     ChunkKey,
     FunctionArgs,
-    KeyFunctionResult,
     blockwise,
     general_blockwise,
     make_blockwise_key_function,
@@ -188,7 +187,7 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
 
         k = merge_factor

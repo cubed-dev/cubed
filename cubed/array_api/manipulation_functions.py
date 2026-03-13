@@ -1,5 +1,6 @@
 from bisect import bisect
 from operator import add, mul
+from typing import Iterator
 
 import tlz
 from toolz import reduce
@@ -20,7 +21,7 @@ from cubed.core.ops import (
     map_blocks,
     map_selection,
 )
-from cubed.primitive.blockwise import ChunkKey, FunctionArgs, KeyFunctionResult
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.utils import (
     block_id_to_offset,
     get_item,
@@ -152,7 +153,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
     else:
         chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
         out_coords = out_key.coords
         block_id = out_coords
 
@@ -415,7 +416,7 @@ def repeat(x, repeats, /, *, axis=0):
     # This implementation calls nxp.repeat in every output block, which is 'repeats' times
     # more than necessary than if we had a primitive op that could write multiple blocks.
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         in_coords = tuple(
             bi // repeats if i == axis else bi for i, bi in enumerate(out_coords)
@@ -491,7 +492,7 @@ def reshape_chunks(x, shape, chunks):
     # use an empty template (handles smaller end chunks)
     template = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         offset = block_id_to_offset(out_coords, template.numblocks)
         in_coords = offset_to_block_id(offset, x.numblocks)
@@ -574,7 +575,7 @@ def stack(arrays, /, *, axis=0):
 
     array_names = [a.name for a in arrays]
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         in_name = array_names[out_coords[axis]]
         return FunctionArgs(
@@ -632,7 +633,7 @@ def unstack(x, /, *, axis=0):
     dtype = x.dtype
     chunks = x.chunks[:axis] + x.chunks[axis + 1 :]
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         all_in_coords = tuple(
             out_coords[:axis] + (i,) + out_coords[axis:]

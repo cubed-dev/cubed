@@ -13,7 +13,7 @@ from cubed.array_api.linear_algebra_functions import (  # noqa: F401
 )
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import blockwise, general_blockwise, merge_chunks, squeeze
-from cubed.primitive.blockwise import ChunkKey, FunctionArgs, KeyFunctionResult
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.utils import array_memory, get_item
 
 
@@ -190,7 +190,7 @@ def _qr_third_step(Q1, Q2):
     # These aren't the actual chunks, but the chunks we need for _q_matmul
     Q2_chunks = ((n,) * k, (n,))
 
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         # Q1 is a simple 1:1 mapping, Q2_single has a single chunk
         return FunctionArgs(
             ChunkKey(Q1.name, out_key.coords),
@@ -250,7 +250,7 @@ def map_blocks_multiple_outputs(
     chunkss,
     **kwargs,
 ):
-    def key_function(out_key: ChunkKey) -> KeyFunctionResult:
+    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         return FunctionArgs(
             *tuple(ChunkKey(array.name, out_key.coords) for array in args),
             output_name=out_key.name,
