@@ -732,9 +732,9 @@ def fuse(
 
     mappable = pipeline2.mappable
 
-    def fused_key_func(out_key):
+    def fused_key_func(out_key: ChunkKey) -> FunctionArgs[Any]:
         return pipeline1.config.back_key_function(
-            *pipeline2.config.back_key_function(out_key)
+            pipeline2.config.back_key_function(out_key).args[0]
         )
 
     def fused_func(*args):
