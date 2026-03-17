@@ -205,7 +205,6 @@ def concat(arrays, /, *, axis=0, chunks=None):
         axis=axis,
         offsets=offsets,
         in_shapes=in_shapes,
-        function_nargs=1,
         # fusable_with_predecessors=False,
     )
 
@@ -595,7 +594,6 @@ def stack(arrays, /, *, axis=0):
         dtypes=[dtype],
         chunkss=[chunks],
         axis=axis,
-        function_nargs=1,
         # fusable_with_predecessors=False,
     )
 

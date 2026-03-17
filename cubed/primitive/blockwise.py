@@ -344,7 +344,6 @@ def general_blockwise(
     extra_func_kwargs: Optional[Dict[str, Any]] = None,
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
-    function_nargs: Optional[int] = None,  # TODO: redundant
     num_input_blocks: Optional[Tuple[int, ...]] = None,
     iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     target_chunks_: Optional[T_RegularChunks] = None,
@@ -398,7 +397,6 @@ def general_blockwise(
 
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
-    function_nargs = function_nargs or len(arrays)
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
     iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
     read_proxies = {
@@ -872,7 +870,6 @@ def fuse_blockwise_specs(
     num_input_blocks = bw_spec.num_input_blocks
     predecessor_num_blocks = [bws.num_input_blocks for bws in predecessor_bw_specs]
     # note that the length of fused_num_input_blocks is the same as the number of input arrays
-    # but may be different to fused_function_nargs since the fused function groups args
     fused_num_input_blocks = tuple(
         itertools.chain(
             *(
