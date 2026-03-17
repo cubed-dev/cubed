@@ -88,7 +88,6 @@ T = TypeVar("T")
 class FunctionArgs(Generic[T]):
     def __init__(self, *args: T, output_name: str) -> None:
         # output_name is the name of the array that the function produces
-        # TODO: will need multiple names for multiple outputs
         self.args: tuple[T, ...] = args
         self.output_name = output_name
 
