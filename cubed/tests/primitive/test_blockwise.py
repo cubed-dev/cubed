@@ -187,7 +187,7 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[list[ChunkKey]]:
         out_coords = out_key.coords
 
         k = merge_factor
@@ -198,7 +198,8 @@ def test_general_blockwise(tmp_path, executor):
                 ChunkKey(in_name, (out_coord * k + i,))
                 for i in range(k)
                 if out_coord * k + i < numblocks
-            ]
+            ],
+            output_name=out_key.name,
         )
 
     op = general_blockwise(
@@ -248,7 +249,7 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
 
     def back_key_function(out_key):
         out_coords = out_key.coords
-        return (ChunkKey(in_name, out_coords),)
+        return FunctionArgs(ChunkKey(in_name, out_coords), output_name=out_key.name)
 
     op = general_blockwise(
         sqrts,
@@ -310,7 +311,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
 
     def back_key_function(out_key):
         out_coords = out_key.coords
-        return (ChunkKey(in_name, out_coords),)
+        return FunctionArgs(ChunkKey(in_name, out_coords), output_name=out_key.name)
 
     with pytest.raises(
         ValueError,
