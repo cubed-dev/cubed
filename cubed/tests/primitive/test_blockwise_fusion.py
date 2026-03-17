@@ -199,13 +199,14 @@ class IteratorWithRepr(collections.abc.Iterator[T]):
 def make_blockwise_spec(
     back_key_function: KeyFunction,
     function: Callable[..., Any],
+    num_input_blocks: tuple[int, ...] = (1,),
     output_names: set[str] | None = None,
 ) -> BlockwiseSpec:
     output_names = output_names or {"out"}
     return BlockwiseSpec(
         back_key_function=back_key_function,
         function=function,
-        num_input_blocks=(1,),  # not needed for this test
+        num_input_blocks=num_input_blocks,
         num_output_blocks=(1,),  # not needed for this test
         reads_map={},  # not needed for this test
         writes_map={name: None for name in output_names},  # only used for names
@@ -650,6 +651,7 @@ def test_apply_blockwise_alternate_blocks_fused() -> None:
     bw_spec3 = make_blockwise_spec(
         back_key_function=make_alternate_blocks_back_key_function("c", "d"),
         function=identity,
+        num_input_blocks=(1, 1),
     )
 
     bw_spec = fuse_blockwise_specs(bw_spec3, bw_spec1, bw_spec2)
@@ -673,6 +675,7 @@ def test_apply_blockwise_concat_blocks_fused() -> None:
     bw_spec3 = make_blockwise_spec(
         back_key_function=make_concat_blocks_back_key_function("c", "d"),
         function=sum_iter,
+        num_input_blocks=(1, 1),
     )
 
     bw_spec = fuse_blockwise_specs(bw_spec3, bw_spec1, bw_spec2)

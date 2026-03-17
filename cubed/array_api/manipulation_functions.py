@@ -574,6 +574,9 @@ def stack(arrays, /, *, axis=0):
             output_name=out_key.name,
         )
 
+    # this is too conservative - only one array is read from
+    num_input_blocks = (1,) * len(arrays)
+
     return general_blockwise(
         _read_stack_chunk,
         back_key_function,
@@ -581,6 +584,7 @@ def stack(arrays, /, *, axis=0):
         shapes=[shape],
         dtypes=[dtype],
         chunkss=[chunks],
+        num_input_blocks=num_input_blocks,
         axis=axis,
     )
 
