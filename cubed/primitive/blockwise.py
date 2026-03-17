@@ -795,7 +795,7 @@ def fuse_multiple(
     bw_spec = primitive_op.pipeline.config
 
     null_blockwise_spec = BlockwiseSpec(
-        back_key_function=lambda x: (x,),
+        back_key_function=lambda x: FunctionArgs(x, output_name=x.name),
         function=lambda x: x,
         num_input_blocks=(1,),
         num_output_blocks=(1,),
