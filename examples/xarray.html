@@ -16,32 +16,35 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4a5ae346"></script>
+    <script src="../_static/documentation_options.js?v=f8c50e9a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
-    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'examples/xarray';</script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -50,6 +53,8 @@
     <link rel="prev" title="Zarr" href="zarr.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="47895f2
+" />
   </head>
   
   
@@ -65,19 +70,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../search.html"
       method="get">
@@ -85,7 +79,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -93,8 +86,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -110,7 +103,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -140,21 +134,17 @@
     
     
     <img src="../_static/cubed-logo.svg" class="logo__image only-light" alt="Cubed - Home"/>
-    <script>document.write(`<img src="../_static/cubed-logo.svg" class="logo__image only-dark" alt="Cubed - Home"/>`);</script>
+    <img src="../_static/cubed-logo.svg" class="logo__image only-dark pst-js-only" alt="Cubed - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">For users</span></p>
@@ -228,9 +218,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -327,25 +322,17 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -413,25 +400,25 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
   from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
 </div>
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
 <span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
 <span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 <span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
 <span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
 <span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2417,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2417,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">   </span><span class="mi">2415</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
 <span class="g g-Whitespace">   </span><span class="mi">2416</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 <span class="ne">-&gt; </span><span class="mi">2417</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:379,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:379,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
 <span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
 <span class="ne">--&gt; </span><span class="mi">379</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
@@ -442,7 +429,7 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">385</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
 <span class="g g-Whitespace">    </span><span class="mi">386</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:225,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, **kwargs)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:225,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, **kwargs)</span>
 <span class="g g-Whitespace">    </span><span class="mi">218</span> <span class="n">expanded</span> <span class="o">=</span> <span class="n">max_items_collapse</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">219</span>     <span class="n">expand_option_name</span><span class="p">,</span> <span class="n">n_items</span> <span class="o">&lt;</span> <span class="n">max_items_collapse</span>
 <span class="g g-Whitespace">    </span><span class="mi">220</span> <span class="p">)</span>
@@ -455,7 +442,7 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">228</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">229</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:136,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:136,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
 <span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="ne">--&gt; </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
@@ -463,7 +450,7 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:137,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:137,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
 <span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
 <span class="ne">--&gt; </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
@@ -471,31 +458,31 @@ document.write(`
 <span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:98,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:98,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
 <span class="g g-Whitespace">     </span><span class="mi">96</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
 <span class="g g-Whitespace">     </span><span class="mi">97</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
 <span class="ne">---&gt; </span><span class="mi">98</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">100</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">101</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
 <span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
 <span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
 <span class="ne">---&gt; </span><span class="mi">45</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
 <span class="g g-Whitespace">     </span><span class="mi">46</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
 <span class="g g-Whitespace">     </span><span class="mi">47</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
 <span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
 <span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
 
-<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.13</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
 <span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
 <span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
 
-<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.13</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
 <span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
@@ -534,9 +521,9 @@ Attributes: (5)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2628/172254778.py:1: SerializationWarning: saving variable None with floating point data as an integer dtype without any _FillValue to use for NaNs
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2603/172254778.py:1: SerializationWarning: saving variable None with floating point data as an integer dtype without any _FillValue to use for NaNs
   ds.to_zarr(&quot;air_temperature_cubed.zarr&quot;, mode=&quot;w&quot;, consolidated=True);
-/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/zarr/api/asynchronous.py:247: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/zarr/api/asynchronous.py:247: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
   warnings.warn(
 </pre></div>
 </div>
@@ -557,19 +544,19 @@ Attributes: (5)
 <div class="cell_output docutils container">
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
 <span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
 <span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 <span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
 <span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
 <span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/common.py:189,</span> in <span class="ni">AbstractArray._repr_html_</span><span class="nt">(self)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/common.py:189,</span> in <span class="ni">AbstractArray._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">    </span><span class="mi">187</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">188</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 <span class="ne">--&gt; </span><span class="mi">189</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">array_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:344,</span> in <span class="ni">array_repr</span><span class="nt">(arr)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:344,</span> in <span class="ni">array_repr</span><span class="nt">(arr)</span>
 <span class="g g-Whitespace">    </span><span class="mi">336</span> <span class="n">arr_name</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">name</span><span class="p">))</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
 <span class="g g-Whitespace">    </span><span class="mi">338</span> <span class="n">header_components</span> <span class="o">=</span> <span class="p">[</span>
 <span class="g g-Whitespace">    </span><span class="mi">339</span>     <span class="sa">f</span><span class="s2">&quot;&lt;div class=&#39;xr-obj-type&#39;&gt;</span><span class="si">{</span><span class="n">obj_type</span><span class="si">}</span><span class="s2">&lt;/div&gt;&quot;</span><span class="p">,</span>
@@ -580,7 +567,7 @@ Attributes: (5)
 <span class="g g-Whitespace">    </span><span class="mi">346</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
 <span class="g g-Whitespace">    </span><span class="mi">347</span>     <span class="k">if</span> <span class="n">arr</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:250,</span> in <span class="ni">array_section</span><span class="nt">(obj)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:250,</span> in <span class="ni">array_section</span><span class="nt">(obj)</span>
 <span class="g g-Whitespace">    </span><span class="mi">248</span> <span class="n">variable</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">249</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">70</span><span class="p">))</span>
 <span class="ne">--&gt; </span><span class="mi">250</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
@@ -591,24 +578,24 @@ Attributes: (5)
    <span class="p">(</span><span class="o">...</span><span class="p">)</span>    <span class="mi">259</span>     <span class="s2">&quot;&lt;/div&gt;&quot;</span>
 <span class="g g-Whitespace">    </span><span class="mi">260</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
 <span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
 <span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
 <span class="ne">---&gt; </span><span class="mi">45</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
 <span class="g g-Whitespace">     </span><span class="mi">46</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
 <span class="g g-Whitespace">     </span><span class="mi">47</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
 <span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
 <span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
 
-<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.13</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
 <span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
 <span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
 
-<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.13</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
 <span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
@@ -1199,7 +1186,7 @@ array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
 Coordinates:
   * lat      (lat) float32 100B 75.0 72.5 70.0 67.5 65.0 ... 22.5 20.0 17.5 15.0
   * lon      (lon) float32 212B 200.0 202.5 205.0 207.5 ... 325.0 327.5 330.0
-Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-ed18a12b-3889-44b6-b173-fa10dc2a97ae' class='xr-array-in' type='checkbox' checked><label for='section-ed18a12b-3889-44b6-b173-fa10dc2a97ae' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>260.4 260.2 259.9 259.5 259.0 258.6 ... 297.9 297.8 297.3 297.3 297.3</span></div><div class='xr-array-data'><pre>array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
+Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-obj-name'>&#x27;air&#x27;</div><ul class='xr-dim-list'><li><span class='xr-has-index'>lat</span>: 25</li><li><span class='xr-has-index'>lon</span>: 53</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-dbd89721-ea31-49a5-9c98-f1c0a29e6d7a' class='xr-array-in' type='checkbox' checked><label for='section-dbd89721-ea31-49a5-9c98-f1c0a29e6d7a' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>260.4 260.2 259.9 259.5 259.0 258.6 ... 297.9 297.8 297.3 297.3 297.3</span></div><div class='xr-array-data'><pre>array([[260.37644178, 260.18305137, 259.88662671, ..., 250.81590068,
         251.93811644, 253.43804795],
        [262.73439384, 262.79397603, 262.74933904, ..., 249.75590411,
         251.58575685, 254.35926027],
@@ -1211,14 +1198,14 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
        [298.12920205, 297.93700685, 297.47039384, ..., 296.85954795,
         296.7770274 , 296.44383562],
        [298.36615068, 298.38573973, 298.11414384, ..., 297.33820548,
-        297.28144521, 297.30510274]], shape=(25, 53))</pre></div></div></li><li class='xr-section-item'><input id='section-ca9291e7-2d79-494a-9e2b-6a7c9f7ed016' class='xr-section-summary-in' type='checkbox' checked /><label for='section-ca9291e7-2d79-494a-9e2b-6a7c9f7ed016' class='xr-section-summary' title='Expand/collapse section'>Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-6ed649eb-6874-4db0-9dd9-0a4b04ca4301' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-6ed649eb-6874-4db0-9dd9-0a4b04ca4301' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-0cebc332-2825-4aa6-b36c-50975e2f4417' class='xr-var-data-in' type='checkbox'><label for='data-0cebc332-2825-4aa6-b36c-50975e2f4417' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
+        297.28144521, 297.30510274]], shape=(25, 53))</pre></div></div></li><li class='xr-section-item'><input id='section-a67834a1-a0df-4469-a6fd-e34d0df00544' class='xr-section-summary-in' type='checkbox' checked /><label for='section-a67834a1-a0df-4469-a6fd-e34d0df00544' class='xr-section-summary' title='Expand/collapse section'>Coordinates: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lat</span></div><div class='xr-var-dims'>(lat)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>75.0 72.5 70.0 ... 20.0 17.5 15.0</div><input id='attrs-4d107899-b019-44df-ab9d-bbdd45b91ac5' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-4d107899-b019-44df-ab9d-bbdd45b91ac5' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-b37390c2-d263-459e-af35-73cf03d72573' class='xr-var-data-in' type='checkbox'><label for='data-b37390c2-d263-459e-af35-73cf03d72573' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>latitude</dd><dt><span>long_name :</span></dt><dd>Latitude</dd><dt><span>units :</span></dt><dd>degrees_north</dd><dt><span>axis :</span></dt><dd>Y</dd></dl></div><div class='xr-var-data'><pre>array([75. , 72.5, 70. , 67.5, 65. , 62.5, 60. , 57.5, 55. , 52.5, 50. , 47.5,
        45. , 42.5, 40. , 37.5, 35. , 32.5, 30. , 27.5, 25. , 22.5, 20. , 17.5,
-       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-04128630-8f40-4c08-b441-42147256ef0c' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-04128630-8f40-4c08-b441-42147256ef0c' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-6c6cc89a-0892-4a74-8587-255078a0d5cd' class='xr-var-data-in' type='checkbox'><label for='data-6c6cc89a-0892-4a74-8587-255078a0d5cd' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
+       15. ], dtype=float32)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>lon</span></div><div class='xr-var-dims'>(lon)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>200.0 202.5 205.0 ... 327.5 330.0</div><input id='attrs-d718a52e-d3f7-4dce-a3ed-583d4616d3d8' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-d718a52e-d3f7-4dce-a3ed-583d4616d3d8' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-dc4b3d67-ed47-4b53-bac8-f65306c72b8c' class='xr-var-data-in' type='checkbox'><label for='data-dc4b3d67-ed47-4b53-bac8-f65306c72b8c' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>standard_name :</span></dt><dd>longitude</dd><dt><span>long_name :</span></dt><dd>Longitude</dd><dt><span>units :</span></dt><dd>degrees_east</dd><dt><span>axis :</span></dt><dd>X</dd></dl></div><div class='xr-var-data'><pre>array([200. , 202.5, 205. , 207.5, 210. , 212.5, 215. , 217.5, 220. , 222.5,
        225. , 227.5, 230. , 232.5, 235. , 237.5, 240. , 242.5, 245. , 247.5,
        250. , 252.5, 255. , 257.5, 260. , 262.5, 265. , 267.5, 270. , 272.5,
        275. , 277.5, 280. , 282.5, 285. , 287.5, 290. , 292.5, 295. , 297.5,
        300. , 302.5, 305. , 307.5, 310. , 312.5, 315. , 317.5, 320. , 322.5,
-       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-7597a71d-323e-4c32-898c-d5ed6e290dae' class='xr-section-summary-in' type='checkbox' /><label for='section-7597a71d-323e-4c32-898c-d5ed6e290dae' class='xr-section-summary' title='Expand/collapse section'>Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
+       325. , 327.5, 330. ], dtype=float32)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-7fe5c2fe-a085-4a5f-9455-115fa14c25f0' class='xr-section-summary-in' type='checkbox' /><label for='section-7fe5c2fe-a085-4a5f-9455-115fa14c25f0' class='xr-section-summary' title='Expand/collapse section'>Attributes: <span>(11)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>long_name :</span></dt><dd>4xDaily Air temperature at sigma level 995</dd><dt><span>units :</span></dt><dd>degK</dd><dt><span>precision :</span></dt><dd>2</dd><dt><span>GRIB_id :</span></dt><dd>11</dd><dt><span>GRIB_name :</span></dt><dd>TMP</dd><dt><span>var_desc :</span></dt><dd>Air temperature</dd><dt><span>dataset :</span></dt><dd>NMC Reanalysis</dd><dt><span>level_desc :</span></dt><dd>Surface</dd><dt><span>statistic :</span></dt><dd>Individual Obs</dd><dt><span>parent_stat :</span></dt><dd>Other</dd><dt><span>actual_range :</span></dt><dd>[185.16 322.1 ]</dd></dl></div></li></ul></div></div></div></div>
 </div>
 <p>This is fine for outputs that fit in memory like the example here, but sometimes we want to write the output of the computation to Zarr, which we do by calling <code class="docutils literal notranslate"><span class="pre">to_zarr</span></code> on the dataset instead of <code class="docutils literal notranslate"><span class="pre">compute</span></code>:</p>
 <div class="cell docutils container">
@@ -1228,7 +1215,7 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/zarr/api/asynchronous.py:247: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/zarr/api/asynchronous.py:247: ZarrUserWarning: Consolidated metadata is currently not part in the Zarr format 3 specification. It may not be supported by other zarr implementations and may change in the future.
   warnings.warn(
 </pre></div>
 </div>
@@ -1246,19 +1233,19 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 <div class="cell_output docutils container">
 <div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
 <span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/IPython/core/formatters.py:406,</span> in <span class="ni">BaseFormatter.__call__</span><span class="nt">(self, obj)</span>
 <span class="g g-Whitespace">    </span><span class="mi">404</span>     <span class="n">method</span> <span class="o">=</span> <span class="n">get_real_method</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">print_method</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">405</span>     <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 <span class="ne">--&gt; </span><span class="mi">406</span>         <span class="k">return</span> <span class="n">method</span><span class="p">()</span>
 <span class="g g-Whitespace">    </span><span class="mi">407</span>     <span class="k">return</span> <span class="kc">None</span>
 <span class="g g-Whitespace">    </span><span class="mi">408</span> <span class="k">else</span><span class="p">:</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2417,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/dataset.py:2417,</span> in <span class="ni">Dataset._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">   </span><span class="mi">2415</span> <span class="k">if</span> <span class="n">OPTIONS</span><span class="p">[</span><span class="s2">&quot;display_style&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
 <span class="g g-Whitespace">   </span><span class="mi">2416</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">escape</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 <span class="ne">-&gt; </span><span class="mi">2417</span> <span class="k">return</span> <span class="n">formatting_html</span><span class="o">.</span><span class="n">dataset_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:379,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:379,</span> in <span class="ni">dataset_repr</span><span class="nt">(ds)</span>
 <span class="g g-Whitespace">    </span><span class="mi">376</span> <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">377</span>     <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
 <span class="ne">--&gt; </span><span class="mi">379</span> <span class="n">sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datavar_section</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">))</span>
@@ -1269,7 +1256,7 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 <span class="g g-Whitespace">    </span><span class="mi">385</span>     <span class="n">_get_indexes_dict</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">xindexes</span><span class="p">),</span> <span class="ow">not</span> <span class="n">display_default_indexes</span>
 <span class="g g-Whitespace">    </span><span class="mi">386</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:225,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, **kwargs)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:225,</span> in <span class="ni">_mapping_section</span><span class="nt">(mapping, name, details_func, max_items_collapse, expand_option_name, enabled, **kwargs)</span>
 <span class="g g-Whitespace">    </span><span class="mi">218</span> <span class="n">expanded</span> <span class="o">=</span> <span class="n">max_items_collapse</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_get_boolean_with_default</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">219</span>     <span class="n">expand_option_name</span><span class="p">,</span> <span class="n">n_items</span> <span class="o">&lt;</span> <span class="n">max_items_collapse</span>
 <span class="g g-Whitespace">    </span><span class="mi">220</span> <span class="p">)</span>
@@ -1282,7 +1269,7 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 <span class="g g-Whitespace">    </span><span class="mi">228</span>     <span class="n">collapsed</span><span class="o">=</span><span class="n">collapsed</span><span class="p">,</span>
 <span class="g g-Whitespace">    </span><span class="mi">229</span> <span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:136,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:136,</span> in <span class="ni">summarize_vars</span><span class="nt">(variables)</span>
 <span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="ne">--&gt; </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
 <span class="g g-Whitespace">    </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
@@ -1290,7 +1277,7 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 <span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:137,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:137,</span> in <span class="ni">&lt;genexpr&gt;</span><span class="nt">(.0)</span>
 <span class="g g-Whitespace">    </span><span class="mi">135</span> <span class="k">def</span><span class="w"> </span><span class="nf">summarize_vars</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="g g-Whitespace">    </span><span class="mi">136</span>     <span class="n">vars_li</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
 <span class="ne">--&gt; </span><span class="mi">137</span>         <span class="sa">f</span><span class="s2">&quot;&lt;li class=&#39;xr-var-item&#39;&gt;</span><span class="si">{</span><span class="n">summarize_variable</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/li&gt;&quot;</span>
@@ -1298,31 +1285,31 @@ Attributes: (11)</pre><div class='xr-wrap' style='display:none'><div class='xr-h
 <span class="g g-Whitespace">    </span><span class="mi">139</span>     <span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">141</span>     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;ul class=&#39;xr-var-list&#39;&gt;</span><span class="si">{</span><span class="n">vars_li</span><span class="si">}</span><span class="s2">&lt;/ul&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:98,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:98,</span> in <span class="ni">summarize_variable</span><span class="nt">(name, var, is_index, dtype)</span>
 <span class="g g-Whitespace">     </span><span class="mi">96</span> <span class="n">preview</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">inline_variable_array_repr</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="mi">35</span><span class="p">))</span>
 <span class="g g-Whitespace">     </span><span class="mi">97</span> <span class="n">attrs_ul</span> <span class="o">=</span> <span class="n">summarize_attrs</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
 <span class="ne">---&gt; </span><span class="mi">98</span> <span class="n">data_repr</span> <span class="o">=</span> <span class="n">short_data_repr_html</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">100</span> <span class="n">attrs_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-file-text2&quot;</span><span class="p">)</span>
 <span class="g g-Whitespace">    </span><span class="mi">101</span> <span class="n">data_icon</span> <span class="o">=</span> <span class="n">_icon</span><span class="p">(</span><span class="s2">&quot;icon-database&quot;</span><span class="p">)</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/xarray/core/formatting_html.py:45,</span> in <span class="ni">short_data_repr_html</span><span class="nt">(array)</span>
 <span class="g g-Whitespace">     </span><span class="mi">43</span> <span class="n">internal_data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="n">array</span><span class="p">)</span><span class="o">.</span><span class="n">_data</span>
 <span class="g g-Whitespace">     </span><span class="mi">44</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">internal_data</span><span class="p">,</span> <span class="s2">&quot;_repr_html_&quot;</span><span class="p">):</span>
 <span class="ne">---&gt; </span><span class="mi">45</span>     <span class="k">return</span> <span class="n">internal_data</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
 <span class="g g-Whitespace">     </span><span class="mi">46</span> <span class="n">text</span> <span class="o">=</span> <span class="n">escape</span><span class="p">(</span><span class="n">short_data_repr</span><span class="p">(</span><span class="n">array</span><span class="p">))</span>
 <span class="g g-Whitespace">     </span><span class="mi">47</span> <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;pre&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&lt;/pre&gt;&quot;</span>
 
-<span class="nn">File /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
+<span class="nn">File /opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/array_api/array_object.py:50,</span> in <span class="ni">Array._repr_html_</span><span class="nt">(self)</span>
 <span class="g g-Whitespace">     </span><span class="mi">49</span> <span class="k">def</span><span class="w"> </span><span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="ne">---&gt; </span><span class="mi">50</span>     <span class="kn">from</span><span class="w"> </span><span class="nn">cubed.diagnostics.widgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_template</span>
 <span class="g g-Whitespace">     </span><span class="mi">52</span>     <span class="k">try</span><span class="p">:</span>
 <span class="g g-Whitespace">     </span><span class="mi">53</span>         <span class="n">grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_svg</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ARRAY_SVG_SIZE</span><span class="p">)</span>
 
-<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.13</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
 <span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">.rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">RichProgressBar</span> <span class="k">as</span> <span class="n">ProgressBar</span>
 <span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ProgressBar&quot;</span><span class="p">]</span>
 
-<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.12</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
+<span class="n">File</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">hostedtoolcache</span><span class="o">/</span><span class="n">Python</span><span class="o">/</span><span class="mf">3.12.13</span><span class="o">/</span><span class="n">x64</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">python3</span><span class="mf">.12</span><span class="o">/</span><span class="n">site</span><span class="o">-</span><span class="n">packages</span><span class="o">/</span><span class="n">cubed</span><span class="o">/</span><span class="n">diagnostics</span><span class="o">/</span><span class="n">rich</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">6</span>
 <span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="ne">----&gt; </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">RenderableType</span>
@@ -1386,14 +1373,16 @@ Data variables:
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-dataset">Open dataset</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convert-to-zarr">Convert to Zarr</a></li>
@@ -1446,8 +1435,8 @@ By Cubed contributors
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

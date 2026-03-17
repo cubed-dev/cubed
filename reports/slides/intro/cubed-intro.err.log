@@ -1,20 +1,20 @@
 Traceback (most recent call last):
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
     executenb(
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/nbclient/client.py", line 1323, in execute
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/nbclient/client.py", line 1323, in execute
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
     return loop.run_until_complete(inner)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
     return future.result()
            ^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
     await self.async_execute_cell(
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
     await self._check_raise_for_error(cell, cell_index, exec_reply)
-  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+  File "/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
     raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
 ------------------
@@ -29,7 +29,7 @@ c.visualize()
 [32m      1[39m c = xp.add(a, b)
 [32m----> [39m[32m2[39m [43mc[49m[43m.[49m[43mvisualize[49m[43m([49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:233[39m, in [36mCoreArray.visualize[39m[34m(self, filename, format, optimize_graph, optimize_function, show_hidden, engine)[39m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/core/array.py:233[39m, in [36mCoreArray.visualize[39m[34m(self, filename, format, optimize_graph, optimize_function, show_hidden, engine)[39m
 [32m    199[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(
 [32m    200[39m     [38;5;28mself[39m,
 [32m    201[39m     filename=[33m"[39m[33mcubed[39m[33m"[39m,
@@ -50,7 +50,7 @@ c.visualize()
 [32m    240[39m [43m        [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
 [32m    241[39m [43m    [49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/array.py:372[39m, in [36mvisualize[39m[34m(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)[39m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/core/array.py:372[39m, in [36mvisualize[39m[34m(filename, format, optimize_graph, optimize_function, show_hidden, engine, *arrays)[39m
 [32m    340[39m [38;5;250m[39m[33;03m"""Produce a visualization of the computation graph for multiple arrays.[39;00m
 [32m    341[39m 
 [32m    342[39m [33;03mParameters[39;00m
@@ -68,7 +68,7 @@ c.visualize()
 [32m    376[39m [43m    [49m[43mengine[49m[43m=[49m[43mengine[49m[43m,[49m
 [32m    377[39m [43m[49m[43m)[49m
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/core/plan.py:616[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/core/plan.py:616[39m, in [36mFinalizedPlan.visualize[39m[34m(self, filename, format, rankdir, show_hidden, engine)[39m
 [32m    608[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(
 [32m    609[39m     [38;5;28mself[39m,
 [32m    610[39m     filename=[33m"[39m[33mcubed[39m[33m"[39m,
@@ -83,11 +83,11 @@ c.visualize()
 [32m    623[39m             show_hidden=show_hidden,
 [32m    624[39m         )
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/diagnostics/__init__.py:1[39m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/diagnostics/__init__.py:1[39m
 [32m----> [39m[32m1[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01m.[39;00m[34;01mrich[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m RichProgressBar [38;5;28;01mas[39;00m ProgressBar
 [32m      3[39m __all__ = [[33m"[39m[33mProgressBar[39m[33m"[39m]
 
-[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/cubed/diagnostics/rich.py:6[39m
+[36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/diagnostics/rich.py:6[39m
 [32m      3[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mtime[39;00m
 [32m      4[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mcontextlib[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m contextmanager
 [32m----> [39m[32m6[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrich[39;00m[34;01m.[39;00m[34;01mconsole[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m RenderableType
