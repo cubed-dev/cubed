@@ -183,7 +183,6 @@ def concat(arrays, /, *, axis=0, chunks=None):
         )
 
     num_input_blocks = (1,) * len(arrays)
-    iterable_input_blocks = (True,) * len(arrays)
 
     # We have to mark this as fusable_with_predecessors=False since the number of input args to
     # the _read_concat_chunk function is *not* the same as the number of
@@ -198,7 +197,6 @@ def concat(arrays, /, *, axis=0, chunks=None):
         dtypes=[dtype],
         chunkss=[chunks],
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         extra_func_kwargs=dict(dtype=dtype),
         target_shape=shape,
         target_chunks=chunks,

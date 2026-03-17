@@ -227,7 +227,6 @@ def blockwise(
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
-    iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -319,7 +318,6 @@ def blockwise(
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
 
@@ -345,7 +343,6 @@ def general_blockwise(
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
     num_input_blocks: Optional[Tuple[int, ...]] = None,
-    iterable_input_blocks: Optional[Tuple[bool, ...]] = None,
     target_chunks_: Optional[T_RegularChunks] = None,
     return_writes_stores: bool = False,
     output_blocks: Optional[Iterator[List[int]]] = None,
@@ -398,7 +395,6 @@ def general_blockwise(
     func_kwargs = extra_func_kwargs or {}
     func_with_kwargs = partial(func, **{**kwargs, **func_kwargs})
     num_input_blocks = num_input_blocks or (1,) * len(arrays)
-    iterable_input_blocks = iterable_input_blocks or (False,) * len(arrays)
     read_proxies = {
         name: CubedArrayProxy(array, array.chunks) for name, array in array_map.items()
     }

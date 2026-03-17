@@ -408,7 +408,6 @@ def blockwise(
     fusable_with_predecessors = kwargs.pop("fusable_with_predecessors", True)
     fusable_with_successors = kwargs.pop("fusable_with_successors", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
-    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -437,7 +436,6 @@ def blockwise(
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -499,11 +497,6 @@ def general_blockwise(
         num_input_blocks = kwargs.pop("num_input_blocks", None)
         if num_input_blocks is not None:
             num_input_blocks = num_input_blocks + (1,)  # for offsets array
-        iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
-        if iterable_input_blocks is not None:
-            iterable_input_blocks = iterable_input_blocks + (
-                False,
-            )  # for offsets array
 
         return _general_blockwise(
             func_with_block_id(func),
@@ -516,7 +509,6 @@ def general_blockwise(
             target_paths=target_paths,
             extra_func_kwargs=extra_func_kwargs,
             num_input_blocks=num_input_blocks,
-            iterable_input_blocks=iterable_input_blocks,
             **kwargs,
         )
 
@@ -558,7 +550,6 @@ def _general_blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     num_input_blocks = kwargs.pop("num_input_blocks", None)
-    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     op_name = kwargs.pop("op_name", "blockwise")
 
@@ -597,7 +588,6 @@ def _general_blockwise(
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -743,7 +733,6 @@ def map_selection(
         )
 
     num_input_blocks = (max_num_input_blocks,)
-    iterable_input_blocks = (True,)
 
     out = general_blockwise(
         _assemble_index_chunk,
@@ -754,7 +743,6 @@ def map_selection(
         chunkss=[chunks],
         extra_func_kwargs=dict(func=func, dtype=x.dtype),
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         selection_function=selection_function,
         in_shape=x.shape,
         in_chunksize=x.chunksize,
@@ -1336,7 +1324,6 @@ def partial_reduce(
         chunkss=[chunks],
         extra_projected_mem=extra_projected_mem,
         num_input_blocks=(sum(split_every.values()),),
-        iterable_input_blocks=(True,),
         reduce_func=func,
         initial_func=initial_func,
         axis=axis,
