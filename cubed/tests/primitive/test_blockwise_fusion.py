@@ -201,10 +201,14 @@ def make_blockwise_spec(
     function: Callable[..., Any],
     output_names: set[str] | None = None,
 ) -> BlockwiseSpec:
+    output_names = output_names or {"out"}
     return BlockwiseSpec(
         back_key_function=back_key_function,
         function=function,
-        output_names=output_names or {"out"},
+        num_input_blocks=(1,),  # not needed for this test
+        num_output_blocks=(1,),  # not needed for this test
+        reads_map={},  # not needed for this test
+        writes_map={name: None for name in output_names},  # only used for names
     )
 
 
