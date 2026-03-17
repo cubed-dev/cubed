@@ -456,6 +456,53 @@ class ChunkKeys(Iterable[List[int]]):
             list, itertools.product(*[range(len(c)) for c in self.chunks_normal])
         )
 
+    def range(self, start, stop=None):
+        """Allow efficient subsetting of the key space by range."""
+        if stop is None:
+            it = product_from(*[range(len(c)) for c in self.chunks_normal], start=start)
+        else:
+            it = itertools.islice(
+                product_from(*[range(len(c)) for c in self.chunks_normal], start=start),
+                stop - start,
+            )
+        return map(list, it)
+
+
+def product_from(*iterables, start=0):
+    """Efficient implementation of 'itertools.product' starting at an arbitrary index."""
+    pools = [tuple(pool) for pool in iterables]
+
+    if not pools or any(len(pool) == 0 for pool in pools):
+        return
+
+    # Compute the total number of combinations
+    total = 1
+    for pool in pools:
+        total *= len(pool)
+
+    if start >= total:
+        return
+
+    # Decompose `start` into per-pool indices via mixed-radix conversion
+    indices = [0] * len(pools)
+    remainder = start
+    for k in range(len(pools) - 1, -1, -1):
+        indices[k] = remainder % len(pools[k])
+        remainder //= len(pools[k])
+
+    yield tuple(pool[i] for pool, i in zip(pools, indices))
+
+    while True:
+        for k in range(len(pools) - 1, -1, -1):
+            if indices[k] < len(pools[k]) - 1:
+                indices[k] += 1
+                for j in range(k + 1, len(pools)):
+                    indices[j] = 0
+                yield tuple(pools[j][indices[j]] for j in range(len(pools)))
+                break
+        else:
+            return
+
 
 # Code for fusing blockwise operations
 
