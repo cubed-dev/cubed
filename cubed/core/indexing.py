@@ -251,7 +251,7 @@ class BlockView:
                     "Only integer, slice, or int array indexes are supported."
                 )
 
-        def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
             out_coords = out_key.coords
             in_coords = tuple(
                 get_dim_index(ia, bi) for ia, bi in zip(idx.args, out_coords)
@@ -262,7 +262,7 @@ class BlockView:
 
         out = general_blockwise(
             identity,
-            key_function,
+            back_key_function,
             self.array,
             shapes=[shape],
             dtypes=[self.array.dtype],

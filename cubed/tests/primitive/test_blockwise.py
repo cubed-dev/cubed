@@ -8,7 +8,7 @@ from cubed.primitive.blockwise import (
     FunctionArgs,
     blockwise,
     general_blockwise,
-    make_blockwise_key_function,
+    make_blockwise_back_key_function,
 )
 from cubed.runtime.executors.local import SingleThreadedExecutor
 from cubed.storage.store import open_storage_array
@@ -187,7 +187,7 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
 
         k = merge_factor
@@ -203,7 +203,7 @@ def test_general_blockwise(tmp_path, executor):
 
     op = general_blockwise(
         merge_chunks,
-        key_function,
+        back_key_function,
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
@@ -246,13 +246,13 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
         yield np.sqrt(x)
         yield -np.sqrt(x)
 
-    def key_function(out_key):
+    def back_key_function(out_key):
         out_coords = out_key.coords
         return (ChunkKey(in_name, out_coords),)
 
     op = general_blockwise(
         sqrts,
-        key_function,
+        back_key_function,
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
@@ -308,7 +308,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
         yield np.sqrt(x)
         yield -np.sqrt(x)
 
-    def key_function(out_key):
+    def back_key_function(out_key):
         out_coords = out_key.coords
         return (ChunkKey(in_name, out_coords),)
 
@@ -318,7 +318,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
     ):
         general_blockwise(
             sqrts,
-            key_function,
+            back_key_function,
             source,
             allowed_mem=allowed_mem,
             reserved_mem=0,
@@ -331,10 +331,10 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
         )
 
 
-def test_make_blockwise_key_function_map():
+def test_make_blockwise_back_key_function_map():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ij", "x", "ij", numblocks={"x": (2, 2)}
     )
 
@@ -342,10 +342,10 @@ def test_make_blockwise_key_function_map():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_elemwise():
+def test_make_blockwise_back_key_function_elemwise():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ij", "x", "ij", "y", "ij", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
@@ -355,10 +355,10 @@ def test_make_blockwise_key_function_elemwise():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_flip():
+def test_make_blockwise_back_key_function_flip():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ij", "x", "ij", "y", "ji", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
@@ -368,10 +368,10 @@ def test_make_blockwise_key_function_flip():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_contract():
+def test_make_blockwise_back_key_function_contract():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 1), "y": (1, 2)}
     )
 
@@ -381,10 +381,10 @@ def test_make_blockwise_key_function_contract():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_contract_1d():
+def test_make_blockwise_back_key_function_contract_1d():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "j", "x", "ij", numblocks={"x": (1, 2)}
     )
 
@@ -392,10 +392,10 @@ def test_make_blockwise_key_function_contract_1d():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_contract_0d():
+def test_make_blockwise_back_key_function_contract_0d():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "", "x", "ij", numblocks={"x": (1, 1)}
     )
 

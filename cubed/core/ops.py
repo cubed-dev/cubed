@@ -244,7 +244,7 @@ def _store_array(
             for sl, cs in zip(region, chunks)
         ]
 
-        def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
             out_coords = out_key.coords
             in_coords = tuple(bi - off for bi, off in zip(out_coords, block_offsets))
             return FunctionArgs(
@@ -273,7 +273,7 @@ def _store_array(
 
         out = general_blockwise(
             identity,
-            key_function,
+            back_key_function,
             source,
             shapes=[shape],
             dtypes=[source.dtype],
@@ -456,7 +456,7 @@ def blockwise(
 
 def general_blockwise(
     func,
-    key_function,
+    back_key_function,
     *arrays,
     shapes,
     dtypes,
@@ -477,12 +477,12 @@ def general_blockwise(
         offsets = offsets_virtual_array(numblocks, array0.spec)
         new_arrays = arrays + (offsets,)
 
-        def key_function_with_offset(key_function):
+        def back_key_function_with_offset(back_key_function):
             def wrap(out_key):
                 out_coords = out_key.coords
                 offset_in_key = (ChunkKey(offsets.name, out_coords),)
                 return FunctionArgs(
-                    *(key_function(out_key).args + offset_in_key),
+                    *(back_key_function(out_key).args + offset_in_key),
                     output_name=out_key.name,
                 )
 
@@ -510,7 +510,7 @@ def general_blockwise(
 
         return _general_blockwise(
             func_with_block_id(func),
-            key_function_with_offset(key_function),
+            back_key_function_with_offset(back_key_function),
             *new_arrays,
             shapes=shapes,
             dtypes=dtypes,
@@ -526,7 +526,7 @@ def general_blockwise(
 
     return _general_blockwise(
         func,
-        key_function,
+        back_key_function,
         *arrays,
         shapes=shapes,
         dtypes=dtypes,
@@ -540,7 +540,7 @@ def general_blockwise(
 
 def _general_blockwise(
     func,
-    key_function,
+    back_key_function,
     *arrays,
     shapes,
     dtypes,
@@ -584,7 +584,7 @@ def _general_blockwise(
 
     op = primitive_general_blockwise(
         func,
-        key_function,
+        back_key_function,
         *zargs,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
@@ -734,7 +734,7 @@ def map_selection(
         The maximum number of input blocks read from the input array.
     """
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
         # compute the selection on x required to get the relevant chunk for out_key
         in_sel = selection_function(out_key)
 
@@ -751,7 +751,7 @@ def map_selection(
 
     out = general_blockwise(
         _assemble_index_chunk,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape],
         dtypes=[dtype],
@@ -1306,7 +1306,7 @@ def partial_reduce(
     )
     shape = tuple(map(sum, chunks))
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
         out_coords = out_key.coords
 
         # return a tuple with a single item that is an iterator of input keys to be merged
@@ -1324,7 +1324,7 @@ def partial_reduce(
             output_name=out_key.name,
         )
 
-    # Since key_function returns an iterator of input keys, the the array chunks passed to
+    # Since back_key_function returns an iterator of input keys, the the array chunks passed to
     # _partial_reduce are retrieved one at a time. However, we need an extra chunk of memory
     # to stay within limits (maybe because the iterator doesn't free the previous object
     # before getting the next). We also need extra memory to hold two reduced chunks, since
@@ -1333,7 +1333,7 @@ def partial_reduce(
 
     return general_blockwise(
         _partial_reduce,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape],
         dtypes=[dtype],
@@ -1628,7 +1628,7 @@ def scan(
     #    Use general_blockwise with a key function since the chunks of increment and scanned aren't aligned anymore.
     assert increment.shape[axis] == scanned.numblocks[axis]
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         inc_coords = tuple(
             bi // split_every if i == axis else bi for i, bi in enumerate(out_coords)
@@ -1649,7 +1649,7 @@ def scan(
     # 5. Bada-bing, bada-boom.
     out = general_blockwise(
         _scan_binop,
-        key_function,
+        back_key_function,
         scanned,
         increment,
         shapes=[scanned.shape],

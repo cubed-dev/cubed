@@ -9,22 +9,22 @@ from cubed.primitive.blockwise import (
     ChunkKey,
     FunctionArgs,
     fuse_blockwise_specs,
-    make_fused_key_function,
+    make_fused_back_key_function,
 )
 from cubed.utils import map_nested
 
 
-def make_map_blocks_key_function(*names):
-    def key_function(out_key: ChunkKey):
+def make_map_blocks_back_key_function(*names):
+    def back_key_function(out_key: ChunkKey):
         out_coords = out_key.coords
         return FunctionArgs(*tuple(ChunkKey(name, out_coords) for name in names))
 
-    return key_function
+    return back_key_function
 
 
-def make_combine_blocks_list_key_function(name, numblocks, split_every):
+def make_combine_blocks_list_back_key_function(name, numblocks, split_every):
     # similar to the key function in partial_reduce
-    def key_function(out_key: ChunkKey):
+    def back_key_function(out_key: ChunkKey):
         out_coords = out_key.coords
 
         # return a tuple with a single item that is a list of input keys to be combined
@@ -39,12 +39,12 @@ def make_combine_blocks_list_key_function(name, numblocks, split_every):
         ]
         return FunctionArgs([ChunkKey(name, tuple(p)) for p in product(*in_keys)])
 
-    return key_function
+    return back_key_function
 
 
-def make_combine_blocks_iter_key_function(name, numblocks, split_every):
+def make_combine_blocks_iter_back_key_function(name, numblocks, split_every):
     # similar to the key function in partial_reduce
-    def key_function(out_key: ChunkKey):
+    def back_key_function(out_key: ChunkKey):
         out_coords = out_key.coords
 
         # return a tuple with a single item that is an iterator of input keys to be combined
@@ -59,23 +59,23 @@ def make_combine_blocks_iter_key_function(name, numblocks, split_every):
         ]
         return FunctionArgs(iter([ChunkKey(name, tuple(p)) for p in product(*in_keys)]))
 
-    return key_function
+    return back_key_function
 
 
-def make_alternate_blocks_key_function(name1, name2):
+def make_alternate_blocks_back_key_function(name1, name2):
     # similar to the key function for stack
-    def key_function(out_key: ChunkKey):
+    def back_key_function(out_key: ChunkKey):
         out_coords = out_key.coords
         index = out_coords[0]  # 1d index
         name = name1 if index % 2 == 0 else name2
         return (ChunkKey(name, out_coords),)
 
-    return key_function
+    return back_key_function
 
 
-def make_concat_blocks_key_function(name1, name2):
+def make_concat_blocks_back_key_function(name1, name2):
     # similar to the key function for concat
-    def key_function(out_key: ChunkKey):
+    def back_key_function(out_key: ChunkKey):
         out_coords = out_key.coords
         index = out_coords[0]  # 1d index
         if index == 0:
@@ -87,7 +87,7 @@ def make_concat_blocks_key_function(name1, name2):
         elif index == 3:
             raise IndexError()
 
-    return key_function
+    return back_key_function
 
 
 def negative(x):
@@ -106,8 +106,8 @@ def sum_iter(x):
     return sum(a for a in x)
 
 
-def check_key_function(key_function, out_coords, expected_str):
-    res = key_function(ChunkKey("out", out_coords))
+def check_back_key_function(back_key_function, out_coords, expected_str):
+    res = back_key_function(ChunkKey("out", out_coords))
     assert isinstance(res, FunctionArgs)
 
     assert str(tuple(iter_repr_nested(r) for r in res.args)) == expected_str
@@ -139,7 +139,7 @@ class IteratorWithRepr(collections.abc.Iterator):
 
 
 def make_blockwise_spec(
-    key_function,
+    back_key_function,
     function,
     function_nargs=1,
     num_input_blocks=(1,),
@@ -147,7 +147,7 @@ def make_blockwise_spec(
     iterable_input_blocks=(False,),
 ):
     return BlockwiseSpec(
-        key_function=key_function,
+        back_key_function=back_key_function,
         function=function,
         function_nargs=function_nargs,
         num_input_blocks=num_input_blocks,
@@ -158,195 +158,217 @@ def make_blockwise_spec(
     )
 
 
-def test_map_blocks_key_function():
-    key_function = make_map_blocks_key_function("a")
+def test_map_blocks_back_key_function():
+    back_key_function = make_map_blocks_back_key_function("a")
 
-    check_key_function(key_function, (0,), "(('a', 0),)")
-    check_key_function(key_function, (1,), "(('a', 1),)")
-
-
-def test_map_blocks_multiple_inputs_key_function():
-    key_function = make_map_blocks_key_function("a", "b")
-
-    check_key_function(key_function, (0,), "(('a', 0), ('b', 0))")
-    check_key_function(key_function, (1,), "(('a', 1), ('b', 1))")
+    check_back_key_function(back_key_function, (0,), "(('a', 0),)")
+    check_back_key_function(back_key_function, (1,), "(('a', 1),)")
 
 
-def test_combine_blocks_list_key_function():
-    key_function = make_combine_blocks_list_key_function(
+def test_map_blocks_multiple_inputs_back_key_function():
+    back_key_function = make_map_blocks_back_key_function("a", "b")
+
+    check_back_key_function(back_key_function, (0,), "(('a', 0), ('b', 0))")
+    check_back_key_function(back_key_function, (1,), "(('a', 1), ('b', 1))")
+
+
+def test_combine_blocks_list_back_key_function():
+    back_key_function = make_combine_blocks_list_back_key_function(
         "a", numblocks=5, split_every=2
     )
 
-    check_key_function(key_function, (0,), "([('a', 0), ('a', 1)],)")
-    check_key_function(key_function, (1,), "([('a', 2), ('a', 3)],)")
-    check_key_function(key_function, (2,), "([('a', 4)],)")
+    check_back_key_function(back_key_function, (0,), "([('a', 0), ('a', 1)],)")
+    check_back_key_function(back_key_function, (1,), "([('a', 2), ('a', 3)],)")
+    check_back_key_function(back_key_function, (2,), "([('a', 4)],)")
 
 
-def test_combine_blocks_iter_key_function():
-    key_function = make_combine_blocks_iter_key_function(
+def test_combine_blocks_iter_back_key_function():
+    back_key_function = make_combine_blocks_iter_back_key_function(
         "a", numblocks=5, split_every=2
     )
 
-    check_key_function(key_function, (0,), "(<('a', 0), ('a', 1)>,)")
-    check_key_function(key_function, (1,), "(<('a', 2), ('a', 3)>,)")
-    check_key_function(key_function, (2,), "(<('a', 4)>,)")
+    check_back_key_function(back_key_function, (0,), "(<('a', 0), ('a', 1)>,)")
+    check_back_key_function(back_key_function, (1,), "(<('a', 2), ('a', 3)>,)")
+    check_back_key_function(back_key_function, (2,), "(<('a', 4)>,)")
 
 
-def test_alternate_blocks_key_function():
-    key_function = make_alternate_blocks_key_function("a", "b")
+def test_alternate_blocks_back_key_function():
+    back_key_function = make_alternate_blocks_back_key_function("a", "b")
 
-    check_key_function(key_function, (0,), "(('a', 0),)")
-    check_key_function(key_function, (1,), "(('b', 1),)")
-    check_key_function(key_function, (2,), "(('a', 2),)")
-    check_key_function(key_function, (3,), "(('b', 3),)")
-
-
-def test_concat_blocks_key_function():
-    key_function = make_concat_blocks_key_function("a", "b")
-
-    check_key_function(key_function, (0,), "(<('a', 0)>,)")
-    check_key_function(key_function, (1,), "(<('a', 1), ('b', 0)>,)")
-    check_key_function(key_function, (2,), "(<('b', 0), ('b', 1)>,)")
+    check_back_key_function(back_key_function, (0,), "(('a', 0),)")
+    check_back_key_function(back_key_function, (1,), "(('b', 1),)")
+    check_back_key_function(back_key_function, (2,), "(('a', 2),)")
+    check_back_key_function(back_key_function, (3,), "(('b', 3),)")
 
 
-def test_fuse_key_function_map_blocks_linear():
-    key_function1 = make_map_blocks_key_function("a")
-    key_function2 = make_map_blocks_key_function("b")
-    key_function3 = make_map_blocks_key_function("c")
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
-    fused_key_function = make_fused_key_function(
-        key_function3, [fused_key_function], [1]
+def test_concat_blocks_back_key_function():
+    back_key_function = make_concat_blocks_back_key_function("a", "b")
+
+    check_back_key_function(back_key_function, (0,), "(<('a', 0)>,)")
+    check_back_key_function(back_key_function, (1,), "(<('a', 1), ('b', 0)>,)")
+    check_back_key_function(back_key_function, (2,), "(<('b', 0), ('b', 1)>,)")
+
+
+def test_fuse_back_key_function_map_blocks_linear():
+    back_key_function1 = make_map_blocks_back_key_function("a")
+    back_key_function2 = make_map_blocks_back_key_function("b")
+    back_key_function3 = make_map_blocks_back_key_function("c")
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
+    )
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function3, [fused_back_key_function], [1]
     )
 
-    check_key_function(fused_key_function, (0,), "([[('a', 0)]],)")
-    check_key_function(fused_key_function, (1,), "([[('a', 1)]],)")
+    check_back_key_function(fused_back_key_function, (0,), "([[('a', 0)]],)")
+    check_back_key_function(fused_back_key_function, (1,), "([[('a', 1)]],)")
 
 
-def test_fuse_key_function_map_blocks_branching():
-    key_function1 = make_map_blocks_key_function("a", "b")
-    key_function2 = make_map_blocks_key_function("c")
-    key_function3 = make_map_blocks_key_function("d", "e")
-    fused_key_function = make_fused_key_function(
-        key_function3, [key_function1, key_function2], [2, 1]
+def test_fuse_back_key_function_map_blocks_branching():
+    back_key_function1 = make_map_blocks_back_key_function("a", "b")
+    back_key_function2 = make_map_blocks_back_key_function("c")
+    back_key_function3 = make_map_blocks_back_key_function("d", "e")
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function3, [back_key_function1, back_key_function2], [2, 1]
     )
 
-    check_key_function(fused_key_function, (0,), "([('a', 0), ('b', 0)], [('c', 0)])")
-    check_key_function(fused_key_function, (1,), "([('a', 1), ('b', 1)], [('c', 1)])")
+    check_back_key_function(
+        fused_back_key_function, (0,), "([('a', 0), ('b', 0)], [('c', 0)])"
+    )
+    check_back_key_function(
+        fused_back_key_function, (1,), "([('a', 1), ('b', 1)], [('c', 1)])"
+    )
 
 
-def test_fuse_key_function_map_blocks_combine_blocks_list():
-    key_function1 = make_map_blocks_key_function("a")
-    key_function2 = make_combine_blocks_list_key_function(
+def test_fuse_back_key_function_map_blocks_combine_blocks_list():
+    back_key_function1 = make_map_blocks_back_key_function("a")
+    back_key_function2 = make_combine_blocks_list_back_key_function(
         "b", numblocks=5, split_every=2
     )
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
+    )
 
-    check_key_function(fused_key_function, (0,), "([[('a', 0), ('a', 1)]],)")
-    check_key_function(fused_key_function, (1,), "([[('a', 2), ('a', 3)]],)")
-    check_key_function(fused_key_function, (2,), "([[('a', 4)]],)")
+    check_back_key_function(fused_back_key_function, (0,), "([[('a', 0), ('a', 1)]],)")
+    check_back_key_function(fused_back_key_function, (1,), "([[('a', 2), ('a', 3)]],)")
+    check_back_key_function(fused_back_key_function, (2,), "([[('a', 4)]],)")
 
 
-def test_fuse_key_function_map_blocks_combine_blocks_iter():
-    key_function1 = make_map_blocks_key_function("a")
-    key_function2 = make_combine_blocks_iter_key_function(
+def test_fuse_back_key_function_map_blocks_combine_blocks_iter():
+    back_key_function1 = make_map_blocks_back_key_function("a")
+    back_key_function2 = make_combine_blocks_iter_back_key_function(
         "b", numblocks=5, split_every=2
     )
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
+    )
 
-    check_key_function(fused_key_function, (0,), "([<('a', 0), ('a', 1)>],)")
-    check_key_function(fused_key_function, (1,), "([<('a', 2), ('a', 3)>],)")
-    check_key_function(fused_key_function, (2,), "([<('a', 4)>],)")
+    check_back_key_function(fused_back_key_function, (0,), "([<('a', 0), ('a', 1)>],)")
+    check_back_key_function(fused_back_key_function, (1,), "([<('a', 2), ('a', 3)>],)")
+    check_back_key_function(fused_back_key_function, (2,), "([<('a', 4)>],)")
 
 
-def test_fuse_key_function_combine_blocks_list_map_blocks():
-    key_function1 = make_combine_blocks_list_key_function(
+def test_fuse_back_key_function_combine_blocks_list_map_blocks():
+    back_key_function1 = make_combine_blocks_list_back_key_function(
         "a", numblocks=5, split_every=2
     )
-    key_function2 = make_map_blocks_key_function("b")
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
+    back_key_function2 = make_map_blocks_back_key_function("b")
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
+    )
 
-    check_key_function(fused_key_function, (0,), "([[('a', 0), ('a', 1)]],)")
-    check_key_function(fused_key_function, (1,), "([[('a', 2), ('a', 3)]],)")
-    check_key_function(fused_key_function, (2,), "([[('a', 4)]],)")
+    check_back_key_function(fused_back_key_function, (0,), "([[('a', 0), ('a', 1)]],)")
+    check_back_key_function(fused_back_key_function, (1,), "([[('a', 2), ('a', 3)]],)")
+    check_back_key_function(fused_back_key_function, (2,), "([[('a', 4)]],)")
 
 
-def test_fuse_key_function_combine_blocks_iter_map_blocks():
-    key_function1 = make_combine_blocks_iter_key_function(
+def test_fuse_back_key_function_combine_blocks_iter_map_blocks():
+    back_key_function1 = make_combine_blocks_iter_back_key_function(
         "a", numblocks=5, split_every=2
     )
-    key_function2 = make_map_blocks_key_function("b")
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
+    back_key_function2 = make_map_blocks_back_key_function("b")
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
+    )
 
-    check_key_function(fused_key_function, (0,), "([<('a', 0), ('a', 1)>],)")
-    check_key_function(fused_key_function, (1,), "([<('a', 2), ('a', 3)>],)")
-    check_key_function(fused_key_function, (2,), "([<('a', 4)>],)")
+    check_back_key_function(fused_back_key_function, (0,), "([<('a', 0), ('a', 1)>],)")
+    check_back_key_function(fused_back_key_function, (1,), "([<('a', 2), ('a', 3)>],)")
+    check_back_key_function(fused_back_key_function, (2,), "([<('a', 4)>],)")
 
 
-def test_fuse_key_function_combine_blocks_list_combine_blocks_list():
-    key_function1 = make_combine_blocks_list_key_function(
+def test_fuse_back_key_function_combine_blocks_list_combine_blocks_list():
+    back_key_function1 = make_combine_blocks_list_back_key_function(
         "a", numblocks=5, split_every=2
     )
-    key_function2 = make_combine_blocks_list_key_function(
+    back_key_function2 = make_combine_blocks_list_back_key_function(
         "b", numblocks=3, split_every=2
     )
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
-
-    check_key_function(
-        fused_key_function, (0,), "([[[('a', 0), ('a', 1)], [('a', 2), ('a', 3)]]],)"
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
     )
-    check_key_function(fused_key_function, (1,), "([[[('a', 4)]]],)")
+
+    check_back_key_function(
+        fused_back_key_function,
+        (0,),
+        "([[[('a', 0), ('a', 1)], [('a', 2), ('a', 3)]]],)",
+    )
+    check_back_key_function(fused_back_key_function, (1,), "([[[('a', 4)]]],)")
 
 
-def test_fuse_key_function_combine_blocks_iter_combine_blocks_iter():
-    key_function1 = make_combine_blocks_iter_key_function(
+def test_fuse_back_key_function_combine_blocks_iter_combine_blocks_iter():
+    back_key_function1 = make_combine_blocks_iter_back_key_function(
         "a", numblocks=5, split_every=2
     )
-    key_function2 = make_combine_blocks_iter_key_function(
+    back_key_function2 = make_combine_blocks_iter_back_key_function(
         "b", numblocks=3, split_every=2
     )
-    fused_key_function = make_fused_key_function(key_function2, [key_function1], [1])
-
-    check_key_function(
-        fused_key_function, (0,), "([<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>],)"
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function2, [back_key_function1], [1]
     )
-    check_key_function(fused_key_function, (1,), "([<<('a', 4)>>],)")
+
+    check_back_key_function(
+        fused_back_key_function,
+        (0,),
+        "([<<('a', 0), ('a', 1)>, <('a', 2), ('a', 3)>>],)",
+    )
+    check_back_key_function(fused_back_key_function, (1,), "([<<('a', 4)>>],)")
 
 
 @pytest.mark.xfail(reason="https://github.com/cubed-dev/cubed/issues/414")
-def test_fuse_key_function_map_blocks_alternate_blocks_key_function():
-    key_function1 = make_map_blocks_key_function("a")
-    key_function2 = make_map_blocks_key_function("b")
-    key_function3 = make_alternate_blocks_key_function("c", "d")
-    fused_key_function = make_fused_key_function(
-        key_function3, [key_function1, key_function2], [1, 1]
+def test_fuse_back_key_function_map_blocks_alternate_blocks_back_key_function():
+    back_key_function1 = make_map_blocks_back_key_function("a")
+    back_key_function2 = make_map_blocks_back_key_function("b")
+    back_key_function3 = make_alternate_blocks_back_key_function("c", "d")
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function3, [back_key_function1, back_key_function2], [1, 1]
     )
 
-    check_key_function(fused_key_function, (0,), "(('a', 0),)")
-    check_key_function(fused_key_function, (1,), "(('b', 1),)")
-    check_key_function(fused_key_function, (2,), "(('a', 2),)")
-    check_key_function(fused_key_function, (3,), "(('b', 3),)")
+    check_back_key_function(fused_back_key_function, (0,), "(('a', 0),)")
+    check_back_key_function(fused_back_key_function, (1,), "(('b', 1),)")
+    check_back_key_function(fused_back_key_function, (2,), "(('a', 2),)")
+    check_back_key_function(fused_back_key_function, (3,), "(('b', 3),)")
 
 
 @pytest.mark.xfail(reason="https://github.com/cubed-dev/cubed/issues/414")
-def test_fuse_key_function_map_blocks_concat_blocks_key_function():
-    key_function1 = make_map_blocks_key_function("a")
-    key_function2 = make_map_blocks_key_function("b")
-    key_function3 = make_concat_blocks_key_function("c", "d")
-    fused_key_function = make_fused_key_function(
-        key_function3, [key_function1, key_function2], [1, 1]
+def test_fuse_back_key_function_map_blocks_concat_blocks_back_key_function():
+    back_key_function1 = make_map_blocks_back_key_function("a")
+    back_key_function2 = make_map_blocks_back_key_function("b")
+    back_key_function3 = make_concat_blocks_back_key_function("c", "d")
+    fused_back_key_function = make_fused_back_key_function(
+        back_key_function3, [back_key_function1, back_key_function2], [1, 1]
     )
 
-    check_key_function(fused_key_function, (0,), "(<('a', 0)>,)")
-    check_key_function(fused_key_function, (1,), "(<('a', 1), ('b', 0)>,)")
-    check_key_function(fused_key_function, (2,), "(<('b', 0), ('b', 1)>,)")
+    check_back_key_function(fused_back_key_function, (0,), "(<('a', 0)>,)")
+    check_back_key_function(fused_back_key_function, (1,), "(<('a', 1), ('b', 0)>,)")
+    check_back_key_function(fused_back_key_function, (2,), "(<('b', 0), ('b', 1)>,)")
 
 
 def apply_blockwise(input_data, out_coords, bw_spec):
     args = []
     out_key = ChunkKey(
         "out", tuple(out_coords)
-    )  # array name is ignored by key_function
-    in_keys = bw_spec.key_function(out_key)
+    )  # array name is ignored by back_key_function
+    in_keys = bw_spec.back_key_function(out_key)
     for in_key in in_keys:
         # just return the (1D) coord as a value
         def get_data(key):
@@ -361,7 +383,7 @@ def apply_blockwise(input_data, out_coords, bw_spec):
 
 def test_apply_blockwise():
     bw_spec = make_blockwise_spec(
-        key_function=make_map_blocks_key_function("a"),
+        back_key_function=make_map_blocks_back_key_function("a"),
         function=negative,
     )
 
@@ -372,7 +394,7 @@ def test_apply_blockwise():
 
 def test_apply_blockwise_multiple_inputs():
     bw_spec = make_blockwise_spec(
-        key_function=make_map_blocks_key_function("a", "b"), function=add
+        back_key_function=make_map_blocks_back_key_function("a", "b"), function=add
     )
 
     input_data = {"a": [0, 1, 2, 3, 4], "b": [5, 6, 7, 8, 9]}
@@ -382,7 +404,7 @@ def test_apply_blockwise_multiple_inputs():
 
 def test_apply_blockwise_iterator():
     bw_spec = make_blockwise_spec(
-        key_function=make_combine_blocks_iter_key_function(
+        back_key_function=make_combine_blocks_iter_back_key_function(
             "a", numblocks=5, split_every=2
         ),
         function=sum_iter,
@@ -395,10 +417,10 @@ def test_apply_blockwise_iterator():
 
 def test_apply_blockwise_fused():
     bw_spec1 = make_blockwise_spec(
-        key_function=make_map_blocks_key_function("a"), function=negative
+        back_key_function=make_map_blocks_back_key_function("a"), function=negative
     )
     bw_spec2 = make_blockwise_spec(
-        key_function=make_map_blocks_key_function("b"), function=negative
+        back_key_function=make_map_blocks_back_key_function("b"), function=negative
     )
 
     bw_spec = fuse_blockwise_specs(bw_spec2, bw_spec1)
@@ -410,10 +432,10 @@ def test_apply_blockwise_fused():
 
 def test_apply_blockwise_fused_iterator():
     bw_spec1 = make_blockwise_spec(
-        key_function=make_map_blocks_key_function("a"), function=negative
+        back_key_function=make_map_blocks_back_key_function("a"), function=negative
     )
     bw_spec2 = make_blockwise_spec(
-        key_function=make_combine_blocks_iter_key_function(
+        back_key_function=make_combine_blocks_iter_back_key_function(
             "b", numblocks=5, split_every=2
         ),
         function=sum_iter,
@@ -430,11 +452,11 @@ def test_apply_blockwise_fused_iterator():
 
 def test_apply_blockwise_fused_iterator_with_single_input_block():
     bw_spec1 = make_blockwise_spec(
-        key_function=make_map_blocks_key_function("a"), function=negative
+        back_key_function=make_map_blocks_back_key_function("a"), function=negative
     )
     # the iterator only reads from a single input block
     bw_spec2 = make_blockwise_spec(
-        key_function=make_combine_blocks_iter_key_function(
+        back_key_function=make_combine_blocks_iter_back_key_function(
             "b", numblocks=5, split_every=1
         ),
         function=sum_iter,

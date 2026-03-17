@@ -1034,12 +1034,12 @@ def sqrts(x):
         yield nxp.sqrt(x)
         yield -nxp.sqrt(x)
 
-    def key_function(out_key):
+    def back_key_function(out_key):
         return FunctionArgs(ChunkKey(x.name, out_key.coords), output_name=out_key.name)
 
     return general_blockwise(
         _sqrts,
-        key_function,
+        back_key_function,
         x,
         shapes=[x.shape, x.shape],
         dtypes=[x.dtype, x.dtype],

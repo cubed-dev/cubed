@@ -153,7 +153,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
     else:
         chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
         out_coords = out_key.coords
         block_id = out_coords
 
@@ -192,7 +192,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
     # This also affects stack.
     return general_blockwise(
         _read_concat_chunk,
-        key_function,
+        back_key_function,
         *arrays,
         shapes=[shape],
         dtypes=[dtype],
@@ -416,7 +416,7 @@ def repeat(x, repeats, /, *, axis=0):
     # This implementation calls nxp.repeat in every output block, which is 'repeats' times
     # more than necessary than if we had a primitive op that could write multiple blocks.
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         in_coords = tuple(
             bi // repeats if i == axis else bi for i, bi in enumerate(out_coords)
@@ -427,7 +427,7 @@ def repeat(x, repeats, /, *, axis=0):
     extra_projected_mem = x.chunkmem * repeats
     return general_blockwise(
         _repeat,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape],
         dtypes=[x.dtype],
@@ -492,7 +492,7 @@ def reshape_chunks(x, shape, chunks):
     # use an empty template (handles smaller end chunks)
     template = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         offset = block_id_to_offset(out_coords, template.numblocks)
         in_coords = offset_to_block_id(offset, x.numblocks)
@@ -504,7 +504,7 @@ def reshape_chunks(x, shape, chunks):
 
     return general_blockwise(
         _reshape_chunk,
-        key_function,
+        back_key_function,
         x,
         template,
         shapes=[shape],
@@ -575,7 +575,7 @@ def stack(arrays, /, *, axis=0):
 
     array_names = [a.name for a in arrays]
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         in_name = array_names[out_coords[axis]]
         return FunctionArgs(
@@ -589,7 +589,7 @@ def stack(arrays, /, *, axis=0):
     # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
     return general_blockwise(
         _read_stack_chunk,
-        key_function,
+        back_key_function,
         *arrays,
         shapes=[shape],
         dtypes=[dtype],
@@ -633,7 +633,7 @@ def unstack(x, /, *, axis=0):
     dtype = x.dtype
     chunks = x.chunks[:axis] + x.chunks[axis + 1 :]
 
-    def key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
         out_coords = out_key.coords
         all_in_coords = tuple(
             out_coords[:axis] + (i,) + out_coords[axis:]
@@ -646,7 +646,7 @@ def unstack(x, /, *, axis=0):
 
     return general_blockwise(
         _unstack_chunk,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape] * n_arrays,
         dtypes=[dtype] * n_arrays,

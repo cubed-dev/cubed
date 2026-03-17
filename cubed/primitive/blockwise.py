@@ -67,7 +67,7 @@ class BlockwiseSpec:
 
     Attributes
     ----------
-    key_function : Callable
+    back_key_function : Callable
         A function that maps an output chunk key to one or more input chunk keys.
     function : Callable
         A function that maps input chunks to an output chunk.
@@ -88,7 +88,7 @@ class BlockwiseSpec:
         Note that the order of the entries must correspond to the order of the outputs created by the function.
     """
 
-    key_function: Callable[[ChunkKey], FunctionArgs[Any]]
+    back_key_function: Callable[[ChunkKey], FunctionArgs[Any]]
     function: Callable[..., Any]
     function_nargs: int
     num_input_blocks: Tuple[int, ...]
@@ -138,13 +138,15 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
 
     # get array chunks for input keys, preserving any nested list structure
     get_chunk_config = partial(get_chunk, config=config)
-    out_key = ChunkKey("out", out_coords_tuple)  # array name is ignored by key_function
-    # name_chunk_inds = list(config.key_function(out_key))
+    out_key = ChunkKey(
+        "out", out_coords_tuple
+    )  # array name is ignored by back_key_function
+    # name_chunk_inds = list(config.back_key_function(out_key))
     # args = map_nested(get_chunk_config, name_chunk_inds)
 
     from blockwise_ng.blockwise import map_nested
 
-    name_chunk_inds = config.key_function(out_key)
+    name_chunk_inds = config.back_key_function(out_key)
     fargs = map_nested(get_chunk_config, name_chunk_inds)
 
     # return config.function(*args)
@@ -254,7 +256,7 @@ def blockwise(
     for name, ind in zip(array_names, inds, strict=True):
         argindsstr.extend((name, ind))
 
-    key_function = make_blockwise_key_function_flattened(
+    back_key_function = make_blockwise_back_key_function_flattened(
         func,
         target_name,
         out_ind,
@@ -265,7 +267,7 @@ def blockwise(
 
     return general_blockwise(
         func,
-        key_function,
+        back_key_function,
         *arrays,
         allowed_mem=allowed_mem,
         reserved_mem=reserved_mem,
@@ -291,7 +293,7 @@ def blockwise(
 
 def general_blockwise(
     func: Callable[..., Any],
-    key_function: Callable[[ChunkKey], FunctionArgs[Any]],
+    back_key_function: Callable[[ChunkKey], FunctionArgs[Any]],
     *arrays: Any,
     allowed_mem: int,
     reserved_mem: int,
@@ -327,7 +329,7 @@ def general_blockwise(
     ----------
     func : callable
         Function to apply to individual tuples of blocks
-    key_function : callable
+    back_key_function : callable
         A function that maps an output chunk key to one or more input chunk keys.
     *arrays : sequence of Array
         The input arrays.
@@ -413,7 +415,7 @@ def general_blockwise(
     num_output_blocks = (nb,) * len(target_arrays)
 
     spec = BlockwiseSpec(
-        key_function,
+        back_key_function,
         func_with_kwargs,
         function_nargs,
         num_input_blocks,
@@ -633,7 +635,9 @@ def fuse(
     mappable = pipeline2.mappable
 
     def fused_key_func(out_key):
-        return pipeline1.config.key_function(*pipeline2.config.key_function(out_key))
+        return pipeline1.config.back_key_function(
+            *pipeline2.config.back_key_function(out_key)
+        )
 
     def fused_func(*args):
         return pipeline2.config.function(pipeline1.config.function(*args))
@@ -696,7 +700,7 @@ def fuse_multiple(
     bw_spec = primitive_op.pipeline.config
 
     null_blockwise_spec = BlockwiseSpec(
-        key_function=lambda x: (x,),
+        back_key_function=lambda x: (x,),
         function=lambda x: x,
         function_nargs=1,
         num_input_blocks=(1,),
@@ -756,17 +760,17 @@ def fuse_blockwise_specs(
 
     predecessor_funcs_nargs = [bws.function_nargs for bws in predecessor_bw_specs]
 
-    from blockwise_ng.blockwise import make_fused_function, make_fused_key_function
+    from blockwise_ng.blockwise import make_fused_back_key_function, make_fused_function
 
-    predecessor_key_functions_dict = {}
+    predecessor_back_key_functions_dict = {}
     predecessor_functions_dict = {}
     for bws in predecessor_bw_specs:
         for name in bws.writes_map.keys():
-            predecessor_key_functions_dict[name] = bws.key_function
+            predecessor_back_key_functions_dict[name] = bws.back_key_function
             predecessor_functions_dict[name] = bws.function
 
-    fused_key_func = make_fused_key_function(
-        bw_spec.key_function, predecessor_key_functions_dict
+    fused_key_func = make_fused_back_key_function(
+        bw_spec.back_key_function, predecessor_back_key_functions_dict
     )
     fused_func = make_fused_function(bw_spec.function, predecessor_functions_dict)
 
@@ -810,13 +814,13 @@ def fuse_blockwise_specs(
 
 
 def apply_blockwise_key_func(
-    key_function: Callable[[ChunkKey], FunctionArgs[Any]],
+    back_key_function: Callable[[ChunkKey], FunctionArgs[Any]],
     arg: ChunkKeyCollection,
 ) -> FunctionArgs[Any]:
     if isinstance(arg, tuple):
         raise ValueError("Tuples are no longer supported for chunk keys")
     elif isinstance(arg, ChunkKey):
-        return key_function(arg)
+        return back_key_function(arg)
     else:
         # more than one input block is being read from arg
         assert isinstance(arg, (list, Iterator))
@@ -824,7 +828,7 @@ def apply_blockwise_key_func(
             return FunctionArgs(
                 *tuple(
                     list(item)
-                    for item in zip(*(key_function(a) for a in arg), strict=True)
+                    for item in zip(*(back_key_function(a) for a in arg), strict=True)
                 )
             )
         else:
@@ -833,7 +837,7 @@ def apply_blockwise_key_func(
             return FunctionArgs(
                 *tuple(
                     iter(list(item))
-                    for item in zip(*(key_function(a) for a in arg), strict=True)
+                    for item in zip(*(back_key_function(a) for a in arg), strict=True)
                 )
             )
 
@@ -849,17 +853,17 @@ def apply_blockwise_func(func, is_iterable, *args):
     return ret
 
 
-def make_fused_key_function(
-    key_function: Callable[[ChunkKey], FunctionArgs[Any]],
-    predecessor_key_functions: list[Callable[[ChunkKey], FunctionArgs[Any]]],
+def make_fused_back_key_function(
+    back_key_function: Callable[[ChunkKey], FunctionArgs[Any]],
+    predecessor_back_key_functions: list[Callable[[ChunkKey], FunctionArgs[Any]]],
     predecessor_funcs_nargs: list[int],
 ) -> Callable[[ChunkKey], FunctionArgs[Any]]:
     def fused_key_func(out_key: ChunkKey) -> FunctionArgs[Any]:
-        args = key_function(out_key)
+        args = back_key_function(out_key)
         # split all args to the fused function into groups, one for each predecessor function
         func_args = tuple(
             item
-            for pkf, a in zip(predecessor_key_functions, args, strict=True)
+            for pkf, a in zip(predecessor_back_key_functions, args, strict=True)
             for item in apply_blockwise_key_func(pkf, a).args
         )
         return FunctionArgs(
@@ -897,7 +901,7 @@ def make_fused_function(function, predecessor_functions, iterable_input_blocks):
 # blockwise key functions
 
 
-def make_blockwise_key_function(
+def make_blockwise_back_key_function(
     func: Callable[..., Any],
     output: str,
     out_indices: Sequence[Union[str, int]],
@@ -933,7 +937,7 @@ def make_blockwise_key_function(
                     "without specifying drop_axis, or rechunk first."
                 )
 
-    def key_function(out_key: ChunkKey) -> tuple[Any, ...]:
+    def back_key_function(out_key: ChunkKey) -> tuple[Any, ...]:
         out_coords = out_key.coords
 
         # from Dask make_blockwise_graph
@@ -961,10 +965,10 @@ def make_blockwise_key_function(
 
         return val
 
-    return key_function
+    return back_key_function
 
 
-def make_blockwise_key_function_flattened(
+def make_blockwise_back_key_function_flattened(
     func: Callable[..., Any],
     output: str,
     out_indices: Sequence[Union[str, int]],
@@ -972,13 +976,13 @@ def make_blockwise_key_function_flattened(
     numblocks: Dict[str, Tuple[int, ...]],
     new_axes: Optional[Dict[int, int]] = None,
 ) -> Callable[[ChunkKey], FunctionArgs[Any]]:
-    # TODO: make this a part of make_blockwise_key_function?
-    key_function = make_blockwise_key_function(
+    # TODO: make this a part of make_blockwise_back_key_function?
+    back_key_function = make_blockwise_back_key_function(
         func, output, out_indices, *arrind_pairs, numblocks=numblocks, new_axes=new_axes
     )
 
     def blockwise_fn_flattened(out_key):
-        in_keys = key_function(out_key)[1:]  # drop function in position 0
+        in_keys = back_key_function(out_key)[1:]  # drop function in position 0
         # flatten (nested) lists indicating contraction
         if isinstance(in_keys[0], list):
             in_keys = list(flatten(in_keys))
