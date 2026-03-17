@@ -71,7 +71,6 @@ class DaskExecutor(DagExecutor):
         callbacks: Optional[Sequence[Callback]] = None,
         spec: Optional[Spec] = None,
         compute_id: Optional[str] = None,
-        compute_kwargs: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -80,7 +79,6 @@ class DaskExecutor(DagExecutor):
                 dag,
                 callbacks=callbacks,
                 spec=spec,
-                compute_kwargs=compute_kwargs,
                 compute_id=compute_id,
                 **merged_kwargs,
             )
