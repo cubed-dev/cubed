@@ -175,13 +175,10 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
     out_key = ChunkKey(
         "out", out_coords_tuple
     )  # array name is ignored by back_key_function
-    # name_chunk_inds = list(config.back_key_function(out_key))
-    # args = map_nested(get_chunk_config, name_chunk_inds)
 
     name_chunk_inds = config.back_key_function(out_key)
     fargs = map_nested(get_chunk_config, name_chunk_inds)
 
-    # return config.function(*args)
     return config.function(*fargs.args)
 
 
