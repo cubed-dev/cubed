@@ -109,9 +109,9 @@ class BlockwiseSpec:
 
     Attributes
     ----------
-    back_key_function : Callable
+    back_key_function : Callable[[ChunkKey], FunctionArgs[Any]]
         A function that maps an output chunk key to one or more input chunk keys.
-    function : Callable
+    function : Callable[..., Any]
         A function that maps input chunks to an output chunk.
     num_input_blocks: Tuple[int, ...]
         The number of input blocks read from each input array.
