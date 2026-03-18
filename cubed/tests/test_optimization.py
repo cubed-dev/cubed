@@ -1188,21 +1188,55 @@ def test_fuse_only_optimize_dag(spec):
     assert_array_equal(result, -np.ones((2, 2)))
 
 
+# stack
+#
+#  a   b    ->   c
+#   \ /
+#    c
+#
 def test_optimize_stack(spec):
-    # This test fails if stack's general_blockwise call doesn't have fusable_with_predecessors=False
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     c = xp.stack((a, b), axis=0)
-    d = c + 1
-    # try to fuse all ops into one (d will fuse with c, but c won't fuse with a and b)
-    d.compute(optimize_function=fuse_multiple_levels())
+
+    opt_fn = fuse_multiple_levels()
+
+    c.visualize(optimize_function=opt_fn, show_hidden=True)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (c,))
+    optimized_dag = c._plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
+
+    # fuse all ops into one
+    c.compute(optimize_function=opt_fn)
 
 
+# concat
+#
+#  a   b    ->   c
+#   \ /
+#    c
+#
 def test_optimize_concat(spec):
-    # This test fails if concat's general_blockwise call doesn't have fusable_with_predecessors=False
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     c = xp.concat((a, b), axis=0)
-    d = c + 1
-    # try to fuse all ops into one (d will fuse with c, but c won't fuse with a and b)
-    d.compute(optimize_function=fuse_multiple_levels())
+
+    opt_fn = fuse_multiple_levels()
+
+    c.visualize(optimize_function=opt_fn, show_hidden=True)
+
+    # check structure of optimized dag
+    expected_fused_dag = create_dag()
+    add_placeholder_op(expected_fused_dag, (), (c,))
+    optimized_dag = c._plan.optimize(optimize_function=opt_fn).dag
+    assert structurally_equivalent(
+        optimized_dag, expected_fused_dag, remove_hidden=True
+    )
+
+    # fuse all ops into one
+    c.compute(optimize_function=opt_fn)
