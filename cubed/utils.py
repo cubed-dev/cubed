@@ -8,7 +8,6 @@ import traceback
 from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import partial
-from itertools import islice
 from math import prod
 from operator import add, mul
 from pathlib import Path
@@ -330,15 +329,6 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
         return size
     else:
         raise ValueError(f"Invalid value: {size}. Must be a positive value")
-
-
-# Based on more_itertools
-def split_into(iterable, sizes):
-    """Yield a list of sequential items from *iterable* of length 'n' for each
-    integer 'n' in *sizes*."""
-    it = iter(iterable)
-    for size in sizes:
-        yield list(islice(it, size))
 
 
 def _broadcast_trick_inner(
