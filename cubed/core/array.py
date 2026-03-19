@@ -1,7 +1,6 @@
+from functools import reduce
 from operator import mul
 from typing import Literal, Optional, TypeVar
-
-from toolz import map, reduce
 
 from cubed import config
 from cubed.backend_array_api import namespace as nxp

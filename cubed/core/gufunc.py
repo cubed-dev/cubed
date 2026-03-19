@@ -1,5 +1,7 @@
+from itertools import chain
+
 import numpy as np
-from tlz import concat, merge, unique
+from tlz import merge, unique
 
 from cubed.vendor.dask.array.gufunc import _parse_gufunc_signature
 
@@ -151,7 +153,7 @@ significantly.".format(dim)
             raise ValueError(f"Dimension `'{dim}'` with different chunksize present")
 
     # Apply function - use blockwise here
-    arginds = list(concat(zip(args, input_dimss)))
+    arginds = list(chain.from_iterable(zip(args, input_dimss)))
 
     from cubed.core.ops import blockwise
 

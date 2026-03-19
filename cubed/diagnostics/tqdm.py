@@ -1,8 +1,6 @@
 import contextlib
 import sys
 
-from toolz import map
-
 from cubed.runtime.pipeline import visit_nodes
 from cubed.runtime.types import Callback
 

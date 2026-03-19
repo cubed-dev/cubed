@@ -1,9 +1,8 @@
 from bisect import bisect
+from functools import reduce
+from itertools import accumulate, chain
 from operator import add, mul
 from typing import Iterator
-
-import tlz
-from toolz import reduce
 
 from cubed.array_api.creation_functions import empty
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY
@@ -39,7 +38,7 @@ def broadcast_arrays(*arrays):
 
     # Unify uneven chunking
     inds = [list(reversed(range(x.ndim))) for x in arrays]
-    uc_args = tlz.concat(zip(arrays, inds))
+    uc_args = chain.from_iterable(zip(arrays, inds))
     _, args = unify_chunks(*uc_args, warn=False)
 
     shape = broadcast_shapes(*(e.shape for e in args))
@@ -133,11 +132,11 @@ def concat(arrays, /, *, axis=0, chunks=None):
     inds = [list(range(x.ndim)) for x in arrays]
     for i, ind in enumerate(inds):
         ind[axis] = -(i + 1)
-    uc_args = tlz.concat(zip(arrays, inds))
+    uc_args = chain.from_iterable(zip(arrays, inds))
     chunkss, arrays = unify_chunks(*uc_args, warn=False)
 
     # offsets along axis for the start of each array
-    offsets = [0] + list(tlz.accumulate(add, [a.shape[axis] for a in arrays]))
+    offsets = [0] + list(accumulate([a.shape[axis] for a in arrays], add))
     in_shapes = tuple(array.shape for array in arrays)
 
     axis = validate_axis(axis, ndim)

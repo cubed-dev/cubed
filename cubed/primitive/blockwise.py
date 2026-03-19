@@ -24,7 +24,6 @@ from typing import (
 
 import toolz
 import zarr
-from toolz import map
 
 from cubed.backend_array_api import (
     backend_array_to_numpy_array,
