@@ -5,7 +5,17 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import product
 from numbers import Integral, Number
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Sequence, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    Iterator,
+    List,
+    Sequence,
+    Tuple,
+    Union,
+)
 from warnings import warn
 
 import numpy as np
@@ -20,6 +30,7 @@ from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
 from cubed.core.rechunk import multistage_regular_rechunking_plan
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
 from cubed.primitive.memory import get_buffer_copies
@@ -233,10 +244,12 @@ def _store_array(
             for sl, cs in zip(region, chunks)
         ]
 
-        def key_function(out_key):
-            out_coords = out_key[1:]
+        def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+            out_coords = out_key.coords
             in_coords = tuple(bi - off for bi, off in zip(out_coords, block_offsets))
-            return ((source.name, *in_coords),)
+            return FunctionArgs(
+                ChunkKey(source.name, in_coords), output_name=out_key.name
+            )
 
         # calculate output block ids from region selection
         indexer = _create_zarr_indexer(region, shape, chunks)
@@ -260,7 +273,7 @@ def _store_array(
 
         out = general_blockwise(
             identity,
-            key_function,
+            back_key_function,
             source,
             shapes=[shape],
             dtypes=[source.dtype],
@@ -395,7 +408,6 @@ def blockwise(
     fusable_with_predecessors = kwargs.pop("fusable_with_predecessors", True)
     fusable_with_successors = kwargs.pop("fusable_with_successors", True)
     num_input_blocks = kwargs.pop("num_input_blocks", None)
-    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     name = gensym()
     spec = check_array_specs(arrays)
@@ -424,7 +436,6 @@ def blockwise(
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -443,7 +454,7 @@ def blockwise(
 
 def general_blockwise(
     func,
-    key_function,
+    back_key_function,
     *arrays,
     shapes,
     dtypes,
@@ -464,11 +475,14 @@ def general_blockwise(
         offsets = offsets_virtual_array(numblocks, array0.spec)
         new_arrays = arrays + (offsets,)
 
-        def key_function_with_offset(key_function):
+        def back_key_function_with_offset(back_key_function):
             def wrap(out_key):
-                out_coords = out_key[1:]
-                offset_in_key = ((offsets.name,) + out_coords,)
-                return key_function(out_key) + offset_in_key
+                out_coords = out_key.coords
+                offset_in_key = (ChunkKey(offsets.name, out_coords),)
+                return FunctionArgs(
+                    *(back_key_function(out_key).args + offset_in_key),
+                    output_name=out_key.name,
+                )
 
             return wrap
 
@@ -480,21 +494,13 @@ def general_blockwise(
 
             return wrap
 
-        function_nargs = kwargs.pop("function_nargs", None)
-        if function_nargs is not None:
-            function_nargs = function_nargs + 1  # for offsets array
         num_input_blocks = kwargs.pop("num_input_blocks", None)
         if num_input_blocks is not None:
             num_input_blocks = num_input_blocks + (1,)  # for offsets array
-        iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
-        if iterable_input_blocks is not None:
-            iterable_input_blocks = iterable_input_blocks + (
-                False,
-            )  # for offsets array
 
         return _general_blockwise(
             func_with_block_id(func),
-            key_function_with_offset(key_function),
+            back_key_function_with_offset(back_key_function),
             *new_arrays,
             shapes=shapes,
             dtypes=dtypes,
@@ -502,15 +508,13 @@ def general_blockwise(
             target_stores=target_stores,
             target_paths=target_paths,
             extra_func_kwargs=extra_func_kwargs,
-            function_nargs=function_nargs,
             num_input_blocks=num_input_blocks,
-            iterable_input_blocks=iterable_input_blocks,
             **kwargs,
         )
 
     return _general_blockwise(
         func,
-        key_function,
+        back_key_function,
         *arrays,
         shapes=shapes,
         dtypes=dtypes,
@@ -524,7 +528,7 @@ def general_blockwise(
 
 def _general_blockwise(
     func,
-    key_function,
+    back_key_function,
     *arrays,
     shapes,
     dtypes,
@@ -546,7 +550,6 @@ def _general_blockwise(
     extra_projected_mem = kwargs.pop("extra_projected_mem", 0)
 
     num_input_blocks = kwargs.pop("num_input_blocks", None)
-    iterable_input_blocks = kwargs.pop("iterable_input_blocks", None)
 
     op_name = kwargs.pop("op_name", "blockwise")
 
@@ -568,7 +571,7 @@ def _general_blockwise(
 
     op = primitive_general_blockwise(
         func,
-        key_function,
+        back_key_function,
         *zargs,
         allowed_mem=spec.allowed_mem,
         reserved_mem=spec.reserved_mem,
@@ -585,7 +588,6 @@ def _general_blockwise(
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         **kwargs,
     )
     plan = Plan._new(
@@ -660,7 +662,7 @@ def _assemble_index_chunk(
 
     # compute the selection on x required to get the relevant chunk for out_coords
     out_coords = block_id
-    in_sel = selection_function(("out",) + out_coords)
+    in_sel = selection_function(ChunkKey("out", out_coords))
 
     # use a Zarr indexer to convert this to input coordinates
     indexer = _create_zarr_indexer(in_sel, in_shape, in_chunksize)
@@ -718,28 +720,29 @@ def map_selection(
         The maximum number of input blocks read from the input array.
     """
 
-    def key_function(out_key):
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
         # compute the selection on x required to get the relevant chunk for out_key
         in_sel = selection_function(out_key)
 
         # use a Zarr indexer to convert selection to input coordinates
         indexer = _create_zarr_indexer(in_sel, x.shape, x.chunksize)
 
-        return (iter(tuple((x.name,) + cp.chunk_coords for cp in indexer)),)
+        return FunctionArgs(
+            iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),
+            output_name=out_key.name,
+        )
 
     num_input_blocks = (max_num_input_blocks,)
-    iterable_input_blocks = (True,)
 
     out = general_blockwise(
         _assemble_index_chunk,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape],
         dtypes=[dtype],
         chunkss=[chunks],
         extra_func_kwargs=dict(func=func, dtype=x.dtype),
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         selection_function=selection_function,
         in_shape=x.shape,
         in_chunksize=x.chunksize,
@@ -1039,7 +1042,7 @@ def _rechunk(x, copy_chunks, target_chunks):
     target_chunks = to_chunksize(target_chunks)
 
     def selection_function(out_key):
-        out_coords = out_key[1:]
+        out_coords = out_key.coords
         return get_item(normalized_copy_chunks, out_coords)
 
     max_num_input_blocks = math.prod(
@@ -1077,7 +1080,7 @@ def merge_chunks(x, chunks):
     target_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
 
     def selection_function(out_key):
-        out_coords = out_key[1:]
+        out_coords = out_key.coords
         return get_item(target_chunks, out_coords)
 
     max_num_input_blocks = math.prod(
@@ -1287,8 +1290,8 @@ def partial_reduce(
     )
     shape = tuple(map(sum, chunks))
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
+        out_coords = out_key.coords
 
         # return a tuple with a single item that is an iterator of input keys to be merged
         in_keys = [
@@ -1300,9 +1303,12 @@ def partial_reduce(
             )
             for i, bi in enumerate(out_coords)
         ]
-        return (iter([(x.name,) + tuple(p) for p in product(*in_keys)]),)
+        return FunctionArgs(
+            iter([ChunkKey(x.name, tuple(p)) for p in product(*in_keys)]),
+            output_name=out_key.name,
+        )
 
-    # Since key_function returns an iterator of input keys, the the array chunks passed to
+    # Since back_key_function returns an iterator of input keys, the the array chunks passed to
     # _partial_reduce are retrieved one at a time. However, we need an extra chunk of memory
     # to stay within limits (maybe because the iterator doesn't free the previous object
     # before getting the next). We also need extra memory to hold two reduced chunks, since
@@ -1311,14 +1317,13 @@ def partial_reduce(
 
     return general_blockwise(
         _partial_reduce,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape],
         dtypes=[dtype],
         chunkss=[chunks],
         extra_projected_mem=extra_projected_mem,
         num_input_blocks=(sum(split_every.values()),),
-        iterable_input_blocks=(True,),
         reduce_func=func,
         initial_func=initial_func,
         axis=axis,
@@ -1606,12 +1611,16 @@ def scan(
     #    Use general_blockwise with a key function since the chunks of increment and scanned aren't aligned anymore.
     assert increment.shape[axis] == scanned.numblocks[axis]
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        out_coords = out_key.coords
         inc_coords = tuple(
             bi // split_every if i == axis else bi for i, bi in enumerate(out_coords)
         )
-        return ((scanned.name,) + out_coords, (increment.name,) + inc_coords)
+        return FunctionArgs(
+            ChunkKey(scanned.name, out_coords),
+            ChunkKey(increment.name, inc_coords),
+            output_name=out_key.name,
+        )
 
     def _scan_binop(scn, inc, block_id=None, **kwargs):
         bi = block_id[axis] % split_every
@@ -1623,7 +1632,7 @@ def scan(
     # 5. Bada-bing, bada-boom.
     out = general_blockwise(
         _scan_binop,
-        key_function,
+        back_key_function,
         scanned,
         increment,
         shapes=[scanned.shape],

@@ -5,10 +5,9 @@ import platform
 import sys
 import sysconfig
 import traceback
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import partial
-from itertools import islice
 from math import prod
 from operator import add, mul
 from pathlib import Path
@@ -330,41 +329,6 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
         return size
     else:
         raise ValueError(f"Invalid value: {size}. Must be a positive value")
-
-
-# Based on more_itertools
-def split_into(iterable, sizes):
-    """Yield a list of sequential items from *iterable* of length 'n' for each
-    integer 'n' in *sizes*."""
-    it = iter(iterable)
-    for size in sizes:
-        yield list(islice(it, size))
-
-
-def map_nested(func, seq):
-    """Apply a function inside nested lists or iterators, while preserving
-    the nesting, and the collection or iterator type.
-
-    Examples
-    --------
-
-    >>> from cubed.utils import map_nested
-    >>> inc = lambda x: x + 1
-    >>> map_nested(inc, [[1, 2], [3, 4]])
-    [[2, 3], [4, 5]]
-
-    >>> it = map_nested(inc, iter([1, 2]))
-    >>> next(it)
-    2
-    >>> next(it)
-    3
-    """
-    if isinstance(seq, list):
-        return [map_nested(func, item) for item in seq]
-    elif isinstance(seq, Iterator):
-        return map(lambda item: map_nested(func, item), seq)
-    else:
-        return func(seq)
 
 
 def _broadcast_trick_inner(

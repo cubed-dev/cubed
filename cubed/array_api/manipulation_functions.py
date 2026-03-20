@@ -1,5 +1,6 @@
 from bisect import bisect
 from operator import add, mul
+from typing import Iterator
 
 import tlz
 from toolz import reduce
@@ -20,6 +21,7 @@ from cubed.core.ops import (
     map_blocks,
     map_selection,
 )
+from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.utils import (
     block_id_to_offset,
     get_item,
@@ -151,8 +153,8 @@ def concat(arrays, /, *, axis=0, chunks=None):
     else:
         chunks = normalize_chunks(chunks, shape=shape, dtype=dtype)
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
+        out_coords = out_key.coords
         block_id = out_coords
 
         # determine the start and stop indexes for this block along the axis dimension
@@ -174,35 +176,28 @@ def concat(arrays, /, *, axis=0, chunks=None):
             a = arrays[ai]
             indexer = _create_zarr_indexer(key, a.shape, a.chunksize)
 
-            in_keys.extend([(a.name,) + cp.chunk_coords for cp in indexer])
+            in_keys.extend([ChunkKey(a.name, cp.chunk_coords) for cp in indexer])
 
-        return (iter(tuple(in_key for in_key in in_keys)),)
+        return FunctionArgs(
+            iter(tuple(in_key for in_key in in_keys)), output_name=out_key.name
+        )
 
     num_input_blocks = (1,) * len(arrays)
-    iterable_input_blocks = (True,) * len(arrays)
 
-    # We have to mark this as fusable_with_predecessors=False since the number of input args to
-    # the _read_concat_chunk function is *not* the same as the number of
-    # predecessor nodes in the DAG, and the fusion functions in blockwise
-    # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
-    # This also affects stack.
     return general_blockwise(
         _read_concat_chunk,
-        key_function,
+        back_key_function,
         *arrays,
         shapes=[shape],
         dtypes=[dtype],
         chunkss=[chunks],
         num_input_blocks=num_input_blocks,
-        iterable_input_blocks=iterable_input_blocks,
         extra_func_kwargs=dict(dtype=dtype),
         target_shape=shape,
         target_chunks=chunks,
         axis=axis,
         offsets=offsets,
         in_shapes=in_shapes,
-        function_nargs=1,
-        fusable_with_predecessors=False,
     )
 
 
@@ -307,7 +302,7 @@ def flip(x, /, *, axis=None):
     axis = validate_axis(axis, x.ndim)
 
     def selection_function(out_key):
-        out_coords = out_key[1:]
+        out_coords = out_key.coords
         block_id = out_coords
 
         # produce a key that has slices (except for axis dimensions, which are replaced below)
@@ -412,18 +407,18 @@ def repeat(x, repeats, /, *, axis=0):
     # This implementation calls nxp.repeat in every output block, which is 'repeats' times
     # more than necessary than if we had a primitive op that could write multiple blocks.
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        out_coords = out_key.coords
         in_coords = tuple(
             bi // repeats if i == axis else bi for i, bi in enumerate(out_coords)
         )
-        return ((x.name, *in_coords),)
+        return FunctionArgs(ChunkKey(x.name, in_coords), output_name=out_key.name)
 
     # extra memory from calling 'nxp.repeat' on a chunk
     extra_projected_mem = x.chunkmem * repeats
     return general_blockwise(
         _repeat,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape],
         dtypes=[x.dtype],
@@ -488,18 +483,19 @@ def reshape_chunks(x, shape, chunks):
     # use an empty template (handles smaller end chunks)
     template = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        out_coords = out_key.coords
         offset = block_id_to_offset(out_coords, template.numblocks)
         in_coords = offset_to_block_id(offset, x.numblocks)
-        return (
-            (x.name, *in_coords),
-            (template.name, *out_coords),
+        return FunctionArgs(
+            ChunkKey(x.name, in_coords),
+            ChunkKey(template.name, out_coords),
+            output_name=out_key.name,
         )
 
     return general_blockwise(
         _reshape_chunk,
-        key_function,
+        back_key_function,
         x,
         template,
         shapes=[shape],
@@ -570,25 +566,26 @@ def stack(arrays, /, *, axis=0):
 
     array_names = [a.name for a in arrays]
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        out_coords = out_key.coords
         in_name = array_names[out_coords[axis]]
-        return ((in_name, *(out_coords[:axis] + out_coords[(axis + 1) :])),)
+        return FunctionArgs(
+            ChunkKey(in_name, out_coords[:axis] + out_coords[(axis + 1) :]),
+            output_name=out_key.name,
+        )
 
-    # We have to mark this as fusable_with_predecessors=False since the number of input args to
-    # the _read_stack_chunk function is *not* the same as the number of
-    # predecessor nodes in the DAG, and the fusion functions in blockwise
-    # assume they are the same. See https://github.com/cubed-dev/cubed/issues/414
+    # this is too conservative - only one array is read from
+    num_input_blocks = (1,) * len(arrays)
+
     return general_blockwise(
         _read_stack_chunk,
-        key_function,
+        back_key_function,
         *arrays,
         shapes=[shape],
         dtypes=[dtype],
         chunkss=[chunks],
+        num_input_blocks=num_input_blocks,
         axis=axis,
-        function_nargs=1,
-        fusable_with_predecessors=False,
     )
 
 
@@ -625,17 +622,20 @@ def unstack(x, /, *, axis=0):
     dtype = x.dtype
     chunks = x.chunks[:axis] + x.chunks[axis + 1 :]
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[ChunkKey]:
+        out_coords = out_key.coords
         all_in_coords = tuple(
             out_coords[:axis] + (i,) + out_coords[axis:]
             for i in range(x.numblocks[axis])
         )
-        return tuple((x.name,) + in_coords for in_coords in all_in_coords)
+        return FunctionArgs(
+            *tuple(ChunkKey(x.name, in_coords) for in_coords in all_in_coords),
+            output_name=out_key.name,
+        )
 
     return general_blockwise(
         _unstack_chunk,
-        key_function,
+        back_key_function,
         x,
         shapes=[shape] * n_arrays,
         dtypes=[dtype] * n_arrays,

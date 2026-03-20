@@ -4,9 +4,11 @@ import pytest
 from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.primitive.blockwise import (
+    ChunkKey,
+    FunctionArgs,
     blockwise,
     general_blockwise,
-    make_blockwise_key_function,
+    make_blockwise_back_key_function,
 )
 from cubed.runtime.executors.local import SingleThreadedExecutor
 from cubed.storage.store import open_storage_array
@@ -185,23 +187,24 @@ def test_general_blockwise(tmp_path, executor):
     def merge_chunks(xs):
         return nxp.concat(xs, axis=0)
 
-    def key_function(out_key):
-        out_coords = out_key[1:]
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[list[ChunkKey]]:
+        out_coords = out_key.coords
 
         k = merge_factor
         out_coord = out_coords[0]  # this is just 1d
         # return a tuple with a single item that is the list of input keys to be merged
-        return (
+        return FunctionArgs(
             [
-                (in_name, out_coord * k + i)
+                ChunkKey(in_name, (out_coord * k + i,))
                 for i in range(k)
                 if out_coord * k + i < numblocks
             ],
+            output_name=out_key.name,
         )
 
     op = general_blockwise(
         merge_chunks,
-        key_function,
+        back_key_function,
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
@@ -244,13 +247,13 @@ def test_blockwise_multiple_outputs(tmp_path, executor):
         yield np.sqrt(x)
         yield -np.sqrt(x)
 
-    def block_function(out_key):
-        out_coords = out_key[1:]
-        return ((in_name, *out_coords),)
+    def back_key_function(out_key):
+        out_coords = out_key.coords
+        return FunctionArgs(ChunkKey(in_name, out_coords), output_name=out_key.name)
 
     op = general_blockwise(
         sqrts,
-        block_function,
+        back_key_function,
         source,
         allowed_mem=allowed_mem,
         reserved_mem=0,
@@ -306,9 +309,9 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
         yield np.sqrt(x)
         yield -np.sqrt(x)
 
-    def block_function(out_key):
-        out_coords = out_key[1:]
-        return ((in_name, *out_coords),)
+    def back_key_function(out_key):
+        out_coords = out_key.coords
+        return FunctionArgs(ChunkKey(in_name, out_coords), output_name=out_key.name)
 
     with pytest.raises(
         ValueError,
@@ -316,7 +319,7 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
     ):
         general_blockwise(
             sqrts,
-            block_function,
+            back_key_function,
             source,
             allowed_mem=allowed_mem,
             reserved_mem=0,
@@ -329,10 +332,10 @@ def test_blockwise_multiple_outputs_fails_different_numblocks(tmp_path):
         )
 
 
-def test_make_blockwise_key_function_map():
+def test_make_blockwise_back_key_function_map():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ij", "x", "ij", numblocks={"x": (2, 2)}
     )
 
@@ -340,10 +343,10 @@ def test_make_blockwise_key_function_map():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_elemwise():
+def test_make_blockwise_back_key_function_elemwise():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ij", "x", "ij", "y", "ij", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
@@ -353,10 +356,10 @@ def test_make_blockwise_key_function_elemwise():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_flip():
+def test_make_blockwise_back_key_function_flip():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ij", "x", "ij", "y", "ji", numblocks={"x": (2, 2), "y": (2, 2)}
     )
 
@@ -366,10 +369,10 @@ def test_make_blockwise_key_function_flip():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_contract():
+def test_make_blockwise_back_key_function_contract():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "ik", "x", "ij", "y", "jk", numblocks={"x": (2, 1), "y": (1, 2)}
     )
 
@@ -379,10 +382,10 @@ def test_make_blockwise_key_function_contract():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_contract_1d():
+def test_make_blockwise_back_key_function_contract_1d():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "j", "x", "ij", numblocks={"x": (1, 2)}
     )
 
@@ -390,10 +393,10 @@ def test_make_blockwise_key_function_contract_1d():
     check_consistent_with_graph(key_fn, graph)
 
 
-def test_make_blockwise_key_function_contract_0d():
+def test_make_blockwise_back_key_function_contract_0d():
     func = lambda x: 0
 
-    key_fn = make_blockwise_key_function(
+    key_fn = make_blockwise_back_key_function(
         func, "z", "", "x", "ij", numblocks={"x": (1, 1)}
     )
 
@@ -403,4 +406,4 @@ def test_make_blockwise_key_function_contract_0d():
 
 def check_consistent_with_graph(key_fn, graph):
     for k, v in graph.items():
-        assert key_fn(k) == v
+        assert key_fn(ChunkKey(k[0], k[1:])) == v
