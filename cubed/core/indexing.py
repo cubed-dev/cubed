@@ -1,10 +1,10 @@
 import math
+from itertools import accumulate
 from operator import add
 from typing import TYPE_CHECKING
 
 import ndindex
 import numpy as np
-from toolz import accumulate, map
 
 from cubed.backend_array_api import backend_array_to_numpy_array
 from cubed.core.array import CoreArray
@@ -181,7 +181,9 @@ def _target_chunk_selection(target_chunks, idx, selection):
             offset = s.start or 0
             step = s.step if s.step is not None else 1
             start = tuple(
-                accumulate(add, tuple(x * step for x in target_chunks[i]), offset)
+                accumulate(
+                    tuple(x * step for x in target_chunks[i]), add, initial=offset
+                )
             )
             j = idx[i]
             sel.append(slice(start[j], start[j + 1], step))
@@ -190,7 +192,7 @@ def _target_chunk_selection(target_chunks, idx, selection):
         elif isinstance(s, np.ndarray):
             # find the cumulative chunk starts
             target_chunk_starts = [0] + list(
-                accumulate(add, [c for c in target_chunks[i]])
+                accumulate([c for c in target_chunks[i]], add)
             )
             # and use to slice the integer array
             j = idx[i]

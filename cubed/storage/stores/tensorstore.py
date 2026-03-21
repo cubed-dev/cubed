@@ -1,12 +1,12 @@
 import dataclasses
 import math
+from functools import reduce
 from itertools import starmap
 from operator import mul
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import tensorstore
-from toolz import reduce
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 from cubed.utils import itemsize, join_path

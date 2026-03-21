@@ -3,7 +3,7 @@ import math
 import numbers
 from dataclasses import dataclass
 from functools import partial
-from itertools import product
+from itertools import chain, product
 from numbers import Integral, Number
 from typing import (
     TYPE_CHECKING,
@@ -20,8 +20,7 @@ from warnings import warn
 
 import numpy as np
 import zarr
-from tlz import concat, first, partition
-from toolz import map
+from tlz import first, partition
 
 from cubed import config
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, numpy_array_to_backend_array
@@ -619,7 +618,7 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
     return blockwise(
         func,
         expr_inds,
-        *concat((a, tuple(range(a.ndim)[::-1])) for a in args),
+        *chain.from_iterable((a, tuple(range(a.ndim)[::-1])) for a in args),
         dtype=dtype,
     )
 
@@ -887,7 +886,7 @@ def _map_blocks(
     return blockwise(
         func,
         out_ind,
-        *concat(argpairs),
+        *chain.from_iterable(argpairs),
         dtype=dtype,
         adjust_chunks=adjust_chunks,
         new_axes=new_axes,

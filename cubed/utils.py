@@ -7,7 +7,8 @@ import sysconfig
 import traceback
 from collections.abc import Iterable
 from dataclasses import dataclass
-from functools import partial
+from functools import partial, reduce
+from itertools import accumulate
 from math import prod
 from operator import add, mul
 from pathlib import Path
@@ -17,8 +18,6 @@ from typing import Any, Callable, Dict, Optional, Tuple, Union, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
-import tlz as toolz
-from toolz import reduce
 
 from cubed.backend_array_api import backend_dtype_to_numpy_dtype
 from cubed.backend_array_api import namespace as nxp
@@ -76,9 +75,9 @@ def get_item(chunks: T_RectangularChunks, idx: Tuple[int, ...]) -> Tuple[slice, 
 
 def _cumsum(seq, initial_zero=False):
     if initial_zero:
-        return tuple(toolz.accumulate(add, seq, 0))
+        return tuple(accumulate(seq, add, initial=0))
     else:
-        return tuple(toolz.accumulate(add, seq))
+        return tuple(accumulate(seq, add))
 
 
 def join_path(dir_url: PathType, child_path: str) -> str:
