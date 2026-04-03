@@ -27,7 +27,7 @@ c.visualize()
 [31mModuleNotFoundError[39m                       Traceback (most recent call last)
 [36mCell[39m[36m [39m[32mIn[4][39m[32m, line 2[39m
 [32m      1[39m c = xp.add(a, b)
-[32m----> [39m[32m2[39m [43mc[49m[43m.[49m[43mvisualize[49m[43m([49m[43m)[49m
+[32m----> [39m[32m2[39m c.visualize()
 
 [36mFile [39m[32m/opt/hostedtoolcache/Python/3.12.13/x64/lib/python3.12/site-packages/cubed/core/array.py:232[39m, in [36mCoreArray.visualize[39m[34m(self, filename, format, optimize_graph, optimize_function, show_hidden, engine)[39m
 [32m    198[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mvisualize[39m(

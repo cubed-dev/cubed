@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=28460fa2"></script>
+    <script src="_static/documentation_options.js?v=d901c326"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -52,7 +52,7 @@
     <link rel="prev" title="Computation" href="computation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="dc8d3e1
+  <meta name="docsearch:version" content="be2ab54
 " />
   </head>
   
@@ -354,7 +354,12 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development">Development</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development">Development</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-conda-pip">Using conda/pip</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-uv">Using uv</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-dependencies">Additional dependencies</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -368,17 +373,42 @@
                   
   <section id="contributing">
 <h1>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h1>
-<p>Contributions to Cubed are very welcome. Please head over to <a class="reference external" href="https://github.com/tomwhite/cubed">GitHub</a> to get involved.</p>
+<p>Contributions to Cubed are very welcome. Please head over to <a class="reference external" href="https://github.com/cubed-dev/cubed">GitHub</a> to get involved.</p>
 <section id="development">
 <h2>Development<a class="headerlink" href="#development" title="Link to this heading">#</a></h2>
-<p>Create an environment with</p>
+<section id="using-conda-pip">
+<h3>Using conda/pip<a class="headerlink" href="#using-conda-pip" title="Link to this heading">#</a></h3>
+<p>Create an environment with:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>cubed<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.11
 conda<span class="w"> </span>activate<span class="w"> </span>cubed
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test]&quot;</span>
 </pre></div>
 </div>
+</section>
+<section id="using-uv">
+<h3>Using uv<a class="headerlink" href="#using-uv" title="Link to this heading">#</a></h3>
+<p>Install the project with test dependencies:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span>
+</pre></div>
+</div>
+<p>Run the tests:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>pytest
+</pre></div>
+</div>
+<p>To include additional extras (e.g. Dask support), add more <code class="docutils literal notranslate"><span class="pre">--extra</span></code> flags:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>dask
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Note:</strong> Do not use <code class="docutils literal notranslate"><span class="pre">--all-extras</span></code>, as it includes backend-specific extras
+(Beam, Lithops, Modal, Coiled) that have conflicting or platform-specific
+dependencies and are not needed for local development.</p>
+</div></blockquote>
+</section>
+<section id="additional-dependencies">
+<h3>Additional dependencies<a class="headerlink" href="#additional-dependencies" title="Link to this heading">#</a></h3>
 <p>Make sure <code class="docutils literal notranslate"><span class="pre">graphviz</span></code> is installed on your machine (see <a class="reference external" href="https://graphviz.org/download/">these instructions</a>).</p>
+</section>
 </section>
 </section>
 
@@ -420,7 +450,12 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development">Development</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#development">Development</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-conda-pip">Using conda/pip</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-uv">Using uv</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#additional-dependencies">Additional dependencies</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
