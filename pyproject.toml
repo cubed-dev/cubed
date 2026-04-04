@@ -189,3 +189,6 @@ exclude = [
 # Ignore vendored libraries
 module = [ "cubed.array_api.*", "cubed.vendor.*", ]
 ignore_errors = true
+
+[tool.setuptools.package-data]
+cubed = ["py.typed"]
