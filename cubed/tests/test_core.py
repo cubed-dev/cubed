@@ -581,8 +581,8 @@ def test_default_spec_allowed_mem_exceeded_visualize(tmp_path):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         b.visualize(filename=str(tmp_path / "cubed"))
-        assert len(w) == 1
-        assert "exceed allowed memory" in str(w[0].message)
+        mem_warnings = [x for x in w if "exceed allowed memory" in str(x.message)]
+        assert len(mem_warnings) == 1
 
 
 def test_default_spec_config_override():

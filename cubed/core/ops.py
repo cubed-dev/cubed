@@ -633,7 +633,7 @@ def _create_zarr_indexer(selection, shape, chunks):
             return OrthogonalIndexer(
                 selection, shape, ChunkGrid.from_sizes(shape, chunks)
             )
-        except ImportError:
+        except (ImportError, AttributeError):
             from zarr.core.chunk_grids import RegularChunkGrid
 
             return OrthogonalIndexer(
