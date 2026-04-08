@@ -625,10 +625,20 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
 
 def _create_zarr_indexer(selection, shape, chunks):
     if zarr.__version__[0] == "3":
-        from zarr.core.chunk_grids import RegularChunkGrid
         from zarr.core.indexing import OrthogonalIndexer
 
-        return OrthogonalIndexer(selection, shape, RegularChunkGrid(chunk_shape=chunks))
+        try:
+            from zarr.core.chunk_grids import ChunkGrid
+
+            return OrthogonalIndexer(
+                selection, shape, ChunkGrid.from_sizes(shape, chunks)
+            )
+        except ImportError:
+            from zarr.core.chunk_grids import RegularChunkGrid
+
+            return OrthogonalIndexer(
+                selection, shape, RegularChunkGrid(chunk_shape=chunks)
+            )
     else:
         from zarr.indexing import OrthogonalIndexer
 
