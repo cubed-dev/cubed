@@ -367,7 +367,10 @@ def setitem_scalar(source: "Array", key, value):
 
 
 def _setitem_scalar(a, value=None, chunk_selections=None, block_id=None):
-    a[chunk_selections[block_id]] = value
+    if IS_IMMUTABLE_ARRAY:
+        a = a.at[chunk_selections[block_id]].set(value)
+    else:
+        a[chunk_selections[block_id]] = value
     return a
 
 
