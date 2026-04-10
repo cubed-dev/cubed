@@ -867,13 +867,13 @@ def map_selection_update(
 
             return FunctionArgs(
                 iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),
-                ChunkKey(y.name, out_key.coords),
+                ChunkKey(y.name, out_key.coords),  # type: ignore
                 output_name=out_key.name,
             )
         except KeyError:
             return FunctionArgs(
                 iter([]),
-                ChunkKey(y.name, out_key.coords),
+                ChunkKey(y.name, out_key.coords),  # type: ignore
                 output_name=out_key.name,
             )
 
