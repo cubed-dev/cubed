@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import ndindex
 import numpy as np
 
-from cubed.backend_array_api import backend_array_to_numpy_array
+from cubed.backend_array_api import IS_IMMUTABLE_ARRAY, backend_array_to_numpy_array
 from cubed.core.array import CoreArray
 from cubed.core.ops import (
     _create_zarr_indexer,
@@ -404,5 +404,8 @@ def setitem_array(source: "Array", key, value):
 
 def _setitem_array(a, out, chunk_selections=None, block_id=None):
     if block_id in chunk_selections:
-        out[chunk_selections[block_id]] = a
+        if IS_IMMUTABLE_ARRAY:
+            out = out.at[chunk_selections[block_id]].set(a)
+        else:
+            out[chunk_selections[block_id]] = a
     return out
