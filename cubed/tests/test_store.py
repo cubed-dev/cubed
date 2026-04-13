@@ -1,18 +1,11 @@
 import numpy as np
-import pytest
 import zarr
 from numpy.testing import assert_array_equal
 
 import cubed
 import cubed.array_api as xp
 
-ZARR_PYTHON_V2 = zarr.__version__[0] == "2"
 
-
-@pytest.mark.skipif(
-    ZARR_PYTHON_V2,
-    reason="setting an arbitrary Zarr store is not supported for Zarr Python v2",
-)
 def test_arbitrary_zarr_store():
     store = zarr.storage.MemoryStore()
     spec = cubed.Spec(intermediate_store=store, allowed_mem="100kB")

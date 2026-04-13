@@ -22,7 +22,6 @@ jobs:
       matrix:
         os: ["ubuntu-latest"]
         python-version: ["3.12"]
-        zarr: ["<3", ">3"]
 
     steps:
       - name: Checkout Cubed
@@ -46,9 +45,6 @@ jobs:
           pushd array-api-tests
           pip install -e '../cubed[test]'
           pip install -r requirements.txt  # from Array API tests repo
-      - name: Install zarr${{ matrix.zarr }}
-        run: |
-          pip install -U 'zarr${{ matrix.zarr }}'
       - name: Run Array API tests
         env:
           ARRAY_API_TESTS_MODULE: cubed.array_api
