@@ -7,12 +7,10 @@ import cubed
 import cubed.array_api as xp
 from cubed.storage.store import get_storage_name
 
-ZARR_PYTHON_V2 = zarr.__version__[0] == "2"
-
 
 @pytest.mark.skipif(
-    ZARR_PYTHON_V2 or get_storage_name() == "tensorstore",
-    reason="setting an arbitrary Zarr store is not supported for Zarr Python v2, or tensorstore",
+    get_storage_name() == "tensorstore",
+    reason="setting an arbitrary Zarr store is not supported for tensorstore",
 )
 def test_arbitrary_zarr_store():
     store = zarr.storage.MemoryStore()

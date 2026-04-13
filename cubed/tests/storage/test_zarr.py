@@ -1,12 +1,9 @@
 import pytest
-import zarr
 from numcodecs.registry import get_codec
 
 from cubed import config
 from cubed.storage.store import open_storage_array
 from cubed.storage.zarr import lazy_zarr_array
-
-ZARR_PYTHON_V3 = zarr.__version__[0] == "3"
 
 
 def test_lazy_zarr_array(tmp_path):
@@ -22,9 +19,6 @@ def test_lazy_zarr_array(tmp_path):
     arr.open()
 
 
-@pytest.mark.skipif(
-    ZARR_PYTHON_V3, reason="setting zarr compressor not yet possible for Zarr Python v3"
-)
 @pytest.mark.parametrize(
     "compressor",
     [
@@ -41,7 +35,7 @@ def test_compression(tmp_path, compressor):
     )
     arr.create()
 
-    # open with zarr python (for zarr python v2 and tensorstore)
+    # open with zarr python (for zarr python and tensorstore)
     with config.set({"storage_name": "zarr-python"}):
         z = open_storage_array(zarr_path, mode="r")
 

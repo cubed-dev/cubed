@@ -7,29 +7,13 @@ from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 def get_storage_name() -> str:
     # get storage name from top-level config
     # e.g. set globally with CUBED_STORAGE_NAME=tensorstore
-    storage_name = config.get("storage_name", None)
-
-    if storage_name is None:
-        import zarr
-
-        if zarr.__version__[0] == "3":
-            storage_name = "zarr-python-v3"
-        else:
-            storage_name = "zarr-python"
-
-    return storage_name
+    return config.get("storage_name", "zarr-python-v3")
 
 
 def is_storage_array(obj) -> bool:
     storage_name = get_storage_name()
 
-    if storage_name == "zarr-python":
-        import zarr
-
-        from cubed.storage.stores.zarr_python import ZarrArrayGroup  # type: ignore
-
-        return isinstance(obj, (zarr.Array, ZarrArrayGroup))
-    elif storage_name in ("zarr-python-v3", "zarrs-python"):
+    if storage_name in ("zarr-python", "zarr-python-v3", "zarrs-python"):
         import zarr
 
         from cubed.storage.stores.zarr_python_v3 import ZarrV3ArrayGroup
@@ -58,21 +42,7 @@ def open_storage_array(
 ):
     storage_name = get_storage_name()
 
-    if storage_name == "zarr-python":
-        from cubed.storage.stores.zarr_python import open_zarr_array  # type: ignore
-
-        open_func = open_zarr_array
-
-        # set object codec if needed
-        import numpy as np
-
-        if np.dtype(dtype).hasobject and "object_codec" not in kwargs:
-            import numcodecs
-
-            object_codec = numcodecs.Pickle()
-            kwargs["object_codec"] = object_codec
-
-    elif storage_name == "zarr-python-v3":
+    if storage_name in ("zarr-python", "zarr-python-v3"):
         from cubed.storage.stores.zarr_python_v3 import open_zarr_v3_array
 
         open_func = open_zarr_v3_array
