@@ -31,7 +31,7 @@ def icechunk_storage(tmpdir) -> "Storage":
     return Storage.new_local_filesystem(str(tmpdir))
 
 
-def create_icechunk(a, icechunk_storage, /, *, dtype=None, chunks=None):
+def create_icechunk(a, icechunk_storage, /, *, dtype=None, chunks=None, shards=None):
     # from dask.asarray
     if not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
@@ -44,7 +44,9 @@ def create_icechunk(a, icechunk_storage, /, *, dtype=None, chunks=None):
     store = session.store
 
     group = zarr.group(store=store, overwrite=True)
-    arr = group.create_array("a", shape=a.shape, dtype=dtype, chunks=chunks)
+    arr = group.create_array(
+        "a", shape=a.shape, dtype=dtype, chunks=chunks, shards=shards
+    )
 
     arr[...] = a
 
@@ -135,4 +137,37 @@ def test_store_icechunk_region(icechunk_storage, executor):
                 [0, 0, 0, 0, 0],
             ]
         ),
+    )
+
+
+def test_store_icechunk_sharded(icechunk_storage, executor):
+    a = xp.asarray(
+        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+        chunks=(2, 2),
+    )
+    create_icechunk(
+        np.zeros((4, 4), dtype=int), icechunk_storage, chunks=(2, 2), shards=(4, 4)
+    )
+
+    # note that the same zarr store is overwritten in the following tests
+
+    repo = Repository.open(storage=icechunk_storage)
+    session = repo.writable_session("main")
+    fork = session.fork()
+    store = fork.store
+    group = zarr.open_group(store=store)
+    target = group.get("a")
+    merged_session = store_icechunk(sources=a, targets=target, executor=executor)
+    session.merge(merged_session)
+    session.commit("commit 1")
+
+    # reopen store and check contents of array
+    repo = Repository.open(icechunk_storage)
+    session = repo.readonly_session(branch="main")
+    store = session.store
+
+    group = zarr.open_group(store=store, mode="r")
+    assert_array_equal(
+        cubed.from_array(group["a"])[:],
+        a,
     )
