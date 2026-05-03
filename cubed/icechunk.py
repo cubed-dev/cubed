@@ -45,10 +45,6 @@ def store_icechunk(
 
     arrays = []
     for source, target, region in zip(sources, targets, regions_list):
-        sharding_enabled = target.shards is not None
-        sharding_misaligned = target.shards != source.chunks
-        if sharding_enabled and sharding_misaligned:
-            source = source.rechunk(target.shards)
         array = _store_array(
             source,
             target,
