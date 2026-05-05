@@ -157,7 +157,8 @@ def test_store_icechunk_sharded(icechunk_storage, executor):
     store = fork.store
     group = zarr.open_group(store=store)
     target = group.get("a")
-    merged_session = store_icechunk(sources=a, targets=target, executor=executor)
+    with pytest.warns(UserWarning, match="mismatch between the shard and chunk size"):
+        merged_session = store_icechunk(sources=a, targets=target, executor=executor)
     session.merge(merged_session)
     session.commit("commit 1")
 
