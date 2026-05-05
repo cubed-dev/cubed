@@ -204,6 +204,17 @@ def _store_array(
             raise ValueError("Target store must be specified when setting a region")
         else:
             return source
+    else:
+        if hasattr(target, "shards"):
+            sharding_enabled = target.shards is not None
+            sharding_misaligned = target.shards != source.chunks
+            if sharding_enabled and sharding_misaligned:
+                warn_msg = (
+                    "There is a mismatch between the shard and chunk size. "
+                    "Rechunking will be applied to match the shard size and prevent data corruption."
+                )
+                warn(warn_msg, stacklevel=2)
+                source = source.rechunk(target.shards)
     if not is_storage_array(target):
         target = lazy_zarr_array(
             target,
