@@ -17,12 +17,11 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "aiostream",
     "array-api-compat",
@@ -30,7 +29,7 @@ dependencies = [
     "donfig",
     "mypy_extensions", # for rechunker
     "ndindex",
-    "networkx != 2.8.3, != 2.8.4, != 2.8.5, != 2.8.6, != 2.8.7, != 2.8.8, != 3.0.*, != 3.1.*, != 3.2.*",
+    "networkx >= 3.3",
     "numpy >= 2",
     "psutil",
     "tenacity",
@@ -100,7 +99,7 @@ repository = "https://github.com/cubed-dev/cubed"
 [tool.uv]
 # Backend extras are mutually exclusive and should not be resolved together.
 # Without this, uv's universal resolver can't satisfy all extras across
-# Python 3.11-3.14 (e.g. pandas 3.x on Python 3.14 needs numpy >= 2.3.3,
+# Python 3.12-3.14 (e.g. pandas 3.x on Python 3.14 needs numpy >= 2.3.3,
 # but apache-beam < 2.71 needs numpy < 2.3.0).
 conflicts = [
     [

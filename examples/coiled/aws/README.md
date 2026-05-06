@@ -12,7 +12,7 @@
 3. Install a Python environment with the coiled package in it by running the following from this directory:
 
 ```shell
-conda create --name cubed-coiled-aws-examples -y python=3.11
+conda create --name cubed-coiled-aws-examples -y python=3.12
 conda activate cubed-coiled-aws-examples
 pip install 'cubed[coiled]'
 ```
