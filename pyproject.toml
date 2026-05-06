@@ -173,7 +173,7 @@ known-third-party = [
 
 [tool.mypy]
 files = "cubed"
-python_version = "3.11"
+python_version = "3.12"
 strict = false
 enable_error_code = ["truthy-bool"]
 ignore_missing_imports = true
