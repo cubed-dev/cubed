@@ -10,7 +10,7 @@
 1. Install a Python environment with the basic package requirements:
 
 ```shell
-conda create --name cubed-lithops-aws-examples -y python=3.11
+conda create --name cubed-lithops-aws-examples -y python=3.12
 conda activate cubed-lithops-aws-examples
 pip install 'cubed[lithops-aws]'
 # or for obstore:

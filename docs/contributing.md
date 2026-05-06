@@ -11,7 +11,7 @@ Contributions to Cubed are very welcome. Please head over to [GitHub](https://gi
 Create an environment with:
 
 ```shell
-conda create --name cubed python=3.11
+conda create --name cubed python=3.12
 conda activate cubed
 pip install -e ".[test]"
 ```

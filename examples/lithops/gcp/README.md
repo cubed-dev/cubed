@@ -10,7 +10,7 @@
 
 ```shell
 # from this directory
-conda create --name cubed-lithops-gcp-examples -y python=3.11
+conda create --name cubed-lithops-gcp-examples -y python=3.12
 conda activate cubed-lithops-gcp-examples
 pip install 'cubed[lithops-gcp]'
 ```

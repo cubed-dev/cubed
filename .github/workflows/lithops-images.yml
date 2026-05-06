@@ -19,14 +19,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            python-version: "3.11"
+            python-version: "3.12"
             requirements-file: ci/requirements-lithops-aws.txt
             lithops-config: .github/workflows/.lithops_config_aws
             lithops-backend: aws_lambda
             lithops-build-file: ci/docker/Dockerfile_aws_lambda_main
             lithops-memory: 2000
           - os: ubuntu-latest
-            python-version: "3.11"
+            python-version: "3.12"
             requirements-file: ci/requirements-lithops-gcp.txt
             lithops-config: .github/workflows/.lithops_config_gcp
             lithops-backend: gcp_functions
