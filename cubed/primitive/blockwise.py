@@ -186,7 +186,13 @@ def key_to_slices(
     key: Tuple[int, ...], arr: T_ZarrArray, chunks: Optional[T_Chunks] = None
 ) -> Tuple[slice, ...]:
     """Convert a chunk index key to a tuple of slices"""
-    chunks = normalize_chunks(chunks or arr.chunks, shape=arr.shape, dtype=arr.dtype)
+    if chunks is None:
+        try:
+            chunks = arr.chunks
+        except NotImplementedError:
+            # rectilinear chunk grids don't support .chunks
+            chunks = arr.read_chunk_sizes
+    chunks = normalize_chunks(chunks, shape=arr.shape, dtype=arr.dtype)
     return get_item(chunks, key)
 
 

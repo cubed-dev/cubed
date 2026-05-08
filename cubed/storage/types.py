@@ -44,7 +44,5 @@ class ArrayMetadata:
 
         # TODO: need a better way of knowing the chunk grid
         if (len(self.chunks) > 0) and not isinstance(self.chunks[0], int):
-            import zarr
-
-            return zarr.RectilinearChunks(self.chunks).total_chunks
+            return reduce(mul, (len(c) for c in self.chunks), 1)
         return reduce(mul, self._cdata_shape, 1)
