@@ -191,7 +191,7 @@ def key_to_slices(
             chunks = arr.chunks
         except NotImplementedError:
             # rectilinear chunk grids don't support .chunks
-            chunks = arr.read_chunk_sizes
+            chunks = arr.read_chunk_sizes  # type: ignore[union-attr]
     chunks = normalize_chunks(chunks, shape=arr.shape, dtype=arr.dtype)
     return get_item(chunks, key)
 

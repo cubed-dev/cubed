@@ -168,9 +168,9 @@ def numblocks(chunks: T_RectangularChunks) -> Tuple[int, ...]:
 
 def largest_chunk(chunks: T_RegularChunks | T_RectangularChunks) -> T_RegularChunks:
     if (len(chunks) == 0) or isinstance(chunks[0], int):
-        return chunks
+        return chunks  # type: ignore[return-value]
     else:
-        return tuple(max(c, default=1) for c in chunks)
+        return tuple(max(c, default=1) for c in chunks)  # type: ignore[arg-type]
 
 
 @dataclass

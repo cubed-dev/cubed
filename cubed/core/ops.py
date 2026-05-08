@@ -1067,8 +1067,8 @@ def split_chunks(
 def split_chunksizes(n: int, sc: int, tc: int) -> tuple[int]:
     import numpy as np
 
-    a = np.arange(n, step=sc)
-    b = np.arange(n, step=tc)
+    a = np.arange(0, n, step=sc)
+    b = np.arange(0, n, step=tc)
     c = np.union1d(a, b)
     if n not in c:
         c = np.append(c, [n])
