@@ -636,7 +636,7 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
     )
 
 
-def _create_zarr_indexer(selection, shape, chunks, regular=True):
+def _create_zarr_indexer(selection, shape, chunks):
     if zarr.__version__[0] == "3":
         from zarr.core.chunk_grids import ChunkGrid
         from zarr.core.indexing import OrthogonalIndexer
@@ -667,7 +667,6 @@ def _assemble_index_chunk(
     in_shape=None,
     in_chunksize=None,
     block_id=None,
-    regular=True,
     **kwargs,
 ):
     assert not isinstance(arrays, list), (
@@ -679,7 +678,7 @@ def _assemble_index_chunk(
     in_sel = selection_function(ChunkKey("out", out_coords))
 
     # use a Zarr indexer to convert this to input coordinates
-    indexer = _create_zarr_indexer(in_sel, in_shape, in_chunksize, regular=regular)
+    indexer = _create_zarr_indexer(in_sel, in_shape, in_chunksize)
 
     shape = indexer.shape
     out = nxp.empty(shape, dtype=dtype)
@@ -742,7 +741,7 @@ def map_selection(
 
         # use a Zarr indexer to convert selection to input coordinates
         chunks = x.chunksize if regular else x.chunks
-        indexer = _create_zarr_indexer(in_sel, x.shape, chunks, regular=regular)
+        indexer = _create_zarr_indexer(in_sel, x.shape, chunks)
 
         return FunctionArgs(
             iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),
@@ -763,7 +762,6 @@ def map_selection(
         selection_function=selection_function,
         in_shape=x.shape,
         in_chunksize=x.chunksize if regular else x.chunks,
-        regular=regular,
         **kwargs,
     )
     from cubed import Array
