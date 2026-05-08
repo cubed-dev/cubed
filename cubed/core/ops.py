@@ -36,7 +36,7 @@ from cubed.primitive.memory import get_buffer_copies
 from cubed.spec import spec_from_config
 from cubed.storage.store import is_storage_array, open_storage_array
 from cubed.storage.zarr import lazy_zarr_array
-from cubed.types import T_RegularChunks, T_Shape
+from cubed.types import T_RectangularChunks, T_RegularChunks, T_Shape
 from cubed.utils import (
     array_memory,
     array_size,
@@ -47,9 +47,11 @@ from cubed.utils import (
     to_chunksize,
 )
 from cubed.utils import numblocks as compute_numblocks
+from cubed.vendor.dask.array.core import _check_regular_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
 from cubed.vendor.dask.utils import has_keyword
+from cubed.vendor.rechunker.algorithm import multistage_rechunking_plan
 
 if TYPE_CHECKING:
     from cubed.array_api.array_object import Array
@@ -636,20 +638,11 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
 
 def _create_zarr_indexer(selection, shape, chunks):
     if zarr.__version__[0] == "3":
+        from zarr.core.chunk_grids import ChunkGrid
         from zarr.core.indexing import OrthogonalIndexer
 
-        try:
-            from zarr.core.chunk_grids import ChunkGrid
-
-            return OrthogonalIndexer(
-                selection, shape, ChunkGrid.from_sizes(shape, chunks)
-            )
-        except (ImportError, AttributeError):
-            from zarr.core.chunk_grids import RegularChunkGrid
-
-            return OrthogonalIndexer(
-                selection, shape, RegularChunkGrid(chunk_shape=chunks)
-            )
+        chunk_grid = ChunkGrid.from_sizes(array_shape=shape, chunk_sizes=chunks)
+        return OrthogonalIndexer(selection, shape, chunk_grid)
     else:
         from zarr.indexing import OrthogonalIndexer
 
@@ -740,12 +733,15 @@ def map_selection(
         The maximum number of input blocks read from the input array.
     """
 
+    regular = _check_regular_chunks(x.chunks)
+
     def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
         # compute the selection on x required to get the relevant chunk for out_key
         in_sel = selection_function(out_key)
 
         # use a Zarr indexer to convert selection to input coordinates
-        indexer = _create_zarr_indexer(in_sel, x.shape, x.chunksize)
+        chunks = x.chunksize if regular else x.chunks
+        indexer = _create_zarr_indexer(in_sel, x.shape, chunks)
 
         return FunctionArgs(
             iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),
@@ -765,7 +761,7 @@ def map_selection(
         num_input_blocks=num_input_blocks,
         selection_function=selection_function,
         in_shape=x.shape,
-        in_chunksize=x.chunksize,
+        in_chunksize=x.chunksize if regular else x.chunks,
         **kwargs,
     )
     from cubed import Array
@@ -977,7 +973,7 @@ def map_direct(
     )
 
 
-def rechunk(x, chunks, *, min_mem=None):
+def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -991,12 +987,14 @@ def rechunk(x, chunks, *, min_mem=None):
         An array with the desired chunks.
     """
     out = x
-    for copy_chunks, target_chunks in _rechunk_plan(x, chunks, min_mem=min_mem):
-        out = _rechunk(out, copy_chunks, target_chunks)
+    for copy_chunks, target_chunks in _rechunk_plan(
+        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+    ):
+        out = _rechunk(out, copy_chunks, target_chunks, allow_irregular=allow_irregular)
     return out
 
 
-def _rechunk_plan(x, chunks, *, min_mem=None):
+def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
@@ -1026,7 +1024,13 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
     rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
-    stages = multistage_regular_rechunking_plan(
+
+    plan_func = (
+        multistage_rechunking_plan
+        if allow_irregular
+        else multistage_regular_rechunking_plan
+    )
+    stages = plan_func(
         shape=x.shape,
         source_chunks=source_chunks,
         target_chunks=target_chunks,
@@ -1050,7 +1054,28 @@ def _rechunk_plan(x, chunks, *, min_mem=None):
                 yield write_chunks, target_chunks_
 
 
-def _rechunk(x, copy_chunks, target_chunks):
+def split_chunks(
+    shape: T_Shape, source_chunks: T_RegularChunks, target_chunks: T_RegularChunks
+) -> T_RectangularChunks:
+    # find (possibly irregular) chunk sizes that fit into both source and target chunks
+    return tuple(
+        split_chunksizes(n, wc, tc)
+        for n, wc, tc in zip(shape, source_chunks, target_chunks)
+    )
+
+
+def split_chunksizes(n: int, sc: int, tc: int) -> tuple[int]:
+    import numpy as np
+
+    a = np.arange(0, n, step=sc)
+    b = np.arange(0, n, step=tc)
+    c = np.union1d(a, b)
+    if n not in c:
+        c = np.append(c, [n])
+    return tuple(np.diff(c).tolist())
+
+
+def _rechunk(x, copy_chunks, target_chunks, allow_irregular=False):
     # rechunk x so that its target store has target_chunks, using copy_chunks as the size of chunks for copying from source to target
 
     normalized_copy_chunks = normalize_chunks(copy_chunks, x.shape, dtype=x.dtype)
@@ -1058,8 +1083,14 @@ def _rechunk(x, copy_chunks, target_chunks):
 
     copy_chunks_mem = array_memory(x.dtype, copy_chunks)
 
-    target_chunks = normalize_chunks(target_chunks, x.shape, dtype=x.dtype)
-    target_chunks = to_chunksize(target_chunks)
+    if allow_irregular:
+        target_chunks = split_chunks(x.shape, copy_chunks, target_chunks)
+        # if target_chunks are regular then there's no need to use a rectilinear chunk grid
+        if _check_regular_chunks(target_chunks):
+            target_chunks = to_chunksize(target_chunks)
+    else:
+        target_chunks = normalize_chunks(target_chunks, x.shape, dtype=x.dtype)
+        target_chunks = to_chunksize(target_chunks)
 
     def selection_function(out_key):
         out_coords = out_key.coords

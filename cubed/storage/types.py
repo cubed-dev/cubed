@@ -41,4 +41,8 @@ class ArrayMetadata:
     @property
     def nchunks(self) -> int:
         """Number of chunks in array"""
+
+        # TODO: need a better way of knowing the chunk grid
+        if (len(self.chunks) > 0) and not isinstance(self.chunks[0], int):
+            return reduce(mul, (len(c) for c in self.chunks), 1)
         return reduce(mul, self._cdata_shape, 1)

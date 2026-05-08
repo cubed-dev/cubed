@@ -46,6 +46,7 @@ from cubed.utils import (
     array_memory,
     chunk_memory,
     get_item,
+    largest_chunk,
     normalize_chunks,
     to_chunksize,
 )
@@ -185,7 +186,13 @@ def key_to_slices(
     key: Tuple[int, ...], arr: T_ZarrArray, chunks: Optional[T_Chunks] = None
 ) -> Tuple[slice, ...]:
     """Convert a chunk index key to a tuple of slices"""
-    chunks = normalize_chunks(chunks or arr.chunks, shape=arr.shape, dtype=arr.dtype)
+    if chunks is None:
+        try:
+            chunks = arr.chunks
+        except NotImplementedError:
+            # rectilinear chunk grids don't support .chunks
+            chunks = arr.read_chunk_sizes  # type: ignore[union-attr]
+    chunks = normalize_chunks(chunks, shape=arr.shape, dtype=arr.dtype)
     return get_item(chunks, key)
 
 
@@ -433,7 +440,11 @@ def general_blockwise(
         )
 
     # the number of blocks written to each target array is currently the same
-    nb = math.prod(chunksize) // math.prod(target_chunks_ or chunksize)
+    if target_chunks_ is None:
+        nb = 1
+    else:
+        # TODO: this is too small for irregular chunks
+        nb = math.prod(chunksize) // math.prod(largest_chunk(target_chunks_))
     num_output_blocks = (nb,) * len(target_arrays)
 
     spec = BlockwiseSpec(
@@ -449,7 +460,9 @@ def general_blockwise(
     buffer_copies = buffer_copies or BufferCopies(read=1, write=1)
     projected_mem = calculate_projected_mem(
         reserved_mem=reserved_mem,
-        inputs=[array_memory(array.dtype, array.chunks) for array in arrays],
+        inputs=[
+            array_memory(array.dtype, largest_chunk(array.chunks)) for array in arrays
+        ],
         operation=extra_projected_mem,
         output=output_chunk_memory,
         buffer_copies=buffer_copies,
