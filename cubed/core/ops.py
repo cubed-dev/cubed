@@ -701,6 +701,54 @@ def _assemble_index_chunk(
     return out
 
 
+def _assemble_index_chunk_update(
+    arrays,
+    y,
+    dtype=None,
+    func=None,
+    selection_function=None,
+    in_shape=None,
+    in_chunksize=None,
+    block_id=None,
+    **kwargs,
+):
+    assert not isinstance(arrays, list), (
+        "index expects an iterator of array blocks, not a list"
+    )
+
+    try:
+        # compute the selection on x required to get the relevant chunk for out_coords
+        out_coords = block_id
+        in_sel = selection_function(ChunkKey("out", out_coords))
+
+        # use a Zarr indexer to convert this to input coordinates
+        indexer = _create_zarr_indexer(in_sel, in_shape, in_chunksize)
+
+        shape = indexer.shape
+        out = nxp.empty(shape, dtype=dtype)
+    except KeyError:
+        # TODO: better way than this
+        shape = (0, 0)
+        out = nxp.empty(shape, dtype=dtype)
+
+    if array_size(shape) > 0:
+        _, lchunk_selection, lout_selection, *_ = zip(*indexer)
+        for ai, chunk_select, out_select in zip(
+            arrays, lchunk_selection, lout_selection
+        ):
+            if IS_IMMUTABLE_ARRAY:
+                out = out.at[out_select].set(ai[chunk_select])
+            else:
+                out[out_select] = ai[chunk_select]
+
+    if func is not None:
+        if has_keyword(func, "block_id"):
+            out = func(out, y, block_id=block_id, **kwargs)
+        else:
+            out = func(out, y, **kwargs)
+    return out
+
+
 def map_selection(
     func,
     selection_function,
@@ -762,6 +810,84 @@ def map_selection(
         selection_function=selection_function,
         in_shape=x.shape,
         in_chunksize=x.chunksize if regular else x.chunks,
+        **kwargs,
+    )
+    from cubed import Array
+
+    assert isinstance(out, Array)  # single output
+    return out
+
+
+def map_selection_update(
+    func,
+    selection_function,
+    x,
+    y,
+    shape,
+    dtype,
+    chunks,
+    max_num_input_blocks,
+    **kwargs,
+) -> "Array":
+    """
+    Apply a function to selected subsets of an input array using standard NumPy indexing notation.
+
+    Parameters
+    ----------
+    func : callable
+        Function to apply to every block to produce the output array.
+        Must accept ``block_id`` as a keyword argument (with same meaning as for ``map_blocks``).
+    selection_function : callable
+        A function that maps an output chunk key to one or more selections on the input array.
+    x: Array
+        The input array.
+    y: Array
+        The input array.
+    shape : tuple
+        Shape of the output array.
+    dtype : np.dtype
+        The ``dtype`` of the output array.
+    chunks : tuple
+        Chunk shape of blocks in the output array.
+    max_num_input_blocks : int
+        The maximum number of input blocks read from the input array.
+    """
+
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Iterator[ChunkKey]]:
+        # compute the selection on x required to get the relevant chunk for out_key
+        try:
+            in_sel = selection_function(out_key)
+
+            # use a Zarr indexer to convert selection to input coordinates
+            indexer = _create_zarr_indexer(in_sel, x.shape, x.chunksize)
+
+            return FunctionArgs(
+                iter(tuple(ChunkKey(x.name, cp.chunk_coords) for cp in indexer)),
+                ChunkKey(y.name, out_key.coords),  # type: ignore
+                output_name=out_key.name,
+            )
+        except KeyError:
+            return FunctionArgs(
+                iter([]),
+                ChunkKey(y.name, out_key.coords),  # type: ignore
+                output_name=out_key.name,
+            )
+
+    num_input_blocks = (max_num_input_blocks, 1)
+
+    out = general_blockwise(
+        _assemble_index_chunk_update,
+        back_key_function,
+        x,
+        y,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
+        extra_func_kwargs=dict(func=func, dtype=x.dtype),
+        num_input_blocks=num_input_blocks,
+        selection_function=selection_function,
+        in_shape=x.shape,
+        in_chunksize=x.chunksize,
         **kwargs,
     )
     from cubed import Array
