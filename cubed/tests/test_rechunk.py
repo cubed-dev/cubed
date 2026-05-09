@@ -146,7 +146,7 @@ def test_rechunk_hypothesis_generated_bug():
 
 
 @pytest.mark.skipif(
-    zarr.__version__[0] == "2" or get_storage_name() == "tensorstore",
+    zarr.config.get("default_zarr_format") == 2 or get_storage_name() == "tensorstore",
     reason="irregular chunking is not supported for Zarr Python v2, or tensorstore",
 )
 def test_rechunk_hypothesis_generated_bug_allow_irregular():
