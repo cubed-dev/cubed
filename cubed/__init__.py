@@ -16,6 +16,7 @@ config = Config(
 import cubed.array.misc  # noqa: F401
 import cubed.random  # noqa: F401
 
+from .array.einsum import einsum
 from .array.nan_functions import (
     nanargmax,
     nanargmin,
@@ -47,6 +48,7 @@ __all__ = [
     "apply_gufunc",
     "compute",
     "config",
+    "einsum",
     "from_array",
     "from_zarr",
     "map_blocks",
