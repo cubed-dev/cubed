@@ -14,6 +14,7 @@ config = Config(
 )
 
 import cubed.array.misc  # noqa: F401
+import cubed.lib  # noqa: F401
 import cubed.random  # noqa: F401
 
 from .array.einsum import einsum
@@ -42,6 +43,7 @@ from .spec import Spec
 
 __all__ = [
     "__version__",
+    "lib",
     "Callback",
     "Spec",
     "TaskEndEvent",
