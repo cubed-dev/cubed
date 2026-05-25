@@ -87,7 +87,11 @@ def index(x, key):
         # empty output case
         from cubed.array_api.creation_functions import empty
 
-        chunks = tuple(c for c in x.chunksize if c > 0)
+        chunks = tuple(
+            c
+            for ia, c in zip(idx.args, x.chunksize)
+            if not isinstance(ia, ndindex.Integer)
+        )
         out = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
     else:
         dtype = x.dtype

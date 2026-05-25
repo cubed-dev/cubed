@@ -771,6 +771,20 @@ def test_unstack_single_array(spec):
     assert_array_equal(b.compute(), np.full((4, 6), 1))
 
 
+def test_unstack_zero_size_dim(spec):
+    # Regression found by Hypothesis
+
+    # Case 1: one zero-size dim — rechunk fails due to wrong chunks on surviving axis
+    a = xp.zeros((0, 2, 1), chunks=(0, 2, 1), spec=spec)
+    (b,) = xp.unstack(a, axis=-1)
+    assert_array_equal((b == a[:, :, 0]).compute(), np.zeros((0, 2), dtype=bool))
+
+    # Case 2: two zero-size dims — immediate chunk/shape dimension mismatch
+    a = xp.zeros((0, 0, 1), chunks=(0, 0, 1), spec=spec)
+    (b,) = xp.unstack(a, axis=-1)
+    assert_array_equal((b == a[:, :, 0]).compute(), np.zeros((0, 0), dtype=bool))
+
+
 # Searching functions
 
 
