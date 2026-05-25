@@ -1242,8 +1242,15 @@ def reduction(
 
     # aggregate final chunks
     if aggregate_func is not None:
+        extra_agg_kwargs = {}
+        if has_keyword(aggregate_func, "axis"):
+            extra_agg_kwargs["axis"] = axis
+        if has_keyword(aggregate_func, "keepdims"):
+            extra_agg_kwargs["keepdims"] = True
         result = map_blocks(
-            partial(aggregate_func, **(extra_func_kwargs or {})), result, dtype=dtype
+            partial(aggregate_func, **extra_agg_kwargs, **(extra_func_kwargs or {})),
+            result,
+            dtype=dtype,
         )
 
     if not keepdims:
