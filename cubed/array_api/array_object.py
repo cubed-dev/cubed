@@ -53,6 +53,26 @@ class Array(CoreArray):
                 return NotImplemented
             return _HANDLED_FUNCTIONS[func](*args, **kwargs)
 
+        def __array_ufunc__(self, numpy_ufunc, method, *inputs, **kwargs):
+            out = kwargs.get("out", ())
+            if method != "__call__" or out:
+                return NotImplemented
+            for x in inputs:
+                if not isinstance(x, (Array, np.ndarray)) and not np.isscalar(x):
+                    return NotImplemented
+            from cubed.array_api._numpy_dispatch import _get_ufunc_func
+            from cubed.array_api.creation_functions import asarray
+
+            cubed_func = _get_ufunc_func(numpy_ufunc)
+            if cubed_func is None:
+                return NotImplemented
+            spec = next(x.spec for x in inputs if isinstance(x, Array))
+            converted = tuple(
+                asarray(x, spec=spec) if isinstance(x, np.ndarray) else x
+                for x in inputs
+            )
+            return cubed_func(*converted)
+
     def __repr__(self):
         return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"
 
