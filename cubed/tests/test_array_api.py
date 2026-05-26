@@ -427,6 +427,13 @@ def test_matmul(spec, executor):
     assert_array_equal(c.compute(executor=executor), expected)
 
 
+def test_matmul_incompatible_inner_dims(spec):
+    a = xp.ones((3, 4), chunks=(2, 2), spec=spec)
+    b = xp.ones((3, 4), chunks=(2, 2), spec=spec)
+    with pytest.raises(ValueError, match="matmul: dimension mismatch"):
+        xp.matmul(a, b)
+
+
 @pytest.mark.cloud
 def test_matmul_cloud(executor):
     tmp_path = "s3://cubed-unittest/matmul"

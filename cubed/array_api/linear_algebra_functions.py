@@ -34,6 +34,11 @@ def matmul(x1, x2, /, split_every=None):
     elif x1.ndim > x2.ndim:
         x2 = expand_dims(x2, tuple(range(x1.ndim - x2.ndim)))
 
+    if x1.shape[-1] != x2.shape[-2]:
+        raise ValueError(
+            f"matmul: dimension mismatch, x1.shape[-1]={x1.shape[-1]}, x2.shape[-2]={x2.shape[-2]}"
+        )
+
     out_ind = tuple(range(x1.ndim + 1))
     x1_ind = tuple(range(x1.ndim))
     x2_ind = tuple(range(x1.ndim - 2)) + (x1_ind[-1], x1.ndim)
