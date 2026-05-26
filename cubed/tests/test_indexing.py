@@ -22,6 +22,8 @@ def spec(tmp_path):
         (xp.newaxis, [6, 7, 2, 9, 10]),
         (slice(None), xp.newaxis),
         (xp.newaxis, slice(None)),
+        # full-length permutation: output shape == input shape but values are reordered
+        [11, 9, 10, 7, 8, 5, 6, 3, 4, 1, 2, 0],
     ],
 )
 def test_int_array_index_1d(spec, ind):
@@ -52,22 +54,6 @@ def test_int_array_index_2d(spec, ind):
     b = a.rechunk((2, 2))  # force materialization to test indexing against zarr
     x = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     assert_array_equal(b[ind].compute(), x[ind])
-
-
-@pytest.mark.parametrize(
-    "ind",
-    [
-        (slice(None), [0, 1, 2, 3]),
-        ([0, 1, 2, 3], slice(None)),
-    ],
-)
-def test_int_array_index_2d_no_op(spec, ind):
-    a = xp.asarray(
-        [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
-        chunks=(3, 3),
-        spec=spec,
-    )
-    assert a is a[ind]
 
 
 def test_multiple_int_array_indexes(spec):

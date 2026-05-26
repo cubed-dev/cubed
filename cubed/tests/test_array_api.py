@@ -392,7 +392,7 @@ def test_index_slice_unsupported_step(spec):
         a[::-1]
 
 
-@pytest.mark.parametrize("axis", [0, 1])
+@pytest.mark.parametrize("axis", [0, 1, -1, -2])
 @skip_if_cupy  # ndindex with a cupy.ndarray
 def test_take(spec, axis):
     a = xp.asarray(

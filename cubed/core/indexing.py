@@ -80,7 +80,8 @@ def index(x, key):
 
     shape = idx.newshape(x.shape)
 
-    if shape == x.shape:
+    has_integer_array = any(isinstance(ia, ndindex.IntegerArray) for ia in idx.args)
+    if shape == x.shape and not has_integer_array:
         # no op case (except possibly newaxis applied below)
         out = x
     elif array_size(shape) == 0:
