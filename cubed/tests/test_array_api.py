@@ -1086,6 +1086,7 @@ def test_all_zero_dimension(spec, executor):
     b = xp.all(a)
     assert b.ndim == 0
     assert b.size == 1
+    assert b.dtype == xp.bool
     assert b.compute(executor=executor)
 
 
