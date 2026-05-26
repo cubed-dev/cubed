@@ -11,5 +11,4 @@ omit =
     cubed/runtime/executors/modal*.py
     cubed/runtime/executors/ray.py
     cubed/runtime/executors/spark.py
-    cubed/storage/backends/zarr_python_v3.py
     cubed/vendor/*
