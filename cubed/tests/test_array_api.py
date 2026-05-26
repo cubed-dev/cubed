@@ -742,6 +742,14 @@ def test_stack(spec, executor):
     )
 
 
+def test_stack_mixed_dtypes(spec):
+    a = xp.asarray([1, 2, 3], dtype=xp.int32, spec=spec)
+    b = xp.asarray([4.0, 5.0, 6.0], dtype=xp.float64, spec=spec)
+    c = xp.stack([a, b])
+    assert c.dtype == xp.float64
+    assert_array_equal(c.compute(), np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
+
+
 @pytest.mark.parametrize("repetitions", [(2,), (2, 5), (2, 5, 3)])
 def test_tile(spec, repetitions):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)

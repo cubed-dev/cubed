@@ -552,18 +552,21 @@ def roll(x, /, shift, *, axis=None):
 
 
 def stack(arrays, /, *, axis=0):
+    from cubed.array_api.data_type_functions import astype, result_type
+
     if not arrays:
         raise ValueError("Need array(s) to stack")
 
     # TODO: check arrays all have same shape
-    # TODO: type promotion
     # TODO: unify chunks
 
     a = arrays[0]
 
     axis = validate_axis(axis, a.ndim + 1)
     shape = a.shape[:axis] + (len(arrays),) + a.shape[axis:]
-    dtype = a.dtype
+    dtype = result_type(*arrays)
+    if len({a.dtype for a in arrays}) > 1:
+        arrays = [astype(a, dtype) if a.dtype != dtype else a for a in arrays]
     chunks = a.chunks[:axis] + ((1,) * len(arrays),) + a.chunks[axis:]
 
     array_names = [a.name for a in arrays]
