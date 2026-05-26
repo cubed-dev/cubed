@@ -1,5 +1,5 @@
 import pytest
-from numcodecs.registry import get_codec
+from zarr.codecs import BloscCodec, BytesCodec, ZstdCodec
 
 from cubed import config
 from cubed.storage.store import open_storage_array
@@ -20,18 +20,38 @@ def test_lazy_zarr_array(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "compressor",
+    ("codecs", "expected_codecs"),
     [
-        None,
-        {"id": "zstd", "level": 1},
-        {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1},
+        (None, (BytesCodec(), ZstdCodec())),
+        (({"name": "bytes"},), (BytesCodec(),)),
+        (
+            ({"name": "bytes"}, {"name": "zstd", "configuration": {"level": 1}}),
+            (BytesCodec(), ZstdCodec(level=1)),
+        ),
+        (
+            (
+                {"name": "bytes"},
+                {
+                    "name": "blosc",
+                    "configuration": {
+                        "cname": "lz4",
+                        "clevel": 2,
+                        "shuffle": "shuffle",
+                    },
+                },
+            ),
+            (
+                BytesCodec(),
+                BloscCodec(cname="lz4", clevel=2, shuffle="shuffle", typesize=8),
+            ),
+        ),
     ],
 )
-def test_compression(tmp_path, compressor):
+def test_zarr_codecs(tmp_path, codecs, expected_codecs):
     zarr_path = tmp_path / "lazy.zarr"
 
     arr = lazy_zarr_array(
-        zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2), compressor=compressor
+        zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2), codecs=codecs
     )
     arr.create()
 
@@ -39,7 +59,4 @@ def test_compression(tmp_path, compressor):
     with config.set({"storage_name": "zarr-python"}):
         z = open_storage_array(zarr_path, mode="r")
 
-    if compressor is None:
-        assert z.compressor is None
-    else:
-        assert z.compressor == get_codec(compressor)
+    assert z.metadata.codecs == expected_codecs
