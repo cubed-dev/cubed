@@ -1008,6 +1008,8 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
     normalized_chunks = normalize_chunks(chunks, x.shape, dtype=x.dtype)
     if x.chunks == normalized_chunks:
         return
+    if array_size(x.shape) == 0:
+        return  # zero-size array: no data to move, skip rechunking
     # normalizing takes care of dict args for chunks
     target_chunks = to_chunksize(normalized_chunks)
 

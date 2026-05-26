@@ -509,6 +509,12 @@ def test_rechunk(spec, executor, new_chunks, expected_chunks):
     )
 
 
+def test_rechunk_zero_size_dim(spec):
+    a = xp.zeros((0, 4), chunks=(2, 2), spec=spec)
+    b = a.rechunk((1, 3))
+    assert_array_equal(b.compute(), np.zeros((0, 4)))
+
+
 def test_rechunk_same_chunks(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 1), spec=spec)
     b = a.rechunk((2, 1))
