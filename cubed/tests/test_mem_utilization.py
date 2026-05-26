@@ -365,6 +365,9 @@ def test_mean(tmp_path, spec, executor):
 
 
 @pytest.mark.slow
+@pytest.mark.skip(
+    reason="Fails with Zarr v3, see https://github.com/cubed-dev/cubed/issues/905"
+)
 def test_sum_partial_reduce(tmp_path, spec, executor):
     a = cubed.random.random(
         (40000, 10000), chunks=(5000, 5000), spec=spec
