@@ -21,7 +21,6 @@ from cubed.diagnostics.widgets import LivePlanViewer, LiveTimelineViewer
 from cubed.diagnostics.widgets.memory import LiveMemoryViewer
 from cubed.primitive.blockwise import apply_blockwise
 from cubed.runtime.create import create_executor
-from cubed.storage.store import get_storage_name
 from cubed.tests.utils import (
     ALL_EXECUTORS,
     MAIN_EXECUTORS,
@@ -251,10 +250,6 @@ def test_mem_warn(tmp_path, executor):
         b.compute(executor=executor, callbacks=[mem_warn])
 
 
-@pytest.mark.skipif(
-    get_storage_name() == "tensorstore",
-    reason="tensorstore does not support resume",
-)
 def test_resume(spec, executor):
     if executor.name == "beam":
         pytest.skip(f"{executor.name} executor does not support resume")

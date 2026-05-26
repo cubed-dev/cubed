@@ -12,7 +12,6 @@ from cubed.core.rechunk import (
     multspace,
     verify_chunk_compatibility,
 )
-from cubed.storage.store import get_storage_name
 from cubed.utils import itemsize
 from cubed.vendor.rechunker.algorithm import (
     calculate_stage_chunks,
@@ -146,8 +145,8 @@ def test_rechunk_hypothesis_generated_bug():
 
 
 @pytest.mark.skipif(
-    zarr.__version__[0] == "2" or get_storage_name() == "tensorstore",
-    reason="irregular chunking is not supported for Zarr Python v2, or tensorstore",
+    zarr.__version__[0] == "2",
+    reason="irregular chunking is not supported for Zarr Python v2",
 )
 def test_rechunk_hypothesis_generated_bug_allow_irregular():
     rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
