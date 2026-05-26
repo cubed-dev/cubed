@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from cubed import config
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
@@ -25,7 +25,7 @@ def is_storage_array(obj) -> bool:
 
 def open_storage_array(
     store: T_Store,
-    mode: str,
+    mode: Optional[Literal["r", "r+", "a", "w", "w-"]],
     *,
     shape: Optional[T_Shape] = None,
     dtype: Optional[T_DType] = None,

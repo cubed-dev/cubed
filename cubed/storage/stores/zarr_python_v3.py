@@ -67,7 +67,8 @@ def open_zarr_v3_array(
 
     if dtype is None or not hasattr(dtype, "fields") or dtype.fields is None:
         if mode in ("r", "r+"):
-            return zarr.open_array(store=store, path=path)
+            # ignore type warning since Zarr can handle path=None
+            return zarr.open_array(store=store, path=path)  # type: ignore[arg-type]
 
         try:
             return zarr.create_array(
@@ -78,9 +79,10 @@ def open_zarr_v3_array(
                 name=path,
                 **kwargs,
             )
-        except zarr.errors.ContainsArrayError:
+        except zarr.errors.ContainsArrayError as e:
             if mode == "a":
-                return zarr.open_array(store=store, path=path)
+                return zarr.open_array(store=store, path=path)  # type: ignore[arg-type]
+            raise e
 
     assert mode is not None
     group = zarr.open_group(store=store, mode=mode, path=path)
