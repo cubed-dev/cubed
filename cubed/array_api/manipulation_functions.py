@@ -101,7 +101,10 @@ def concat(arrays, /, *, axis=0, chunks=None):
         raise ValueError("Need array(s) to concat")
 
     if len({a.dtype for a in arrays}) > 1:
-        raise ValueError("concat inputs must all have the same dtype")
+        from cubed.array_api.data_type_functions import astype, result_type
+
+        dtype = result_type(*arrays)
+        arrays = [astype(a, dtype) if a.dtype != dtype else a for a in arrays]
 
     if axis is None:
         arrays = [flatten(array) for array in arrays]

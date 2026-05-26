@@ -581,6 +581,14 @@ def test_concat_incompatible_shapes(spec):
     xp.concat([a, b], axis=1)  # OK
 
 
+def test_concat_mixed_dtypes(spec):
+    a = xp.asarray([1, 2, 3], dtype=xp.int32, spec=spec)
+    b = xp.asarray([4.0, 5.0, 6.0], dtype=xp.float64, spec=spec)
+    c = xp.concat([a, b])
+    assert c.dtype == xp.float64
+    assert_array_equal(c.compute(), np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]))
+
+
 @pytest.mark.parametrize("axis", [0, 1, (0, 1), (2, 0)])
 def test_expand_dims(spec, axis):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
