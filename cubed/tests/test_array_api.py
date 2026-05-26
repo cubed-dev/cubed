@@ -835,6 +835,13 @@ def test_argmax_axis_0(spec):
         np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmax(axis=0),
     )
 
+def test_argmax_keepdims(spec):
+    # Regression: argmax with axis=None, keepdims=True returned shape () instead of (1,)*ndim
+    a = xp.asarray([[11, 12, 13], [11, 11, 14], [10, 13, 11]], chunks=(2, 2), spec=spec)
+    b = xp.argmax(a, keepdims=True)
+    assert b.shape == (1, 1)
+    assert_array_equal(b.compute(), np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmax(keepdims=True))
+
 
 def test_argmin_axis_0(spec):
     a = xp.asarray([[11, 12, 13], [11, 11, 14], [10, 13, 11]], chunks=(2, 2), spec=spec)
