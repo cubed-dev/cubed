@@ -107,14 +107,17 @@ def test_from_array_zarr(tmp_path, spec):
 
 
 @pytest.mark.parametrize("path", [None, "sub", "sub/group"])
-def test_from_zarr(tmp_path, spec, executor, path):
+@pytest.mark.parametrize("zarr_format", [2, 3])
+def test_from_zarr(tmp_path, spec, executor, path, zarr_format):
     store = store = tmp_path / "source.zarr"
-    create_zarr(
+    za = create_zarr(
         [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
         chunks=(2, 2),
         store=store,
         path=path,
+        zarr_format=zarr_format,
     )
+    assert za.metadata.zarr_format == zarr_format
     a = cubed.from_zarr(store, path=path, spec=spec)
     assert_array_equal(
         a.compute(executor=executor), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])

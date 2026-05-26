@@ -148,7 +148,7 @@ class CallbackCounter(Callback):
         self.task_end.update({event.name: event.num_tasks})
 
 
-def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):
+def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None, zarr_format=None):
     # from dask.asarray
     if not isinstance(getattr(a, "shape", None), Iterable):
         # ensure blocks are arrays
@@ -158,7 +158,13 @@ def create_zarr(a, /, store, *, dtype=None, chunks=None, path=None):
 
     # write to zarr
     za = open_storage_array(
-        store, mode="w", shape=a.shape, dtype=dtype, chunks=chunks, path=path
+        store,
+        mode="w",
+        shape=a.shape,
+        dtype=dtype,
+        chunks=chunks,
+        path=path,
+        zarr_format=zarr_format,
     )
     za[:] = a
     return za

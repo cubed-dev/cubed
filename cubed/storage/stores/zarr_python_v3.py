@@ -47,7 +47,7 @@ def open_zarr_v3_array(
     **kwargs,
 ):
     # use obstore if requested
-    storage_options = kwargs.get("storage_options", None)
+    storage_options = kwargs.pop("storage_options", None)
     if storage_options is not None and storage_options.get("use_obstore", False):
         import obstore as obs
         from zarr.storage import ObjectStore
@@ -73,6 +73,7 @@ def open_zarr_v3_array(
             dtype=dtype,
             chunks=chunks,
             path=path,
+            **kwargs,
         )
 
     assert mode is not None
@@ -91,5 +92,6 @@ def open_zarr_v3_array(
                 shape=shape,
                 dtype=field_dtype,
                 chunks=chunks,
+                **kwargs,
             )
     return ret
