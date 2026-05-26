@@ -631,6 +631,12 @@ def test_flip(executor, shape, chunks, axis):
     )
 
 
+def test_flip_zero_size_dim(spec):
+    x = np.ones((0, 4))
+    a = xp.asarray(x, chunks=(1, 2), spec=spec)
+    assert_array_equal(xp.flip(a, axis=0).compute(), np.flip(x, axis=0))
+
+
 def test_moveaxis(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.moveaxis(a, [0, -1], [-1, 0])

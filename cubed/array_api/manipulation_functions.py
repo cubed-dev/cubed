@@ -344,7 +344,7 @@ def flip(x, /, *, axis=None):
 def _flip_num_input_blocks(axis, shape, chunksizes):
     num = 1
     for ax in axis:
-        if shape[ax] % chunksizes[ax] != 0:
+        if chunksizes[ax] > 0 and shape[ax] % chunksizes[ax] != 0:
             num *= 2
     return num
 
