@@ -143,6 +143,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
     # offsets along axis for the start of each array
     offsets = [0] + list(accumulate([a.shape[axis] for a in arrays], add))
     in_shapes = tuple(array.shape for array in arrays)
+    in_chunksizes = tuple(array.chunksize for array in arrays)
 
     shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
     dtype = a.dtype
@@ -201,6 +202,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
         axis=axis,
         offsets=offsets,
         in_shapes=in_shapes,
+        in_chunksizes=in_chunksizes,
     )
 
 
@@ -212,6 +214,7 @@ def _read_concat_chunk(
     axis=None,
     offsets=None,
     in_shapes=None,
+    in_chunksizes=None,
     block_id=None,
 ):
     # determine the start and stop indexes for this block along the axis dimension
@@ -225,7 +228,15 @@ def _read_concat_chunk(
     for array, (lchunk_selection, lout_selection) in zip(
         arrays,
         _chunk_slices(
-            offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
+            offsets,
+            start,
+            stop,
+            target_chunks,
+            chunksize,
+            in_shapes,
+            in_chunksizes,
+            axis,
+            block_id,
         ),
     ):
         if IS_IMMUTABLE_ARRAY:
@@ -247,7 +258,15 @@ def _array_slices(offsets, start, stop):
 
 
 def _chunk_slices(
-    offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
+    offsets,
+    start,
+    stop,
+    target_chunks,
+    chunksize,
+    in_shapes,
+    in_chunksizes,
+    axis,
+    block_id,
 ):
     """Return pairs of chunk slices to slice input array chunks and output concatenated chunk."""
 
@@ -260,7 +279,8 @@ def _chunk_slices(
 
     for ai, sl in _array_slices(offsets, start, stop):
         key = tuple(sl if i == axis else k for i, k in enumerate(key))
-        indexer = _create_zarr_indexer(key, in_shapes[ai], chunksize)
+        # use the actual input chunksize, not the target, so within-chunk offsets are correct
+        indexer = _create_zarr_indexer(key, in_shapes[ai], in_chunksizes[ai])
         for cp in indexer:
             lout_selection_with_offset = tuple(
                 sl

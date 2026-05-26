@@ -597,6 +597,15 @@ def test_concat_mixed_dtypes(spec):
     assert_array_equal(c.compute(), np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]))
 
 
+def test_concat_input_larger_than_target_chunks(spec):
+    # Regression: _chunk_slices used target chunksize when computing within-chunk offsets,
+    # giving wrong values when an input array has a larger chunksize than the target output.
+    a = xp.asarray(np.arange(10), chunks=(10,), spec=spec)  # single chunk of 10
+    b = xp.asarray(np.arange(10, 15), chunks=(5,), spec=spec)
+    c = xp.concat([a, b], chunks=(5,))  # target chunksize 5, but a has chunksize 10
+    assert_array_equal(c.compute(), np.arange(15))
+
+
 @pytest.mark.parametrize("axis", [0, 1, (0, 1), (2, 0)])
 def test_expand_dims(spec, axis):
     a = xp.asarray([1, 2, 3], chunks=(2,), spec=spec)
