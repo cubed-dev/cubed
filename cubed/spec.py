@@ -24,7 +24,7 @@ class Spec:
         executor_name: Optional[str] = None,
         executor_options: Optional[dict] = None,
         storage_options: Union[dict, None] = None,
-        zarr_compressor: Union[dict, str, None] = "default",
+        zarr_compressor: Union[dict, str, None] = "auto",
     ):
         """
         Specify resources available to run a computation.
@@ -51,10 +51,10 @@ class Spec:
         zarr_compressor : dict or str, optional
             The compressor used by Zarr for intermediate data.
 
-            If not specified, or set to ``"default"``, Zarr will use the default Blosc compressor.
+            If not specified, or set to ``"auto"``, Zarr will use the default Blosc compressor.
             If set to ``None``, compression is disabled, which can be a good option when using local storage.
-            Use a dictionary to configure arbitrary compression using Numcodecs. The following example specifies
-            Blosc compression: ``zarr_compressor={"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1}``.
+            Use a dictionary to configure arbitrary compression. The following example specifies
+            Blosc compression: ``zarr_compressor={"name": "blosc", "configuration": {"cname": "lz4", "clevel": 2, "shuffle": "shuffle"}}``.
         """
 
         self._work_dir = work_dir

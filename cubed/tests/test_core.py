@@ -614,8 +614,16 @@ def test_default_spec_config_override():
     "compressor",
     [
         None,
-        {"id": "zstd", "level": 1},
-        {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1},
+        "auto",
+        {"name": "zstd", "configuration": {"level": 1}},
+        {
+            "name": "blosc",
+            "configuration": {
+                "cname": "lz4",
+                "clevel": 2,
+                "shuffle": "shuffle",
+            },
+        },
     ],
 )
 def test_spec_compressor(tmp_path, compressor):

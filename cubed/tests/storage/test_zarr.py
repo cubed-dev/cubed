@@ -20,26 +20,23 @@ def test_lazy_zarr_array(tmp_path):
 
 
 @pytest.mark.parametrize(
-    ("codecs", "expected_codecs"),
+    ("compressor", "expected_codecs"),
     [
-        (None, (BytesCodec(), ZstdCodec())),
-        (({"name": "bytes"},), (BytesCodec(),)),
+        (None, (BytesCodec(),)),
+        ("auto", (BytesCodec(), ZstdCodec())),
         (
-            ({"name": "bytes"}, {"name": "zstd", "configuration": {"level": 1}}),
+            {"name": "zstd", "configuration": {"level": 1}},
             (BytesCodec(), ZstdCodec(level=1)),
         ),
         (
-            (
-                {"name": "bytes"},
-                {
-                    "name": "blosc",
-                    "configuration": {
-                        "cname": "lz4",
-                        "clevel": 2,
-                        "shuffle": "shuffle",
-                    },
+            {
+                "name": "blosc",
+                "configuration": {
+                    "cname": "lz4",
+                    "clevel": 2,
+                    "shuffle": "shuffle",
                 },
-            ),
+            },
             (
                 BytesCodec(),
                 BloscCodec(cname="lz4", clevel=2, shuffle="shuffle", typesize=8),
@@ -47,11 +44,11 @@ def test_lazy_zarr_array(tmp_path):
         ),
     ],
 )
-def test_zarr_codecs(tmp_path, codecs, expected_codecs):
+def test_compressor(tmp_path, compressor, expected_codecs):
     zarr_path = tmp_path / "lazy.zarr"
 
     arr = lazy_zarr_array(
-        zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2), codecs=codecs
+        zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2), compressors=compressor
     )
     arr.create()
 
