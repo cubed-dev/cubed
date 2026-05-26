@@ -130,7 +130,7 @@ These properties can be passed directly to the {py:class}`Spec <cubed.Spec>` con
 | `work_dir`         | `None`            | The directory path (specified as an fsspec URL) used for storing intermediate data. If not set, the user's temporary directory is used. |
 | `allowed_mem`      | `"2GB"`           | The total memory available to a worker for running a task. This includes any `reserved_mem` that has been set.                          |
 | `reserved_mem`     | `"100MB"`         | The memory reserved on a worker for non-data use when running a task                                                                    |
-| `executor_name`    | `"threads"`       | The executor for running computations. One of `"single-threaded"`, `"threads"`, `"processes"`, `"beam"`, `"coiled"`, `"dask"`, `"lithops"`, `"modal"`.  |
+| `executor_name`    | `"threads"`       | The executor for running computations. One of `"single-threaded"`, `"threads"`, `"processes"`, `"coiled"`, `"dask"`, `"lithops"`, `"modal"`.  |
 | `executor_options` | `None`            | Options to pass to the executor on construction. See below for possible options for each executor.                                      |
 | `zarr_compressor`  | `"default"`| The compressor used by Zarr for intermediate data. If not specified, or set to `"default"`, Zarr will use the default Blosc compressor. If set to `None`, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression using Numcodecs. |
 
@@ -168,11 +168,6 @@ since it is deliberately designed not to have anything except the most basic fea
 | `max_tasks_per_child`        | `None`  | The number of tasks to run in each child process. See the Python documentation for `concurrent.futures.ProcessPoolExecutor`. |
 
 Note that `retries` is not currently supported for the `processes` executor.
-
-#### `beam`
-
-The `beam` executor doesn't currently expose any configuration options.
-When running on Google Cloud Dataflow, [four retry attempts](https://cloud.google.com/dataflow/docs/pipeline-lifecycle#error_and_exception_handling) are made for failing tasks.
 
 #### `coiled`
 

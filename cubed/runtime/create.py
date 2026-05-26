@@ -8,11 +8,7 @@ def create_executor(
 ) -> Executor:
     """Create an executor from an executor name."""
     executor_options = executor_options or {}
-    if name == "beam":
-        from cubed.runtime.executors.beam import BeamExecutor
-
-        return BeamExecutor(**executor_options)
-    elif name == "coiled":
+    if name == "coiled":
         from cubed.runtime.executors.coiled import CoiledExecutor
 
         return CoiledExecutor(**executor_options)

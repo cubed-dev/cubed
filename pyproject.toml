@@ -49,7 +49,6 @@ diagnostics = [
     "seaborn",
     "anywidget",
 ]
-beam = ["apache-beam", "gcsfs"]
 dask = ["dask < 2024.12.0"]
 dask-distributed = ["distributed < 2024.12.0"]
 icechunk = ["icechunk"]
@@ -99,11 +98,9 @@ repository = "https://github.com/cubed-dev/cubed"
 [tool.uv]
 # Backend extras are mutually exclusive and should not be resolved together.
 # Without this, uv's universal resolver can't satisfy all extras across
-# Python 3.12-3.14 (e.g. pandas 3.x on Python 3.14 needs numpy >= 2.3.3,
-# but apache-beam < 2.71 needs numpy < 2.3.0).
+# Python 3.12-3.14.
 conflicts = [
     [
-        { extra = "beam" },
         { extra = "lithops" },
         { extra = "lithops-aws" },
         { extra = "lithops-gcp" },
@@ -112,11 +109,6 @@ conflicts = [
         { extra = "coiled" },
     ],
 ]
-
-# apache-beam doesn't declare setuptools as a build dependency but needs it
-# (pkg_resources was removed from the stdlib in Python 3.12)
-[tool.uv.extra-build-dependencies]
-apache-beam = ["setuptools"]
 
 [tool.pytest.ini_options]
 filterwarnings = [
