@@ -485,12 +485,21 @@ def test_outer(spec, executor):
     assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
 
 
-@pytest.mark.parametrize("axes", [1, (1, 0)])
-def test_tensordot(axes):
-    x = np.arange(400).reshape((20, 20))
-    a = xp.asarray(x, chunks=(5, 4))
-    y = np.arange(200).reshape((20, 10))
-    b = xp.asarray(y, chunks=(4, 5))
+@pytest.mark.parametrize(
+    ("x_shape", "y_shape", "x_chunks", "y_chunks", "axes"),
+    [
+        ((20, 20), (20, 10), (5, 4), (4, 5), 1),
+        ((20, 20), (20, 10), (5, 4), (4, 5), (1, 0)),
+        # negative axes on 3D arrays
+        ((2, 3, 4), (5, 4, 3), (2, 3, 2), (3, 2, 3), ((-1,), (1,))),
+        ((2, 3, 4), (5, 4, 3), (2, 3, 2), (3, 2, 3), ((-1,), (-2,))),
+    ],
+)
+def test_tensordot(x_shape, y_shape, x_chunks, y_chunks, axes):
+    x = np.arange(int(np.prod(x_shape))).reshape(x_shape)
+    a = xp.asarray(x, chunks=x_chunks)
+    y = np.arange(int(np.prod(y_shape))).reshape(y_shape)
+    b = xp.asarray(y, chunks=y_chunks)
     assert_array_equal(
         xp.tensordot(a, b, axes=axes).compute(), np.tensordot(x, y, axes=axes)
     )

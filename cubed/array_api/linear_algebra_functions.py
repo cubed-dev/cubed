@@ -10,6 +10,7 @@ from cubed.array_api.manipulation_functions import (
 )
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import blockwise, reduction, squeeze
+from cubed.vendor.dask.array.utils import validate_axis
 
 
 def matmul(x1, x2, /, split_every=None):
@@ -122,6 +123,9 @@ def tensordot(x1, x2, /, *, axes=2, split_every=None):
         x1_axes = tuple(x1_axes)
     if isinstance(x2_axes, list):
         x2_axes = tuple(x2_axes)
+
+    x1_axes = validate_axis(x1_axes, x1.ndim)
+    x2_axes = validate_axis(x2_axes, x2.ndim)
 
     dtype = result_type(x1, x2)
 
