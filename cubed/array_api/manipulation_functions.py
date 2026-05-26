@@ -115,8 +115,10 @@ def concat(arrays, /, *, axis=0, chunks=None):
 
     a = arrays[0]
 
-    # check arrays all have same shape (except in the dimension specified by axis)
     ndim = a.ndim
+    axis = validate_axis(axis, ndim)
+
+    # check arrays all have same shape (except in the dimension specified by axis)
     if not all(
         i == axis or all(x.shape[i] == arrays[0].shape[i] for x in arrays)
         for i in range(ndim)
@@ -142,7 +144,6 @@ def concat(arrays, /, *, axis=0, chunks=None):
     offsets = [0] + list(accumulate([a.shape[axis] for a in arrays], add))
     in_shapes = tuple(array.shape for array in arrays)
 
-    axis = validate_axis(axis, ndim)
     shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
     dtype = a.dtype
     if chunks is None:

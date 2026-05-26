@@ -579,6 +579,7 @@ def test_concat_incompatible_shapes(spec):
     ):
         xp.concat([a, b], axis=0)
     xp.concat([a, b], axis=1)  # OK
+    xp.concat([a, b], axis=-1)  # OK
 
 
 def test_concat_mixed_dtypes(spec):
