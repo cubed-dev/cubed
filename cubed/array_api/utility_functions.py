@@ -1,5 +1,4 @@
 from cubed.array.overlap import map_overlap
-from cubed.array_api.creation_functions import asarray
 from cubed.array_api.manipulation_functions import concat
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
@@ -8,8 +7,6 @@ from cubed.vendor.dask.array.utils import validate_axis
 
 
 def all(x, /, *, axis=None, keepdims=False, split_every=None):
-    if x.size == 0:
-        return asarray(True, dtype=x.dtype)
     return reduction(
         x,
         nxp.all,
@@ -21,8 +18,6 @@ def all(x, /, *, axis=None, keepdims=False, split_every=None):
 
 
 def any(x, /, *, axis=None, keepdims=False, split_every=None):
-    if x.size == 0:
-        return asarray(False, dtype=x.dtype)
     return reduction(
         x,
         nxp.any,

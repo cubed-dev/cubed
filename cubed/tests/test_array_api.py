@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import zarr
 
 import cubed
 import cubed.array_api as xp
@@ -12,6 +13,8 @@ from cubed.tests.utils import (
     MODAL_EXECUTORS,
     skip_if_cupy,
 )
+
+ZARR_PYTHON_V2 = zarr.__version__[0] == "2"
 
 
 @pytest.fixture
@@ -392,7 +395,7 @@ def test_index_slice_unsupported_step(spec):
         a[::-1]
 
 
-@pytest.mark.parametrize("axis", [0, 1])
+@pytest.mark.parametrize("axis", [0, 1, -1, -2])
 @skip_if_cupy  # ndindex with a cupy.ndarray
 def test_take(spec, axis):
     a = xp.asarray(
@@ -425,6 +428,13 @@ def test_matmul(spec, executor):
     y = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
     expected = np.matmul(x, y)
     assert_array_equal(c.compute(executor=executor), expected)
+
+
+def test_matmul_incompatible_inner_dims(spec):
+    a = xp.ones((3, 4), chunks=(2, 2), spec=spec)
+    b = xp.ones((3, 4), chunks=(2, 2), spec=spec)
+    with pytest.raises(ValueError, match="matmul: dimension mismatch"):
+        xp.matmul(a, b)
 
 
 @pytest.mark.cloud
@@ -478,12 +488,21 @@ def test_outer(spec, executor):
     assert_array_equal(c.compute(executor=executor), np.outer([0, 1, 2], [10, 50, 100]))
 
 
-@pytest.mark.parametrize("axes", [1, (1, 0)])
-def test_tensordot(axes):
-    x = np.arange(400).reshape((20, 20))
-    a = xp.asarray(x, chunks=(5, 4))
-    y = np.arange(200).reshape((20, 10))
-    b = xp.asarray(y, chunks=(4, 5))
+@pytest.mark.parametrize(
+    ("x_shape", "y_shape", "x_chunks", "y_chunks", "axes"),
+    [
+        ((20, 20), (20, 10), (5, 4), (4, 5), 1),
+        ((20, 20), (20, 10), (5, 4), (4, 5), (1, 0)),
+        # negative axes on 3D arrays
+        ((2, 3, 4), (5, 4, 3), (2, 3, 2), (3, 2, 3), ((-1,), (1,))),
+        ((2, 3, 4), (5, 4, 3), (2, 3, 2), (3, 2, 3), ((-1,), (-2,))),
+    ],
+)
+def test_tensordot(x_shape, y_shape, x_chunks, y_chunks, axes):
+    x = np.arange(int(np.prod(x_shape))).reshape(x_shape)
+    a = xp.asarray(x, chunks=x_chunks)
+    y = np.arange(int(np.prod(y_shape))).reshape(y_shape)
+    b = xp.asarray(y, chunks=y_chunks)
     assert_array_equal(
         xp.tensordot(a, b, axes=axes).compute(), np.tensordot(x, y, axes=axes)
     )
@@ -579,6 +598,24 @@ def test_concat_incompatible_shapes(spec):
     ):
         xp.concat([a, b], axis=0)
     xp.concat([a, b], axis=1)  # OK
+    xp.concat([a, b], axis=-1)  # OK
+
+
+def test_concat_mixed_dtypes(spec):
+    a = xp.asarray([1, 2, 3], dtype=xp.int32, spec=spec)
+    b = xp.asarray([4.0, 5.0, 6.0], dtype=xp.float64, spec=spec)
+    c = xp.concat([a, b])
+    assert c.dtype == xp.float64
+    assert_array_equal(c.compute(), np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]))
+
+
+def test_concat_input_larger_than_target_chunks(spec):
+    # Regression: _chunk_slices used target chunksize when computing within-chunk offsets,
+    # giving wrong values when an input array has a larger chunksize than the target output.
+    a = xp.asarray(np.arange(10), chunks=(10,), spec=spec)  # single chunk of 10
+    b = xp.asarray(np.arange(10, 15), chunks=(5,), spec=spec)
+    c = xp.concat([a, b], chunks=(5,))  # target chunksize 5, but a has chunksize 10
+    assert_array_equal(c.compute(), np.arange(15))
 
 
 @pytest.mark.parametrize("axis", [0, 1, (0, 1), (2, 0)])
@@ -613,6 +650,15 @@ def test_flip(executor, shape, chunks, axis):
         b.compute(executor=executor),
         np.flip(x, axis=axis),
     )
+
+
+
+
+@pytest.mark.skipif(ZARR_PYTHON_V2, reason="fails with Zarr v2")
+def test_flip_zero_size_dim(spec):
+    x = np.ones((0, 4))
+    a = xp.asarray(x, chunks=(1, 2), spec=spec)
+    assert_array_equal(xp.flip(a, axis=0).compute(), np.flip(x, axis=0))
 
 
 def test_moveaxis(spec):
@@ -734,6 +780,14 @@ def test_stack(spec, executor):
     )
 
 
+def test_stack_mixed_dtypes(spec):
+    a = xp.asarray([1, 2, 3], dtype=xp.int32, spec=spec)
+    b = xp.asarray([4.0, 5.0, 6.0], dtype=xp.float64, spec=spec)
+    c = xp.stack([a, b])
+    assert c.dtype == xp.float64
+    assert_array_equal(c.compute(), np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]))
+
+
 @pytest.mark.parametrize("repetitions", [(2,), (2, 5), (2, 5, 3)])
 def test_tile(spec, repetitions):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
@@ -771,6 +825,20 @@ def test_unstack_single_array(spec):
     assert_array_equal(b.compute(), np.full((4, 6), 1))
 
 
+def test_unstack_zero_size_dim(spec):
+    # Regression found by Hypothesis
+
+    # Case 1: one zero-size dim — rechunk fails due to wrong chunks on surviving axis
+    a = xp.zeros((0, 2, 1), chunks=(0, 2, 1), spec=spec)
+    (b,) = xp.unstack(a, axis=-1)
+    assert_array_equal((b == a[:, :, 0]).compute(), np.zeros((0, 2), dtype=bool))
+
+    # Case 2: two zero-size dims — immediate chunk/shape dimension mismatch
+    a = xp.zeros((0, 0, 1), chunks=(0, 0, 1), spec=spec)
+    (b,) = xp.unstack(a, axis=-1)
+    assert_array_equal((b == a[:, :, 0]).compute(), np.zeros((0, 0), dtype=bool))
+
+
 # Searching functions
 
 
@@ -790,6 +858,13 @@ def test_argmax_axis_0(spec):
         b.compute(),
         np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmax(axis=0),
     )
+
+def test_argmax_keepdims(spec):
+    # Regression: argmax with axis=None, keepdims=True returned shape () instead of (1,)*ndim
+    a = xp.asarray([[11, 12, 13], [11, 11, 14], [10, 13, 11]], chunks=(2, 2), spec=spec)
+    b = xp.argmax(a, keepdims=True)
+    assert b.shape == (1, 1)
+    assert_array_equal(b.compute(), np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]]).argmax(keepdims=True))
 
 
 def test_argmin_axis_0(spec):
@@ -1042,6 +1117,7 @@ def test_all_zero_dimension(spec, executor):
     b = xp.all(a)
     assert b.ndim == 0
     assert b.size == 1
+    assert b.dtype == xp.bool
     assert b.compute(executor=executor)
 
 

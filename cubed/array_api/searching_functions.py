@@ -11,9 +11,12 @@ def argmax(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in argmax")
     if axis is None:
+        out_shape = (1,) * x.ndim if keepdims else ()
         x = reshape(x, (-1,))
-        axis = 0
-        keepdims = False
+        out = arg_reduction(
+            x, nxp.argmax, axis=0, keepdims=False, split_every=split_every
+        )
+        return reshape(out, out_shape)
     return arg_reduction(
         x,
         nxp.argmax,
@@ -27,9 +30,12 @@ def argmin(x, /, *, axis=None, keepdims=False, split_every=None):
     if x.dtype not in _real_numeric_dtypes:
         raise TypeError("Only real numeric dtypes are allowed in argmin")
     if axis is None:
+        out_shape = (1,) * x.ndim if keepdims else ()
         x = reshape(x, (-1,))
-        axis = 0
-        keepdims = False
+        out = arg_reduction(
+            x, nxp.argmin, axis=0, keepdims=False, split_every=split_every
+        )
+        return reshape(out, out_shape)
     return arg_reduction(
         x,
         nxp.argmin,

@@ -101,7 +101,10 @@ def concat(arrays, /, *, axis=0, chunks=None):
         raise ValueError("Need array(s) to concat")
 
     if len({a.dtype for a in arrays}) > 1:
-        raise ValueError("concat inputs must all have the same dtype")
+        from cubed.array_api.data_type_functions import astype, result_type
+
+        dtype = result_type(*arrays)
+        arrays = [astype(a, dtype) if a.dtype != dtype else a for a in arrays]
 
     if axis is None:
         arrays = [flatten(array) for array in arrays]
@@ -112,8 +115,10 @@ def concat(arrays, /, *, axis=0, chunks=None):
 
     a = arrays[0]
 
-    # check arrays all have same shape (except in the dimension specified by axis)
     ndim = a.ndim
+    axis = validate_axis(axis, ndim)
+
+    # check arrays all have same shape (except in the dimension specified by axis)
     if not all(
         i == axis or all(x.shape[i] == arrays[0].shape[i] for x in arrays)
         for i in range(ndim)
@@ -138,8 +143,8 @@ def concat(arrays, /, *, axis=0, chunks=None):
     # offsets along axis for the start of each array
     offsets = [0] + list(accumulate([a.shape[axis] for a in arrays], add))
     in_shapes = tuple(array.shape for array in arrays)
+    in_chunksizes = tuple(array.chunksize for array in arrays)
 
-    axis = validate_axis(axis, ndim)
     shape = a.shape[:axis] + (offsets[-1],) + a.shape[axis + 1 :]
     dtype = a.dtype
     if chunks is None:
@@ -197,6 +202,7 @@ def concat(arrays, /, *, axis=0, chunks=None):
         axis=axis,
         offsets=offsets,
         in_shapes=in_shapes,
+        in_chunksizes=in_chunksizes,
     )
 
 
@@ -208,6 +214,7 @@ def _read_concat_chunk(
     axis=None,
     offsets=None,
     in_shapes=None,
+    in_chunksizes=None,
     block_id=None,
 ):
     # determine the start and stop indexes for this block along the axis dimension
@@ -221,7 +228,15 @@ def _read_concat_chunk(
     for array, (lchunk_selection, lout_selection) in zip(
         arrays,
         _chunk_slices(
-            offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
+            offsets,
+            start,
+            stop,
+            target_chunks,
+            chunksize,
+            in_shapes,
+            in_chunksizes,
+            axis,
+            block_id,
         ),
     ):
         if IS_IMMUTABLE_ARRAY:
@@ -243,7 +258,15 @@ def _array_slices(offsets, start, stop):
 
 
 def _chunk_slices(
-    offsets, start, stop, target_chunks, chunksize, in_shapes, axis, block_id
+    offsets,
+    start,
+    stop,
+    target_chunks,
+    chunksize,
+    in_shapes,
+    in_chunksizes,
+    axis,
+    block_id,
 ):
     """Return pairs of chunk slices to slice input array chunks and output concatenated chunk."""
 
@@ -256,7 +279,8 @@ def _chunk_slices(
 
     for ai, sl in _array_slices(offsets, start, stop):
         key = tuple(sl if i == axis else k for i, k in enumerate(key))
-        indexer = _create_zarr_indexer(key, in_shapes[ai], chunksize)
+        # use the actual input chunksize, not the target, so within-chunk offsets are correct
+        indexer = _create_zarr_indexer(key, in_shapes[ai], in_chunksizes[ai])
         for cp in indexer:
             lout_selection_with_offset = tuple(
                 sl
@@ -340,7 +364,7 @@ def flip(x, /, *, axis=None):
 def _flip_num_input_blocks(axis, shape, chunksizes):
     num = 1
     for ax in axis:
-        if shape[ax] % chunksizes[ax] != 0:
+        if chunksizes[ax] > 0 and shape[ax] % chunksizes[ax] != 0:
             num *= 2
     return num
 
@@ -549,18 +573,21 @@ def roll(x, /, shift, *, axis=None):
 
 
 def stack(arrays, /, *, axis=0):
+    from cubed.array_api.data_type_functions import astype, result_type
+
     if not arrays:
         raise ValueError("Need array(s) to stack")
 
     # TODO: check arrays all have same shape
-    # TODO: type promotion
     # TODO: unify chunks
 
     a = arrays[0]
 
     axis = validate_axis(axis, a.ndim + 1)
     shape = a.shape[:axis] + (len(arrays),) + a.shape[axis:]
-    dtype = a.dtype
+    dtype = result_type(*arrays)
+    if len({a.dtype for a in arrays}) > 1:
+        arrays = [astype(a, dtype) if a.dtype != dtype else a for a in arrays]
     chunks = a.chunks[:axis] + ((1,) * len(arrays),) + a.chunks[axis:]
 
     array_names = [a.name for a in arrays]

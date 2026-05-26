@@ -80,14 +80,19 @@ def index(x, key):
 
     shape = idx.newshape(x.shape)
 
-    if shape == x.shape:
+    has_integer_array = any(isinstance(ia, ndindex.IntegerArray) for ia in idx.args)
+    if shape == x.shape and not has_integer_array:
         # no op case (except possibly newaxis applied below)
         out = x
     elif array_size(shape) == 0:
         # empty output case
         from cubed.array_api.creation_functions import empty
 
-        chunks = tuple(c for c in x.chunksize if c > 0)
+        chunks = tuple(
+            c
+            for ia, c in zip(idx.args, x.chunksize)
+            if not isinstance(ia, ndindex.Integer)
+        )
         out = empty(shape, dtype=x.dtype, chunks=chunks, spec=x.spec)
     else:
         dtype = x.dtype

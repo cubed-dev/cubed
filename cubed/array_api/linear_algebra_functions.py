@@ -10,6 +10,7 @@ from cubed.array_api.manipulation_functions import (
 )
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import blockwise, reduction, squeeze
+from cubed.vendor.dask.array.utils import validate_axis
 
 
 def matmul(x1, x2, /, split_every=None):
@@ -33,6 +34,11 @@ def matmul(x1, x2, /, split_every=None):
         x1 = expand_dims(x1, tuple(range(x2.ndim - x1.ndim)))
     elif x1.ndim > x2.ndim:
         x2 = expand_dims(x2, tuple(range(x1.ndim - x2.ndim)))
+
+    if x1.shape[-1] != x2.shape[-2]:
+        raise ValueError(
+            f"matmul: dimension mismatch, x1.shape[-1]={x1.shape[-1]}, x2.shape[-2]={x2.shape[-2]}"
+        )
 
     out_ind = tuple(range(x1.ndim + 1))
     x1_ind = tuple(range(x1.ndim))
@@ -117,6 +123,9 @@ def tensordot(x1, x2, /, *, axes=2, split_every=None):
         x1_axes = tuple(x1_axes)
     if isinstance(x2_axes, list):
         x2_axes = tuple(x2_axes)
+
+    x1_axes = validate_axis(x1_axes, x1.ndim)
+    x2_axes = validate_axis(x2_axes, x2.ndim)
 
     dtype = result_type(x1, x2)
 
