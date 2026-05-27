@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4a7fe41e"></script>
+    <script src="../_static/documentation_options.js?v=28798464"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Executors" href="executors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="8653f37
+  <meta name="docsearch:version" content="16e1697
 " />
   </head>
   
@@ -398,10 +398,6 @@
 <p>Cubed uses the <a class="reference external" href="https://github.com/zarr-developers/zarr-python"><code class="docutils literal notranslate"><span class="pre">zarr-python</span></code></a> library for reading and writing intermediate Zarr data, but it is possible to override this and use another Zarr library by setting the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable.</p>
 <p>To use the <a class="reference external" href="https://github.com/zarrs/zarrs-python"><code class="docutils literal notranslate"><span class="pre">zarrs-python</span></code></a> Rust implementation, install the <code class="docutils literal notranslate"><span class="pre">zarrs</span></code> Python package and set the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">zarrs-python</span></code>:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUBED_STORAGE_NAME</span><span class="o">=</span>zarrs-python
-</pre></div>
-</div>
-<p>To use <a class="reference external" href="https://google.github.io/tensorstore/">Tensorstore</a>, install the <code class="docutils literal notranslate"><span class="pre">tensorstore</span></code> Python package and set the <code class="docutils literal notranslate"><span class="pre">CUBED_STORAGE_NAME</span></code> environment variable to <code class="docutils literal notranslate"><span class="pre">tensorstore</span></code>:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUBED_STORAGE_NAME</span><span class="o">=</span>tensorstore
 </pre></div>
 </div>
 <p>For <code class="docutils literal notranslate"><span class="pre">zarr-python</span></code> v3 only, you can use Zarr’s <a class="reference external" href="https://zarr.readthedocs.io/en/main/api/zarr/storage/index.html#zarr.storage.ObjectStore"><code class="docutils literal notranslate"><span class="pre">ObjectStore</span></code></a> which uses the Rust-based <a class="reference external" href="https://developmentseed.org/obstore/latest/"><code class="docutils literal notranslate"><span class="pre">obstore</span></code></a>, by setting the <code class="docutils literal notranslate"><span class="pre">storage_options.use_obstore</span></code> <a class="reference internal" href="../configuration.html"><span class="std std-doc">configuration</span></a> option to <code class="docutils literal notranslate"><span class="pre">True</span></code>, as illustrated in this YAML file:</p>
