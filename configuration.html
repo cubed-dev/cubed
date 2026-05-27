@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=28798464"></script>
+    <script src="_static/documentation_options.js?v=e1df603c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Python Array API" href="array-api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="16e1697
+  <meta name="docsearch:version" content="093092f
 " />
   </head>
   
@@ -526,8 +526,8 @@ The Cubed <a class="reference internal" href="examples/index.html"><span class="
 <td><p>Options to pass to the executor on construction. See below for possible options for each executor.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">zarr_compressor</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></td>
-<td><p>The compressor used by Zarr for intermediate data. If not specified, or set to <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code>, Zarr will use the default Blosc compressor. If set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression using Numcodecs.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code></p></td>
+<td><p>The compressor used by Zarr for intermediate data. If not specified, or set to <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, Zarr will use the default Blosc compressor. If set to <code class="docutils literal notranslate"><span class="pre">None</span></code>, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression.</p></td>
 </tr>
 </tbody>
 </table>
