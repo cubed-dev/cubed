@@ -47,7 +47,7 @@ def open_zarr_v3_array(
     **kwargs,
 ):
     # use obstore if requested
-    storage_options = kwargs.get("storage_options", None)
+    storage_options = kwargs.pop("storage_options", None)
     if storage_options is not None and storage_options.get("use_obstore", False):
         import obstore as obs
         from zarr.storage import ObjectStore
@@ -66,14 +66,23 @@ def open_zarr_v3_array(
         chunks = (chunks,)
 
     if dtype is None or not hasattr(dtype, "fields") or dtype.fields is None:
-        return zarr.open(
-            store=store,
-            mode=mode,
-            shape=shape,
-            dtype=dtype,
-            chunks=chunks,
-            path=path,
-        )
+        if mode in ("r", "r+"):
+            # ignore type warning since Zarr can handle path=None
+            return zarr.open_array(store=store, path=path)  # type: ignore[arg-type]
+
+        try:
+            return zarr.create_array(
+                store=store,
+                shape=shape,
+                dtype=dtype,
+                chunks=chunks,
+                name=path,
+                **kwargs,
+            )
+        except zarr.errors.ContainsArrayError as e:
+            if mode == "a":
+                return zarr.open_array(store=store, path=path)  # type: ignore[arg-type]
+            raise e
 
     assert mode is not None
     group = zarr.open_group(store=store, mode=mode, path=path)
@@ -91,5 +100,6 @@ def open_zarr_v3_array(
                 shape=shape,
                 dtype=field_dtype,
                 chunks=chunks,
+                **kwargs,
             )
     return ret

@@ -217,7 +217,7 @@ def blockwise(
     target_name: str,
     target_path: Optional[str] = None,
     storage_options: Optional[Dict[str, Any]] = None,
-    compressor: Union[dict, str, None] = "default",
+    compressor: Union[dict, str, None] = "auto",
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
@@ -334,7 +334,7 @@ def general_blockwise(
     target_names: List[str],
     target_paths: Optional[List[str]] = None,
     storage_options: Optional[Dict[str, Any]] = None,
-    compressor: Union[dict, str, None] = "default",
+    compressor: Union[dict, str, None] = "auto",
     shapes: List[T_Shape],
     dtypes: List[T_DType],
     chunkss: List[T_Chunks],
@@ -428,7 +428,7 @@ def general_blockwise(
                 chunks=target_chunks_ or chunksize,
                 path=target_names[i],  # use array name for path within store
                 storage_options=storage_options,
-                compressor=compressor,
+                compressors=compressor,
             )
         target_arrays.append(ta)
 

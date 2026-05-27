@@ -132,7 +132,7 @@ These properties can be passed directly to the {py:class}`Spec <cubed.Spec>` con
 | `reserved_mem`     | `"100MB"`         | The memory reserved on a worker for non-data use when running a task                                                                    |
 | `executor_name`    | `"threads"`       | The executor for running computations. One of `"single-threaded"`, `"threads"`, `"processes"`, `"beam"`, `"coiled"`, `"dask"`, `"lithops"`, `"modal"`.  |
 | `executor_options` | `None`            | Options to pass to the executor on construction. See below for possible options for each executor.                                      |
-| `zarr_compressor`  | `"default"`| The compressor used by Zarr for intermediate data. If not specified, or set to `"default"`, Zarr will use the default Blosc compressor. If set to `None`, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression using Numcodecs. |
+| `zarr_compressor`  | `"auto"`| The compressor used by Zarr for intermediate data. If not specified, or set to `"auto"`, Zarr will use the default Blosc compressor. If set to `None`, compression is disabled, which can be a good option when using local storage. Use a dictionary (or nested YAML) to configure arbitrary compression. |
 
 ### Executor options
 

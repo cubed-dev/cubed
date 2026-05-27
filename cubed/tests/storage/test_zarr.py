@@ -1,12 +1,9 @@
 import pytest
-import zarr
-from numcodecs.registry import get_codec
+from zarr.codecs import BloscCodec, BytesCodec, ZstdCodec
 
 from cubed import config
 from cubed.storage.store import open_storage_array
 from cubed.storage.zarr import lazy_zarr_array
-
-ZARR_PYTHON_V3 = zarr.__version__[0] == "3"
 
 
 def test_lazy_zarr_array(tmp_path):
@@ -22,30 +19,41 @@ def test_lazy_zarr_array(tmp_path):
     arr.open()
 
 
-@pytest.mark.skipif(
-    ZARR_PYTHON_V3, reason="setting zarr compressor not yet possible for Zarr Python v3"
-)
 @pytest.mark.parametrize(
-    "compressor",
+    ("compressor", "expected_codecs"),
     [
-        None,
-        {"id": "zstd", "level": 1},
-        {"id": "blosc", "cname": "lz4", "clevel": 2, "shuffle": -1},
+        (None, (BytesCodec(),)),
+        ("auto", (BytesCodec(), ZstdCodec())),
+        (
+            {"name": "zstd", "configuration": {"level": 1}},
+            (BytesCodec(), ZstdCodec(level=1)),
+        ),
+        (
+            {
+                "name": "blosc",
+                "configuration": {
+                    "cname": "lz4",
+                    "clevel": 2,
+                    "shuffle": "shuffle",
+                },
+            },
+            (
+                BytesCodec(),
+                BloscCodec(cname="lz4", clevel=2, shuffle="shuffle", typesize=8),
+            ),
+        ),
     ],
 )
-def test_compression(tmp_path, compressor):
+def test_compressor(tmp_path, compressor, expected_codecs):
     zarr_path = tmp_path / "lazy.zarr"
 
     arr = lazy_zarr_array(
-        zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2), compressor=compressor
+        zarr_path, shape=(3, 3), dtype=int, chunks=(2, 2), compressors=compressor
     )
     arr.create()
 
-    # open with zarr python (for zarr python v2)
+    # open with zarr python
     with config.set({"storage_name": "zarr-python"}):
         z = open_storage_array(zarr_path, mode="r")
 
-    if compressor is None:
-        assert z.compressor is None
-    else:
-        assert z.compressor == get_codec(compressor)
+    assert z.metadata.codecs == expected_codecs

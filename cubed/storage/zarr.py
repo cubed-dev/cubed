@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import zarr
 
@@ -30,7 +30,9 @@ class LazyZarrArray(ArrayMetadata):
         self.path = path
         self.kwargs = kwargs
 
-    def create(self, mode: str = "w-") -> zarr.Array:
+    def create(
+        self, mode: Optional[Literal["r", "r+", "a", "w", "w-"]] = "w-"
+    ) -> zarr.Array:
         """Create the Zarr array in storage.
 
         The Zarr array's metadata is initialized in the backing store, and any
