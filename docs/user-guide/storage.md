@@ -38,12 +38,6 @@ To use the [`zarrs-python`](https://github.com/zarrs/zarrs-python) Rust implemen
 export CUBED_STORAGE_NAME=zarrs-python
 ```
 
-To use [Tensorstore](https://google.github.io/tensorstore/), install the `tensorstore` Python package and set the `CUBED_STORAGE_NAME` environment variable to `tensorstore`:
-
-```shell
-export CUBED_STORAGE_NAME=tensorstore
-```
-
 For `zarr-python` v3 only, you can use Zarr's [`ObjectStore`](https://zarr.readthedocs.io/en/main/api/zarr/storage/index.html#zarr.storage.ObjectStore) which uses the Rust-based [`obstore`](https://developmentseed.org/obstore/latest/), by setting the `storage_options.use_obstore` [configuration](../configuration.md) option to `True`, as illustrated in this YAML file:
 
 ```yaml

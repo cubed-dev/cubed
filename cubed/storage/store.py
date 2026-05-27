@@ -6,7 +6,7 @@ from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
 
 def get_storage_name() -> str:
     # get storage name from top-level config
-    # e.g. set globally with CUBED_STORAGE_NAME=tensorstore
+    # e.g. set globally with CUBED_STORAGE_NAME=zarrs-python
     storage_name = config.get("storage_name", None)
 
     if storage_name is None:
@@ -35,13 +35,6 @@ def is_storage_array(obj) -> bool:
         from cubed.storage.stores.zarr_python_v3 import ZarrV3ArrayGroup
 
         return isinstance(obj, (zarr.Array, ZarrV3ArrayGroup))
-    elif storage_name == "tensorstore":
-        from cubed.storage.stores.tensorstore import (
-            TensorStoreArray,
-            TensorStoreGroup,
-        )
-
-        return isinstance(obj, (TensorStoreArray, TensorStoreGroup))
     else:
         raise ValueError(f"Unrecognized storage name: {storage_name}")
 
@@ -80,10 +73,6 @@ def open_storage_array(
         from cubed.storage.stores.zarrs_python import open_zarr_v3_array
 
         open_func = open_zarr_v3_array
-    elif storage_name == "tensorstore":
-        from cubed.storage.stores.tensorstore import open_tensorstore_array
-
-        open_func = open_tensorstore_array
     else:
         raise ValueError(f"Unrecognized storage name: {storage_name}")
 

@@ -41,7 +41,7 @@ def test_compression(tmp_path, compressor):
     )
     arr.create()
 
-    # open with zarr python (for zarr python v2 and tensorstore)
+    # open with zarr python (for zarr python v2)
     with config.set({"storage_name": "zarr-python"}):
         z = open_storage_array(zarr_path, mode="r")
 
