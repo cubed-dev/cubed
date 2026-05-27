@@ -176,4 +176,4 @@ jobs:
 
           EOF
 
-          CUBED_BACKEND_ARRAY_API_MODULE=array_api_compat.numpy pytest -v -rxXfEA --hypothesis-max-examples=2 --disable-data-dependent-shapes --disable-extension linalg --hypothesis-disable-deadline
+          CUBED_BACKEND_ARRAY_API_MODULE=array_api_compat.numpy pytest -v -rxXfEA --hypothesis-max-examples=${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '100' || '2' }} --disable-data-dependent-shapes --disable-extension linalg --hypothesis-disable-deadline
