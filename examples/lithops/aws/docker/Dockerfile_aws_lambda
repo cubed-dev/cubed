@@ -50,7 +50,7 @@ RUN unzip lithops_lambda.zip \
 
 RUN pip install \
         cubed \
-        s3fs
+        obstore
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD [ "handler.entry_point.lambda_handler" ]

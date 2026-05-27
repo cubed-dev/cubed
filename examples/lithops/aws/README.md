@@ -3,7 +3,7 @@
 ## Pre-requisites
 
 1. An AWS account, with Lambda and S3 enabled
-2. [Docker Desktop](https://docs.docker.com/get-docker/)
+2. A deployed Cubed Lithops runtime (see https://github.com/cubed-dev/cubed-lithops-runtime-builder-template)
 
 ## Set up
 
@@ -12,31 +12,24 @@
 ```shell
 conda create --name cubed-lithops-aws-examples -y python=3.12
 conda activate cubed-lithops-aws-examples
-pip install 'cubed[lithops-aws]'
-# or for obstore:
 pip install 'cubed[diagnostics]' 'lithops[aws]' obstore
 ```
 
-2. Configure Lithops with an [AWS Lambda compute backend](https://lithops-cloud.github.io/docs/source/compute_config/aws_lambda.html), and an [AWS S3 storage backend](https://lithops-cloud.github.io/docs/source/storage_config/aws_s3.html).
-   - Note: it may be useful to put the configuration in a different place to the default (e.g. `~/.lithops/config.aws`), and then call `export LITHOPS_CONFIG_FILE=~/.lithops/config.aws`
-   - Although optional, it is convenient to [configure Lithops logging](https://lithops-cloud.github.io/docs/source/configuration.html) by setting `log_filename` (to `lithops.log`, for example), so that messages are sent to a file, rather than the console.
-3. Create a new S3 bucket (called `cubed-<username>-temp`, for example) in the same region you chose when configuring Lambda and S3 for Lithops. This will be used for intermediate zarr data. Note that this is different to the bucket created when configuring Lithops, which just stores configuration data.
-4. Build a Lithops runtime image for Cubed (this will build and upload a Docker image, which can take a while, although it only needs to be done once).
-   - Note: if you are building on an arm64 machine (e.g. Apple Silicon) then make sure that your Lithops config file contains `architecture: arm64` under the `aws_lambda` section.
+2. Copy `.lithops/config` from your runtime builder repository to `~/.lithops/config`:
 
 ```shell
-# Note: change `s3fs` to `obstore` in the docker file to use obstore instead of fsspec
-lithops runtime build -b aws_lambda -f docker/Dockerfile_aws_lambda cubed-runtime
-lithops runtime deploy -b aws_lambda --memory 2000 --timeout 180 cubed-runtime # optional, will be done automatically on first use
+cp /path/to/cubed-lithops-runtime-builder/.lithops/config ~/.lithops/config
 ```
 
-5. Set file descriptor limit. Different systems have different limits, so this step may be needed to run the larger examples. You can check what the limit is on your system with `ulimit -n`. The following command will set the limit to 1024 for the current session.
+AWS credentials are read automatically from your [AWS CLI configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) — no credentials need to be added to the config file.
+
+3. Create an S3 bucket for Cubed's intermediate zarr data in the same region as your Lambda function. The `cubed.yaml` config uses `$USER` to name the bucket automatically, so just run:
 
 ```shell
-ulimit -n 1024
+aws s3 mb s3://cubed-$USER-temp --region us-east-1
 ```
 
-6. [Obstore only] Set AWS env variables
+4. Set AWS environment variables for obstore:
 
 ```shell
 export AWS_ACCESS_KEY_ID=...
@@ -50,21 +43,15 @@ Before running the examples, first change to the top-level examples directory (`
 
 ```shell
 export CUBED_CONFIG=$(pwd)/lithops/aws
-# or for obstore:
-export CUBED_CONFIG=$(pwd)/lithops/aws/cubed-obstore.yaml
 ```
 
 Then you can run the examples in the [docs](https://cubed-dev.github.io/cubed/examples/index.html).
 
 ## Cleaning up
 
-If you want to rebuild the Lithops runtime image you can delete the existing one by running
+To rebuild the runtime after updating dependencies, push a change to your runtime builder repository — the CI pipeline rebuilds and redeploys automatically.
 
-```shell
-lithops runtime delete -b aws_lambda -d cubed-runtime
-```
-
-Or you can remove everything (except config files) with
+To remove all Lithops resources (except config files):
 
 ```shell
 lithops clean -b aws_lambda
