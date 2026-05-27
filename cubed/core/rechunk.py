@@ -2,11 +2,17 @@
 
 import logging
 import warnings
+from dataclasses import dataclass
 from math import floor, prod
 from typing import List, Optional, Sequence
 
 import numpy as np
 
+from cubed.core.plan import FinalizedPlan
+from cubed.types import T_RegularChunks, T_Shape
+from cubed.utils import (
+    normalize_chunks,
+)
 from cubed.vendor.rechunker.algorithm import (
     MAX_STAGES,
     ExcessiveIOWarning,
@@ -231,3 +237,88 @@ def multistage_regular_rechunking_plan(
         f"consolidate_reads={consolidate_reads}, "
         f"consolidate_writes={consolidate_writes}"
     )
+
+
+@dataclass
+class RechunkCopy:
+    shape: T_Shape
+    """The shape of the array being rechunked."""
+
+    source_chunks: T_RegularChunks
+    """The chunks of the source array for this copy operation."""
+
+    copy_chunks: T_RegularChunks
+    """The chunks used for a single task for this copy operation."""
+
+    target_chunks: T_RegularChunks
+    """The chunks of the target array for this copy operation."""
+
+    source_aligned: Optional[bool] = None
+    """Are copy chunks aligned with source chunks?"""
+
+    target_aligned: Optional[bool] = None
+    """
+    Are copy chunks aligned with target chunks?
+    If not then irregular chunking must be used.
+    """
+
+
+@dataclass
+class RechunkPlan:
+    copy_ops: list[RechunkCopy]
+
+    def _repr_html_(self):
+        from cubed.diagnostics.widgets import get_template
+        from cubed.vendor.dask.array.svg import svg
+
+        table = []
+        for copy_op in self.copy_ops:
+            row = (
+                copy_op,
+                svg(normalize_chunks(copy_op.source_chunks, shape=copy_op.copy_chunks)),
+                svg(normalize_chunks(copy_op.target_chunks, shape=copy_op.copy_chunks)),
+            )
+            table.append(row)
+
+        return get_template("rechunk_plan.j2").render(table=table)
+
+
+@dataclass
+class RechunkPlanStats:
+    num_copy_ops: int
+    num_tasks: int
+    total_nbytes_written: int
+    max_task_iops: int
+
+    @classmethod
+    def from_plan(cls, rechunk_plan: RechunkPlan, plan: FinalizedPlan):
+        rechunks = [
+            (n, d)
+            for (n, d) in plan.dag.nodes(data=True)
+            if d.get("op_name", None) == "rechunk"
+        ]
+        num_task_iops = [
+            d["pipeline"].config.num_input_blocks[0]
+            + d["pipeline"].config.num_output_blocks[0]
+            for _, d in rechunks
+        ]
+
+        return cls(
+            num_copy_ops=len(rechunk_plan.copy_ops),
+            num_tasks=plan.num_tasks,
+            total_nbytes_written=plan.total_nbytes_written,
+            max_task_iops=max(num_task_iops),
+        )
+
+
+def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+    from cubed.core.ops import _rechunk_plan
+
+    copy_ops = []
+    source_chunks = x.chunksize
+    for copy_chunks, target_chunks in _rechunk_plan(
+        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+    ):
+        copy_ops.append(RechunkCopy(x.shape, source_chunks, copy_chunks, target_chunks))
+        source_chunks = target_chunks
+    return RechunkPlan(copy_ops)
