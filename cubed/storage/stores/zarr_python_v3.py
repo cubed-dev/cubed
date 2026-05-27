@@ -4,6 +4,12 @@ from typing import Literal, Optional
 import zarr
 
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_Store
+from cubed.utils import is_cloud_storage_path
+
+try:
+    import obstore
+except ImportError:
+    obstore = None  # type: ignore
 
 zarr.config.set(
     {
@@ -46,21 +52,35 @@ def open_zarr_v3_array(
     path: Optional[str] = None,
     **kwargs,
 ):
-    # use obstore if requested
+    # use obstore if explicitly requested, or if library is installed and store is a cloud store
     storage_options = kwargs.pop("storage_options", None)
-    if storage_options is not None and storage_options.get("use_obstore", False):
-        import obstore as obs
+    obstore_requested = storage_options is not None and storage_options.get(
+        "use_obstore", False
+    )
+    obstore_installed = obstore is not None
+    if obstore_requested and not obstore_installed:
+        raise RuntimeError(
+            "obstore was requested with 'use_obstore=True' but it is not installed"
+        )
+    use_obstore = obstore_requested or (
+        obstore_installed
+        and isinstance(store, (str, Path))
+        and is_cloud_storage_path(store)
+    )
+    if use_obstore:
         from zarr.storage import ObjectStore
 
         if isinstance(store, str):
             if "://" not in store:
                 p = Path(store)
-                store = ObjectStore(obs.store.from_url(p.as_uri(), mkdir=True))
+                store = ObjectStore(obstore.store.from_url(p.as_uri(), mkdir=True))
             else:
-                store = ObjectStore(obs.store.from_url(store))
+                store = ObjectStore(obstore.store.from_url(store))
         elif isinstance(store, Path):
             p = store
-            store = ObjectStore(obs.store.from_url(p.as_uri(), mkdir=True))
+            store = ObjectStore(obstore.store.from_url(p.as_uri(), mkdir=True))
+        else:
+            raise RuntimeError("Store must be a string or `Path` object for obstore")
 
     if isinstance(chunks, int):
         chunks = (chunks,)
