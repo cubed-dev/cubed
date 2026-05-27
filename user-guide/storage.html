@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e1df603c"></script>
+    <script src="../_static/documentation_options.js?v=d4f5c94b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Executors" href="executors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="093092f
+  <meta name="docsearch:version" content="cedcc27
 " />
   </head>
   
@@ -400,7 +400,7 @@
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CUBED_STORAGE_NAME</span><span class="o">=</span>zarrs-python
 </pre></div>
 </div>
-<p>For <code class="docutils literal notranslate"><span class="pre">zarr-python</span></code> v3 only, you can use Zarr’s <a class="reference external" href="https://zarr.readthedocs.io/en/main/api/zarr/storage/index.html#zarr.storage.ObjectStore"><code class="docutils literal notranslate"><span class="pre">ObjectStore</span></code></a> which uses the Rust-based <a class="reference external" href="https://developmentseed.org/obstore/latest/"><code class="docutils literal notranslate"><span class="pre">obstore</span></code></a>, by setting the <code class="docutils literal notranslate"><span class="pre">storage_options.use_obstore</span></code> <a class="reference internal" href="../configuration.html"><span class="std std-doc">configuration</span></a> option to <code class="docutils literal notranslate"><span class="pre">True</span></code>, as illustrated in this YAML file:</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">zarr-python</span></code>, if <a class="reference external" href="https://developmentseed.org/obstore/latest/"><code class="docutils literal notranslate"><span class="pre">obstore</span></code></a> is installed it will be used by default for cloud object stores. To enable it for other stores (e.g. the local filesystem), set the <code class="docutils literal notranslate"><span class="pre">storage_options.use_obstore</span></code> <a class="reference internal" href="../configuration.html"><span class="std std-doc">configuration</span></a> option to <code class="docutils literal notranslate"><span class="pre">True</span></code>, as illustrated in this YAML file:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">storage_options</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">use_obstore</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>

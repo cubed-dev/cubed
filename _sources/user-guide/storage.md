@@ -38,7 +38,7 @@ To use the [`zarrs-python`](https://github.com/zarrs/zarrs-python) Rust implemen
 export CUBED_STORAGE_NAME=zarrs-python
 ```
 
-For `zarr-python` v3 only, you can use Zarr's [`ObjectStore`](https://zarr.readthedocs.io/en/main/api/zarr/storage/index.html#zarr.storage.ObjectStore) which uses the Rust-based [`obstore`](https://developmentseed.org/obstore/latest/), by setting the `storage_options.use_obstore` [configuration](../configuration.md) option to `True`, as illustrated in this YAML file:
+For `zarr-python`, if [`obstore`](https://developmentseed.org/obstore/latest/) is installed it will be used by default for cloud object stores. To enable it for other stores (e.g. the local filesystem), set the `storage_options.use_obstore` [configuration](../configuration.md) option to `True`, as illustrated in this YAML file:
 
 ```yaml
 spec:
