@@ -1046,13 +1046,10 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=No
         )
     )
 
-    # Apply max_iops fan-out limit to last stage's write_chunks for both planners.
-    # For the regular planner, this is already applied internally so it's a no-op here.
-    if max_iops is not None and stages:
-        last_read, last_int, last_write = stages[-1]
-        limited_write = _limit_write_chunks_fan_out(last_write, target_chunks, max_iops)
-        if limited_write != last_write:
-            stages[-1] = (last_read, last_int, limited_write)
+    def _maybe_limit(copy_chunks, store_chunks):
+        if max_iops is None:
+            return copy_chunks
+        return _limit_write_chunks_fan_out(copy_chunks, store_chunks, max_iops)
 
     for i, stage in enumerate(stages):
         last_stage = i == len(stages) - 1
@@ -1062,11 +1059,11 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=No
         target_chunks_ = target_chunks if last_stage else write_chunks
 
         if read_chunks == write_chunks:
-            yield read_chunks, target_chunks_
+            yield _maybe_limit(read_chunks, target_chunks_), target_chunks_
         else:
-            yield read_chunks, int_chunks
+            yield _maybe_limit(read_chunks, int_chunks), int_chunks
             if last_stage:
-                yield write_chunks, target_chunks_
+                yield _maybe_limit(write_chunks, target_chunks_), target_chunks_
 
 
 def split_chunks(
