@@ -1,0 +1,43 @@
+<table>
+    <thead>
+        <tr>
+            <th>Stage</th>
+            <th>Source copy chunk</th>
+            <th>Target copy chunk</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in table %}
+        <tr>
+            <td>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th> Copy stage </th>
+                            <td> {{ loop.index }} </td>
+                        </tr>
+                        <tr>
+                            <th> Shape </th>
+                            <td> {{ row[0].shape }} </td>
+                        </tr>
+                        <tr>
+                            <th> Source chunks </th>
+                            <td> {{ row[0].source_chunks }} </td>
+                        </tr>
+                        <tr>
+                            <th> Copy chunks </th>
+                            <td> {{ row[0].copy_chunks }} </td>
+                        </tr>
+                        <tr>
+                            <th> Target chunks </th>
+                            <td> {{ row[0].target_chunks }} </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td> {{ row[1] }} </td>
+            <td> {{ row[2] }} </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

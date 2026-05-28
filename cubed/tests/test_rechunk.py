@@ -7,9 +7,11 @@ from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import _store_array, split_chunksizes
 from cubed.core.rechunk import (
+    RechunkPlanStats,
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
     multspace,
+    rechunk_plan,
     verify_chunk_compatibility,
 )
 from cubed.utils import itemsize
@@ -163,6 +165,26 @@ def test_rechunk_hypothesis_generated_bug_allow_irregular():
     b = a.rechunk((5, 146), allow_irregular=True)
 
     assert_array_equal(b.compute(), nxp.ones(shape))
+
+
+def test_rechunk_plan_viz():
+    rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
+    shape, source_chunks, target_chunks = rechunk_shapes
+
+    spec = cubed.Spec(allowed_mem=8000000 / 10)
+    a = xp.ones(shape, chunks=source_chunks, spec=spec)
+
+    rplan = rechunk_plan(a, target_chunks)
+    assert len(rplan.copy_ops) == 2
+    # check generating the repr doesn't raise an exception
+    rplan._repr_html_()
+
+    # check stats (without running the rechunk)
+    b = a.rechunk(target_chunks)
+    plan = b.plan()
+    stats = RechunkPlanStats.from_plan(rplan, plan)
+    assert stats.num_copy_ops == 2
+    assert stats.max_task_iops == 23
 
 
 @pytest.mark.parametrize(
