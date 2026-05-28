@@ -103,6 +103,29 @@ def calculate_regular_stage_chunks(
     return [tuple(chunks) for chunks in np.array(stages).T.tolist()]
 
 
+def _limit_write_chunks_fan_out(write_chunks, target_chunks, max_output_blocks):
+    """Reduce write_chunks so that fan-out (number of target chunks per write chunk) is at most max_output_blocks.
+
+    write_chunks must be multiples of target_chunks in each dimension (guaranteed by consolidate_chunks).
+    Greedily reduces the dimension with the largest ratio until the overall fan-out is within budget.
+    """
+    wc = list(write_chunks)
+    tc = list(target_chunks)
+    while True:
+        ratios = [w // t for w, t in zip(wc, tc)]
+        fan_out = prod(ratios)
+        if fan_out <= max_output_blocks:
+            break
+        best = max(range(len(wc)), key=lambda i: ratios[i])
+        if ratios[best] <= 1:
+            break  # already at minimum in every dimension
+        # Allocate as much of the remaining budget as possible to this dimension
+        other = fan_out // ratios[best]
+        new_ratio = max(1, max_output_blocks // other)
+        wc[best] = new_ratio * tc[best]
+    return tuple(wc)
+
+
 def _fix_copy_chunks(shape, copy_chunks, target_chunks):
     # if copy chunks are bigger than target chunks in a particular axis, then
     # round them down to the largest multiple of the target so they are aligned
@@ -121,6 +144,7 @@ def multistage_regular_rechunking_plan(
     max_mem: int,
     consolidate_reads: bool = True,
     consolidate_writes: bool = True,
+    max_iops: Optional[int] = None,
 ) -> _MultistagePlan:
     """Calculate a rechunking plan that can use multiple split/consolidate steps.
 
@@ -156,6 +180,10 @@ def multistage_regular_rechunking_plan(
             f"consolidate_write_chunks({shape}, {target_chunks}, {itemsize}, {max_mem})"
         )
         write_chunks = consolidate_chunks(shape, target_chunks, itemsize, max_mem)
+        if max_iops is not None:
+            write_chunks = _limit_write_chunks_fan_out(
+                write_chunks, target_chunks, max_iops
+            )
     else:
         write_chunks = tuple(target_chunks)
 
@@ -311,13 +339,13 @@ class RechunkPlanStats:
         )
 
 
-def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=None):
     from cubed.core.ops import _rechunk_plan
 
     copy_ops = []
     source_chunks = x.chunksize
     for copy_chunks, target_chunks in _rechunk_plan(
-        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular, max_iops=max_iops
     ):
         copy_ops.append(RechunkCopy(x.shape, source_chunks, copy_chunks, target_chunks))
         source_chunks = target_chunks

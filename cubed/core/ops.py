@@ -920,7 +920,7 @@ def _map_blocks(
     )
 
 
-def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
+def rechunk(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=None):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -935,13 +935,13 @@ def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
     """
     out = x
     for copy_chunks, target_chunks in _rechunk_plan(
-        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular, max_iops=max_iops
     ):
         out = _rechunk(out, copy_chunks, target_chunks, allow_irregular=allow_irregular)
     return out
 
 
-def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=None):
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
@@ -979,6 +979,7 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
         if allow_irregular
         else multistage_regular_rechunking_plan
     )
+    extra_kwargs = {} if allow_irregular else {"max_iops": max_iops}
     stages = plan_func(
         shape=x.shape,
         source_chunks=source_chunks,
@@ -986,6 +987,7 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
         itemsize=itemsize(x.dtype),
         min_mem=min_mem,
         max_mem=rechunker_max_mem,
+        **extra_kwargs,
     )
 
     for i, stage in enumerate(stages):
