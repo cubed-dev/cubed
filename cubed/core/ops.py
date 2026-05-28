@@ -1035,7 +1035,6 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=No
         if allow_irregular
         else multistage_regular_rechunking_plan
     )
-    extra_kwargs = {} if allow_irregular else {"max_iops": max_iops}
     stages = list(
         plan_func(
             shape=x.shape,
@@ -1044,7 +1043,6 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=No
             itemsize=itemsize(x.dtype),
             min_mem=min_mem,
             max_mem=rechunker_max_mem,
-            **extra_kwargs,
         )
     )
 
