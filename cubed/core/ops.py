@@ -28,7 +28,10 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
-from cubed.core.rechunk import multistage_regular_rechunking_plan
+from cubed.core.rechunk import (
+    _limit_write_chunks_fan_out,
+    multistage_regular_rechunking_plan,
+)
 from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
@@ -980,15 +983,25 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=No
         else multistage_regular_rechunking_plan
     )
     extra_kwargs = {} if allow_irregular else {"max_iops": max_iops}
-    stages = plan_func(
-        shape=x.shape,
-        source_chunks=source_chunks,
-        target_chunks=target_chunks,
-        itemsize=itemsize(x.dtype),
-        min_mem=min_mem,
-        max_mem=rechunker_max_mem,
-        **extra_kwargs,
+    stages = list(
+        plan_func(
+            shape=x.shape,
+            source_chunks=source_chunks,
+            target_chunks=target_chunks,
+            itemsize=itemsize(x.dtype),
+            min_mem=min_mem,
+            max_mem=rechunker_max_mem,
+            **extra_kwargs,
+        )
     )
+
+    # Apply max_iops fan-out limit to last stage's write_chunks for both planners.
+    # For the regular planner, this is already applied internally so it's a no-op here.
+    if max_iops is not None and stages:
+        last_read, last_int, last_write = stages[-1]
+        limited_write = _limit_write_chunks_fan_out(last_write, target_chunks, max_iops)
+        if limited_write != last_write:
+            stages[-1] = (last_read, last_int, limited_write)
 
     for i, stage in enumerate(stages):
         last_stage = i == len(stages) - 1
