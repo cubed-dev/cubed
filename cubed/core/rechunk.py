@@ -144,7 +144,6 @@ def multistage_regular_rechunking_plan(
     max_mem: int,
     consolidate_reads: bool = True,
     consolidate_writes: bool = True,
-    max_iops: Optional[int] = None,
 ) -> _MultistagePlan:
     """Calculate a rechunking plan that can use multiple split/consolidate steps.
 
@@ -180,10 +179,6 @@ def multistage_regular_rechunking_plan(
             f"consolidate_write_chunks({shape}, {target_chunks}, {itemsize}, {max_mem})"
         )
         write_chunks = consolidate_chunks(shape, target_chunks, itemsize, max_mem)
-        if max_iops is not None:
-            write_chunks = _limit_write_chunks_fan_out(
-                write_chunks, target_chunks, max_iops
-            )
     else:
         write_chunks = tuple(target_chunks)
 
