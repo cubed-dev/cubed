@@ -115,11 +115,17 @@ def open_zarr_v3_array(
             ret[field] = group[field]
         else:
             assert chunks is not None
-            ret[field] = group.create_array(
-                field,
-                shape=shape,
-                dtype=field_dtype,
-                chunks=chunks,
-                **kwargs,
-            )
+            try:
+                ret[field] = group.create_array(
+                    field,
+                    shape=shape,
+                    dtype=field_dtype,
+                    chunks=chunks,
+                    **kwargs,
+                )
+            except zarr.errors.ContainsArrayError as e:
+                if mode == "a":
+                    ret[field] = group[field]
+                else:
+                    raise e
     return ret
