@@ -923,7 +923,17 @@ def _map_blocks(
     )
 
 
-def rechunk(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=None):
+def _rechunker_max_mem(x):
+    """Max memory available per rechunk stage for the given array's spec."""
+    spec = x.spec
+    buffer_copies = get_buffer_copies(spec)
+    total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
+    return (spec.allowed_mem - spec.reserved_mem) // total_copies
+
+
+def rechunk(
+    x, chunks, *, min_mem=None, allow_irregular=False, max_iops=None, optimize=False
+):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -936,6 +946,14 @@ def rechunk(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=None):
     cubed.Array
         An array with the desired chunks.
     """
+    if optimize:
+        from cubed.core.rechunk import rechunk_plans
+
+        plan_set = rechunk_plans(
+            x, chunks, allow_irregular=allow_irregular, max_iops=max_iops
+        )
+        min_mem = plan_set._best_min_mem(max_iops=max_iops)
+
     out = x
     for copy_chunks, target_chunks in _rechunk_plan(
         x, chunks, min_mem=min_mem, allow_irregular=allow_irregular, max_iops=max_iops
@@ -963,17 +981,9 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=No
     # normalizing takes care of dict args for chunks
     target_chunks = to_chunksize(normalized_chunks)
 
-    spec = x.spec
     source_chunks = to_chunksize(normalize_chunks(x.chunks, x.shape, dtype=x.dtype))
 
-    # rechunker doesn't take account of uncompressed and compressed copies of the
-    # input and output array chunk/selection, so adjust appropriately:
-    #  1 input array plus copies to read that array from storage,
-    #  1 array for processing,
-    #  1 output array plus copies to write that array to storage
-    buffer_copies = get_buffer_copies(spec)
-    total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
-    rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
+    rechunker_max_mem = _rechunker_max_mem(x)
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
 

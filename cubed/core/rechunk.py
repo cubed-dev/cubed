@@ -345,3 +345,160 @@ def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False, max_iops=Non
         copy_ops.append(RechunkCopy(x.shape, source_chunks, copy_chunks, target_chunks))
         source_chunks = target_chunks
     return RechunkPlan(copy_ops)
+
+
+def _fmt_bytes(n):
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
+        if n < 1024:
+            return f"{n:.0f} {unit}"
+        n /= 1024
+    return f"{n:.0f} PB"
+
+
+def _pareto_filter(entries):
+    """Return non-dominated entries in (num_stages, total_nbytes_written, max_task_iops) space.
+
+    A plan is kept iff no other plan is at least as good on all three objectives
+    and strictly better on at least one.
+    """
+    pareto = []
+    for i, (_, s_i, _) in enumerate(entries):
+        dominated = any(
+            s_j.num_copy_ops <= s_i.num_copy_ops
+            and s_j.total_nbytes_written <= s_i.total_nbytes_written
+            and s_j.max_task_iops <= s_i.max_task_iops
+            and (
+                s_j.num_copy_ops < s_i.num_copy_ops
+                or s_j.total_nbytes_written < s_i.total_nbytes_written
+                or s_j.max_task_iops < s_i.max_task_iops
+            )
+            for j, (_, s_j, _) in enumerate(entries)
+            if j != i
+        )
+        if not dominated:
+            pareto.append(entries[i])
+    return sorted(pareto, key=lambda e: e[1].num_copy_ops)
+
+
+class RechunkPlanSet:
+    """A set of Pareto-optimal rechunk plans trading off stages against bytes written."""
+
+    def __init__(self, entries):
+        # entries: list of (RechunkPlan, RechunkPlanStats, min_mem), sorted by num_copy_ops
+        self._entries = entries
+
+    @property
+    def plans(self):
+        """List of (RechunkPlan, RechunkPlanStats) tuples, sorted by num_copy_ops."""
+        return [(p, s) for p, s, _ in self._entries]
+
+    def best(self, max_iops=None):
+        """Return (plan, stats) with minimum bytes written satisfying max_iops.
+
+        If no plan satisfies the constraint, warns and returns the plan with
+        the lowest achievable IOps.
+        """
+        p, s, _ = self._best_entry(max_iops=max_iops)
+        return p, s
+
+    def _best_min_mem(self, max_iops=None):
+        _, _, min_mem = self._best_entry(max_iops=max_iops)
+        return min_mem
+
+    def _best_entry(self, max_iops=None):
+        candidates = self._entries
+        if max_iops is not None:
+            satisfying = [e for e in candidates if e[1].max_task_iops <= max_iops]
+            if not satisfying:
+                best_achievable = min(candidates, key=lambda e: e[1].max_task_iops)
+                warnings.warn(
+                    f"No rechunk plan satisfies max_iops={max_iops}. "
+                    f"Falling back to plan with lowest IOps "
+                    f"({best_achievable[1].max_task_iops}).",
+                    UserWarning,
+                    stacklevel=3,
+                )
+                return best_achievable
+            candidates = satisfying
+        return min(candidates, key=lambda e: e[1].total_nbytes_written)
+
+    def _repr_html_(self):
+        rows = []
+        for _, stats, _ in self._entries:
+            rows.append(
+                f"<tr>"
+                f"<td>{stats.num_copy_ops}</td>"
+                f"<td>{stats.num_tasks:,}</td>"
+                f"<td>{_fmt_bytes(stats.total_nbytes_written)}</td>"
+                f"<td>{stats.max_task_iops}</td>"
+                f"</tr>"
+            )
+        header = (
+            "<thead><tr>"
+            "<th>Stages</th><th>Tasks</th><th>Written</th><th>Max IOps</th>"
+            "</tr></thead>"
+        )
+        return f"<table>{header}<tbody>{''.join(rows)}</tbody></table>"
+
+
+def rechunk_plans(x, chunks, *, allow_irregular=False, max_iops=None):
+    """Return a set of Pareto-optimal rechunk plans for the given array and target chunks.
+
+    Sweeps ``min_mem`` to discover plans with different stage counts, then
+    returns the non-dominated subset trading off stages against bytes written.
+
+    Parameters
+    ----------
+    x : cubed.Array
+        The source array.
+    chunks : tuple
+        The desired chunks after rechunking.
+    allow_irregular : bool, optional
+        If True, use the irregular rechunk planner. Default is False.
+    max_iops : int, optional
+        If given, apply a fan-out limit to all copy operations.
+
+    Returns
+    -------
+    RechunkPlanSet
+    """
+    from cubed.core.ops import _rechunker_max_mem
+    from cubed.core.ops import rechunk as ops_rechunk
+
+    rechunker_max_mem = _rechunker_max_mem(x)
+
+    # Log-spaced sweep including 0 (fewest stages) up to rechunker_max_mem (most stages)
+    min_mem_values = [0] + sorted(
+        set(int(v) for v in np.geomspace(1, rechunker_max_mem, 20))
+    )
+
+    seen = {}  # num_copy_ops -> (RechunkPlan, RechunkPlanStats, min_mem)
+    for min_mem in min_mem_values:
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                rplan = rechunk_plan(
+                    x,
+                    chunks,
+                    min_mem=min_mem,
+                    allow_irregular=allow_irregular,
+                    max_iops=max_iops,
+                )
+                b = ops_rechunk(
+                    x,
+                    chunks,
+                    min_mem=min_mem,
+                    allow_irregular=allow_irregular,
+                    max_iops=max_iops,
+                )
+                stats = RechunkPlanStats.from_plan(rplan, b.plan())
+        except Exception:
+            continue
+
+        key = stats.num_copy_ops
+        if key not in seen:
+            seen[key] = (rplan, stats, min_mem)
+
+    entries = [seen[k] for k in sorted(seen)]
+    entries = _pareto_filter(entries)
+    return RechunkPlanSet(entries)
