@@ -555,6 +555,18 @@ def test_compute_is_idempotent(spec, executor):
     assert_array_equal(b.compute(executor=executor), -np.ones((3, 3)))
 
 
+def test_compute_is_idempotent_structured_dtype(spec, executor):
+    # Regression: arg reductions use a structured dtype (zarr group with i/v fields);
+    # second compute raised ContainsArrayError because group fields weren't opened
+    # in append mode on re-creation. axis=None is needed to exercise the code path
+    # where the structured intermediate array is written to zarr (not fused away).
+    a = xp.asarray(np.arange(24).reshape(4, 6), chunks=(2, 3), spec=spec)
+    b = xp.argmin(a)
+    expected = np.arange(24).reshape(4, 6).argmin()
+    assert_array_equal(b.compute(executor=executor), expected)
+    assert_array_equal(b.compute(executor=executor), expected)
+
+
 def test_default_spec(executor):
     # default spec works for small computations
     a = xp.ones((3, 3), chunks=(2, 2))
