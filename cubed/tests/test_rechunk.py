@@ -7,11 +7,13 @@ from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import _store_array, split_chunksizes
 from cubed.core.rechunk import (
+    RechunkPlanSet,
     RechunkPlanStats,
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
     multspace,
     rechunk_plan,
+    rechunk_plans,
     verify_chunk_compatibility,
 )
 from cubed.utils import itemsize
@@ -302,3 +304,88 @@ def test_split_chunksizes():
     assert split_chunksizes(20, 5, 7) == (5, 2, 3, 4, 1, 5)
     # from hypothesis generated bug (above)
     assert split_chunksizes(1001, 38, 15)[:8] == (15, 15, 8, 7, 15, 15, 1, 14)
+
+
+def test_rechunk_plans_era5_tiny():
+    shape = (2480, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (2480, 10, 10)
+    spec = cubed.Spec(allowed_mem="2.5GB")
+
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    # No max_iops: natural plans — stages=2 (459 iops, 21 GB) and stages=3 (438 iops, 31 GB)
+    ps = rechunk_plans(a, target_chunks)
+    assert isinstance(ps, RechunkPlanSet)
+
+    plans = ps.plans
+    assert len(plans) == 2
+
+    # plans sorted by stage count ascending
+    stage_counts = [s.num_copy_ops for _, s in plans]
+    assert stage_counts == sorted(stage_counts)
+
+    # more stages → lower max_iops
+    iops_values = [s.max_task_iops for _, s in plans]
+    assert iops_values == sorted(iops_values, reverse=True)
+
+    # repr_html doesn't raise
+    ps._repr_html_()
+
+    # best() with no constraint picks minimum bytes (stages=2)
+    _, stats_best = ps.best()
+    assert stats_best.num_copy_ops == 2
+
+    # best(max_iops=450): stages=2 has 459 iops > 450 so doesn't satisfy;
+    # stages=3 has 438 iops ≤ 450 so is selected (no warning)
+    _, stats_450 = ps.best(max_iops=450)
+    assert stats_450.num_copy_ops == 3
+
+    # best(max_iops=400): neither plan satisfies — warns and falls back to lowest iops
+    with pytest.warns(UserWarning, match="No rechunk plan satisfies max_iops=400"):
+        _, stats_warn = ps.best(max_iops=400)
+    assert stats_warn.max_task_iops == min(s.max_task_iops for _, s in plans)
+
+
+def test_rechunk_optimize_era5_tiny():
+    shape = (2480, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (2480, 10, 10)
+    spec = cubed.Spec(allowed_mem="2.5GB")
+
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    # Default rechunk (no optimize) uses min_mem=max_mem/20, producing 3 stages
+    b_default = a.rechunk(target_chunks)
+    default_nodes = sum(
+        1
+        for _, d in b_default.plan().dag.nodes(data=True)
+        if d.get("op_name") == "rechunk"
+    )
+    assert default_nodes == 3
+
+    # optimize=True with max_iops=500 (both plans satisfy): picks stages=2 (fewer bytes)
+    b_opt = a.rechunk(target_chunks, max_iops=500, optimize=True)
+    opt_nodes = sum(
+        1 for _, d in b_opt.plan().dag.nodes(data=True) if d.get("op_name") == "rechunk"
+    )
+    assert opt_nodes == 2
+
+    # optimize=True with max_iops=450: only stages=3 satisfies (459 > 450, 438 ≤ 450)
+    b_opt2 = a.rechunk(target_chunks, max_iops=450, optimize=True)
+    opt2_nodes = sum(
+        1
+        for _, d in b_opt2.plan().dag.nodes(data=True)
+        if d.get("op_name") == "rechunk"
+    )
+    assert opt2_nodes == 3
+
+    # optimize=True with unachievable max_iops: warns and falls back to lowest-iops plan
+    with pytest.warns(UserWarning, match="No rechunk plan satisfies max_iops=400"):
+        b_warn = a.rechunk(target_chunks, max_iops=400, optimize=True)
+    warn_nodes = sum(
+        1
+        for _, d in b_warn.plan().dag.nodes(data=True)
+        if d.get("op_name") == "rechunk"
+    )
+    assert warn_nodes == 3  # fallback to stages=3 (lowest achievable iops)
