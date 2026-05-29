@@ -20,8 +20,8 @@ import warnings
 import cubed
 import cubed.array_api as xp
 import cubed.random
-from cubed.core.rechunk import RechunkPlanStats
-from cubed.core.rechunk import rechunk_plan as make_rechunk_plan
+from cubed.core.ops import _rechunk_plan
+from cubed.core.rechunk import rechunk_plans
 from cubed.diagnostics.history import HistoryCallback
 from cubed.diagnostics.rich import RichProgressBar
 
@@ -75,19 +75,99 @@ def fmt_bytes(n):
     return f"{n:.1f} PB"
 
 
-def print_plan_stats(wl, allow_irregular):
+def _sep(widths, vert="┼", horiz="─"):
+    return "  " + (f"─{horiz*widths[0]}─" + vert) + "".join(
+        f"─{horiz*w}─{vert}" for w in widths[1:-1]
+    ) + f"─{horiz*widths[-1]}─"
+
+
+def _row(cells, widths, align):
+    parts = []
+    for cell, w, a in zip(cells, widths, align):
+        parts.append(f" {cell:{a}{w}} ")
+    return "  " + "│".join(parts)
+
+
+def print_plan_tables(wl, allow_irregular, max_iops=None):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         a = xp.empty(wl["shape"], dtype=xp.float32, chunks=wl["source_chunks"])
-        rplan = make_rechunk_plan(a, wl["target_chunks"], allow_irregular=allow_irregular)
-        b = a.rechunk(wl["target_chunks"], allow_irregular=allow_irregular)
-        stats = RechunkPlanStats.from_plan(rplan, b.plan())
+        plan_set = rechunk_plans(
+            a, wl["target_chunks"], allow_irregular=allow_irregular, max_iops=max_iops
+        )
+        # Default plan: min_mem=None (same kwargs, no optimize)
+        default_b = a.rechunk(
+            wl["target_chunks"], allow_irregular=allow_irregular, max_iops=max_iops
+        )
+        default_n = sum(
+            1
+            for _, d in default_b.plan().dag.nodes(data=True)
+            if d.get("op_name") == "rechunk"
+        )
+        plan_ops = list(
+            _rechunk_plan(
+                a, wl["target_chunks"], allow_irregular=allow_irregular, max_iops=max_iops
+            )
+        )
+
     size_bytes = math.prod(wl["shape"]) * 4
-    print(f"  array size:    {fmt_bytes(size_bytes)}")
-    print(f"  stages:        {stats.num_copy_ops}")
-    print(f"  tasks:         {stats.num_tasks:,}")
-    print(f"  max task IOps: {stats.max_task_iops:,}")
-    print(f"  total written: {fmt_bytes(stats.total_nbytes_written)}")
+    print(f"  array size: {fmt_bytes(size_bytes)}")
+
+    # ── Pareto-optimal plans table ───────────────────────────────────────────
+    print()
+    print("  Pareto-optimal plans:")
+    hdr = ["stages", "tasks", "written", "max IOps", ""]
+    ws = [6, 10, 9, 8, 1]
+    al = [">", ">", ">", ">", "<"]
+    print(_row(hdr, ws, al))
+    print(_sep(ws))
+    for _, stats in plan_set.plans:
+        marker = "◀" if stats.num_copy_ops == default_n else ""
+        row = [
+            str(stats.num_copy_ops),
+            f"{stats.num_tasks:,}",
+            fmt_bytes(stats.total_nbytes_written),
+            str(stats.max_task_iops),
+            marker,
+        ]
+        print(_row(row, ws, al))
+    print("  (◀ = default selection)")
+
+    # ── Per-op breakdown for the default plan ────────────────────────────────
+    print()
+    print(f"  Per-op breakdown (default plan, {default_n} stages):")
+    hdr2 = ["op", "copy chunks", "store chunks", "fan_in", "fan_out", "IOps"]
+    # measure column widths from data
+    src = wl["source_chunks"]
+    rows_data = []
+    for i, (copy_chunks, store_chunks) in enumerate(plan_ops):
+        sc = src
+        if isinstance(store_chunks[0], int):
+            fan_in = math.prod(math.ceil(c / s) for c, s in zip(copy_chunks, sc))
+            fan_out = math.prod(c // t for c, t in zip(copy_chunks, store_chunks))
+            store_str = str(store_chunks)
+        else:
+            fan_in = math.prod(
+                math.ceil(c / max(s)) for c, s in zip(copy_chunks, sc)
+            )
+            fan_out = math.prod(
+                math.ceil(c / max(t)) for c, t in zip(copy_chunks, store_chunks)
+            )
+            store_str = str(tuple(max(t) for t in store_chunks)) + " (irr)"
+        rows_data.append(
+            (str(i), str(copy_chunks), store_str, str(fan_in), str(fan_out), str(fan_in + fan_out))
+        )
+        src = (
+            store_chunks
+            if isinstance(store_chunks[0], int)
+            else tuple(max(t) for t in store_chunks)
+        )
+    ws2 = [max(len(hdr2[c]), max(len(r[c]) for r in rows_data)) for c in range(6)]
+    al2 = [">", "<", "<", ">", ">", ">"]
+    print(_row(hdr2, ws2, al2))
+    print(_sep(ws2))
+    for row in rows_data:
+        print(_row(row, ws2, al2))
 
 
 def run_to_zarr(array, store, label):
@@ -122,6 +202,13 @@ def main():
         help="Use irregular (rechunker) staging instead of regular staging",
     )
     parser.add_argument(
+        "--max-iops",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Bound per-task S3 IOps by limiting copy chunk fan-out",
+    )
+    parser.add_argument(
         "--skip-source",
         action="store_true",
         default=False,
@@ -145,11 +232,13 @@ def main():
     print(f"source_chunks:   {wl['source_chunks']}")
     print(f"target_chunks:   {wl['target_chunks']}")
     print(f"allow_irregular: {args.allow_irregular}")
+    if args.max_iops is not None:
+        print(f"max_iops:        {args.max_iops}")
     print(f"source store:    {source_store}")
     print(f"target store:    {target_store}")
     print()
     print("plan stats (using allowed_mem from CUBED_CONFIG):")
-    print_plan_stats(wl, args.allow_irregular)
+    print_plan_tables(wl, args.allow_irregular, max_iops=args.max_iops)
     print()
 
     if args.dry_run:
@@ -171,7 +260,7 @@ def main():
     print("phase 2: rechunking...")
     source_array = cubed.from_zarr(source_store)
     rechunked = source_array.rechunk(
-        wl["target_chunks"], allow_irregular=args.allow_irregular
+        wl["target_chunks"], allow_irregular=args.allow_irregular, max_iops=args.max_iops
     )
     t2 = run_to_zarr(rechunked, target_store, "elapsed")
 
