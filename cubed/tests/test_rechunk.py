@@ -167,6 +167,31 @@ def test_rechunk_hypothesis_generated_bug_allow_irregular():
     assert_array_equal(b.compute(), nxp.ones(shape))
 
 
+def test_rechunk_max_iops_era5_tiny():
+    shape = (2480, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (2480, 10, 10)
+
+    spec = cubed.Spec(allowed_mem="2.5GB")
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    # Without max_iops: final op has large fan-out (lon axis fully consolidated)
+    b = a.rechunk(target_chunks)
+    stats_no_limit = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target_chunks), b.plan()
+    )
+    assert stats_no_limit.num_copy_ops == 3
+    assert stats_no_limit.max_task_iops > 400
+
+    # With max_iops=50: fan-out is bounded, same stage count
+    b_limited = a.rechunk(target_chunks, max_iops=50)
+    stats_limited = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target_chunks, max_iops=50), b_limited.plan()
+    )
+    assert stats_limited.num_copy_ops == 3
+    assert stats_limited.max_task_iops <= 60  # within ~20% of target due to alignment
+
+
 def test_rechunk_plan_viz():
     rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
     shape, source_chunks, target_chunks = rechunk_shapes
