@@ -1624,7 +1624,13 @@ def scan(
     # chunk is full then a new chunk of size one needs to be added for the final value.
     # TODO: add an include_final argument (default True)
 
-    axis = validate_axis(axis, array.ndim)
+    from cubed.array_api.manipulation_functions import flatten
+
+    if axis is None:
+        array = flatten(array)
+        axis = 0
+    else:
+        axis = validate_axis(axis, array.ndim)
 
     # Blelloch (1990) out-of-core algorithm.
     # 1. First, scan blockwise
