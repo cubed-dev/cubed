@@ -13,6 +13,7 @@ config = Config(
     defaults=[{"spec": {"allowed_mem": "2GB", "reserved_mem": "100MB"}}],
 )
 
+import cubed.array.misc  # noqa: F401
 import cubed.random  # noqa: F401
 
 from .array.nan_functions import (
