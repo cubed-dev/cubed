@@ -3,6 +3,7 @@ import operator
 
 import numpy as np
 
+from cubed.array_api._numpy_dispatch import _HANDLED_FUNCTIONS, CUBED_NUMPY_COMPAT
 from cubed.array_api.creation_functions import asarray
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import (
@@ -42,6 +43,15 @@ class Array(CoreArray):
         if not isinstance(x, np.ndarray):
             x = np.array(x)
         return x
+
+    if CUBED_NUMPY_COMPAT:
+
+        def __array_function__(self, func, types, args, kwargs):
+            if func not in _HANDLED_FUNCTIONS:
+                return NotImplemented
+            if not all(issubclass(t, (Array, np.ndarray)) for t in types):
+                return NotImplemented
+            return _HANDLED_FUNCTIONS[func](*args, **kwargs)
 
     def __repr__(self):
         return f"cubed.Array<{self.name}, shape={self.shape}, dtype={self.dtype}, chunks={self.chunks}>"

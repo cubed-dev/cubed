@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 
+from cubed.array_api._numpy_dispatch import implements
 from cubed.array_api.data_type_functions import isdtype
 from cubed.array_api.dtypes import (
     _integer_dtypes,
@@ -235,7 +236,17 @@ def nanprod(
     )
 
 
-def nanstd(x, /, *, axis=None, correction=0.0, keepdims=False, split_every=None):
+def nanstd(
+    x,
+    /,
+    *,
+    axis=None,
+    dtype=None,
+    ddof=0.0,
+    correction=0.0,
+    keepdims=False,
+    split_every=None,
+):
     return sqrt(
         nanvar(
             x,
@@ -278,6 +289,8 @@ def nanvar(
     /,
     *,
     axis=None,
+    dtype=None,
+    ddof=0.0,
     correction=0.0,
     keepdims=False,
     split_every=None,
@@ -358,3 +371,71 @@ def _nanvar_combine(a, axis=None, correction=None, **kwargs):
 def _nanvar_aggregate(a, correction=None, **kwargs):
     with np.errstate(divide="ignore", invalid="ignore"):
         return nxp.divide(a["M2"], a["n"] - correction)
+
+
+@implements(np.nanmax)
+def _np_nanmax(a, axis=None, out=None, keepdims=False, **kwargs):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+    return nanmax(a, axis=axis, keepdims=keepdims)
+
+
+@implements(np.nanmean)
+def _np_nanmean(a, axis=None, dtype=None, out=None, keepdims=False, **kwargs):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+    return nanmean(a, axis=axis, dtype=dtype, keepdims=keepdims)
+
+
+@implements(np.nanmin)
+def _np_nanmin(a, axis=None, out=None, keepdims=False, **kwargs):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+    return nanmin(a, axis=axis, keepdims=keepdims)
+
+
+@implements(np.nansum)
+def _np_nansum(a, axis=None, dtype=None, out=None, keepdims=False, **kwargs):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+    return nansum(a, axis=axis, dtype=dtype, keepdims=keepdims)
+
+
+@implements(np.nanstd)
+def _np_nanstd(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False, **kwargs):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+
+    return nanstd(a, axis=axis, correction=ddof, keepdims=keepdims)
+
+
+@implements(np.nanvar)
+def _np_nanvar(a, axis=None, dtype=None, out=None, ddof=0, keepdims=False, **kwargs):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+
+    return nanvar(a, axis=axis, correction=ddof, keepdims=keepdims)
+
+
+@implements(np.nanargmax)
+def _np_nanargmax(a, axis=None, out=None, keepdims=False):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+
+    return nanargmax(a, axis=axis, keepdims=keepdims)
+
+
+@implements(np.nanargmin)
+def _np_nanargmin(a, axis=None, out=None, keepdims=False):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+
+    return nanargmin(a, axis=axis, keepdims=keepdims)
+
+
+@implements(np.nanmedian)
+def _np_nanmedian(a, axis=None, out=None, overwrite_input=False, keepdims=False):
+    if out is not None:
+        raise NotImplementedError("out argument is not supported")
+
+    return nanmedian(a, axis=axis, keepdims=keepdims)

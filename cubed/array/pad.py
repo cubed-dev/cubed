@@ -1,7 +1,11 @@
+import numpy as np
+
+from cubed.array_api._numpy_dispatch import implements
 from cubed.array_api.creation_functions import full
 from cubed.array_api.manipulation_functions import concat
 
 
+@implements(np.pad)
 def pad(x, pad_width, mode=None, constant_values=0, chunks=None):
     """Pad an array."""
     if len(pad_width) != x.ndim:
