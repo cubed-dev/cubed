@@ -147,6 +147,16 @@ class Array(CoreArray):
 
         return matrix_transpose(self)
 
+    if CUBED_NUMPY_COMPAT:
+
+        def conj(self, /):
+            from cubed.array_api.dtypes import _complex_floating_dtypes
+            from cubed.array_api.elementwise_functions import conj
+
+            if self.dtype not in _complex_floating_dtypes:
+                return self
+            return conj(self)
+
     # Arithmetic Operators
 
     def __neg__(self, /):
