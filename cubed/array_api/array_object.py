@@ -188,10 +188,18 @@ class Array(CoreArray):
         return elemwise(nxp.multiply, self, other, dtype=result_type(self, other))
 
     def __truediv__(self, other, /):
-        other = self._check_allowed_dtypes(other, "floating-point", "__truediv__")
+        dtype_category = "numeric" if CUBED_NUMPY_COMPAT else "floating-point"
+        other = self._check_allowed_dtypes(other, dtype_category, "__truediv__")
         if other is NotImplemented:
             return other
-        return elemwise(nxp.divide, self, other, dtype=result_type(self, other))
+        out_dtype = result_type(self, other)
+        if (
+            CUBED_NUMPY_COMPAT
+            and out_dtype not in _floating_dtypes
+            and out_dtype not in _complex_floating_dtypes
+        ):
+            out_dtype = np.result_type(out_dtype, np.float64)
+        return elemwise(nxp.divide, self, other, dtype=out_dtype)
 
     def __floordiv__(self, other, /):
         other = self._check_allowed_dtypes(other, "real numeric", "__floordiv__")
