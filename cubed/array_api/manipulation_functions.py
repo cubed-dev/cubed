@@ -581,6 +581,19 @@ def stack(arrays, /, *, axis=0):
     # TODO: check arrays all have same shape
     # TODO: unify chunks
 
+    from cubed.core import CoreArray
+
+    if not all(isinstance(a, CoreArray) for a in arrays):
+        from cubed.array_api.creation_functions import asarray
+
+        cubed_ref = next(a for a in arrays if isinstance(a, CoreArray))
+        arrays = [
+            asarray(a, spec=cubed_ref.spec, chunks=cubed_ref.chunks)
+            if not isinstance(a, CoreArray)
+            else a
+            for a in arrays
+        ]
+
     a = arrays[0]
 
     axis = validate_axis(axis, a.ndim + 1)
