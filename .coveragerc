@@ -4,7 +4,6 @@ omit =
     cubed/array_api/*
     cubed/diagnostics/memray.py
     cubed/icechunk.py
-    cubed/runtime/executors/beam.py
     cubed/runtime/executors/coiled.py
     cubed/runtime/executors/dask*.py
     cubed/runtime/executors/lithops.py

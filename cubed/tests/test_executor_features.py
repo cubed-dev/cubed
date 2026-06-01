@@ -113,9 +113,6 @@ def test_retries(mocker, spec):
 @pytest.mark.parametrize("optimize_graph", [True, False])
 @pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
 def test_callback_counts(spec, executor, optimize_graph, compute_arrays_in_parallel):
-    if executor.name == "beam":
-        pytest.skip(f"{executor.name} executor does not support all callbacks")
-
     callback_counter = CallbackCounter()
 
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
@@ -251,9 +248,6 @@ def test_mem_warn(tmp_path, executor):
 
 
 def test_resume(spec, executor):
-    if executor.name == "beam":
-        pytest.skip(f"{executor.name} executor does not support resume")
-
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 1, 1], [1, 1, 1], [1, 1, 1]], chunks=(2, 2), spec=spec)
     c = xp.add(a, b)
@@ -282,11 +276,6 @@ def test_resume(spec, executor):
 
 @pytest.mark.parametrize("compute_arrays_in_parallel", [True, False])
 def test_compute_arrays_in_parallel(spec, any_executor, compute_arrays_in_parallel):
-    if any_executor.name == "beam":
-        pytest.skip(
-            f"{any_executor.name} executor does not support compute_arrays_in_parallel"
-        )
-
     a = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     b = cubed.random.random((10, 10), chunks=(5, 5), spec=spec)
     c = xp.add(a, b)

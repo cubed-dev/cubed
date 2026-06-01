@@ -1,5 +1,4 @@
 import platform
-import warnings
 from collections import Counter
 from typing import Iterable
 
@@ -35,19 +34,6 @@ if platform.system() != "Windows":
 
     ALL_EXECUTORS.append(create_executor("processes"))
     MAIN_EXECUTORS.append(create_executor("processes"))
-
-try:
-    with warnings.catch_warnings():
-        # workaround for problem reported in https://github.com/apache/beam/pull/37034
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-        ALL_EXECUTORS.append(
-            create_executor("beam", executor_options=dict(runner="FnApiRunner"))
-        )
-        MAIN_EXECUTORS.append(
-            create_executor("beam", executor_options=dict(runner="FnApiRunner"))
-        )
-except ImportError:
-    pass
 
 try:
     ALL_EXECUTORS.append(create_executor("dask"))

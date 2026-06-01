@@ -1,3 +1,0 @@
-apache_beam[gcp]
-cubed[diagnostics]
-gcsfs
