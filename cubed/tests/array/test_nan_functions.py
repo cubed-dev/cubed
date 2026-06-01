@@ -26,6 +26,7 @@ def spec(tmp_path):
         (cubed.nancumsum, np.nancumsum),
         (cubed.nanmax, np.nanmax),
         (cubed.nanmean, np.nanmean),
+        (cubed.nanmedian, np.nanmedian),
         (cubed.nanmin, np.nanmin),
         (cubed.nanprod, np.nanprod),
         (cubed.nanstd, np.nanstd),
@@ -35,6 +36,9 @@ def spec(tmp_path):
 )
 @pytest.mark.parametrize("axis", [None, 0, 1])
 def test_nan_function(spec, cubed_func, numpy_func, axis):
+    if cubed_func is cubed.nanmedian and axis is None:
+        pytest.skip("nanmedian with axis=None is not implemented")
+
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, xp.nan]], chunks=(2, 2), spec=spec)
     b = cubed_func(a, axis=axis)
     assert_array_equal(
