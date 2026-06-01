@@ -1,8 +1,11 @@
 from numbers import Integral
 from typing import Iterable
 
+from cubed.array_api._numpy_dispatch import CUBED_NUMPY_COMPAT
 from cubed.array_api.data_type_functions import result_type
-from cubed.array_api.dtypes import _numeric_dtypes
+from cubed.array_api.dtypes import _boolean_dtypes, _numeric_dtypes
+
+_NUMPY_COMPAT_NUMERIC_DTYPES = _numeric_dtypes + _boolean_dtypes
 from cubed.array_api.manipulation_functions import (
     broadcast_arrays,
     expand_dims,
@@ -105,7 +108,8 @@ def matrix_transpose(x, /):
 def tensordot(x1, x2, /, *, axes=2, split_every=None):
     from cubed.array_api.statistical_functions import sum
 
-    if x1.dtype not in _numeric_dtypes or x2.dtype not in _numeric_dtypes:
+    allowed = _NUMPY_COMPAT_NUMERIC_DTYPES if CUBED_NUMPY_COMPAT else _numeric_dtypes
+    if x1.dtype not in allowed or x2.dtype not in allowed:
         raise TypeError("Only numeric dtypes are allowed in tensordot")
 
     # based on dask

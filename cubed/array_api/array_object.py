@@ -176,6 +176,17 @@ class Array(CoreArray):
         return elemwise(nxp.add, self, other, dtype=result_type(self, other))
 
     def __sub__(self, other, /):
+        if CUBED_NUMPY_COMPAT and self.dtype.kind in ("M", "m"):
+            # Allow datetime64/timedelta64 subtraction in compat mode
+            if isinstance(other, (int, float, complex, bool)):
+                other = self._promote_scalar(other)
+            elif isinstance(other, np.generic):
+                other = asarray(other, spec=self.spec)
+            elif not isinstance(other, CoreArray):
+                return NotImplemented
+            return elemwise(
+                nxp.subtract, self, other, dtype=np.result_type(self.dtype, other.dtype)
+            )
         other = self._check_allowed_dtypes(other, "numeric", "__sub__")
         if other is NotImplemented:
             return other
