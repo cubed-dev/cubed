@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=5e08dbad"></script>
+    <script src="_static/documentation_options.js?v=0416f1ec"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
@@ -53,7 +53,7 @@
     <link rel="prev" title="Python Array API" href="array-api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="b967d8a
+  <meta name="docsearch:version" content="aa57e3d
 " />
   </head>
   
@@ -368,7 +368,6 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#single-threaded"><code class="docutils literal notranslate"><span class="pre">single-threaded</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#threads"><code class="docutils literal notranslate"><span class="pre">threads</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#processes"><code class="docutils literal notranslate"><span class="pre">processes</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#beam"><code class="docutils literal notranslate"><span class="pre">beam</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#coiled"><code class="docutils literal notranslate"><span class="pre">coiled</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dask"><code class="docutils literal notranslate"><span class="pre">dask</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lithops"><code class="docutils literal notranslate"><span class="pre">lithops</span></code></a></li>
@@ -519,7 +518,7 @@ The Cubed <a class="reference internal" href="examples/index.html"><span class="
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">executor_name</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">&quot;threads&quot;</span></code></p></td>
-<td><p>The executor for running computations. One of <code class="docutils literal notranslate"><span class="pre">&quot;single-threaded&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;threads&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;processes&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;beam&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;coiled&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;dask&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;lithops&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;modal&quot;</span></code>.</p></td>
+<td><p>The executor for running computations. One of <code class="docutils literal notranslate"><span class="pre">&quot;single-threaded&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;threads&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;processes&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;coiled&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;dask&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;lithops&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;modal&quot;</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">executor_options</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
@@ -610,11 +609,6 @@ since it is deliberately designed not to have anything except the most basic fea
 </table>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">retries</span></code> is not currently supported for the <code class="docutils literal notranslate"><span class="pre">processes</span></code> executor.</p>
-</section>
-<section id="beam">
-<h4><code class="docutils literal notranslate"><span class="pre">beam</span></code><a class="headerlink" href="#beam" title="Link to this heading">#</a></h4>
-<p>The <code class="docutils literal notranslate"><span class="pre">beam</span></code> executor doesn’t currently expose any configuration options.
-When running on Google Cloud Dataflow, <a class="reference external" href="https://cloud.google.com/dataflow/docs/pipeline-lifecycle#error_and_exception_handling">four retry attempts</a> are made for failing tasks.</p>
 </section>
 <section id="coiled">
 <h4><code class="docutils literal notranslate"><span class="pre">coiled</span></code><a class="headerlink" href="#coiled" title="Link to this heading">#</a></h4>
@@ -827,7 +821,6 @@ When running on Google Cloud Dataflow, <a class="reference external" href="https
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#single-threaded"><code class="docutils literal notranslate"><span class="pre">single-threaded</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#threads"><code class="docutils literal notranslate"><span class="pre">threads</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#processes"><code class="docutils literal notranslate"><span class="pre">processes</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#beam"><code class="docutils literal notranslate"><span class="pre">beam</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#coiled"><code class="docutils literal notranslate"><span class="pre">coiled</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#dask"><code class="docutils literal notranslate"><span class="pre">dask</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#lithops"><code class="docutils literal notranslate"><span class="pre">lithops</span></code></a></li>
