@@ -494,9 +494,11 @@ class Array(CoreArray):
             # int + array(floating) is allowed
         elif isinstance(scalar, float):
             if self.dtype not in _floating_dtypes:
-                raise TypeError(
-                    "Python float scalars can only be promoted with floating-point arrays."
-                )
+                if not CUBED_NUMPY_COMPAT:
+                    raise TypeError(
+                        "Python float scalars can only be promoted with floating-point arrays."
+                    )
+                return asarray(scalar, dtype=float64, spec=self.spec)
         elif isinstance(scalar, complex):
             if self.dtype not in _complex_floating_dtypes:
                 raise TypeError(
