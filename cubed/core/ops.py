@@ -792,10 +792,39 @@ def map_blocks(
 
     from cubed.array_api.creation_functions import asarray
 
-    # Coerce all args to Cubed arrays
+    # Coerce numpy arrays to Cubed arrays; separate non-array args (strings, dtypes, etc.)
+    # which can't go through blockwise — wrap the function to reinsert them.
     specs = [a.spec for a in args if hasattr(a, "spec")]
     spec0 = specs[0] if len(specs) > 0 else spec
-    args = tuple(asarray(a, spec=spec0) for a in args)
+
+    array_args = []
+    passthrough = {}  # original position -> value
+    for i, a in enumerate(args):
+        if isinstance(a, CoreArray):
+            array_args.append(a)
+        elif isinstance(a, np.ndarray):
+            array_args.append(asarray(a, spec=spec0))
+        else:
+            passthrough[i] = a
+
+    if passthrough:
+        array_positions = [i for i in range(len(args)) if i not in passthrough]
+
+        def _wrap_with_passthrough(f, positions, pt):
+            def wrapped(*block_args, **kw):
+                full_args = [None] * (len(positions) + len(pt))
+                for j, pos in enumerate(positions):
+                    full_args[pos] = block_args[j]
+                for pos, val in pt.items():
+                    full_args[pos] = val
+                return f(*full_args, **kw)
+
+            return wrapped
+
+        func = _wrap_with_passthrough(func, array_positions, passthrough)
+        args = tuple(array_args)
+    else:
+        args = tuple(array_args)
 
     # Handle the case where an array is created by calling `map_blocks` with no input arrays
     if len(args) == 0:
