@@ -1,14 +1,31 @@
+import numpy as np
+
+from cubed.array_api._numpy_dispatch import CUBED_NUMPY_COMPAT
 from cubed.array_api.creation_functions import asarray, zeros_like
 from cubed.array_api.data_type_functions import astype, result_type
-from cubed.array_api.dtypes import _promote_scalars, _real_numeric_dtypes
+from cubed.array_api.dtypes import (
+    _boolean_dtypes,
+    _promote_scalars,
+    _real_numeric_dtypes,
+)
 from cubed.array_api.manipulation_functions import reshape
 from cubed.array_api.statistical_functions import max, sum
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import arg_reduction, blockwise, elemwise
 
+_NUMPY_COMPAT_ARG_DTYPES = (
+    _real_numeric_dtypes
+    + _boolean_dtypes
+    + (
+        np.dtype("datetime64"),
+        np.dtype("timedelta64"),
+    )
+)
+
 
 def argmax(x, /, *, axis=None, keepdims=False, split_every=None):
-    if x.dtype not in _real_numeric_dtypes:
+    allowed = _NUMPY_COMPAT_ARG_DTYPES if CUBED_NUMPY_COMPAT else _real_numeric_dtypes
+    if x.dtype not in allowed:
         raise TypeError("Only real numeric dtypes are allowed in argmax")
     if axis is None:
         out_shape = (1,) * x.ndim if keepdims else ()
@@ -27,7 +44,8 @@ def argmax(x, /, *, axis=None, keepdims=False, split_every=None):
 
 
 def argmin(x, /, *, axis=None, keepdims=False, split_every=None):
-    if x.dtype not in _real_numeric_dtypes:
+    allowed = _NUMPY_COMPAT_ARG_DTYPES if CUBED_NUMPY_COMPAT else _real_numeric_dtypes
+    if x.dtype not in allowed:
         raise TypeError("Only real numeric dtypes are allowed in argmin")
     if axis is None:
         out_shape = (1,) * x.ndim if keepdims else ()

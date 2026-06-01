@@ -278,7 +278,12 @@ def isinf(x, /):
 
 
 def isnan(x, /):
-    if x.dtype not in _numeric_dtypes:
+    from cubed.array_api._numpy_dispatch import CUBED_NUMPY_COMPAT
+
+    allowed = (
+        _numeric_dtypes + _boolean_dtypes if CUBED_NUMPY_COMPAT else _numeric_dtypes
+    )
+    if x.dtype not in allowed:
         raise TypeError("Only numeric dtypes are allowed in isnan")
     return elemwise(nxp.isnan, x, dtype=nxp.bool)
 

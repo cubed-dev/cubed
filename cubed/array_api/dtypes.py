@@ -96,15 +96,18 @@ def _upcast_integral_dtypes(
     x, dtype=None, *, allowed_dtypes=("numeric",), fname=None, device=None
 ):
     """Ensure the input dtype is allowed. If it's None, provide a good default dtype."""
+    from cubed.array_api._numpy_dispatch import CUBED_NUMPY_COMPAT
+
     dtypes = __array_namespace_info__().default_dtypes(device=device)
 
-    # Validate.
-    is_invalid = all(x.dtype not in _dtype_categories[a] for a in allowed_dtypes)
-    if is_invalid:
-        errmsg = f"Only {' or '.join(allowed_dtypes)} dtypes are allowed"
-        if fname:
-            errmsg += f" in {fname}"
-        raise TypeError(errmsg)
+    # Validate (skipped in numpy compat mode, which allows object/datetime dtypes).
+    if not CUBED_NUMPY_COMPAT:
+        is_invalid = all(x.dtype not in _dtype_categories[a] for a in allowed_dtypes)
+        if is_invalid:
+            errmsg = f"Only {' or '.join(allowed_dtypes)} dtypes are allowed"
+            if fname:
+                errmsg += f" in {fname}"
+            raise TypeError(errmsg)
 
     # Choose a good default dtype, when None
     if dtype is None:
