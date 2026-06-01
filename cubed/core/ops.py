@@ -1475,7 +1475,48 @@ def _arg_combine(a, arg_func=None, **kwargs):
     return {"i": i_combined, "v": v_combined}
 
 
-def _arg_aggregate(a):
+def _arg_aggregate(a, axis=None):
+    # just return index values
+    return a["i"]
+
+
+def nanarg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None):
+    """A reduction that returns the array indexes, not the values, and which raises for all-NaN slices."""
+    dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
+    intermediate_dtype = [("i", dtype), ("v", x.dtype)]
+
+    # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
+    chunks = tuple((1,) * len(c) if i == axis else c for i, c in enumerate(x.chunks))
+    out = map_blocks(
+        partial(_arg_map_func, arg_func=arg_func),
+        x,
+        dtype=intermediate_dtype,
+        chunks=chunks,
+        axis=axis,
+        size=to_chunksize(x.chunks)[axis],
+    )
+
+    # then reduce across blocks
+    return reduction(
+        out,
+        _arg_func,
+        combine_func=partial(_arg_combine, arg_func=arg_func),
+        aggregate_func=_nanarg_aggregate,
+        axis=axis,
+        intermediate_dtype=intermediate_dtype,
+        dtype=dtype,
+        keepdims=keepdims,
+        split_every=split_every,
+    )
+
+
+def _nanarg_aggregate(a, axis=None):
+    # check for any all-NaN slices
+    mask = nxp.isnan(a["v"])
+    mask = nxp.all(mask, axis=axis, keepdims=True)
+    all_nan_slice = nxp.any(mask)
+    if all_nan_slice:
+        raise ValueError("All-NaN slice encountered")
     # just return index values
     return a["i"]
 
@@ -1624,7 +1665,13 @@ def scan(
     # chunk is full then a new chunk of size one needs to be added for the final value.
     # TODO: add an include_final argument (default True)
 
-    axis = validate_axis(axis, array.ndim)
+    from cubed.array_api.manipulation_functions import flatten
+
+    if axis is None:
+        array = flatten(array)
+        axis = 0
+    else:
+        axis = validate_axis(axis, array.ndim)
 
     # Blelloch (1990) out-of-core algorithm.
     # 1. First, scan blockwise

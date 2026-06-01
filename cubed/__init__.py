@@ -15,7 +15,19 @@ config = Config(
 
 import cubed.random  # noqa: F401
 
-from .array.nan_functions import nanmean, nansum
+from .array.nan_functions import (
+    nanargmax,
+    nanargmin,
+    nancumprod,
+    nancumsum,
+    nanmax,
+    nanmean,
+    nanmin,
+    nanprod,
+    nanstd,
+    nansum,
+    nanvar,
+)
 from .array.overlap import map_overlap
 from .array.pad import pad
 from .core.array import compute, measure_reserved_mem, plan, visualize
@@ -38,8 +50,17 @@ __all__ = [
     "map_blocks",
     "map_overlap",
     "measure_reserved_mem",
+    "nanargmax",
+    "nanargmin",
+    "nancumprod",
+    "nancumsum",
+    "nanmax",
     "nanmean",
+    "nanmin",
+    "nanprod",
+    "nanstd",
     "nansum",
+    "nanvar",
     "pad",
     "plan",
     "raise_if_computes",
