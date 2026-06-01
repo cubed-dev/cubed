@@ -43,7 +43,6 @@ def test_nan_function(spec, cubed_func, numpy_func, axis):
     )
 
 
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 @pytest.mark.parametrize(
     ("cubed_func", "numpy_func"),
     [
@@ -52,12 +51,12 @@ def test_nan_function(spec, cubed_func, numpy_func, axis):
     ],
 )
 def test_nan_function_allnan_error(spec, cubed_func, numpy_func):
-    a = xp.asarray([xp.nan], spec=spec)
+    a = xp.asarray([[xp.nan, xp.nan, 1], [2, xp.nan, 3]], chunks=(2, 2), spec=spec)
+    b = cubed_func(a, axis=0)
     with pytest.raises(ValueError, match="All-NaN slice encountered"):
-        # eager compute
-        cubed_func(a)
+        b.compute()
     with pytest.raises(ValueError, match="All-NaN slice encountered"):
-        numpy_func(np.array([np.nan]))
+        numpy_func(np.array([[xp.nan, xp.nan, 0], [2, xp.nan, 3]]), axis=0)
 
 
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
@@ -125,3 +124,26 @@ def test_nan_functions_hypothesis(na, cubed_func, numpy_func, axis):
     a = cubed.asarray(na, chunks=(2, 2))
     b = cubed_func(a, axis=axis)
     assert_allclose(b.compute(), numpy_func(na, axis=axis), atol=1e-08)
+
+
+@pytest.mark.parametrize(
+    ("cubed_func", "numpy_func"),
+    [
+        (cubed.nanargmax, np.nanargmax),
+        (cubed.nanargmin, np.nanargmin),
+    ],
+)
+@pytest.mark.parametrize("axis", [None, 0, 1])
+@given(na=nan_array())
+def test_nanarg_functions_hypothesis(na, cubed_func, numpy_func, axis):
+    a = cubed.asarray(na, chunks=(2, 2))
+    b = cubed_func(a, axis=axis)
+
+    # if numpy raises then cubed should too, otherwise the results
+    # should be the same
+    try:
+        np_res = numpy_func(na, axis=axis)
+        assert_allclose(b.compute(), np_res, atol=1e-08)
+    except ValueError:
+        with pytest.raises(ValueError, match="All-NaN slice encountered"):
+            b.compute()

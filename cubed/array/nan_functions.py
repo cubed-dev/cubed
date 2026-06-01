@@ -2,7 +2,6 @@ import warnings
 
 import numpy as np
 
-import cubed
 from cubed.array_api.data_type_functions import isdtype
 from cubed.array_api.dtypes import (
     _integer_dtypes,
@@ -10,32 +9,75 @@ from cubed.array_api.dtypes import (
     _upcast_integral_dtypes,
 )
 from cubed.array_api.elementwise_functions import isnan, sqrt
-from cubed.array_api.searching_functions import argmax, argmin, where
+from cubed.array_api.manipulation_functions import reshape
+from cubed.array_api.searching_functions import where
 from cubed.array_api.statistical_functions import cumulative_prod, cumulative_sum
-from cubed.array_api.utility_functions import all, any
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
+from cubed.core.ops import nanarg_reduction
 
 # TODO: refactor once nan functions are standardized:
 # https://github.com/data-apis/array-api/issues/621
 
 
 def nanargmax(x, /, *, axis=None, keepdims=False, split_every=None):
-    mask = isnan(x)
-    x = where(mask, -cubed.inf, x)
-    mask = all(mask, axis=axis, split_every=split_every)
-    if any(mask, split_every=split_every):  # eager compute
-        raise ValueError("All-NaN slice encountered")
-    return argmax(x, axis=axis, keepdims=keepdims)
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in nanargmax")
+    if axis is None:
+        out_shape = (1,) * x.ndim if keepdims else ()
+        x = reshape(x, (-1,))
+        out = nanarg_reduction(
+            x, _nanargmax, axis=0, keepdims=False, split_every=split_every
+        )
+        return reshape(out, out_shape)
+    return nanarg_reduction(
+        x,
+        _nanargmax,
+        axis=axis,
+        keepdims=keepdims,
+        split_every=split_every,
+    )
+
+
+def _nanargmax(a, axis=None, keepdims=None):
+    # replace nan in all-NaN slices to avoid an error when calling nanargmax
+    # if a slice across the whole array is all-NaN it will be detected when aggregating
+    mask = nxp.isnan(a)
+    mask = nxp.all(mask, axis=axis, keepdims=True)
+    all_nan_slice = nxp.any(mask)
+    if all_nan_slice:
+        a = nxp.where(mask, 0, a)
+    return nxp.nanargmax(a, axis=axis, keepdims=keepdims)
 
 
 def nanargmin(x, /, *, axis=None, keepdims=False, split_every=None):
-    mask = isnan(x)
-    x = where(mask, cubed.inf, x)
-    mask = all(mask, axis=axis, split_every=split_every)
-    if any(mask, split_every=split_every):  # eager compute
-        raise ValueError("All-NaN slice encountered")
-    return argmin(x, axis=axis, keepdims=keepdims)
+    if x.dtype not in _real_numeric_dtypes:
+        raise TypeError("Only real numeric dtypes are allowed in nanargmin")
+    if axis is None:
+        out_shape = (1,) * x.ndim if keepdims else ()
+        x = reshape(x, (-1,))
+        out = nanarg_reduction(
+            x, _nanargmin, axis=0, keepdims=False, split_every=split_every
+        )
+        return reshape(out, out_shape)
+    return nanarg_reduction(
+        x,
+        _nanargmin,
+        axis=axis,
+        keepdims=keepdims,
+        split_every=split_every,
+    )
+
+
+def _nanargmin(a, axis=None, keepdims=None):
+    # replace nan in all-NaN slices to avoid an error when calling nanargmin
+    # if a slice across the whole array is all-NaN it will be detected when aggregating
+    mask = nxp.isnan(a)
+    mask = nxp.all(mask, axis=axis, keepdims=True)
+    all_nan_slice = nxp.any(mask)
+    if all_nan_slice:
+        a = nxp.where(mask, 0, a)
+    return nxp.nanargmin(a, axis=axis, keepdims=keepdims)
 
 
 def nancumprod(x, /, *, axis=None, dtype=None):
