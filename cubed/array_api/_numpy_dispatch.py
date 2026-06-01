@@ -17,6 +17,31 @@ def implements(*numpy_functions):
 
 
 _UFUNC_MAP = None
+_ARRAY_FUNCTION_MAP = None
+
+
+def _get_array_function(func):
+    global _ARRAY_FUNCTION_MAP
+    if _ARRAY_FUNCTION_MAP is None:
+        _ARRAY_FUNCTION_MAP = _build_array_function_map()
+    return _ARRAY_FUNCTION_MAP.get(func)
+
+
+def _build_array_function_map():
+    import numpy as np
+
+    import cubed.array_api.searching_functions as sf
+
+    def _argmin(a, axis=None, out=None, keepdims=False):
+        return sf.argmin(a, axis=axis, keepdims=keepdims)
+
+    def _argmax(a, axis=None, out=None, keepdims=False):
+        return sf.argmax(a, axis=axis, keepdims=keepdims)
+
+    return {
+        np.argmin: _argmin,
+        np.argmax: _argmax,
+    }
 
 
 def _get_ufunc_func(numpy_ufunc):

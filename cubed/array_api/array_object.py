@@ -47,11 +47,14 @@ class Array(CoreArray):
     if CUBED_NUMPY_COMPAT:
 
         def __array_function__(self, func, types, args, kwargs):
-            if func not in _HANDLED_FUNCTIONS:
+            from cubed.array_api._numpy_dispatch import _get_array_function
+
+            handler = _HANDLED_FUNCTIONS.get(func) or _get_array_function(func)
+            if handler is None:
                 return NotImplemented
             if not all(issubclass(t, (Array, np.ndarray)) for t in types):
                 return NotImplemented
-            return _HANDLED_FUNCTIONS[func](*args, **kwargs)
+            return handler(*args, **kwargs)
 
         def __array_ufunc__(self, numpy_ufunc, method, *inputs, **kwargs):
             out = kwargs.get("out", ())

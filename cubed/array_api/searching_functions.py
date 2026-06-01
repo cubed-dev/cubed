@@ -19,6 +19,7 @@ _NUMPY_COMPAT_ARG_DTYPES = (
     + (
         np.dtype("datetime64"),
         np.dtype("timedelta64"),
+        np.dtype("object"),
     )
 )
 
