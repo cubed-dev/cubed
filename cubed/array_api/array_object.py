@@ -68,7 +68,7 @@ class Array(CoreArray):
                 return NotImplemented
             spec = next(x.spec for x in inputs if isinstance(x, Array))
             converted = tuple(
-                asarray(x, spec=spec) if isinstance(x, np.ndarray) else x
+                asarray(x, spec=spec) if isinstance(x, (np.ndarray, np.generic)) else x
                 for x in inputs
             )
             return cubed_func(*converted)
