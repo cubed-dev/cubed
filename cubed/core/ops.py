@@ -621,8 +621,16 @@ def _general_blockwise(
 
 def elemwise(func, *args: "Array", dtype=None) -> "Array":
     """Apply a function elementwise to array arguments, respecting broadcasting."""
+    import numpy as np
+
+    from cubed.array_api.creation_functions import asarray
     from cubed.array_api.manipulation_functions import broadcast_shapes
 
+    spec = next(a.spec for a in args if isinstance(a, CoreArray))
+    args = tuple(
+        asarray(a, spec=spec) if isinstance(a, (np.ndarray, np.generic)) else a
+        for a in args
+    )
     shapes = [arg.shape for arg in args]
     out_ndim = len(broadcast_shapes(*shapes))
     expr_inds = tuple(range(out_ndim))[::-1]
