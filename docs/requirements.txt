@@ -19,6 +19,7 @@ xarray
 pooch
 netCDF4
 icechunk
+graphviz
 jinja2
 pandas
 matplotlib
