@@ -14,7 +14,8 @@ from cubed.array_api.searching_functions import where
 from cubed.array_api.statistical_functions import cumulative_prod, cumulative_sum
 from cubed.backend_array_api import namespace as nxp
 from cubed.core import reduction
-from cubed.core.ops import nanarg_reduction
+from cubed.core.ops import map_blocks, nanarg_reduction
+from cubed.vendor.dask.array.utils import validate_axis
 
 # TODO: refactor once nan functions are standardized:
 # https://github.com/data-apis/array-api/issues/621
@@ -158,6 +159,36 @@ def _nanmean_aggregate(a, **kwargs):
 def _nannumel(x, **kwargs):
     """A reduction to count the number of elements, excluding nans"""
     return nxp.sum(~(nxp.isnan(x)), **kwargs)
+
+
+def nanmedian(x, axis=None, keepdims=False):
+    # based on dask
+    if axis is None:
+        raise NotImplementedError(
+            "The cubed median function only works along an axis.  "
+            "The full algorithm is difficult to do in parallel"
+        )
+
+    if not isinstance(axis, tuple):
+        axis = (axis,)
+    axis = validate_axis(axis, x.ndim)
+
+    # rechunk if reduced axes are not contained in a single chunk
+    if any(x.numblocks[ax] > 1 for ax in axis):
+        x = x.rechunk({ax: -1 if ax in axis else "auto" for ax in range(x.ndim)})
+
+    return map_blocks(
+        nxp.nanmedian,
+        x,
+        axis=axis,
+        keepdims=keepdims,
+        drop_axis=axis if not keepdims else None,
+        chunks=(
+            [1 if ax in axis else c for ax, c in enumerate(x.chunks)]
+            if keepdims
+            else None
+        ),
+    )
 
 
 def nanmin(x, /, *, axis=None, keepdims=False, split_every=None):
