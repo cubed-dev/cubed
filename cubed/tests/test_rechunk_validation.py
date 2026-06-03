@@ -19,7 +19,8 @@ import math
 import numpy as np
 
 import cubed
-from cubed._testing import assert_array_equal
+import cubed.array_api as xp
+from cubed.utils import normalize_chunks, to_chunksize
 
 # ── Sequential (flat-index) ──────────────────────────────────────────────────
 
@@ -39,9 +40,13 @@ def _det_block(block, block_id, _shape, _chunks):
 
 def make_deterministic_source(shape, chunks):
     """Return a lazy int32 array where each element equals its flat index modulo 2**31."""
-    template = cubed.zeros(shape, dtype=np.int32, chunks=chunks)
+    normalized = normalize_chunks(chunks, shape=shape, dtype=np.int32)
     return cubed.map_blocks(
-        _det_block, template, dtype=np.int32, _shape=shape, _chunks=chunks
+        _det_block,
+        dtype=np.int32,
+        chunks=normalized,
+        _shape=shape,
+        _chunks=to_chunksize(normalized),
     )
 
 
@@ -74,9 +79,13 @@ def _det_block_hashed(block, block_id, _shape, _chunks):
 
 def make_hashed_source(shape, chunks):
     """Return a lazy int32 array where each element is wang_hash(flat_index)."""
-    template = cubed.zeros(shape, dtype=np.int32, chunks=chunks)
+    normalized = normalize_chunks(chunks, shape=shape, dtype=np.int32)
     return cubed.map_blocks(
-        _det_block_hashed, template, dtype=np.int32, _shape=shape, _chunks=chunks
+        _det_block_hashed,
+        dtype=np.int32,
+        chunks=normalized,
+        _shape=shape,
+        _chunks=to_chunksize(normalized),
     )
 
 
@@ -97,14 +106,17 @@ def test_deterministic_source_values():
         assert result[idx] == flat % (2**31)
 
 
-def test_deterministic_rechunk():
+def test_deterministic_rechunk(tmp_path):
     shape = (10, 8, 6)
     source_chunks = (5, 4, 3)
     target_chunks = (10, 2, 2)
 
     rechunked = make_deterministic_source(shape, source_chunks).rechunk(target_chunks)
+    cubed.to_zarr(rechunked, store=tmp_path / "target")
+
+    target = cubed.from_zarr(tmp_path / "target")
     expected = make_deterministic_source(shape, target_chunks)
-    assert_array_equal(rechunked.compute(), expected.compute())
+    assert bool(xp.all(xp.equal(target, expected)).compute())
 
 
 # ── Tests: hashed ────────────────────────────────────────────────────────────
@@ -131,11 +143,14 @@ def test_hashed_source_values():
     assert not np.all(deltas == deltas[0]), "hashed values must not have constant delta"
 
 
-def test_hashed_rechunk():
+def test_hashed_rechunk(tmp_path):
     shape = (10, 8, 6)
     source_chunks = (5, 4, 3)
     target_chunks = (10, 2, 2)
 
     rechunked = make_hashed_source(shape, source_chunks).rechunk(target_chunks)
+    cubed.to_zarr(rechunked, store=tmp_path / "target")
+
+    target = cubed.from_zarr(tmp_path / "target")
     expected = make_hashed_source(shape, target_chunks)
-    assert_array_equal(rechunked.compute(), expected.compute())
+    assert bool(xp.all(xp.equal(target, expected)).compute())
