@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2
       - name: Build and Commit
         id: deployment
         uses: sphinx-notes/pages@v3
