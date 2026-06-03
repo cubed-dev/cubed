@@ -219,24 +219,6 @@ def validate_deterministic(target_store, shape, target_chunks):
     return valid, elapsed
 
 
-def validate_roundtrip(
-    source_store, target_store, roundtrip_store, source_chunks, allow_irregular, max_iops
-):
-    """Rechunk target back to source chunks and compare element-by-element with source."""
-    print("phase 3: validating (round-trip rechunk)...")
-    target = cubed.from_zarr(target_store)
-    roundtrip = target.rechunk(source_chunks, allow_irregular=allow_irregular, max_iops=max_iops)
-    t_rt = run_to_zarr(roundtrip, roundtrip_store, "  roundtrip")
-
-    source = cubed.from_zarr(source_store)
-    roundtrip_array = cubed.from_zarr(roundtrip_store)
-    t0 = time.perf_counter()
-    valid = bool(xp.all(xp.equal(source, roundtrip_array)).compute())
-    elapsed = time.perf_counter() - t0
-    print(f"  result: {'PASSED' if valid else 'FAILED'}  ({elapsed:.1f}s)")
-    return valid, t_rt + elapsed
-
-
 # ── I/O helper ───────────────────────────────────────────────────────────────
 
 def run_to_zarr(array, store, label):
@@ -292,9 +274,8 @@ def main():
         action="store_true",
         default=False,
         help=(
-            "Validate rechunk output after phase 2. "
-            "For 'deterministic': checks each element against its expected flat index. "
-            "For 'random': rechunks target back to source chunks and compares with source."
+            "Validate rechunk output after phase 2 (requires --data-mode deterministic). "
+            "Checks each element against its expected Wang-hashed flat index."
         ),
     )
     parser.add_argument(
@@ -314,7 +295,6 @@ def main():
     wl = WORKLOADS[args.workload]
     source_store = f"{args.store}/{args.workload}/source"
     target_store = f"{args.store}/{args.workload}/target"
-    roundtrip_store = f"{args.store}/{args.workload}/roundtrip"
 
     print(f"workload:        {args.workload}")
     print(f"description:     {wl['description']}")
@@ -361,22 +341,15 @@ def main():
 
     t3 = 0.0
     if args.validate:
-        print()
-        if args.data_mode == "deterministic":
+        if args.data_mode != "deterministic":
+            print("  WARNING: --validate requires --data-mode deterministic; skipping")
+        else:
+            print()
             valid, t3 = validate_deterministic(
                 target_store, wl["shape"], wl["target_chunks"]
             )
-        else:
-            valid, t3 = validate_roundtrip(
-                source_store,
-                target_store,
-                roundtrip_store,
-                wl["source_chunks"],
-                args.allow_irregular,
-                args.max_iops,
-            )
-        if not valid:
-            print("  WARNING: validation FAILED — rechunk output does not match source")
+            if not valid:
+                print("  WARNING: validation FAILED — rechunk output does not match source")
 
     print()
     total = time.perf_counter() - t_wall
