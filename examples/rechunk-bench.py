@@ -25,6 +25,7 @@ import cubed.array_api as xp
 import cubed.random
 from cubed.core.ops import _rechunk_plan
 from cubed.core.rechunk import rechunk_plans
+from cubed.utils import normalize_chunks, to_chunksize
 from cubed.diagnostics.history import HistoryCallback
 from cubed.diagnostics.rich import RichProgressBar
 
@@ -174,21 +175,34 @@ def print_plan_tables(wl, allow_irregular, max_iops=None):
 
 # ── Deterministic data generation ───────────────────────────────────────────
 
+
+def _wang_hash(n):
+    """Bijective 32-bit Wang hash applied elementwise to a numpy array."""
+    n = n.astype(np.uint32)
+    n = (n ^ np.uint32(61)) ^ (n >> np.uint32(16))
+    n = n + (n << np.uint32(3))
+    n = n ^ (n >> np.uint32(4))
+    n = n * np.uint32(0x27D4EB2D)
+    n = n ^ (n >> np.uint32(15))
+    return n.view(np.int32)
+
+
 def _det_block(block, block_id, _shape, _chunks):
-    """Fill block with modular flat indices: element at position p has value flat_index(p) % 2**31."""
     strides = [math.prod(_shape[i + 1:]) for i in range(len(_shape))]
     flat = np.zeros(block.shape, dtype=np.int64)
     for ax, (stride, cs) in enumerate(zip(strides, _chunks)):
         origin = block_id[ax] * cs
         idx = np.arange(origin, origin + block.shape[ax], dtype=np.int64)
         flat += idx.reshape(tuple(-1 if j == ax else 1 for j in range(len(_shape)))) * stride
-    return (flat % (2**31)).astype(np.int32)
+    return _wang_hash(flat.astype(np.uint32))
 
 
 def make_deterministic_source(shape, chunks):
-    """Return a lazy int32 array where each element equals its flat index modulo 2**31."""
-    template = cubed.zeros(shape, dtype=np.int32, chunks=chunks)
-    return cubed.map_blocks(_det_block, template, dtype=np.int32, _shape=shape, _chunks=chunks)
+    """Return a lazy int32 array where each element is wang_hash(flat_index)."""
+    normalized = normalize_chunks(chunks, shape=shape, dtype=np.int32)
+    return cubed.map_blocks(
+        _det_block, dtype=np.int32, chunks=normalized, _shape=shape, _chunks=to_chunksize(normalized)
+    )
 
 
 # ── Validation ───────────────────────────────────────────────────────────────
