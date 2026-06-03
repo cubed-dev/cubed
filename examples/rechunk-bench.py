@@ -4,7 +4,10 @@ Rechunk benchmark on Lithops (AWS Lambda + S3).
 Configure with CUBED_CONFIG pointing to a cubed.yaml (see examples/lithops/aws/).
 The Lambda runtime memory should match the allowed_mem in the config.
 
-Usage:
+Local usage (tiny workload, no cloud config needed):
+    python examples/rechunk-bench.py --workload local-test --store /tmp/rechunk-bench --data-mode deterministic --validate
+
+Cloud usage:
     export CUBED_CONFIG=examples/lithops/aws
     python examples/rechunk-bench.py --workload era5-large --store s3://my-bucket/rechunk
     python examples/rechunk-bench.py --workload era5-large --store s3://my-bucket/rechunk --dry-run
@@ -32,6 +35,12 @@ from cubed.diagnostics.rich import RichProgressBar
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 
 WORKLOADS = {
+    "local-test": dict(
+        shape=(10, 8, 6),
+        source_chunks=(5, 4, 3),
+        target_chunks=(10, 2, 2),
+        description="tiny local test (matches unit test dimensions)",
+    ),
     "era5-tiny": dict(
         shape=(2480, 721, 1440),
         source_chunks=(31, 721, 1440),
