@@ -9,6 +9,7 @@ Usage:
     python examples/rechunk-bench.py --workload era5-large --store s3://my-bucket/rechunk
     python examples/rechunk-bench.py --workload era5-large --store s3://my-bucket/rechunk --dry-run
     python examples/rechunk-bench.py --workload era5-large --store s3://my-bucket/rechunk --skip-source
+    python examples/rechunk-bench.py --workload era5-large --store s3://my-bucket/rechunk --data-mode deterministic --validate
 """
 
 import argparse
@@ -16,6 +17,8 @@ import logging
 import math
 import time
 import warnings
+
+import numpy as np
 
 import cubed
 import cubed.array_api as xp
@@ -137,7 +140,6 @@ def print_plan_tables(wl, allow_irregular, max_iops=None):
     print()
     print(f"  Per-op breakdown (default plan, {default_n} stages):")
     hdr2 = ["op", "copy chunks", "store chunks", "fan_in", "fan_out", "IOps"]
-    # measure column widths from data
     src = wl["source_chunks"]
     rows_data = []
     for i, (copy_chunks, store_chunks) in enumerate(plan_ops):
@@ -169,6 +171,59 @@ def print_plan_tables(wl, allow_irregular, max_iops=None):
     for row in rows_data:
         print(_row(row, ws2, al2))
 
+
+# ── Deterministic data generation ───────────────────────────────────────────
+
+def _det_block(block, block_id, _shape, _chunks):
+    """Fill block with modular flat indices: element at position p has value flat_index(p) % 2**31."""
+    strides = [math.prod(_shape[i + 1:]) for i in range(len(_shape))]
+    flat = np.zeros(block.shape, dtype=np.int64)
+    for ax, (stride, cs) in enumerate(zip(strides, _chunks)):
+        origin = block_id[ax] * cs
+        idx = np.arange(origin, origin + block.shape[ax], dtype=np.int64)
+        flat += idx.reshape(tuple(-1 if j == ax else 1 for j in range(len(_shape)))) * stride
+    return (flat % (2**31)).astype(np.int32)
+
+
+def make_deterministic_source(shape, chunks):
+    """Return a lazy int32 array where each element equals its flat index modulo 2**31."""
+    template = cubed.zeros(shape, dtype=np.int32, chunks=chunks)
+    return cubed.map_blocks(_det_block, template, dtype=np.int32, _shape=shape, _chunks=chunks)
+
+
+# ── Validation ───────────────────────────────────────────────────────────────
+
+def validate_deterministic(target_store, shape, target_chunks):
+    """Check every element of the rechunked target against its expected flat index."""
+    print("phase 3: validating (deterministic check)...")
+    target = cubed.from_zarr(target_store)
+    expected = make_deterministic_source(shape, target_chunks)
+    t0 = time.perf_counter()
+    valid = bool(xp.all(xp.equal(target, expected)).compute())
+    elapsed = time.perf_counter() - t0
+    print(f"  result: {'PASSED' if valid else 'FAILED'}  ({elapsed:.1f}s)")
+    return valid, elapsed
+
+
+def validate_roundtrip(
+    source_store, target_store, roundtrip_store, source_chunks, allow_irregular, max_iops
+):
+    """Rechunk target back to source chunks and compare element-by-element with source."""
+    print("phase 3: validating (round-trip rechunk)...")
+    target = cubed.from_zarr(target_store)
+    roundtrip = target.rechunk(source_chunks, allow_irregular=allow_irregular, max_iops=max_iops)
+    t_rt = run_to_zarr(roundtrip, roundtrip_store, "  roundtrip")
+
+    source = cubed.from_zarr(source_store)
+    roundtrip_array = cubed.from_zarr(roundtrip_store)
+    t0 = time.perf_counter()
+    valid = bool(xp.all(xp.equal(source, roundtrip_array)).compute())
+    elapsed = time.perf_counter() - t0
+    print(f"  result: {'PASSED' if valid else 'FAILED'}  ({elapsed:.1f}s)")
+    return valid, t_rt + elapsed
+
+
+# ── I/O helper ───────────────────────────────────────────────────────────────
 
 def run_to_zarr(array, store, label):
     callbacks = [RichProgressBar(), HistoryCallback()]
@@ -209,6 +264,26 @@ def main():
         help="Bound per-task S3 IOps by limiting copy chunk fan-out",
     )
     parser.add_argument(
+        "--data-mode",
+        choices=["random", "deterministic"],
+        default="random",
+        help=(
+            "Source data mode (default: random). "
+            "'random' uses float32 uniform random data; "
+            "'deterministic' uses int32 flat-index values for exact validation."
+        ),
+    )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        default=False,
+        help=(
+            "Validate rechunk output after phase 2. "
+            "For 'deterministic': checks each element against its expected flat index. "
+            "For 'random': rechunks target back to source chunks and compares with source."
+        ),
+    )
+    parser.add_argument(
         "--skip-source",
         action="store_true",
         default=False,
@@ -225,6 +300,7 @@ def main():
     wl = WORKLOADS[args.workload]
     source_store = f"{args.store}/{args.workload}/source"
     target_store = f"{args.store}/{args.workload}/target"
+    roundtrip_store = f"{args.store}/{args.workload}/roundtrip"
 
     print(f"workload:        {args.workload}")
     print(f"description:     {wl['description']}")
@@ -234,6 +310,8 @@ def main():
     print(f"allow_irregular: {args.allow_irregular}")
     if args.max_iops is not None:
         print(f"max_iops:        {args.max_iops}")
+    print(f"data_mode:       {args.data_mode}")
+    print(f"validate:        {args.validate}")
     print(f"source store:    {source_store}")
     print(f"target store:    {target_store}")
     print()
@@ -248,9 +326,12 @@ def main():
 
     if not args.skip_source:
         print("phase 1: generating and writing source data...")
-        source = cubed.random.random(
-            wl["shape"], dtype=xp.float32, chunks=wl["source_chunks"]
-        )
+        if args.data_mode == "deterministic":
+            source = make_deterministic_source(wl["shape"], wl["source_chunks"])
+        else:
+            source = cubed.random.random(
+                wl["shape"], dtype=xp.float32, chunks=wl["source_chunks"]
+            )
         t1 = run_to_zarr(source, source_store, "elapsed")
     else:
         print("phase 1: skipped (using existing source)")
@@ -264,9 +345,31 @@ def main():
     )
     t2 = run_to_zarr(rechunked, target_store, "elapsed")
 
+    t3 = 0.0
+    if args.validate:
+        print()
+        if args.data_mode == "deterministic":
+            valid, t3 = validate_deterministic(
+                target_store, wl["shape"], wl["target_chunks"]
+            )
+        else:
+            valid, t3 = validate_roundtrip(
+                source_store,
+                target_store,
+                roundtrip_store,
+                wl["source_chunks"],
+                args.allow_irregular,
+                args.max_iops,
+            )
+        if not valid:
+            print("  WARNING: validation FAILED — rechunk output does not match source")
+
     print()
     total = time.perf_counter() - t_wall
-    print(f"wall time: {total:.1f}s  (source: {t1:.1f}s, rechunk: {t2:.1f}s)")
+    parts = f"source: {t1:.1f}s, rechunk: {t2:.1f}s"
+    if args.validate:
+        parts += f", validate: {t3:.1f}s"
+    print(f"wall time: {total:.1f}s  ({parts})")
     print("task history written to ./history/")
 
 
