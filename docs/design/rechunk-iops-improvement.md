@@ -93,7 +93,7 @@ This means the final array is computed exactly once; the plan sweep is a plannin
 **Default behaviour is unchanged:** `optimize=False` uses `min_mem = rechunker_max_mem // 20`
 (the previous default heuristic).
 
-### 4. `_rechunker_max_mem(x)` helper (`cubed/core/ops.py:979`)
+### 4. `_rechunker_max_mem(x)` helper (`cubed/core/ops.py`)
 
 Centralises the maximum memory available per rechunk stage:
 
@@ -124,6 +124,40 @@ Added `--max-iops N` flag and a `print_plan_tables()` function that prints two A
 **Table 2 — Per-op breakdown** for the default plan, showing copy chunks, store chunks, fan_in,
 fan_out, and total IOps per copy operation.
 
+### 6. Benchmark validation (`--data-mode`, `--validate`)
+
+Added two flags to support correctness checking of rechunk output.
+
+**`--data-mode {random,deterministic}`** (default: `random`)
+
+- `random`: float32 uniform data (unchanged, realistic I/O characteristics)
+- `deterministic`: int32 where each element holds `wang_hash(flat_index)`, generated lazily via
+  `map_blocks` with no intermediate zarr store (following the `eye`/`arange` creation pattern)
+
+**`--validate`** (requires `--data-mode deterministic`)
+
+After rechunking, regenerates the expected array at the target chunk layout — also lazily, without
+materialising to zarr — and checks `xp.all(xp.equal(target, expected))` as a single Cubed
+computation.  Because `expected` is a virtual array fused into the comparison task, no extra S3
+reads or writes are needed beyond reading each target chunk once.
+
+**Why Wang hash rather than sequential flat indices:**
+Sequential indices have constant deltas between adjacent elements and compress almost to nothing
+under Blosc/LZ4 shuffle encoding.  A bijective hash with good avalanche breaks this pattern;
+the output is effectively incompressible and comparable to float32 random data.  Wang hash was
+chosen as a well-known, fast 32-bit bijective integer hash; any alternative with decent avalanche
+would behave identically for this purpose.
+
+**Why not round-trip rechunk validation:**
+An earlier design considered rechunking the output back to source chunks and comparing with the
+original.  This was dropped because: (a) Cubed task failures raise exceptions rather than silently
+producing wrong values, so "blocks not written" surfaces as an error; (b) deterministic validation
+catches the same failure classes (fill values, transpositions, boundary errors) with a single read
+pass and no extra storage; (c) the round-trip would cost 2–3× the original rechunk I/O.
+
+**`local-test` workload** (`shape=(10, 8, 6)`, matching `test_rechunk_validation.py`) allows the
+full CLI to be exercised locally without cloud configuration.
+
 ## Key design decisions
 
 **Post-hoc fan-out limit** — `_maybe_limit` is applied after the planner runs, as a correction to
@@ -141,6 +175,12 @@ than storing the full plan object, `_best_min_mem()` returns the `min_mem` value
 **No sweep of `allow_irregular`** — The current implementation sweeps `min_mem` for a fixed
 `allow_irregular` setting.  The two planners could be combined in a future extension.
 
+**Lazy expected array in validation** — `make_deterministic_source` is a virtual Cubed array
+(no zarr backing store).  When compared against the rechunked output, Cubed fuses the hash
+computation into the same task that reads each target chunk.  This is why an invertible hash
+offers no efficiency advantage: the expected values are already computed on-the-fly rather than
+read from a separate store.
+
 ## Files changed
 
 | File | Change |
@@ -149,4 +189,5 @@ than storing the full plan object, `_best_min_mem()` returns the `min_mem` value
 | `cubed/core/ops.py` | Added `_rechunker_max_mem`; updated `rechunk` and `_rechunk_plan` to accept `max_iops` and `optimize`; applied `_maybe_limit` uniformly |
 | `cubed/core/array.py` | Updated `CoreArray.rechunk` signature to pass through `max_iops` and `optimize` |
 | `cubed/tests/test_rechunk.py` | Added `test_rechunk_max_iops_era5_tiny`, `test_rechunk_plans_era5_tiny`, `test_rechunk_optimize_era5_tiny` |
-| `examples/rechunk-bench.py` | Added `--max-iops` flag, `print_plan_tables`, ASCII table helpers |
+| `cubed/tests/test_rechunk_validation.py` | New file: Wang hash generation helpers and validation tests |
+| `examples/rechunk-bench.py` | Added `--max-iops`, `--data-mode`, `--validate`, `print_plan_tables`, deterministic generation, `local-test` workload |
