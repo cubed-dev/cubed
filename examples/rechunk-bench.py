@@ -219,7 +219,7 @@ def make_deterministic_source(shape, chunks):
 def validate_deterministic(target_store, shape, target_chunks, read_chunks=None):
     """Check every element of the rechunked target against its expected flat index."""
     print("phase 3: validating (deterministic check)...")
-    target = cubed.from_zarr(target_store, read_chunks=read_chunks)
+    target = cubed.from_zarr(target_store, chunks=read_chunks)
     if read_chunks is not None:
         expected = make_deterministic_source(shape, read_chunks)
     else:

@@ -118,18 +118,13 @@ def from_zarr(store, path=None, chunks=None, spec=None) -> "Array":
     path : string, optional
         Group path
     chunks : tuple of ints, optional
-         If set, merge zarr chunks up to this size before downstream ops.
+        If set, merge zarr chunks up to this size before downstream ops.
         Each downstream task reads a ``chunks``-sized region (spanning
         multiple zarr chunks). ``chunks`` must be an exact multiple of
-        the zarr chunk size in every dimension.
-    spec : cubed.Spec, optional
-        The spec to use for the computation.
-    read_chunks : tuple of ints, optional
-        If set, merge zarr chunks up to this size before downstream ops.
-        Each downstream task reads a ``read_chunks``-sized region (spanning
-        multiple zarr chunks). ``read_chunks`` must be an exact multiple of
         the zarr chunk size in every dimension. The merge fuses with successor
         operations, so no intermediate copy is written.
+    spec : cubed.Spec, optional
+        The spec to use for the computation.
 
     Returns
     -------
