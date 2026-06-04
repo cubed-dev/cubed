@@ -216,11 +216,14 @@ def make_deterministic_source(shape, chunks):
 
 # ── Validation ───────────────────────────────────────────────────────────────
 
-def validate_deterministic(target_store, shape, target_chunks):
+def validate_deterministic(target_store, shape, target_chunks, read_chunks=None):
     """Check every element of the rechunked target against its expected flat index."""
     print("phase 3: validating (deterministic check)...")
-    target = cubed.from_zarr(target_store)
-    expected = make_deterministic_source(shape, target_chunks)
+    target = cubed.from_zarr(target_store, read_chunks=read_chunks)
+    if read_chunks is not None:
+        expected = make_deterministic_source(shape, read_chunks)
+    else:
+        expected = make_deterministic_source(shape, target_chunks)
     callbacks = [RichProgressBar(), HistoryCallback()]
     t0 = time.perf_counter()
     valid = bool(xp.all(xp.equal(target, expected)).compute(callbacks=callbacks))
@@ -355,8 +358,25 @@ def main():
             print("  WARNING: --validate requires --data-mode deterministic; skipping")
         else:
             print()
+            # Use the last rechunk stage's copy_chunks as the read granularity for
+            # validation, so equality tasks operate at copy-chunk size rather than
+            # one task per target chunk.
+            plan_ops = list(
+                _rechunk_plan(
+                    source_array,
+                    wl["target_chunks"],
+                    allow_irregular=args.allow_irregular,
+                    max_iops=args.max_iops,
+                )
+            )
+            last_copy_chunks = plan_ops[-1][0] if plan_ops else None
+            if last_copy_chunks and not isinstance(last_copy_chunks[0], int):
+                last_copy_chunks = tuple(max(c) for c in last_copy_chunks)
             valid, t3 = validate_deterministic(
-                target_store, wl["shape"], wl["target_chunks"]
+                target_store,
+                wl["shape"],
+                wl["target_chunks"],
+                read_chunks=last_copy_chunks,
             )
             if not valid:
                 print("  WARNING: validation FAILED — rechunk output does not match source")
