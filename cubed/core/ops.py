@@ -125,11 +125,11 @@ def from_zarr(store, path=None, chunks=None, spec=None) -> "Array":
     spec : cubed.Spec, optional
         The spec to use for the computation.
     read_chunks : tuple of ints, optional
-        If set, override the chunk size used for blockwise task granularity.
-        Each task reads a ``read_chunks``-sized region from the zarr store
-        (which may span multiple zarr chunks). Useful when the zarr is stored
-        at a fine chunk size but downstream blockwise ops should operate at a
-        coarser granularity.
+        If set, merge zarr chunks up to this size before downstream ops.
+        Each downstream task reads a ``read_chunks``-sized region (spanning
+        multiple zarr chunks). ``read_chunks`` must be an exact multiple of
+        the zarr chunk size in every dimension. The merge fuses with successor
+        operations, so no intermediate copy is written.
 
     Returns
     -------
