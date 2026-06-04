@@ -124,6 +124,19 @@ def test_from_zarr(tmp_path, spec, executor, path, zarr_format):
     )
 
 
+@pytest.mark.parametrize("chunks", [None, (2, 2), (6, 6)])
+def test_from_zarr_chunks(tmp_path, chunks):
+    store = store = tmp_path / "source.zarr"
+    create_zarr(
+        np.ones((10, 10)),
+        chunks=(2, 2),
+        store=store,
+    )
+    a = cubed.from_zarr(store, chunks=chunks)
+    assert a.chunks == chunks or (2, 2)
+    assert_array_equal(a.compute(), np.ones((10, 10)))
+
+
 def test_store(tmp_path, spec, executor):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
 

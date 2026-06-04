@@ -105,7 +105,7 @@ def _from_array(block, input_array, outchunks=None, asarray=None, block_id=None)
     return out
 
 
-def from_zarr(store, path=None, spec=None) -> "Array":
+def from_zarr(store, path=None, chunks=None, spec=None) -> "Array":
     """Load an array from Zarr storage.
 
     Parameters
@@ -114,6 +114,11 @@ def from_zarr(store, path=None, spec=None) -> "Array":
         Input Zarr store
     path : string, optional
         Group path
+    chunks : tuple of ints, optional
+         If set, merge zarr chunks up to this size before downstream ops.
+        Each downstream task reads a ``chunks``-sized region (spanning
+        multiple zarr chunks). ``chunks`` must be an exact multiple of
+        the zarr chunk size in every dimension.
     spec : cubed.Spec, optional
         The spec to use for the computation.
 
@@ -134,7 +139,10 @@ def from_zarr(store, path=None, spec=None) -> "Array":
     from cubed.array_api import Array
 
     plan = Plan._new(name, "from_zarr", target)
-    return Array(name, target, spec, plan)
+    arr = Array(name, target, spec, plan)
+    if chunks is not None:
+        arr = merge_chunks(arr, chunks)
+    return arr
 
 
 def store(
