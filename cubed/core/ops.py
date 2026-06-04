@@ -920,67 +920,6 @@ def _map_blocks(
     )
 
 
-def map_direct(
-    func, *args: "Array", shape, dtype, chunks, extra_projected_mem, spec=None, **kwargs
-) -> "Array":
-    """
-    Apply a function across blocks of a new array, reading directly from side inputs (not necessarily in a blockwise fashion).
-
-    Parameters
-    ----------
-    func : callable
-        Function to apply to every block to produce the output array.
-        Must accept ``block_id`` as a keyword argument (with same meaning as for ``map_blocks``).
-    args : arrays
-        The side-input arrays that may be accessed directly in the function.
-    shape : tuple
-        Shape of the output array.
-    dtype : np.dtype
-        The ``dtype`` of the output array.
-    chunks : tuple
-        Chunk shape of blocks in the output array.
-    extra_projected_mem : int
-        Extra memory projected to be needed (in bytes) for each map task. This should take into account the
-        memory allocations for any reads from the side-input arrays (``args``).
-    spec : Spec
-        Specification for the new array. If not specified, the one from the first side input
-        (`args`) will be used (if any).
-    """
-    warn(
-        "`map_direct` is pending deprecation, please use `map_selection` instead",
-        PendingDeprecationWarning,
-        stacklevel=2,
-    )
-
-    from cubed.array_api.creation_functions import empty_virtual_array
-
-    if spec is None and len(args) > 0 and hasattr(args[0], "spec"):
-        spec = args[0].spec
-
-    out = empty_virtual_array(shape, dtype=dtype, chunks=chunks, spec=spec)
-
-    kwargs["arrays"] = args
-
-    def new_func(func):
-        def wrap(*a, block_id=None, **kw):
-            arrays = kw.pop("arrays")
-            args = a + arrays
-            return func(*args, block_id=block_id, **kw)
-
-        return wrap
-
-    return map_blocks(
-        new_func(func),
-        out,
-        dtype=dtype,
-        chunks=chunks,
-        extra_source_arrays=args,
-        extra_projected_mem=extra_projected_mem,
-        fusable_with_predecessors=False,  # don't allow fusion with predecessors since side inputs are not accounted for
-        **kwargs,
-    )
-
-
 def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
     """Change the chunking of an array without changing its shape or data.
 
