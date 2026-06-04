@@ -221,8 +221,9 @@ def validate_deterministic(target_store, shape, target_chunks):
     print("phase 3: validating (deterministic check)...")
     target = cubed.from_zarr(target_store)
     expected = make_deterministic_source(shape, target_chunks)
+    callbacks = [RichProgressBar(), HistoryCallback()]
     t0 = time.perf_counter()
-    valid = bool(xp.all(xp.equal(target, expected)).compute())
+    valid = bool(xp.all(xp.equal(target, expected)).compute(callbacks=callbacks))
     elapsed = time.perf_counter() - t0
     print(f"  result: {'PASSED' if valid else 'FAILED'}  ({elapsed:.1f}s)")
     return valid, elapsed
