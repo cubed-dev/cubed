@@ -236,6 +236,13 @@ def _store_array(
             chunks=source.chunksize,
             path=path,
         )
+    # If the source was produced by a rechunk, use its read_chunks to copy at the
+    # same granularity as the rechunk tasks rather than one task per target chunk.
+    read_chunks = _get_source_read_chunks(source)
+    if read_chunks is not None and (
+        region is None or all(r == slice(None) for r in region)
+    ):
+        return _rechunk(source, read_chunks, source.chunksize, target_store=target)
     identity = lambda a: a
     blockwise_kwargs = blockwise_kwargs or {}
     if region is None or all(r == slice(None) for r in region):
@@ -1044,7 +1051,7 @@ def split_chunksizes(n: int, sc: int, tc: int) -> tuple[int]:
     return tuple(np.diff(c).tolist())
 
 
-def _rechunk(x, copy_chunks, target_chunks, allow_irregular=False):
+def _rechunk(x, copy_chunks, target_chunks, allow_irregular=False, target_store=None):
     # rechunk x so that its target store has target_chunks, using copy_chunks as the size of chunks for copying from source to target
 
     normalized_copy_chunks = normalize_chunks(copy_chunks, x.shape, dtype=x.dtype)
@@ -1069,6 +1076,10 @@ def _rechunk(x, copy_chunks, target_chunks, allow_irregular=False):
         math.ceil(c1 / c0) for c0, c1 in zip(x.chunksize, copy_chunks)
     )
 
+    target_stores_kwarg = (
+        {} if target_store is None else {"target_stores": [target_store]}
+    )
+
     return map_selection(
         None,  # no function to apply after selection
         selection_function,
@@ -1082,7 +1093,25 @@ def _rechunk(x, copy_chunks, target_chunks, allow_irregular=False):
         fusable_with_successors=False,
         op_name="rechunk",
         extra_projected_mem=copy_chunks_mem,
+        **target_stores_kwarg,
     )
+
+
+def _get_source_read_chunks(source):
+    """Return read_chunks from the op that produced source, if set and larger than source's chunk size."""
+    dag = source._plan.dag
+    preds = list(dag.predecessors(source.name))
+    if len(preds) != 1:
+        return None
+    op_data = dag.nodes[preds[0]]
+    prim_op = op_data.get("primitive_op")
+    if prim_op is None:
+        return None
+    read_chunks = prim_op.read_chunks
+    # Only useful when read_chunks is coarser than the zarr chunk size
+    if read_chunks is not None and read_chunks != source.chunksize:
+        return read_chunks
+    return None
 
 
 def merge_chunks(x, chunks):

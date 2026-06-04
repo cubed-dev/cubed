@@ -44,7 +44,13 @@ class PrimitiveOperation:
     """Whether this operation can be fused with successor operations."""
 
     write_chunks: Optional[T_RegularChunks] = None
-    """The chunk size used by this operation."""
+    """The chunk size written per task by this operation."""
+
+    read_chunks: Optional[T_RegularChunks] = None
+    """The preferred chunk size for consumers reading from this operation's output.
+
+    When set, a successor store operation should read at this granularity rather
+    than at the zarr chunk size, reducing the number of store tasks."""
 
 
 class CubedArrayProxy:

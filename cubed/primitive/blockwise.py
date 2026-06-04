@@ -490,6 +490,7 @@ def general_blockwise(
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
         write_chunks=chunksize,
+        read_chunks=chunksize,
     )
 
 
