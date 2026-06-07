@@ -345,6 +345,8 @@ def test_index_2d_no_op(spec, ind):
         (20, 8, slice(5, 18, 3), ((5,),)),
         # step is bigger than chunks
         (50, 5, slice(3, 50, 7), ((5, 2),)),
+        # negative step
+        (20, 4, slice(14, 3, -2), ((4, 2),)),
     ],
 )
 def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
@@ -363,6 +365,18 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
             (4, 4),
             (slice(3, 14, 2), slice(3, 14, 3)),
             ((4, 2), (3, 1),),
+        ),
+        (
+            (20, 20),
+            (4, 4),
+            (slice(14, 3, -2), slice(3, 14, 3)),
+            ((4, 2), (3, 1),),
+        ),
+        (
+            (20, 20),
+            (4, 4),
+            (slice(14, 3, -2), slice(14, 3, -3)),
+            ((4, 2), (4,),),
         ),
     ],
 )
@@ -387,12 +401,6 @@ def test_index_zero_dim(shape, chunks, ind):
     a = xp.ones(shape, chunks=chunks)
     b = a[ind]
     assert_array_equal(b.compute(), np.ones(shape)[ind])
-
-
-def test_index_slice_unsupported_step(spec):
-    a = xp.arange(12, chunks=(4,), spec=spec)
-    with pytest.raises(NotImplementedError):
-        a[::-1]
 
 
 @pytest.mark.parametrize("axis", [0, 1, -1, -2])

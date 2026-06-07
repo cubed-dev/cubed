@@ -43,11 +43,19 @@ def index(x, key):
         if n:
             where_newaxis[i] -= n
     idx = ndindex.Tuple(*(ia for ia in idx.args if not isinstance(ia, ndindex.Newaxis)))
-    selection = idx.raw
+    selection = list(idx.raw)
+
+    # Use trick from xarray for negative step values
+    where_negative_step = []
+    for i, ia in enumerate(idx.args):
+        if isinstance(ia, ndindex.Slice) and ia.step < 0:
+            where_negative_step.append(i)
+            pos_slice = _convert_slice_with_negative_step(selection[i], x.shape[i])
+            selection[i] = pos_slice
+    where_negative_step = tuple(where_negative_step)
+    selection = tuple(selection)
 
     # Check selection is supported
-    if any(ia.step < 1 for ia in idx.args if isinstance(ia, ndindex.Slice)):
-        raise NotImplementedError(f"Slice step must be >= 1: {key}")
     if not all(
         isinstance(ia, (ndindex.Integer, ndindex.Slice, ndindex.IntegerArray))
         for ia in idx.args
@@ -140,12 +148,27 @@ def index(x, key):
         if chunks != merged_chunks:
             out = merge_chunks(out, merged_chunks)
 
+    if len(where_negative_step) > 0:
+        from cubed.array_api.manipulation_functions import flip
+
+        out = flip(out, axis=where_negative_step)
+
     for axis in where_newaxis:
         from cubed.array_api.manipulation_functions import expand_dims
 
         out = expand_dims(out, axis=axis)
 
     return out
+
+
+def _convert_slice_with_negative_step(key: slice, size: int) -> slice:
+    """Convert a slice with a negative step to one with a positive
+    step, which must then be followed by a flip.
+    """
+    # see https://github.com/pydata/xarray/blob/99ee8c6ca54057a9b994d7685f36236f2d5a69d9/xarray/core/indexing.py#L1056
+    start, stop, step = key.indices(size)
+    exact_stop = range(start, stop, step)[-1]
+    return slice(exact_stop, start + 1, -step)
 
 
 def _index_num_input_blocks(
