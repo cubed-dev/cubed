@@ -122,8 +122,6 @@ jobs:
           array_api_tests/test_signatures.py::test_array_method_signature[__setitem__]
           array_api_tests/test_signatures.py::test_array_method_signature[to_device]
 
-          # (getitem with negative step size is not implemented)
-          array_api_tests/test_array_object.py::test_getitem
           # (indexing with more than one integer index is not implemented)
           array_api_tests/test_array_object.py::test_getitem_arrays_and_ints_1
           array_api_tests/test_array_object.py::test_getitem_arrays_and_ints_2
