@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 import zarr
 
@@ -24,9 +24,9 @@ zarr.config.set(
 class ZarrV3ArrayGroup(dict):
     def __init__(
         self,
-        shape: Optional[T_Shape] = None,
-        dtype: Optional[T_DType] = None,
-        chunks: Optional[T_RegularChunks] = None,
+        shape: T_Shape | None = None,
+        dtype: T_DType | None = None,
+        chunks: T_RegularChunks | None = None,
     ):
         dict.__init__(self)
         self.shape = shape
@@ -44,12 +44,12 @@ class ZarrV3ArrayGroup(dict):
 
 def open_zarr_v3_array(
     store: T_Store,
-    mode: Optional[Literal["r", "r+", "a", "w", "w-"]],
+    mode: Literal["r", "r+", "a", "w", "w-"] | None,
     *,
-    shape: Optional[T_Shape] = None,
-    dtype: Optional[T_DType] = None,
-    chunks: Optional[T_RegularChunks] = None,
-    path: Optional[str] = None,
+    shape: T_Shape | None = None,
+    dtype: T_DType | None = None,
+    chunks: T_RegularChunks | None = None,
+    path: str | None = None,
     **kwargs,
 ):
     # use obstore if explicitly requested, or if library is installed and store is a cloud store

@@ -1,8 +1,8 @@
 from bisect import bisect
+from collections.abc import Iterator
 from functools import reduce
 from itertools import accumulate, chain
 from operator import add, mul
-from typing import Iterator
 
 from cubed.array_api.creation_functions import empty
 from cubed.backend_array_api import IS_IMMUTABLE_ARRAY

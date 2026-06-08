@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, List, Sequence, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Union
 
 import zarr
 from icechunk.distributed import merge_sessions
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 def store_icechunk(
     *,
     sources: Union["Array", Sequence["Array"]],
-    targets: List[zarr.Array],
+    targets: list[zarr.Array],
     regions: tuple[slice, ...] | list[tuple[slice, ...]] | None = None,
     executor=None,
     **kwargs: Any,

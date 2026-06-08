@@ -2,7 +2,8 @@ import asyncio
 import contextlib
 import os
 from asyncio.exceptions import TimeoutError
-from typing import Any, Callable, Optional, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import modal
 from modal.exception import ConnectionError
@@ -150,9 +151,9 @@ class ModalExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -186,10 +187,10 @@ class ModalExecutor(DagExecutor):
     async def _async_execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        cloud: Optional[str] = None,
-        compute_arrays_in_parallel: Optional[bool] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        cloud: str | None = None,
+        compute_arrays_in_parallel: bool | None = None,
         **kwargs,
     ) -> None:
         if spec is not None:

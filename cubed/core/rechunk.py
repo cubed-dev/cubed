@@ -2,9 +2,9 @@
 
 import logging
 import warnings
+from collections.abc import Sequence
 from dataclasses import dataclass
 from math import floor, prod
-from typing import List, Optional, Sequence
 
 import numpy as np
 
@@ -160,9 +160,9 @@ def multistage_regular_rechunking_plan(
         write_chunks = tuple(target_chunks)
 
     if consolidate_reads:
-        read_chunk_limits: List[Optional[int]] = []
+        read_chunk_limits: list[int | None] = []
         for sc, wc in zip(source_chunks, write_chunks):
-            limit: Optional[int]
+            limit: int | None
             if wc > sc:
                 # consolidate reads over this axis, up to the write chunk size
                 limit = wc
@@ -180,8 +180,8 @@ def multistage_regular_rechunking_plan(
     else:
         read_chunks = tuple(source_chunks)
 
-    prev_io_ops: Optional[float] = None
-    prev_plan: Optional[_MultistagePlan] = None
+    prev_io_ops: float | None = None
+    prev_plan: _MultistagePlan | None = None
 
     # increase the number of stages until min_mem is exceeded
     for stage_count in range(1, MAX_STAGES):
@@ -253,10 +253,10 @@ class RechunkCopy:
     target_chunks: T_RegularChunks
     """The chunks of the target array for this copy operation."""
 
-    source_aligned: Optional[bool] = None
+    source_aligned: bool | None = None
     """Are copy chunks aligned with source chunks?"""
 
-    target_aligned: Optional[bool] = None
+    target_aligned: bool | None = None
     """
     Are copy chunks aligned with target chunks?
     If not then irregular chunking must be used.

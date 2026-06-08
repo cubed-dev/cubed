@@ -1,6 +1,5 @@
 from dataclasses import asdict
 from pathlib import Path
-from typing import Optional
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -15,7 +14,7 @@ matplotlib.use("Agg")
 
 
 class TimelineVisualizationCallback(Callback):
-    def __init__(self, format: Optional[str] = "svg") -> None:
+    def __init__(self, format: str | None = "svg") -> None:
         self.format = format
 
     def on_compute_start(self, event):

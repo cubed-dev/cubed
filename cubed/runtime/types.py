@@ -1,6 +1,7 @@
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from types import TracebackType
-from typing import Any, Callable, ClassVar, Iterable, Optional
+from typing import Any, ClassVar
 
 from networkx import MultiDiGraph
 
@@ -89,25 +90,25 @@ class TaskEndEvent:
     num_tasks: int = 1
     """Number of tasks that this event applies to (default 1)."""
 
-    result: Optional[Any] = None
+    result: Any | None = None
     """Return value of the task."""
 
-    task_create_tstamp: Optional[float] = None
+    task_create_tstamp: float | None = None
     """Timestamp of when the task was created by the client."""
 
-    function_start_tstamp: Optional[float] = None
+    function_start_tstamp: float | None = None
     """Timestamp of when the function started executing on the remote worker."""
 
-    function_end_tstamp: Optional[float] = None
+    function_end_tstamp: float | None = None
     """Timestamp of when the function finished executing on the remote worker."""
 
-    task_result_tstamp: Optional[float] = None
+    task_result_tstamp: float | None = None
     """Timestamp of when the result of the task was received by the client."""
 
-    peak_measured_mem_start: Optional[int] = None
+    peak_measured_mem_start: int | None = None
     """Peak memory usage measured on the remote worker before the function starts executing."""
 
-    peak_measured_mem_end: Optional[int] = None
+    peak_measured_mem_end: int | None = None
     """Peak memory usage measured on the remote worker after the function finishes executing."""
 
 

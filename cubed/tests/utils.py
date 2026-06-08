@@ -1,6 +1,6 @@
 import platform
 from collections import Counter
-from typing import Iterable
+from collections.abc import Iterable
 
 import networkx as nx
 import numpy as np

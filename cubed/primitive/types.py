@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any
 
 import zarr
 
@@ -15,7 +15,7 @@ class PrimitiveOperation:
     pipeline: CubedPipeline
     """The pipeline that runs this operation."""
 
-    source_array_names: List[str]
+    source_array_names: list[str]
     """The names of the arrays which are inputs to this operation."""
 
     target_array: Any
@@ -43,7 +43,7 @@ class PrimitiveOperation:
     fusable_with_successors: bool = True
     """Whether this operation can be fused with successor operations."""
 
-    write_chunks: Optional[T_RegularChunks] = None
+    write_chunks: T_RegularChunks | None = None
     """The chunk size used by this operation."""
 
 

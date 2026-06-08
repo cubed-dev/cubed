@@ -1,5 +1,4 @@
 from functools import cached_property, lru_cache
-from typing import Optional, Union
 
 import donfig
 from donfig.config_obj import expand_environment_variables
@@ -15,16 +14,16 @@ class Spec:
 
     def __init__(
         self,
-        work_dir: Union[str, None] = None,
+        work_dir: str | None = None,
         *,
-        intermediate_store: Union[T_Store, None] = None,
-        allowed_mem: Union[int, str, None] = None,
-        reserved_mem: Union[int, str, None] = 0,
-        executor: Union[Executor, None] = None,
-        executor_name: Optional[str] = None,
-        executor_options: Optional[dict] = None,
-        storage_options: Union[dict, None] = None,
-        zarr_compressor: Union[dict, str, None] = "auto",
+        intermediate_store: T_Store | None = None,
+        allowed_mem: int | str | None = None,
+        reserved_mem: int | str | None = 0,
+        executor: Executor | None = None,
+        executor_name: str | None = None,
+        executor_options: dict | None = None,
+        storage_options: dict | None = None,
+        zarr_compressor: dict | str | None = "auto",
     ):
         """
         Specify resources available to run a computation.
@@ -73,7 +72,7 @@ class Spec:
         self._intermediate_store = intermediate_store
 
     @property
-    def work_dir(self) -> Optional[str]:
+    def work_dir(self) -> str | None:
         """The directory path (specified as an fsspec or obstore URL) used for storing intermediate data."""
         return self._work_dir
 
@@ -98,7 +97,7 @@ class Spec:
         return self._reserved_mem
 
     @cached_property
-    def executor(self) -> Optional[Executor]:
+    def executor(self) -> Executor | None:
         """The default executor for running computations."""
         if self._executor is not None:
             return self._executor
@@ -107,25 +106,25 @@ class Spec:
         return None
 
     @property
-    def executor_name(self) -> Optional[str]:
+    def executor_name(self) -> str | None:
         return self._executor_name
 
     @property
-    def executor_options(self) -> Optional[dict]:
+    def executor_options(self) -> dict | None:
         return self._executor_options
 
     @property
-    def storage_options(self) -> Optional[dict]:
+    def storage_options(self) -> dict | None:
         """Storage options to be passed to fsspec."""
         return self._storage_options
 
     @property
-    def zarr_compressor(self) -> Union[dict, str, None]:
+    def zarr_compressor(self) -> dict | str | None:
         """The compressor used by Zarr for intermediate data."""
         return self._zarr_compressor
 
     @property
-    def intermediate_store(self) -> Union[T_Store, None]:
+    def intermediate_store(self) -> T_Store | None:
         """The Zarr store for intermediate data. Takes precedence over ``work_dir``."""
         return self._intermediate_store
 

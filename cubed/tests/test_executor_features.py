@@ -70,7 +70,7 @@ def mock_apply_blockwise(*args, **kwargs):
     global mock_call_counter
     mock_call_counter += 1
     if mock_call_counter % 3 == 0:
-        raise IOError("Test fault injection")
+        raise OSError("Test fault injection")
     return apply_blockwise(*args, **kwargs)
 
 

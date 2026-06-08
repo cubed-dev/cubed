@@ -5,10 +5,11 @@ import shutil
 import tempfile
 import uuid
 import warnings
+from collections.abc import Callable
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Callable, Dict, List, Literal, Optional, Tuple
+from typing import Any, Literal
 
 import networkx as nx
 
@@ -188,7 +189,7 @@ class Plan:
 
     def optimize(
         self,
-        optimize_function: Optional[Callable[..., nx.MultiDiGraph]] = None,
+        optimize_function: Callable[..., nx.MultiDiGraph] | None = None,
     ):
         if optimize_function is None:
             optimize_function = multiple_inputs_optimize_dag
@@ -272,7 +273,7 @@ class Plan:
 
         return dag
 
-    def _find_ops_exceeding_memory(self, dag) -> List[Tuple[str, "PrimitiveOperation"]]:
+    def _find_ops_exceeding_memory(self, dag) -> list[tuple[str, "PrimitiveOperation"]]:
         """Find all operations where projected memory exceeds allowed memory.
 
         Returns a list of (op_name, primitive_op) tuples for operations that
@@ -293,7 +294,7 @@ class Plan:
         self,
         optimize_graph: bool = True,
         optimize_function=None,
-        compile_function: Optional[Decorator] = None,
+        compile_function: Decorator | None = None,
     ) -> "FinalizedPlan":
         dag = self.optimize(optimize_function).dag if optimize_graph else self.dag
         # create a copy since _create_lazy_zarr_arrays mutates the dag
@@ -546,7 +547,7 @@ class FinalizedPlan:
         return len(self._ops_exceeding_memory) > 0
 
     @property
-    def ops_exceeding_memory(self) -> List[Tuple[str, "PrimitiveOperation"]]:
+    def ops_exceeding_memory(self) -> list[tuple[str, "PrimitiveOperation"]]:
         """List of (op_name, primitive_op) tuples for operations exceeding memory.
 
         Sorted by projected memory (highest first).
@@ -903,7 +904,7 @@ def create_zarr_arrays(lazy_zarr_arrays, allowed_mem, reserved_mem):
     )
 
 
-def already_computed(name, dag, nodes: Dict[str, Any]) -> bool:
+def already_computed(name, dag, nodes: dict[str, Any]) -> bool:
     """
     Return True if the array for a node doesn't have a pipeline to compute it,
     or if all its outputs have already been computed (all chunks are present).

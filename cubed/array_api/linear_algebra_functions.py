@@ -1,5 +1,5 @@
+from collections.abc import Iterable
 from numbers import Integral
-from typing import Iterable
 
 from cubed.array_api.data_type_functions import result_type
 from cubed.array_api.dtypes import _numeric_dtypes

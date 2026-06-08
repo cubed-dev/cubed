@@ -5,7 +5,7 @@ import platform
 import sys
 import sysconfig
 import traceback
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from functools import partial, reduce
 from itertools import accumulate
@@ -14,7 +14,7 @@ from operator import add, mul
 from pathlib import Path
 from posixpath import join
 from types import FrameType
-from typing import Any, Callable, Dict, Optional, Tuple, Union, cast
+from typing import Any, Union, cast
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import numpy as np
@@ -52,17 +52,17 @@ def array_size(shape: T_Shape) -> int:
     return reduce(mul, shape, 1)
 
 
-def offset_to_block_id(offset: int, numblocks: Tuple[int, ...]) -> Tuple[int, ...]:
+def offset_to_block_id(offset: int, numblocks: tuple[int, ...]) -> tuple[int, ...]:
     """Convert an index offset to a block ID (chunk coordinates)."""
     return tuple(int(i) for i in np.unravel_index(offset, numblocks))
 
 
-def block_id_to_offset(block_id: Tuple[int, ...], numblocks: Tuple[int, ...]) -> int:
+def block_id_to_offset(block_id: tuple[int, ...], numblocks: tuple[int, ...]) -> int:
     """Convert a block ID (chunk coordinates) to an index offset."""
     return int(np.ravel_multi_index(block_id, numblocks))
 
 
-def get_item(chunks: T_RectangularChunks, idx: Tuple[int, ...]) -> Tuple[slice, ...]:
+def get_item(chunks: T_RectangularChunks, idx: tuple[int, ...]) -> tuple[slice, ...]:
     """Convert a chunk index to a tuple of slices."""
     # could use Dask's cached_cumsum here if it improves performance
     starts = tuple(_cumsum(c, initial_zero=True) for c in chunks)
@@ -162,7 +162,7 @@ def to_chunksize(chunkset: T_RectangularChunks) -> T_RegularChunks:
     return tuple(max(c[0], 1) for c in chunkset)
 
 
-def numblocks(chunks: T_RectangularChunks) -> Tuple[int, ...]:
+def numblocks(chunks: T_RectangularChunks) -> tuple[int, ...]:
     return tuple(map(len, chunks))
 
 
@@ -197,7 +197,7 @@ class StackSummary:
 
 
 def extract_stack_summaries(
-    frame: Optional[FrameType], limit: Optional[int] = None
+    frame: FrameType | None, limit: int | None = None
 ) -> list[StackSummary]:
     """Like Python's ``StackSummary.extract``, but returns module information."""
     frame_gen: Iterable[tuple[FrameType, int]] = traceback.walk_stack(frame)
@@ -274,7 +274,7 @@ def extract_array_names_from_stack_summaries(
     return array_display_names
 
 
-def convert_to_bytes(size: Union[int, float, str]) -> int:
+def convert_to_bytes(size: int | float | str) -> int:
     """
     Converts the input data size to bytes.
 
@@ -289,7 +289,7 @@ def convert_to_bytes(size: Union[int, float, str]) -> int:
     -------
     int: The size in bytes
     """
-    units: Dict[str, int] = {"kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
+    units: dict[str, int] = {"kB": 1, "MB": 2, "GB": 3, "TB": 4, "PB": 5}
 
     def is_numeric_str(s: str) -> bool:
         try:
@@ -357,7 +357,7 @@ def broadcast_trick(
     return inner
 
 
-def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> T_Shape:
+def normalize_shape(shape: int | tuple[int, ...] | None) -> T_Shape:
     """Normalize a `shape` argument to a tuple of ints."""
 
     if shape is None:
@@ -366,7 +366,7 @@ def normalize_shape(shape: Union[int, Tuple[int, ...], None]) -> T_Shape:
     if isinstance(shape, int):
         shape = (shape,)
 
-    shape = cast(Tuple[int, ...], shape)
+    shape = cast(tuple[int, ...], shape)
     shape = tuple(int(s) for s in shape)
     return shape
 
@@ -394,10 +394,10 @@ def itemsize(dtype: T_DType) -> int:
 
 def normalize_chunks(
     chunks: T_Chunks,
-    shape: Optional[T_Shape] = None,
-    limit: Optional[int] = None,
-    dtype: Optional[T_DType] = None,
-    previous_chunks: Optional[T_RectangularChunks] = None,
+    shape: T_Shape | None = None,
+    limit: int | None = None,
+    dtype: T_DType | None = None,
+    previous_chunks: T_RectangularChunks | None = None,
 ) -> T_RectangularChunks:
     return dask_normalize_chunks(
         chunks, shape=shape, limit=limit, dtype=dtype, previous_chunks=previous_chunks

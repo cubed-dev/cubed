@@ -141,9 +141,9 @@ def apply_gufunc(
         # Check if core dimensions consist of only one chunk
         if (dim in core_shapes) and (chunksizes[0][0] < core_shapes[dim]):
             raise ValueError(
-                "Core dimension `'{}'` consists of multiple chunks. To fix, rechunk into a single \
+                f"Core dimension `'{dim}'` consists of multiple chunks. To fix, rechunk into a single \
 chunk along this dimension, but beware that this may increase memory usage \
-significantly.".format(dim)
+significantly."
             )
         # Check if loop dimensions consist of same chunksizes, when they have sizes > 1
         relevant_chunksizes = list(

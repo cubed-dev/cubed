@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List, Optional
 
 from cubed.spec import Spec
 from cubed.utils import is_cloud_storage_path
@@ -16,7 +15,7 @@ class BufferCopies:
     """The number of copies made when writing an array to storage."""
 
 
-def get_buffer_copies(spec: Optional[Spec]) -> BufferCopies:
+def get_buffer_copies(spec: Spec | None) -> BufferCopies:
     """Return the number of buffer copies to use, based on the spec.
 
     Using cloud storage will result in more buffer copies being accounted for.
@@ -37,7 +36,7 @@ def get_buffer_copies(spec: Optional[Spec]) -> BufferCopies:
 
 def calculate_projected_mem(
     reserved_mem: int,
-    inputs: List[int],
+    inputs: list[int],
     operation: int,
     output: int,
     buffer_copies: BufferCopies,
