@@ -106,7 +106,8 @@ def test_rechunk_era5_chunk_sizes(spec):
     ]
 
 
-def test_rechunk_and_store():
+@pytest.mark.parametrize("target", [None, "output.zarr"])
+def test_rechunk_and_store(tmp_path, target):
     # from https://github.com/cubed-dev/cubed/issues/859
     shape = (394488, 778, 706)
     source_chunks = (24, 778, 706)
@@ -119,7 +120,9 @@ def test_rechunk_and_store():
     num_tasks = b.plan().num_tasks
 
     # simulate what to_zarr or store does
-    c = _store_array(b, None)
+    if target is not None:
+        target = tmp_path / target
+    c = _store_array(b, target)
 
     c.visualize()
 

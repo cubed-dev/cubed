@@ -35,7 +35,7 @@ from cubed.primitive.blockwise import general_blockwise as primitive_general_blo
 from cubed.primitive.memory import get_buffer_copies
 from cubed.spec import spec_from_config
 from cubed.storage.store import is_storage_array, open_storage_array
-from cubed.storage.zarr import lazy_zarr_array
+from cubed.storage.zarr import LazyZarrArray, lazy_zarr_array
 from cubed.types import T_RectangularChunks, T_RegularChunks, T_Shape
 from cubed.utils import (
     array_memory,
@@ -236,18 +236,57 @@ def _store_array(
     identity = lambda a: a
     blockwise_kwargs = blockwise_kwargs or {}
     if region is None or all(r == slice(None) for r in region):
-        ind = tuple(range(source.ndim))
-        return blockwise(
-            identity,
-            ind,
-            source,
-            ind,
-            dtype=source.dtype,
-            align_arrays=False,
-            target_store=target,
-            fusable_with_successors=False,
-            **blockwise_kwargs,
-        )
+        if not isinstance(source._zarray, LazyZarrArray):
+            ind = tuple(range(source.ndim))
+            return blockwise(
+                identity,
+                ind,
+                source,
+                ind,
+                dtype=source.dtype,
+                align_arrays=False,
+                target_store=target,
+                fusable_with_successors=False,
+                **blockwise_kwargs,
+            )
+        else:
+            # TODO: allow late assignment of array stores so we don't have to re-wire
+            # and update write proxy
+
+            # replace source target array with new target
+            source._zarray = target
+
+            # replace plan target array with new target
+            for n, d in source._plan.dag.nodes(data=True):
+                if n == source.name and "target" in d:
+                    d["target"] = target
+
+            # update predecessor ops
+            from cubed.core.optimization import predecessors_unordered
+
+            predecessor_ops = [
+                pre for pre in predecessors_unordered(source._plan.dag, source.name)
+            ]
+            for n, d in source._plan.dag.nodes(data=True):
+                if n not in predecessor_ops:
+                    continue
+                if "primitive_op" in d:
+                    # replace primitive op target array with new target
+                    # and mark as not fusable with successors as store must be written
+                    op = d["primitive_op"]
+                    op.target_array = target
+                    op.fusable_with_successors = False
+
+                    # replace write proxy target array with new target
+                    pipeline = op.pipeline
+                    writes_map = pipeline.config.writes_map
+                    if source.name in writes_map:
+                        writes_map[source.name].array = target
+                    if blockwise_kwargs.get("return_writes_stores", False):
+                        pipeline.config.return_writes_stores = True
+            # return the updated source
+            return source
+
     else:
         # treat a region as an offset within the target store
         shape = target.shape

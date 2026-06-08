@@ -405,6 +405,51 @@ def test_to_zarr_region_fails(tmp_path):
         cubed.to_zarr(a[:4, :3], z, region=region)
 
 
+@pytest.mark.parametrize("optimize_graph", [False, True])
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_to_zarr_from_in_mem(tmp_path, optimize_graph):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    store = tmp_path / "output.zarr"
+    b = cubed.to_zarr(a, store, compute=False)
+    b.compute(optimize_graph=optimize_graph)
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
+@pytest.mark.parametrize("optimize_graph", [False, True])
+def test_to_zarr_from_op(tmp_path, optimize_graph):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    b = xp.negative(a)
+    store = tmp_path / "output.zarr"
+    c = cubed.to_zarr(b, store, compute=False)
+    c.compute(optimize_graph=optimize_graph)
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]]))
+
+
+@pytest.mark.parametrize("optimize_graph", [False, True])
+def test_to_zarr_from_rechunk(tmp_path, optimize_graph):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    b = a.rechunk((3, 1))
+    store = tmp_path / "output.zarr"
+    c = cubed.to_zarr(b, store, compute=False)
+    c.compute(optimize_graph=optimize_graph)
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+
+
+@pytest.mark.parametrize("optimize_graph", [False, True])
+def test_to_zarr_from_rechunk_and_op(tmp_path, optimize_graph):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2))
+    b = a.rechunk((3, 1))
+    c = xp.negative(b)
+    store = tmp_path / "output.zarr"
+    d = cubed.to_zarr(c, store, compute=False)
+    d.compute(optimize_graph=optimize_graph)
+    res = open_storage_array(store, mode="r")
+    assert_array_equal(res[:], np.array([[-1, -2, -3], [-4, -5, -6], [-7, -8, -9]]))
+
+
 def test_map_blocks_with_kwargs(spec, executor):
     # based on dask test
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=5, spec=spec)
