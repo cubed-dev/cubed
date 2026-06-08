@@ -19,7 +19,6 @@ from typing import (
 from warnings import warn
 
 import numpy as np
-import zarr
 from tlz import first, partition
 
 from cubed import config
@@ -684,16 +683,11 @@ def elemwise(func, *args: "Array", dtype=None) -> "Array":
 
 
 def _create_zarr_indexer(selection, shape, chunks):
-    if zarr.__version__[0] == "3":
-        from zarr.core.chunk_grids import ChunkGrid
-        from zarr.core.indexing import OrthogonalIndexer
+    from zarr.core.chunk_grids import ChunkGrid
+    from zarr.core.indexing import OrthogonalIndexer
 
-        chunk_grid = ChunkGrid.from_sizes(array_shape=shape, chunk_sizes=chunks)
-        return OrthogonalIndexer(selection, shape, chunk_grid)
-    else:
-        from zarr.indexing import OrthogonalIndexer
-
-        return OrthogonalIndexer(selection, ZarrArrayIndexingAdaptor(shape, chunks))
+    chunk_grid = ChunkGrid.from_sizes(array_shape=shape, chunk_sizes=chunks)
+    return OrthogonalIndexer(selection, shape, chunk_grid)
 
 
 @dataclass
