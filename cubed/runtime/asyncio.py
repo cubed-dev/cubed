@@ -2,16 +2,9 @@ import asyncio
 import copy
 import time
 from asyncio import Future
+from collections.abc import AsyncIterator, Callable, Iterable, Sequence
 from typing import (
     Any,
-    AsyncIterator,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
 )
 
 from aiostream import stream
@@ -30,15 +23,13 @@ from cubed.runtime.utils import (
 
 
 async def async_map_unordered(
-    create_futures_func: Callable[..., List[Tuple[Any, Future]]],
+    create_futures_func: Callable[..., list[tuple[Any, Future]]],
     input: Iterable[Any],
     use_backups: bool = False,
-    create_backup_futures_func: Optional[
-        Callable[..., List[Tuple[Any, Future]]]
-    ] = None,
-    batch_size: Optional[int] = None,
+    create_backup_futures_func: Callable[..., list[tuple[Any, Future]]] | None = None,
+    batch_size: int | None = None,
     return_stats: bool = False,
-    name: Optional[str] = None,
+    name: str | None = None,
     **kwargs: Any,
 ) -> AsyncIterator[Any]:
     """
@@ -60,7 +51,7 @@ async def async_map_unordered(
     t = time.monotonic()
     start_times = {f: t for f in pending}
     end_times = {}
-    backups: Dict[asyncio.Future, asyncio.Future] = {}
+    backups: dict[asyncio.Future, asyncio.Future] = {}
 
     while pending:
         finished, pending = await asyncio.wait(
@@ -126,8 +117,8 @@ async def async_map_unordered(
 async def async_map_dag(
     create_futures_func: Callable,
     dag: MultiDiGraph,
-    callbacks: Optional[Sequence[Callback]] = None,
-    compute_arrays_in_parallel: Optional[bool] = None,
+    callbacks: Sequence[Callback] | None = None,
+    compute_arrays_in_parallel: bool | None = None,
     **kwargs: Any,
 ) -> None:
     """

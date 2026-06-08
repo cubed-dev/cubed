@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional
 
 import memray
 from memray._memray import compute_statistics
@@ -26,8 +25,8 @@ class Allocation:
     object_id: str
     allocation_type: AllocationType
     memory: int
-    address: Optional[int] = None
-    call: Optional[str] = None
+    address: int | None = None
+    call: str | None = None
 
     def __repr__(self) -> str:
         return f"{self.object_id} {self.allocation_type.name} {self.memory or ''} {self.address or ''} {self.call or ''}"
@@ -38,8 +37,8 @@ class MemrayCallback(Callback):
 
     def __init__(self, mem_threshold=50_000_000) -> None:
         self.mem_threshold = mem_threshold
-        self.allocations: Dict[str, Allocation] = {}
-        self.stats: Dict[str, Stats] = {}
+        self.allocations: dict[str, Allocation] = {}
+        self.stats: dict[str, Stats] = {}
 
     def on_compute_end(self, event):
         for name, _ in visit_nodes(event.dag):

@@ -1,6 +1,6 @@
 from functools import reduce
 from operator import mul
-from typing import Literal, Optional, TypeVar
+from typing import Literal, TypeVar
 
 from cubed import config
 from cubed.backend_array_api import namespace as nxp
@@ -397,7 +397,7 @@ class PeakMeasuredMemoryCallback(Callback):
 
 
 def measure_reserved_mem(
-    executor: Executor, work_dir: Optional[str] = None, **kwargs
+    executor: Executor, work_dir: str | None = None, **kwargs
 ) -> int:
     """Measures the reserved memory use for a given executor runtime.
 

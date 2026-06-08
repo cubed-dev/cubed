@@ -1,4 +1,5 @@
-from typing import Any, Mapping, Optional, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import coiled
 from networkx import MultiDiGraph
@@ -31,9 +32,9 @@ class CoiledExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **coiled_kwargs: Mapping[str, Any],
     ) -> None:
         merged_kwargs = {**self.kwargs, **coiled_kwargs}

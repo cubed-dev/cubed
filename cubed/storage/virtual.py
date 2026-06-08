@@ -1,5 +1,5 @@
 from numbers import Integral
-from typing import TYPE_CHECKING, Any, Tuple
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -109,7 +109,7 @@ class VirtualInMemoryArray(VirtualArray):
         return self.array.__getitem__(key)
 
 
-def _key_to_index_tuple(selection: "Selection") -> Tuple[int, ...]:
+def _key_to_index_tuple(selection: "Selection") -> tuple[int, ...]:
     if isinstance(selection, (slice, Integral)):
         selection = (selection,)
     assert all(isinstance(s, (slice, Integral)) for s in selection)  # type: ignore[union-attr]

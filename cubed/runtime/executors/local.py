@@ -1,9 +1,10 @@
 import asyncio
 import multiprocessing
 import os
+from collections.abc import Callable, Sequence
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import partial
-from typing import Any, Callable, Optional, Sequence
+from typing import Any
 
 import cloudpickle
 import psutil
@@ -39,9 +40,9 @@ class SingleThreadedExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs: Any,
     ) -> None:
         for name, node in visit_nodes(dag):
@@ -82,7 +83,7 @@ def unpickle_and_call(f, inp, **kwargs):
     return f(inp, **kwargs)
 
 
-def check_runtime_memory(spec: Optional[Spec], max_workers: int) -> None:
+def check_runtime_memory(spec: Spec | None, max_workers: int) -> None:
     allowed_mem = spec.allowed_mem if spec is not None else None
     total_mem = psutil.virtual_memory().total
     if allowed_mem is not None:
@@ -131,9 +132,9 @@ class ThreadsExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs: Any,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -150,9 +151,9 @@ class ThreadsExecutor(DagExecutor):
     async def _async_execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_arrays_in_parallel: Optional[bool] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_arrays_in_parallel: bool | None = None,
         **kwargs: Any,
     ) -> None:
         max_workers = kwargs.pop("max_workers", os.cpu_count())
@@ -221,9 +222,9 @@ class ProcessesExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs: Any,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -240,9 +241,9 @@ class ProcessesExecutor(DagExecutor):
     async def _async_execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_arrays_in_parallel: Optional[bool] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_arrays_in_parallel: bool | None = None,
         **kwargs: Any,
     ) -> None:
         max_workers = kwargs.pop("max_workers", os.cpu_count())

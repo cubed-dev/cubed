@@ -1,11 +1,12 @@
 import asyncio
 import time
+from collections.abc import Coroutine, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import nullcontext
 from functools import partial
 from itertools import islice
 from pathlib import Path
-from typing import Any, Coroutine, Dict, Iterable, Optional, TypeVar
+from typing import Any, TypeVar
 
 from cubed.runtime.types import (
     Callback,
@@ -108,7 +109,7 @@ def profile_memray(func):
 
 
 def handle_operation_start_callbacks(
-    callbacks: Optional[Iterable[Callback]], name: str
+    callbacks: Iterable[Callback] | None, name: str
 ) -> None:
     if callbacks is not None:
         event = OperationStartEvent(name)
@@ -124,9 +125,9 @@ def handle_operation_end_callbacks(callbacks, name) -> None:
 
 
 def handle_callbacks(
-    callbacks: Optional[Iterable[Callback]],
-    result: Optional[Any],
-    stats: Dict[str, Any],
+    callbacks: Iterable[Callback] | None,
+    result: Any | None,
+    stats: dict[str, Any],
 ) -> None:
     """Construct a TaskEndEvent from stats and send to all callbacks."""
 

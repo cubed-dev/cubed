@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Union
 
 import zarr
 
@@ -21,7 +21,7 @@ class LazyZarrArray(ArrayMetadata):
         shape: T_Shape,
         dtype: T_DType,
         chunks: T_RegularChunks,
-        path: Optional[str] = None,
+        path: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Create a Zarr array lazily in memory."""
@@ -31,7 +31,7 @@ class LazyZarrArray(ArrayMetadata):
         self.kwargs = kwargs
 
     def create(
-        self, mode: Optional[Literal["r", "r+", "a", "w", "w-"]] = "w-"
+        self, mode: Literal["r", "r+", "a", "w", "w-"] | None = "w-"
     ) -> zarr.Array:
         """Create the Zarr array in storage.
 
@@ -83,7 +83,7 @@ def lazy_zarr_array(
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_RegularChunks,
-    path: Optional[str] = None,
+    path: str | None = None,
     **kwargs: Any,
 ) -> LazyZarrArray:
     return LazyZarrArray(

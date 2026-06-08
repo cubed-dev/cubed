@@ -1,4 +1,5 @@
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from networkx import MultiDiGraph
 from pyspark.sql import SparkSession
@@ -51,9 +52,9 @@ class SparkExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs: Any,
     ):
         # Configure Spark memory settings from Spec if provided

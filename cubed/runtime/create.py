@@ -1,10 +1,10 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from cubed.runtime.types import Executor
 
 
 def create_executor(
-    name: str, executor_options: Optional[Dict[Any, Any]] = None
+    name: str, executor_options: dict[Any, Any] | None = None
 ) -> Executor:
     """Create an executor from an executor name."""
     executor_options = executor_options or {}

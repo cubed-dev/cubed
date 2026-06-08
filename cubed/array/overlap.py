@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import map_selection
 from cubed.types import T_RectangularChunks
@@ -122,8 +120,8 @@ def _clamp(minimum: int, x: int, maximum: int) -> int:
 
 
 def get_item_with_depth(
-    chunks: T_RectangularChunks, idx: Tuple[int, ...], depth
-) -> Tuple[slice, ...]:
+    chunks: T_RectangularChunks, idx: tuple[int, ...], depth
+) -> tuple[slice, ...]:
     """Convert a chunk index to a tuple of slices with depth offsets."""
     starts = tuple(_cumsum(c, initial_zero=True) for c in chunks)
 

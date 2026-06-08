@@ -4,20 +4,14 @@ import inspect
 import itertools
 import logging
 import math
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from functools import partial
 from typing import (
     Any,
-    Dict,
     Generic,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
     TypeAlias,
     TypeVar,
-    Union,
     cast,
     overload,
 )
@@ -126,16 +120,16 @@ class BlockwiseSpec:
 
     back_key_function: Callable[[ChunkKey], FunctionArgs[Any]]
     function: Callable[..., Any]
-    num_input_blocks: Tuple[int, ...]
-    num_output_blocks: Tuple[int, ...]
-    reads_map: Dict[str, CubedArrayProxy]
-    writes_map: Dict[str, CubedArrayProxy]
+    num_input_blocks: tuple[int, ...]
+    num_output_blocks: tuple[int, ...]
+    reads_map: dict[str, CubedArrayProxy]
+    writes_map: dict[str, CubedArrayProxy]
     return_writes_stores: bool = False
 
 
 def apply_blockwise(
-    out_coords: List[int], *, config: BlockwiseSpec
-) -> Optional[List[T_Store]]:
+    out_coords: list[int], *, config: BlockwiseSpec
+) -> list[T_Store] | None:
     """Stage function for blockwise."""
     # lithops needs params to be lists not tuples, so convert back
     out_coords_tuple = tuple(out_coords)
@@ -164,7 +158,7 @@ def apply_blockwise(
     return None
 
 
-def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSpec):
+def get_results_in_different_scope(out_coords: list[int], *, config: BlockwiseSpec):
     # wrap function call in a function so that args go out of scope (and free memory) as soon as results are returned
 
     # lithops needs params to be lists not tuples, so convert back
@@ -183,8 +177,8 @@ def get_results_in_different_scope(out_coords: List[int], *, config: BlockwiseSp
 
 
 def key_to_slices(
-    key: Tuple[int, ...], arr: T_ZarrArray, chunks: Optional[T_Chunks] = None
-) -> Tuple[slice, ...]:
+    key: tuple[int, ...], arr: T_ZarrArray, chunks: T_Chunks | None = None
+) -> tuple[slice, ...]:
     """Convert a chunk index key to a tuple of slices"""
     if chunks is None:
         try:
@@ -209,26 +203,26 @@ def get_chunk(in_key, config):
 
 def blockwise(
     func: Callable[..., Any],
-    out_ind: Sequence[Union[str, int]],
+    out_ind: Sequence[str | int],
     *args: Any,
     allowed_mem: int,
     reserved_mem: int,
     target_store: T_Store,
     target_name: str,
-    target_path: Optional[str] = None,
-    storage_options: Optional[Dict[str, Any]] = None,
-    compressor: Union[dict, str, None] = "auto",
+    target_path: str | None = None,
+    storage_options: dict[str, Any] | None = None,
+    compressor: dict | str | None = "auto",
     shape: T_Shape,
     dtype: T_DType,
     chunks: T_Chunks,
-    new_axes: Optional[Dict[int, int]] = None,
-    in_names: Optional[List[str]] = None,
+    new_axes: dict[int, int] | None = None,
+    in_names: list[str] | None = None,
     extra_projected_mem: int = 0,
-    buffer_copies: Optional[BufferCopies] = None,
-    extra_func_kwargs: Optional[Dict[str, Any]] = None,
+    buffer_copies: BufferCopies | None = None,
+    extra_func_kwargs: dict[str, Any] | None = None,
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
-    num_input_blocks: Optional[Tuple[int, ...]] = None,
+    num_input_blocks: tuple[int, ...] | None = None,
     **kwargs,
 ) -> PrimitiveOperation:
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -277,16 +271,16 @@ def blockwise(
     arrays: Sequence[T_ZarrArray] = args[::2]
     array_names = in_names or [f"in_{i}" for i in range(len(arrays))]
 
-    inds: Sequence[Union[str, int]] = args[1::2]
+    inds: Sequence[str | int] = args[1::2]
 
-    numblocks: Dict[str, Tuple[int, ...]] = {}
+    numblocks: dict[str, tuple[int, ...]] = {}
     for name, array in zip(array_names, arrays, strict=True):
         input_chunks = normalize_chunks(
             array.chunks, shape=array.shape, dtype=array.dtype
         )
         numblocks[name] = tuple(map(len, input_chunks))
 
-    argindsstr: List[Any] = []
+    argindsstr: list[Any] = []
     for name, ind in zip(array_names, inds, strict=True):
         argindsstr.extend((name, ind))
 
@@ -330,24 +324,24 @@ def general_blockwise(
     *arrays: Any,
     allowed_mem: int,
     reserved_mem: int,
-    target_stores: List[T_Store],
-    target_names: List[str],
-    target_paths: Optional[List[str]] = None,
-    storage_options: Optional[Dict[str, Any]] = None,
-    compressor: Union[dict, str, None] = "auto",
-    shapes: List[T_Shape],
-    dtypes: List[T_DType],
-    chunkss: List[T_Chunks],
-    in_names: Optional[List[str]] = None,
+    target_stores: list[T_Store],
+    target_names: list[str],
+    target_paths: list[str] | None = None,
+    storage_options: dict[str, Any] | None = None,
+    compressor: dict | str | None = "auto",
+    shapes: list[T_Shape],
+    dtypes: list[T_DType],
+    chunkss: list[T_Chunks],
+    in_names: list[str] | None = None,
     extra_projected_mem: int = 0,
-    buffer_copies: Optional[BufferCopies] = None,
-    extra_func_kwargs: Optional[Dict[str, Any]] = None,
+    buffer_copies: BufferCopies | None = None,
+    extra_func_kwargs: dict[str, Any] | None = None,
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
-    num_input_blocks: Optional[Tuple[int, ...]] = None,
-    target_chunks_: Optional[T_RegularChunks] = None,
+    num_input_blocks: tuple[int, ...] | None = None,
+    target_chunks_: T_RegularChunks | None = None,
     return_writes_stores: bool = False,
-    output_blocks: Optional[Iterator[List[int]]] = None,
+    output_blocks: Iterator[list[int]] | None = None,
     num_tasks=None,
     **kwargs,
 ) -> PrimitiveOperation:
@@ -405,7 +399,7 @@ def general_blockwise(
     output_chunk_memory = 0
     target_arrays = []
 
-    numblocks0: Optional[Tuple[int, ...]] = None
+    numblocks0: tuple[int, ...] | None = None
     for i, target_store in enumerate(target_stores):
         chunks_normal = normalize_chunks(chunkss[i], shape=shapes[i], dtype=dtypes[i])
         chunksize = to_chunksize(chunks_normal)
@@ -417,7 +411,7 @@ def general_blockwise(
                 raise ValueError(
                     f"All outputs must have matching number of blocks in each dimension. Chunks specified: {chunkss}"
                 )
-        ta: Union[zarr.Array, LazyZarrArray]
+        ta: zarr.Array | LazyZarrArray
         if is_storage_array(target_store) or isinstance(target_store, LazyZarrArray):
             ta = target_store
         else:
@@ -494,7 +488,7 @@ def general_blockwise(
 
 
 # use this wrapper to avoid itertools.product pickle error
-class ChunkKeys(Iterable[List[int]]):
+class ChunkKeys(Iterable[list[int]]):
     def __init__(self, chunks_normal: T_RectangularChunks):
         self.chunks_normal = chunks_normal
 
@@ -648,9 +642,9 @@ def can_fuse_primitive_ops(
 def can_fuse_multiple_primitive_ops(
     name: str,
     primitive_op: PrimitiveOperation,
-    predecessor_primitive_ops: List[Optional[PrimitiveOperation]],
+    predecessor_primitive_ops: list[PrimitiveOperation | None],
     *,
-    max_total_num_input_blocks: Optional[int] = None,
+    max_total_num_input_blocks: int | None = None,
 ) -> bool:
     if is_fuse_candidate(primitive_op) and all(
         p is None or is_fuse_candidate(p) for p in predecessor_primitive_ops
@@ -714,7 +708,7 @@ def can_fuse_multiple_primitive_ops(
     return False
 
 
-def peak_projected_mem(primitive_ops: Iterable[Optional[PrimitiveOperation]]) -> int:
+def peak_projected_mem(primitive_ops: Iterable[PrimitiveOperation | None]) -> int:
     """Calculate the peak projected memory for running a series of primitive ops
     and retaining their return values in memory."""
     memory_modeller = MemoryModeller()
@@ -794,7 +788,7 @@ def fuse(
 
 def fuse_multiple(
     primitive_op: PrimitiveOperation,
-    *predecessor_primitive_ops: Optional[PrimitiveOperation],
+    *predecessor_primitive_ops: PrimitiveOperation | None,
 ) -> PrimitiveOperation:
     """
     Fuse a blockwise operation and its predecessors into a single operation, avoiding writing to (or reading from) the targets of the predecessor operations.
@@ -1023,10 +1017,10 @@ def make_fused_function(
 def make_blockwise_back_key_function(
     func: Callable[..., Any],
     output: str,
-    out_indices: Sequence[Union[str, int]],
+    out_indices: Sequence[str | int],
     *arrind_pairs: Any,
-    numblocks: Dict[str, Tuple[int, ...]],
-    new_axes: Optional[Dict[int, int]] = None,
+    numblocks: dict[str, tuple[int, ...]],
+    new_axes: dict[int, int] | None = None,
 ) -> Callable[[ChunkKey], tuple[Any, ...]]:
     """Make a function that is the equivalent of make_blockwise_graph."""
 
@@ -1090,10 +1084,10 @@ def make_blockwise_back_key_function(
 def make_blockwise_back_key_function_flattened(
     func: Callable[..., Any],
     output: str,
-    out_indices: Sequence[Union[str, int]],
+    out_indices: Sequence[str | int],
     *arrind_pairs: Any,
-    numblocks: Dict[str, Tuple[int, ...]],
-    new_axes: Optional[Dict[int, int]] = None,
+    numblocks: dict[str, tuple[int, ...]],
+    new_axes: dict[int, int] | None = None,
 ) -> Callable[[ChunkKey], FunctionArgs[Any]]:
     # TODO: make this a part of make_blockwise_back_key_function?
     back_key_function = make_blockwise_back_key_function(

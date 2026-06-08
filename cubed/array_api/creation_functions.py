@@ -1,5 +1,6 @@
 import math
-from typing import TYPE_CHECKING, Iterable, List
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from cubed.array_api import __array_namespace_info__
 from cubed.backend_array_api import namespace as nxp
@@ -239,7 +240,7 @@ def _linspace(
     )
 
 
-def meshgrid(*arrays, indexing="xy") -> List["Array"]:
+def meshgrid(*arrays, indexing="xy") -> list["Array"]:
     if len({a.dtype for a in arrays}) > 1:
         raise ValueError("meshgrid inputs must all have the same dtype")
 

@@ -1,6 +1,7 @@
 import builtins
 import math
 import numbers
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from functools import partial
 from itertools import chain, product
@@ -8,12 +9,6 @@ from numbers import Integral, Number
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
-    Iterable,
-    Iterator,
-    List,
-    Sequence,
-    Tuple,
     Union,
 )
 from warnings import warn
@@ -318,7 +313,7 @@ def _store_array(
             )
 
         # use this wrapper to avoid generator pickle error
-        class OutputBlocksIterable(Iterable[List[int]]):
+        class OutputBlocksIterable(Iterable[list[int]]):
             def __init__(self, region, shape, chunks):
                 self.region = region
                 self.shape = shape
@@ -522,7 +517,7 @@ def general_blockwise(
     target_paths=None,
     extra_func_kwargs=None,
     **kwargs,
-) -> Union["Array", Tuple["Array", ...]]:
+) -> Union["Array", tuple["Array", ...]]:
     if has_keyword(func, "block_id"):
         from cubed.array_api.creation_functions import offsets_virtual_array
 
@@ -596,7 +591,7 @@ def _general_blockwise(
     target_paths=None,
     extra_func_kwargs=None,
     **kwargs,
-) -> Union["Array", Tuple["Array", ...]]:
+) -> Union["Array", tuple["Array", ...]]:
     assert len(arrays) > 0
 
     # replace arrays with zarr arrays

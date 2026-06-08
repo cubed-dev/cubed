@@ -2,18 +2,10 @@ import collections
 import copy
 import logging
 import time
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from functools import partial
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
 )
 
 from lithops.executors import FunctionExecutor
@@ -45,15 +37,15 @@ def map_unordered(
     lithops_function_executor: RetryingFunctionExecutor,
     group_map_functions: Sequence[Callable[..., Any]],
     group_map_iterdata: Sequence[
-        Iterable[Union[List[Any], Tuple[Any, ...], Dict[str, Any]]]
+        Iterable[list[Any] | tuple[Any, ...] | dict[str, Any]]
     ],
     group_names: Sequence[str],
-    include_modules: Optional[List[str]] = None,
-    timeout: Optional[int] = None,
+    include_modules: list[str] | None = None,
+    timeout: int | None = None,
     retries: int = 2,
     use_backups: bool = False,
     return_stats: bool = False,
-    wait_dur_sec: Optional[int] = 1,
+    wait_dur_sec: int | None = 1,
     **kwargs,
 ) -> Iterator[Any]:
     """
@@ -77,13 +69,13 @@ def map_unordered(
     return_when = ALWAYS if use_backups else ANY_COMPLETED
     wait_dur_sec = wait_dur_sec or 1
 
-    future_to_group_name: Dict[str, str] = {}
-    group_name_to_function: Dict[str, Callable[..., Any]] = {}
+    future_to_group_name: dict[str, str] = {}
+    group_name_to_function: dict[str, Callable[..., Any]] = {}
     # backups are launched based on task start and end times for the group
-    start_times: Dict[str, Dict[RetryingFuture, float]] = {}
-    end_times: Dict[str, Dict[RetryingFuture, float]] = collections.defaultdict(dict)
-    backups: Dict[RetryingFuture, RetryingFuture] = {}
-    pending: List[RetryingFuture] = []
+    start_times: dict[str, dict[RetryingFuture, float]] = {}
+    end_times: dict[str, dict[RetryingFuture, float]] = collections.defaultdict(dict)
+    backups: dict[RetryingFuture, RetryingFuture] = {}
+    pending: list[RetryingFuture] = []
     group_name: str
 
     for map_function, map_iterdata, group_name in zip(
@@ -169,9 +161,9 @@ def map_unordered(
 
 def execute_dag(
     dag: MultiDiGraph,
-    callbacks: Optional[Sequence[Callback]] = None,
-    spec: Optional[Spec] = None,
-    compute_arrays_in_parallel: Optional[bool] = None,
+    callbacks: Sequence[Callback] | None = None,
+    spec: Spec | None = None,
+    compute_arrays_in_parallel: bool | None = None,
     **kwargs,
 ) -> None:
     use_backups = kwargs.pop("use_backups", use_backups_default(spec))
@@ -240,7 +232,7 @@ def execute_dag(
                     handle_operation_end_callbacks(callbacks, name)
 
 
-def standardise_lithops_stats(name: str, future: RetryingFuture) -> Dict[str, Any]:
+def standardise_lithops_stats(name: str, future: RetryingFuture) -> dict[str, Any]:
     stats = future.stats
     return dict(
         name=name,
@@ -266,9 +258,9 @@ class LithopsExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}

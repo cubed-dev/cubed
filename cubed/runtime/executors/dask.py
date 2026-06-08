@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any, Callable, Dict, Optional, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from dask.distributed import Client
 from networkx import MultiDiGraph
@@ -35,8 +36,8 @@ def check_runtime_memory(spec, client):
 def dask_create_futures_func(
     client,
     function: Callable[..., Any],
-    name: Optional[str] = None,
-    retries: Optional[str] = None,
+    name: str | None = None,
+    retries: str | None = None,
 ):
     def create_futures_func(input, **kwargs):
         input = list(input)  # dask expects a sequence (it calls `len` on it)
@@ -68,9 +69,9 @@ class DaskExecutor(DagExecutor):
     def execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_id: Optional[str] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_id: str | None = None,
         **kwargs,
     ) -> None:
         merged_kwargs = {**self.kwargs, **kwargs}
@@ -87,10 +88,10 @@ class DaskExecutor(DagExecutor):
     async def _async_execute_dag(
         self,
         dag: MultiDiGraph,
-        callbacks: Optional[Sequence[Callback]] = None,
-        spec: Optional[Spec] = None,
-        compute_kwargs: Optional[Dict[str, Any]] = None,
-        compute_arrays_in_parallel: Optional[bool] = None,
+        callbacks: Sequence[Callback] | None = None,
+        spec: Spec | None = None,
+        compute_kwargs: dict[str, Any] | None = None,
+        compute_arrays_in_parallel: bool | None = None,
         **kwargs,
     ) -> None:
         compute_kwargs = compute_kwargs or {}
