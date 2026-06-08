@@ -101,7 +101,7 @@ class FunctionArgs(Generic[T]):
 KeyFunction: TypeAlias = Callable[[ChunkKey], FunctionArgs[Any]]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class BlockwiseSpec:
     """Specification for how to run blockwise on an array.
 

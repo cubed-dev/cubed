@@ -282,6 +282,8 @@ def _store_array(
                     writes_map = pipeline.config.writes_map
                     if source.name in writes_map:
                         writes_map[source.name].array = target
+                    if blockwise_kwargs.get("return_writes_stores", False):
+                        pipeline.config.return_writes_stores = True
             # return the updated source
             return source
 
