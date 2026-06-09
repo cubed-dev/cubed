@@ -186,6 +186,7 @@ class CoreArray:
         allow_irregular=False,
         max_input_blocks=None,
         max_output_blocks=None,
+        optimize=False,
     ) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
@@ -208,6 +209,7 @@ class CoreArray:
             allow_irregular=allow_irregular,
             max_input_blocks=max_input_blocks,
             max_output_blocks=max_output_blocks,
+            optimize=optimize,
         )
 
     def visualize(

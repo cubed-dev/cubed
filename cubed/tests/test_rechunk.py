@@ -9,12 +9,14 @@ from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import _store_array, split_chunksizes
 from cubed.core.rechunk import (
+    RechunkPlanSet,
     RechunkPlanStats,
     _limit_chunks,
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
     multspace,
     rechunk_plan,
+    rechunk_plans,
     verify_chunk_compatibility,
 )
 from cubed.utils import itemsize
@@ -380,3 +382,94 @@ def test_limit_chunks(chunks, ratio_chunks, align_to, max_blocks, expected):
     # when reduction occurred the limit must now be satisfied
     if result != chunks:
         assert prod(ceil(r / rc) for r, rc in zip(result, ratio_chunks)) <= max_blocks
+
+
+def test_rechunk_plans_era5_tiny():
+    shape = (2480, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (2480, 10, 10)
+    spec = cubed.Spec(allowed_mem="2.5GB")
+
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    # No constraint: natural plans — stages=2 (input_blocks=27) and stages=3 (input_blocks=6)
+    ps = rechunk_plans(a, target_chunks)
+    assert isinstance(ps, RechunkPlanSet)
+
+    plans = ps.plans
+    assert len(plans) == 2
+
+    # plans sorted by stage count ascending
+    stage_counts = [s.num_copy_ops for _, s in plans]
+    assert stage_counts == sorted(stage_counts)
+
+    # more stages → lower max_task_input_blocks
+    input_block_values = [s.max_task_input_blocks for _, s in plans]
+    assert input_block_values == sorted(input_block_values, reverse=True)
+
+    # repr_html doesn't raise
+    ps._repr_html_()
+
+    # best() with no constraint picks minimum bytes (stages=2)
+    _, stats_best = ps.best()
+    assert stats_best.num_copy_ops == 2
+
+    # best(max_input_blocks=10): stages=2 has 27 > 10 so doesn't satisfy;
+    # stages=3 has 6 ≤ 10 so is selected (no warning)
+    _, stats_10 = ps.best(max_input_blocks=10)
+    assert stats_10.num_copy_ops == 3
+
+    # best(max_input_blocks=5): neither plan satisfies — warns and falls back to lowest input blocks
+    with pytest.warns(
+        UserWarning, match="No rechunk plan satisfies max_input_blocks=5"
+    ):
+        _, stats_warn = ps.best(max_input_blocks=5)
+    assert stats_warn.max_task_input_blocks == min(
+        s.max_task_input_blocks for _, s in plans
+    )
+
+
+def test_rechunk_optimize_era5_tiny():
+    shape = (2480, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (2480, 10, 10)
+    spec = cubed.Spec(allowed_mem="2.5GB")
+
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    # Default rechunk (no optimize) uses min_mem=max_mem/20, producing 3 stages
+    b_default = a.rechunk(target_chunks)
+    default_nodes = sum(
+        1
+        for _, d in b_default.plan().dag.nodes(data=True)
+        if d.get("op_name") == "rechunk"
+    )
+    assert default_nodes == 3
+
+    # optimize=True with max_input_blocks=30: both plans satisfy (27≤30, 6≤30), picks stages=2 (fewer bytes)
+    b_opt = a.rechunk(target_chunks, max_input_blocks=30, optimize=True)
+    opt_nodes = sum(
+        1 for _, d in b_opt.plan().dag.nodes(data=True) if d.get("op_name") == "rechunk"
+    )
+    assert opt_nodes == 2
+
+    # optimize=True with max_input_blocks=10: only stages=3 satisfies (27 > 10, 6 ≤ 10)
+    b_opt2 = a.rechunk(target_chunks, max_input_blocks=10, optimize=True)
+    opt2_nodes = sum(
+        1
+        for _, d in b_opt2.plan().dag.nodes(data=True)
+        if d.get("op_name") == "rechunk"
+    )
+    assert opt2_nodes == 3
+
+    # optimize=True with unachievable max_input_blocks: warns and falls back to lowest-input-blocks plan
+    with pytest.warns(
+        UserWarning, match="No rechunk plan satisfies max_input_blocks=5"
+    ):
+        b_warn = a.rechunk(target_chunks, max_input_blocks=5, optimize=True)
+    warn_nodes = sum(
+        1
+        for _, d in b_warn.plan().dag.nodes(data=True)
+        if d.get("op_name") == "rechunk"
+    )
+    assert warn_nodes == 3  # fallback to stages=3 (lowest achievable input blocks)

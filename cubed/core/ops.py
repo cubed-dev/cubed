@@ -959,6 +959,7 @@ def rechunk(
     allow_irregular=False,
     max_input_blocks=None,
     max_output_blocks=None,
+    optimize=False,
 ):
     """Change the chunking of an array without changing its shape or data.
 
@@ -972,6 +973,20 @@ def rechunk(
     cubed.Array
         An array with the desired chunks.
     """
+    if optimize:
+        from cubed.core.rechunk import rechunk_plans
+
+        plan_set = rechunk_plans(
+            x,
+            chunks,
+            allow_irregular=allow_irregular,
+            max_input_blocks=max_input_blocks,
+            max_output_blocks=max_output_blocks,
+        )
+        min_mem = plan_set._best_min_mem(
+            max_input_blocks=max_input_blocks, max_output_blocks=max_output_blocks
+        )
+
     out = x
     for copy_chunks, target_chunks in _rechunk_plan(
         x,
