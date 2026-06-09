@@ -185,7 +185,7 @@ def can_fuse_predecessors(
     # if node itself can't be fused then there is nothing to fuse
     if not is_fusable_with_predecessors(nodes[name]):
         logger.debug(
-            "can't fuse %s since it is not a primitive operation, or it uses an operation that can't be fused (concat or stack)",
+            "can't fuse %s since it is not a primitive operation, or it uses an operation that can't be fused (e.g. rechunk or store)",
             name,
         )
         return False
