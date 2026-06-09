@@ -22,7 +22,10 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
-from cubed.core.rechunk import multistage_regular_rechunking_plan
+from cubed.core.rechunk import (
+    _limit_chunks,
+    multistage_regular_rechunking_plan,
+)
 from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
@@ -109,7 +112,7 @@ def from_zarr(store, path=None, chunks=None, spec=None) -> "Array":
     path : string, optional
         Group path
     chunks : tuple of ints, optional
-         If set, merge zarr chunks up to this size before downstream ops.
+        If set, merge zarr chunks up to this size before downstream ops.
         Each downstream task reads a ``chunks``-sized region (spanning
         multiple zarr chunks). ``chunks`` must be an exact multiple of
         the zarr chunk size in every dimension.
@@ -948,7 +951,15 @@ def _map_blocks(
     )
 
 
-def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
+def rechunk(
+    x,
+    chunks,
+    *,
+    min_mem=None,
+    allow_irregular=False,
+    max_input_blocks=None,
+    max_output_blocks=None,
+):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -963,13 +974,26 @@ def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
     """
     out = x
     for copy_chunks, target_chunks in _rechunk_plan(
-        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+        x,
+        chunks,
+        min_mem=min_mem,
+        allow_irregular=allow_irregular,
+        max_input_blocks=max_input_blocks,
+        max_output_blocks=max_output_blocks,
     ):
         out = _rechunk(out, copy_chunks, target_chunks, allow_irregular=allow_irregular)
     return out
 
 
-def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+def _rechunk_plan(
+    x,
+    chunks,
+    *,
+    min_mem=None,
+    allow_irregular=False,
+    max_input_blocks=None,
+    max_output_blocks=None,
+):
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
@@ -1007,14 +1031,26 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
         if allow_irregular
         else multistage_regular_rechunking_plan
     )
-    stages = plan_func(
-        shape=x.shape,
-        source_chunks=source_chunks,
-        target_chunks=target_chunks,
-        itemsize=itemsize(x.dtype),
-        min_mem=min_mem,
-        max_mem=rechunker_max_mem,
+    stages = list(
+        plan_func(
+            shape=x.shape,
+            source_chunks=source_chunks,
+            target_chunks=target_chunks,
+            itemsize=itemsize(x.dtype),
+            min_mem=min_mem,
+            max_mem=rechunker_max_mem,
+        )
     )
+
+    def _maybe_limit(copy_chunks, this_source_chunks, store_chunks):
+        cc = copy_chunks
+        if max_input_blocks is not None:
+            cc = _limit_chunks(cc, this_source_chunks, store_chunks, max_input_blocks)
+        if max_output_blocks is not None:
+            cc = _limit_chunks(cc, store_chunks, store_chunks, max_output_blocks)
+        return cc
+
+    current_source_chunks = source_chunks
 
     for i, stage in enumerate(stages):
         last_stage = i == len(stages) - 1
@@ -1024,11 +1060,17 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
         target_chunks_ = target_chunks if last_stage else write_chunks
 
         if read_chunks == write_chunks:
-            yield read_chunks, target_chunks_
+            cc = _maybe_limit(read_chunks, current_source_chunks, target_chunks_)
+            yield cc, target_chunks_
+            current_source_chunks = target_chunks_
         else:
-            yield read_chunks, int_chunks
+            cc = _maybe_limit(read_chunks, current_source_chunks, int_chunks)
+            yield cc, int_chunks
+            current_source_chunks = int_chunks
             if last_stage:
-                yield write_chunks, target_chunks_
+                cc = _maybe_limit(write_chunks, current_source_chunks, target_chunks_)
+                yield cc, target_chunks_
+                current_source_chunks = target_chunks_
 
 
 def split_chunks(

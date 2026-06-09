@@ -4,7 +4,7 @@ import logging
 import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
-from math import floor, prod
+from math import ceil, floor, prod
 
 import numpy as np
 
@@ -101,6 +101,43 @@ def calculate_regular_stage_chunks(
     for rc, wc in zip(read_chunks, write_chunks):
         stages.append(multspace(rc, wc, num=stage_count - 1))
     return [tuple(chunks) for chunks in np.array(stages).T.tolist()]
+
+
+def _limit_chunks(chunks, ratio_chunks, align_to, max_blocks):
+    """Reduce chunks greedily so that prod(ceil(chunks[i] / ratio_chunks[i])) <= max_blocks.
+
+    Each reduced chunk remains a positive multiple of align_to[i].
+
+    For fan-out limiting: ratio_chunks = align_to = target_chunks, max_blocks = max_output_blocks.
+    For fan-in limiting: ratio_chunks = source_chunks, align_to = store_chunks, max_blocks = max_input_blocks.
+    When ratio_chunks == align_to the ceil is always exact (chunks are guaranteed multiples).
+
+    If the constraint cannot be met then chunks is returned unchanged.
+    """
+    cc = list(chunks)
+    rc = list(ratio_chunks)
+    at = list(align_to)
+    while True:
+        ratios = [ceil(c / r) for c, r in zip(cc, rc)]
+        total = prod(ratios)
+        if total <= max_blocks:
+            break
+        reducible = [
+            (ratios[i], i) for i in range(len(cc)) if cc[i] > at[i] and ratios[i] > 1
+        ]
+        if not reducible:
+            break  # nothing left to reduce
+        _, best = max(reducible)
+        other = total // ratios[best]
+        new_ratio = max(1, max_blocks // other)
+        # Largest multiple of at[best] with ceil(x / rc[best]) <= new_ratio
+        new_cc = (new_ratio * rc[best] // at[best]) * at[best]
+        new_cc = max(new_cc, at[best])
+        if new_cc >= cc[best]:
+            # defensive: unreachable when chunks are multiples of align_to
+            break  # pragma: no cover
+        cc[best] = new_cc
+    return tuple(cc)
 
 
 def _fix_copy_chunks(shape, copy_chunks, target_chunks):
@@ -289,6 +326,8 @@ class RechunkPlanStats:
     num_tasks: int
     total_nbytes_written: int
     max_task_iops: int
+    max_task_input_blocks: int
+    max_task_output_blocks: int
 
     @classmethod
     def from_plan(cls, rechunk_plan: RechunkPlan, plan: FinalizedPlan):
@@ -302,22 +341,43 @@ class RechunkPlanStats:
             + d["pipeline"].config.num_output_blocks[0]
             for _, d in rechunks
         ]
+        num_task_input_blocks = [
+            d["pipeline"].config.num_input_blocks[0] for _, d in rechunks
+        ]
+        num_task_output_blocks = [
+            d["pipeline"].config.num_output_blocks[0] for _, d in rechunks
+        ]
 
         return cls(
             num_copy_ops=len(rechunk_plan.copy_ops),
             num_tasks=plan.num_tasks,
             total_nbytes_written=plan.total_nbytes_written,
             max_task_iops=max(num_task_iops),
+            max_task_input_blocks=max(num_task_input_blocks),
+            max_task_output_blocks=max(num_task_output_blocks),
         )
 
 
-def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+def rechunk_plan(
+    x,
+    chunks,
+    *,
+    min_mem=None,
+    allow_irregular=False,
+    max_input_blocks=None,
+    max_output_blocks=None,
+):
     from cubed.core.ops import _rechunk_plan
 
     copy_ops = []
     source_chunks = x.chunksize
     for copy_chunks, target_chunks in _rechunk_plan(
-        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+        x,
+        chunks,
+        min_mem=min_mem,
+        allow_irregular=allow_irregular,
+        max_input_blocks=max_input_blocks,
+        max_output_blocks=max_output_blocks,
     ):
         copy_ops.append(RechunkCopy(x.shape, source_chunks, copy_chunks, target_chunks))
         source_chunks = target_chunks

@@ -179,7 +179,13 @@ class CoreArray:
         )
 
     def rechunk(
-        self: T_ChunkedArray, chunks, *, min_mem=None, allow_irregular=False
+        self: T_ChunkedArray,
+        chunks,
+        *,
+        min_mem=None,
+        allow_irregular=False,
+        max_input_blocks=None,
+        max_output_blocks=None,
     ) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
@@ -195,7 +201,14 @@ class CoreArray:
         """
         from cubed.core.ops import rechunk
 
-        return rechunk(self, chunks, min_mem=min_mem, allow_irregular=allow_irregular)
+        return rechunk(
+            self,
+            chunks,
+            min_mem=min_mem,
+            allow_irregular=allow_irregular,
+            max_input_blocks=max_input_blocks,
+            max_output_blocks=max_output_blocks,
+        )
 
     def visualize(
         self,
