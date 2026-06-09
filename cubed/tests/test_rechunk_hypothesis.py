@@ -42,11 +42,11 @@ def test_rechunk(rechunk_shapes):
 
     print(rechunk_shapes)
 
-    itemsize = 8
+    itemsize = 4
     allowed_mem = int(max(source_chunks_size, target_chunks_size) * itemsize * 1.1) * 5
 
     spec = cubed.Spec(allowed_mem=allowed_mem)
-    a = xp.ones(shape, chunks=source_chunks, spec=spec)
+    a = cubed.random.integers(shape, chunks=source_chunks, spec=spec)
     b = a.rechunk(target_chunks)
     plan = b.plan()
     assume(plan.num_tasks < 500)  # don't want to run too many tasks locally
@@ -54,7 +54,8 @@ def test_rechunk(rechunk_shapes):
         f"plan: num_stages: {plan.num_stages}, num_tasks: {plan.num_tasks}, max_projected_mem: {plan.max_projected_mem}"
     )
 
-    assert_array_equal(b.compute(), nxp.ones(shape))
+    expected = cubed.random.integers(shape, chunks=target_chunks, spec=spec)
+    assert bool(xp.all(xp.equal(b, expected)).compute())
 
 
 def test_rechunk_example():
