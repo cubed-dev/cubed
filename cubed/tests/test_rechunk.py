@@ -144,6 +144,29 @@ def test_rechunk_hypothesis_generated_bug():
     assert_array_equal(b.compute(), nxp.ones(shape))
 
 
+def test_rechunk_allow_irregular_false():
+    # Verify the regular planner still works when allow_irregular=False is
+    # passed explicitly. Regular intermediates must be integer multiples of
+    # target chunks, so copy_chunks[0]=30 (multiple of 15) instead of 38.
+    shape = (1001, 1001)
+    source_chunks = (38, 376)
+    target_chunks = (5, 146)
+
+    spec = cubed.Spec(allowed_mem=8000000 / 10)
+    a = xp.ones(shape, chunks=source_chunks, spec=spec)
+
+    from cubed.core.ops import _rechunk_plan
+
+    rechunk_plan = list(_rechunk_plan(a, target_chunks, allow_irregular=False))
+    assert rechunk_plan == [((30, 376), (15, 376)), ((15, 1001), (5, 146))]
+    for copy_chunks, store_chunks in rechunk_plan:
+        verify_chunk_compatibility(shape, copy_chunks, store_chunks)
+
+    b = a.rechunk(target_chunks, allow_irregular=False)
+
+    assert_array_equal(b.compute(), nxp.ones(shape))
+
+
 def test_rechunk_plan_viz():
     rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
     shape, source_chunks, target_chunks = rechunk_shapes
