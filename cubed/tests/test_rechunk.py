@@ -1,5 +1,4 @@
 import pytest
-import zarr
 
 import cubed
 import cubed as xp
@@ -29,7 +28,7 @@ from cubed.vendor.rechunker.algorithm import (
         "expected_max_output_blocks",
     ),
     [
-        (None, 5, 7, 9),  # multistage rechunk - more stages, lower fan in/out
+        (None, 3, 16, 15),  # multistage rechunk - more stages, lower fan in/out
         (0, 1, 3771, 3460),  # single stage rechunk - very high fan in/out
     ],
 )
@@ -97,11 +96,9 @@ def test_rechunk_era5_chunk_sizes(spec):
 
     rechunk_plan = list(_rechunk_plan(a, target_chunks))
     assert rechunk_plan == [
-        ((93, 721, 1440), (93, 240, 480)),
-        ((465, 240, 480), (465, 120, 240)),
-        ((2325, 120, 240), (2325, 40, 120)),
-        ((11625, 40, 120), (11625, 20, 60)),
-        ((58125, 20, 60), (58125, 10, 30)),
+        ((93, 721, 1440), (93, 173, 396)),
+        ((1447, 173, 396), (1447, 41, 109)),
+        ((22528, 41, 109), (22528, 10, 30)),
         ((350640, 10, 30), (350640, 10, 10)),
     ]
 
@@ -140,32 +137,9 @@ def test_rechunk_hypothesis_generated_bug():
     from cubed.core.ops import _rechunk_plan
 
     rechunk_plan = list(_rechunk_plan(a, target_chunks))
-    assert rechunk_plan == [((30, 376), (15, 376)), ((15, 1001), (5, 146))]
-    for copy_chunks, target_chunks in rechunk_plan:
-        verify_chunk_compatibility(shape, copy_chunks, target_chunks)
-
-    b = a.rechunk((5, 146))
-
-    assert_array_equal(b.compute(), nxp.ones(shape))
-
-
-@pytest.mark.skipif(
-    zarr.__version__[0] == "2",
-    reason="irregular chunking is not supported for Zarr Python v2",
-)
-def test_rechunk_hypothesis_generated_bug_allow_irregular():
-    rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
-    shape, source_chunks, target_chunks = rechunk_shapes
-
-    spec = cubed.Spec(allowed_mem=8000000 / 10)
-    a = xp.ones(shape, chunks=source_chunks, spec=spec)
-
-    from cubed.core.ops import _rechunk_plan
-
-    rechunk_plan = list(_rechunk_plan(a, target_chunks, allow_irregular=True))
     assert rechunk_plan == [((38, 376), (15, 376)), ((15, 1001), (5, 146))]
 
-    b = a.rechunk((5, 146), allow_irregular=True)
+    b = a.rechunk((5, 146))
 
     assert_array_equal(b.compute(), nxp.ones(shape))
 

@@ -179,7 +179,7 @@ class CoreArray:
         )
 
     def rechunk(
-        self: T_ChunkedArray, chunks, *, min_mem=None, allow_irregular=False
+        self: T_ChunkedArray, chunks, *, min_mem=None, allow_irregular=True
     ) -> T_ChunkedArray:
         """Change the chunking of this array without changing its shape or data.
 
