@@ -22,7 +22,10 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
-from cubed.core.rechunk import multistage_regular_rechunking_plan
+from cubed.core.rechunk import (
+    multistage_bounded_rechunking_plan,
+    multistage_regular_rechunking_plan,
+)
 from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
 from cubed.primitive.blockwise import general_blockwise as primitive_general_blockwise
@@ -109,7 +112,7 @@ def from_zarr(store, path=None, chunks=None, spec=None) -> "Array":
     path : string, optional
         Group path
     chunks : tuple of ints, optional
-         If set, merge zarr chunks up to this size before downstream ops.
+        If set, merge zarr chunks up to this size before downstream ops.
         Each downstream task reads a ``chunks``-sized region (spanning
         multiple zarr chunks). ``chunks`` must be an exact multiple of
         the zarr chunk size in every dimension.
@@ -948,7 +951,15 @@ def _map_blocks(
     )
 
 
-def rechunk(x, chunks, *, min_mem=None, allow_irregular=True):
+def rechunk(
+    x,
+    chunks,
+    *,
+    min_mem=None,
+    allow_irregular=True,
+    max_input_blocks=None,
+    max_output_blocks=None,
+):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -963,13 +974,26 @@ def rechunk(x, chunks, *, min_mem=None, allow_irregular=True):
     """
     out = x
     for copy_chunks, target_chunks in _rechunk_plan(
-        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+        x,
+        chunks,
+        min_mem=min_mem,
+        allow_irregular=allow_irregular,
+        max_input_blocks=max_input_blocks,
+        max_output_blocks=max_output_blocks,
     ):
         out = _rechunk(out, copy_chunks, target_chunks, allow_irregular=allow_irregular)
     return out
 
 
-def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=True):
+def _rechunk_plan(
+    x,
+    chunks,
+    *,
+    min_mem=None,
+    allow_irregular=True,
+    max_input_blocks=None,
+    max_output_blocks=None,
+):
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
@@ -999,6 +1023,32 @@ def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=True):
     buffer_copies = get_buffer_copies(spec)
     total_copies = 1 + buffer_copies.read + 1 + 1 + buffer_copies.write
     rechunker_max_mem = (spec.allowed_mem - spec.reserved_mem) // total_copies
+    use_blocks_criterion = max_input_blocks is not None or max_output_blocks is not None
+
+    if allow_irregular and use_blocks_criterion:
+        stages = list(
+            multistage_bounded_rechunking_plan(
+                shape=x.shape,
+                source_chunks=source_chunks,
+                target_chunks=target_chunks,
+                itemsize=itemsize(x.dtype),
+                max_mem=rechunker_max_mem,
+                max_input_blocks=max_input_blocks,
+                max_output_blocks=max_output_blocks,
+            )
+        )
+        for i, stage in enumerate(stages):
+            last_stage = i == len(stages) - 1
+            read_chunks, int_chunks, write_chunks = stage
+            target_chunks_ = target_chunks if last_stage else write_chunks
+            if read_chunks == write_chunks:
+                yield read_chunks, target_chunks_
+            else:
+                yield read_chunks, int_chunks
+                if last_stage:
+                    yield write_chunks, target_chunks_
+        return
+
     if min_mem is None:
         min_mem = min(rechunker_max_mem // 20, x.nbytes)
 
