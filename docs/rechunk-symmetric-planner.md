@@ -65,37 +65,101 @@ independently to each dimension in its active direction.
 
 ### Stage count
 
-The minimum number of stages needed so that each dimension stays within its
-per-dim budget is:
+Stage count is driven by the *product* of simultaneously growing or shrinking
+dimensions, not the per-dim maximum. When multiple dims grow together, their
+fan-in contributions multiply; when multiple dims shrink together, their
+fan-out contributions multiply. The minimum number of stages to keep the total
+fan within budget is:
 
 ```
 num_stages = max(
-    max(ceil(log(t/s) / log(B)) for growing dims),
-    max(ceil(log(s/t) / log(B)) for shrinking dims),
+    ceil(log(total_grow_product) / log(B)),
+    ceil(log(total_shrink_product) / log(B)),
     1,
 )
 ```
 
+where `total_grow_product = Π (t/s for growing dims)` and
+`total_shrink_product = Π (s/t for shrinking dims)`.
+
 ### Intermediate sequences
 
-For each dimension, a log-spaced sequence of intermediates is built between
-source and target using `multspace`. Growing dims use multiples of the source
-chunk (so fan-in = `ceil(next/prev)` is exact); shrinking dims use multiples
-of the target chunk (so the final stage aligns to the target without
-requiring a separate alignment pass).
+For each dimension, a log-spaced (`geomspace`) sequence of intermediates is
+built between source and target. Geomspace gives uniform per-stage ratios,
+minimising the maximum fan at any single stage.
 
 ### Symmetry property
 
 Reversing a rechunk (swapping source and target) swaps which dimensions are
 "growing" and which are "shrinking". Because the copy granularity rule is
 symmetric — growing uses the output side, shrinking uses the input side —
-the resulting plan has:
+the resulting plan (without memory-based consolidation) has:
 
 - The same number of stages
 - Fan-in and fan-out exactly swapped at every stage
 
-This is a formal guarantee: `rechunk(A → B)` and `rechunk(B → A)` always
-produce mirror-image plans with the same stage count.
+When consolidation is applied (see below), this symmetry is only approximate
+because the memory layout of the source and target arrays differs.
+
+---
+
+## Memory-based consolidation
+
+For large workloads the number of stages is dominated by the product of
+simultaneously shrinking dimensions. `consolidate_chunks` can reduce this
+product by *freezing* dimensions that already fit in memory at their full
+extent.
+
+### Mechanism
+
+Given `shape`, `itemsize`, and `max_mem`, `consolidate_chunks` is called on
+`target_chunks`. It expands chunks from the highest axis downward, filling
+available memory. A dimension that reaches its full shape size is effectively
+frozen — it needs no further rechunking in the main stages.
+
+For era5-tiny forward (`source=(31, 721, 1440)`, `target=(2480, 10, 10)`,
+`max_mem ≈ 350 MB`):
+
+```
+consolidate_chunks(target=(2480, 10, 10)) → effective_target=(2480, 20, 1440)
+```
+
+Lon expands from 10 → 1440 (full shape, ≈ 143 MB). Lat expands from 10 → 20
+(memory limit). Time stays at 2480 (already at shape).
+
+This changes what the main stages see:
+
+| | Without consolidation | With consolidation |
+|---|---|---|
+| Shrinking dims | lat (72×), lon (144×) | lat (36×) only — lon frozen |
+| total_shrink_product | 72 × 144 = 10,382 | 36 |
+| stages_shrink (B=16) | ceil(log(10382)/log(16)) = 4 | ceil(log(36)/log(16)) = 2 |
+
+### Cleanup stage
+
+Because the main stages now end at `effective_target` rather than
+`target_chunks`, a single cleanup stage is appended to write into the actual
+target chunk layout. `_limit_chunks` reduces the copy granularity to keep
+fan-out within budget for this final stage.
+
+For era5-tiny forward, the cleanup stage reads full `effective_target` chunks
+`(2480, 20, 1440)` and writes `target_chunks=(2480, 10, 10)`, with copy
+reduced along lon by `_limit_chunks` to satisfy the budget:
+
+```
+Cleanup: copy=(2480, 20, 50), store=(2480, 10, 10)
+         fan_in  = 1 (each task reads exactly one effective_target chunk)
+         fan_out = ceil(20/10) × ceil(50/10) = 2 × 5 = 10 ≤ 16
+```
+
+### When consolidation is applied
+
+Consolidation is only used when it strictly reduces total stage count (main
+stages + 1 cleanup) compared to the unconsolidated plan. For small arrays or
+when `max_mem` is tight, it adds an extra cleanup stage without saving any
+main stages, and is skipped. Shrinking dimensions are also capped at the
+source chunk size to prevent `consolidate_chunks` from expanding them past
+the source, which would invert their direction.
 
 ---
 
@@ -120,57 +184,41 @@ Shape `(2480, 721, 1440)`, dtype `float32` (~10 GB).
 The two directions have identical costs overall, but the 432-block fan in one
 direction comes from opposite sides (output for forward, input for reverse).
 
-**With `B = 16` (symmetric planner)**:
+**With `B = 16` (symmetric planner + consolidation)**:
 
-| Direction | Stages | Max fan-in | Max fan-out | Max iops/task |
-|---|---|---|---|---|
-| Forward | 2 | 10 | 108 | 116 |
-| Reverse | 2 | 120 | 10 | 128 |
+| Direction | Stages | Max fan-in | Max fan-out |
+|---|---|---|---|
+| Forward | 3 | 9 | 15 |
+| Reverse | 4 | 12 | 3 |
 
-The symmetry property is visible: forward fan-in (10) = reverse fan-out (10),
-and forward fan-out (108) = reverse fan-in (120)*.
+The forward direction benefits from consolidation: lon is frozen at 1440
+(fits in memory), reducing the effective shrink product from 10,382 to ~36
+and cutting from 4 main stages to 2 + 1 cleanup = 3 total.
 
-(*The slight difference is due to integer rounding in the intermediate
-sequence and the approximate `num_output_blocks` calculation used by the
-pipeline.)
+The reverse direction does not benefit — the growing lat×lon product
+(10,382×) dominates regardless of consolidation, so consolidation would add
+a cleanup stage without saving any main stages and is skipped.
 
 **Forward plan (B = 16) in detail:**
 
 ```
-Stage 1: copy=(248, 721, 1440), store=(248, 80, 120)
-         fan_in  = ceil(248/31) × 1 × 1 = 8   (only time grows)
-         fan_out = 1 × ceil(721/80) × ceil(1440/120) = 1 × 10 × 12 = 120
+Stage 1: copy=(277, 721, 1440), store=(277, 147, 1440)
+         fan_in  = ceil(277/31) = 9   (time grows: copy = next)
+         fan_out = ceil(721/147) = 5  (lat shrinks: copy = prev; lon frozen)
 
-Stage 2: copy=(2480, 80, 120), store=(2480, 10, 10)
-         fan_in  = ceil(2480/248) × 1 × 1 = 10
-         fan_out = 1 × ceil(80/10) × ceil(120/10) = 1 × 8 × 12 = 96
-```
+Stage 2: copy=(2480, 147, 1440), store=(2480, 20, 1440)
+         fan_in  = ceil(2480/277) = 9
+         fan_out = ceil(147/20) = 8
 
-The time dimension (growing) contributes only to fan-in; lat and lon
-(shrinking) contribute only to fan-out. The per-dim fan for each growing or
-shrinking dimension stays ≤ 16.
-
-**Why fan-out is 120, not ≤ 16:** lat and lon both shrink simultaneously,
-so their per-dim fans multiply: 10 × 12 = 120. This is the known limitation
-described below — the budget bounds *per-dimension* fan, not the total
-product.
-
-**Reverse plan (B = 16) in detail** — exact mirror:
-
-```
-Stage 1: copy=(2480, 80, 120), store=(248, 80, 120)
-         fan_in  = 1 × ceil(80/10) × ceil(120/10) = 1 × 8 × 12 = 96
-         fan_out = ceil(2480/248) × 1 × 1 = 10
-
-Stage 2: copy=(248, 721, 1440), store=(31, 721, 1440)
-         fan_in  = 1 × ceil(721/80) × ceil(1440/120) = 1 × 10 × 12 = 120
-         fan_out = ceil(248/31) × 1 × 1 = 8
+Cleanup: copy=(2480, 20, 50), store=(2480, 10, 10)
+         fan_in  = 1  (one effective_target chunk per task)
+         fan_out = ceil(20/10) × ceil(50/10) = 2 × 5 = 10
 ```
 
 The previous bounded planner was **unable to produce a valid plan** for the
-reverse direction with any budget — fan-in was irrecducibly 432 because the
+reverse direction with any budget — fan-in was irreducibly 432 because the
 lon intermediate store chunk (1440) forced each task to read 144 source
-chunks. The symmetric planner reduces it to 120 (a 3.6× improvement), and
+chunks. The symmetric planner reduces it to 12 (a 36× improvement), and
 crucially this is now a bounded, tunable quantity rather than a hard floor.
 
 ---
@@ -243,23 +291,16 @@ per-dim fans multiply:
 total_fan_out = Π (per-dim fan-out for each shrinking dim)
 ```
 
-For era5-tiny with two simultaneously shrinking dimensions (lat and lon), the
-maximum fan-out reaches 120 even with B = 16, because the lat contribution (≤
-16) and lon contribution (≤ 16) multiply together.
-
-This is fundamental: the minimum number of tasks needed to rechunk a 3-D array
-along all three axes simultaneously is bounded below by the product of the
-per-dim ratios. Splitting each dimension into more stages reduces the per-stage
-product, but cannot escape the product structure entirely without isolating
-each dimension into its own pass.
-
-A future extension could add a "total budget" mode that bounds the product
-directly, at the cost of more stages for multi-dimensional rechunks.
+For era5-tiny without consolidation, two simultaneously shrinking dimensions
+(lat and lon) would give a maximum fan-out reaching 10,382 at 1 stage. The
+stage count formula uses the product to ensure the per-stage product stays
+within budget, but the total product across a single stage can still exceed B.
+Consolidation mitigates this by freezing dimensions that fit in memory,
+removing them from the shrink product entirely.
 
 ### Integer rounding in intermediate sequences
 
-Intermediate chunk sizes are rounded to integer multiples of the source (for
-growing dims) or target (for shrinking dims). This rounding means the exact
-fan at each stage can slightly exceed the naive `B^(1/num_stages)` expected
-from the stage-count formula, but it guarantees that copy chunks are always
-aligned with source/target store chunks.
+Intermediate chunk sizes are rounded to integers. This rounding means the
+exact fan at each stage can slightly exceed the naive `B^(1/num_stages)`
+expected from the stage-count formula, but the geomspace distribution keeps
+per-stage ratios as uniform as possible.
