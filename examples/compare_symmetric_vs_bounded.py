@@ -200,12 +200,20 @@ def compare_workload(name, wl, budgets):
             fo_ok = "YES" if fo <= budget else f"NO"
             return f"{ops:>3} {fmt_num(tasks):>8} {fi:>5} {fo:>5} {fi_ok:>5} {fo_ok:>5}"
 
-        # Flag rows where symmetric is strictly worse than bounded on any metric
+        # Flag rows where symmetric is worse than bounded, but only when:
+        #   - bounded itself meets the fan budget (otherwise it's not a valid baseline)
+        #   - symmetric does not already win on both ops and tasks while within budget
+        #     (fewer stages and tasks with valid fan is a clear overall win)
         worse = ""
         if sym is not None and bnd is not None:
             ops_s, tasks_s, fi_s, fo_s = sym
             ops_b, tasks_b, fi_b, fo_b = bnd
-            if ops_s > ops_b or tasks_s > tasks_b or fi_s > fi_b or fo_s > fo_b:
+            bnd_meets_budget = fi_b <= budget and fo_b <= budget
+            sym_within_budget = fi_s <= budget and fo_s <= budget
+            sym_wins_throughput = sym_within_budget and ops_s <= ops_b and tasks_s <= tasks_b
+            if bnd_meets_budget and not sym_wins_throughput and (
+                ops_s > ops_b or tasks_s > tasks_b or fi_s > fi_b or fo_s > fo_b
+            ):
                 worse = " !"
                 any_worse = True
 
