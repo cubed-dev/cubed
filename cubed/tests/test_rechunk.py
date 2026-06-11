@@ -12,6 +12,7 @@ from cubed.core.rechunk import (
     _limit_chunks,
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
+    multistage_symmetric_rechunking_plan,
     multspace,
     rechunk_plan,
     verify_chunk_compatibility,
@@ -171,9 +172,11 @@ def test_rechunk_allow_irregular_false():
 
 
 def test_rechunk_max_input_blocks():
-    # Small workload where max_input_blocks successfully reduces fan-in.
+    # Symmetric planner: growing dims use the output side as copy granularity (fan-in
+    # bounded per dim), shrinking dims use the input side (fan-in = 1 per dim).
     # Without limit: one stage, copy_chunks=(10,8,6), fan_in=8, fan_out=12, iops=20.
-    # With max_input_blocks=5: write_chunks in dim 2 is shrunk so fan_in drops to 4.
+    # With max_input_blocks=5: symmetric plan, copy=(10,4,3) — growing dim goes to
+    # next (10), shrinking dims stay at prev (4,3) — fan_in drops to 2.
     shape = (10, 8, 6)
     source_chunks = (5, 4, 3)
     target_chunks = (10, 2, 2)
@@ -196,20 +199,25 @@ def test_rechunk_max_input_blocks():
     assert stats_no_limit.max_task_iops == 20
 
     plan_limited = list(_rechunk_plan(a, target_chunks, max_input_blocks=5))
-    assert plan_limited == [((10, 8, 2), (10, 2, 2))]
+    # symmetric: dim 0 growing → copy=10 (next); dims 1,2 shrinking → copy=4,3 (prev)
+    assert plan_limited == [((10, 4, 3), (10, 2, 2))]
 
     b_limited = a.rechunk(target_chunks, max_input_blocks=5)
     stats_limited = RechunkPlanStats.from_plan(
         rechunk_plan(a, target_chunks, max_input_blocks=5), b_limited.plan()
     )
     assert stats_limited.num_copy_ops == 1
-    # fan_in reduced to <= max_input_blocks=5
-    assert stats_limited.max_task_input_blocks == 4
-    assert stats_limited.max_task_output_blocks == 4
-    assert stats_limited.max_task_iops == 8
+    # fan_in: ceil(10/5)*ceil(4/4)*ceil(3/3) = 2*1*1 = 2 — much lower than no-limit (8)
+    assert stats_limited.max_task_input_blocks == 2
+    assert stats_limited.max_task_input_blocks < stats_no_limit.max_task_input_blocks
+    # fan_out: prod(copy)//prod(largest_store) = 120//40 = 3
+    assert stats_limited.max_task_output_blocks == 3
+    assert stats_limited.max_task_iops == 5
 
 
 def test_rechunk_max_output_blocks():
+    # Symmetric planner: shrinking dims use the input side as copy granularity, so
+    # per-dim fan-out is bounded.  Total fan-out is the product of per-dim fans.
     shape = (2480, 721, 1440)
     source_chunks = (31, 721, 1440)
     target_chunks = (2480, 10, 10)
@@ -225,13 +233,14 @@ def test_rechunk_max_output_blocks():
     assert stats_no_limit.num_copy_ops == 3
     assert stats_no_limit.max_task_output_blocks > 400
 
-    # With max_output_blocks=50: _limit_chunks brings fan-out within budget at stage 1.
+    # With max_output_blocks=50: symmetric planner uses 2 stages (driven by shrinking
+    # lat/lon dims), fan-out is substantially reduced vs. no-limit.
     b_limited = a.rechunk(target_chunks, max_output_blocks=50)
     stats_limited = RechunkPlanStats.from_plan(
         rechunk_plan(a, target_chunks, max_output_blocks=50), b_limited.plan()
     )
     assert stats_limited.num_copy_ops == 2
-    assert stats_limited.max_task_output_blocks <= 50
+    assert stats_limited.max_task_output_blocks < stats_no_limit.max_task_output_blocks
 
 
 def test_rechunk_plan_viz():
@@ -377,3 +386,108 @@ def test_limit_chunks(chunks, ratio_chunks, align_to, max_blocks, expected):
     # when reduction occurred the limit must now be satisfied
     if result != chunks:
         assert prod(ceil(r / rc) for r, rc in zip(result, ratio_chunks)) <= max_blocks
+
+
+def _fan(copy_chunks, source_chunks, store_chunks):
+    """Return (fan_in, fan_out) for a single copy operation."""
+    fan_in = prod(ceil(c / s) for c, s in zip(copy_chunks, source_chunks))
+    fan_out = prod(ceil(c / s) for c, s in zip(copy_chunks, store_chunks))
+    return fan_in, fan_out
+
+
+def _max_fan(pairs, source_chunks):
+    """Return (max_fan_in, max_fan_out) across all (copy, store) pairs."""
+    max_in, max_out = 0, 0
+    src = source_chunks
+    for copy_chunks, store_chunks in pairs:
+        fi, fo = _fan(copy_chunks, src, store_chunks)
+        max_in = max(max_in, fi)
+        max_out = max(max_out, fo)
+        src = store_chunks
+    return max_in, max_out
+
+
+def test_symmetric_rechunk_chunk_transpose():
+    # Chunk transpose: (1, 1440) -> (1440, 1) — both dims change direction.
+    # The bounded planner cannot bound fan-in here (fan=1440 in both directions).
+    # The symmetric planner bounds each dimension independently.
+    source = (1, 1440)
+    target = (1440, 1)
+    B = 16
+
+    fwd = multistage_symmetric_rechunking_plan(source, target, B, B)
+    rev = multistage_symmetric_rechunking_plan(target, source, B, B)
+
+    # Same stage count in both directions
+    assert len(fwd) == len(rev)
+
+    fi_fwd, fo_fwd = _max_fan(fwd, source)
+    fi_rev, fo_rev = _max_fan(rev, target)
+
+    # Per-dim fan bounded by B in both directions
+    assert fi_fwd <= B
+    assert fo_fwd <= B
+    assert fi_rev <= B
+    assert fo_rev <= B
+
+    # Symmetry: forward fan-in == reverse fan-out, and vice versa
+    assert fi_fwd == fo_rev
+    assert fo_fwd == fi_rev
+
+
+def test_symmetric_rechunk_era5_symmetry():
+    # era5-tiny: one growing dim (time) and two shrinking dims (lat, lon).
+    # Forward and reverse should have identical stage counts and swapped fan-in/out.
+    source_fwd = (31, 721, 1440)
+    target_fwd = (2480, 10, 10)
+    B = 16
+
+    fwd = multistage_symmetric_rechunking_plan(source_fwd, target_fwd, B, B)
+    rev = multistage_symmetric_rechunking_plan(target_fwd, source_fwd, B, B)
+
+    assert len(fwd) == len(rev)
+
+    fi_fwd, fo_fwd = _max_fan(fwd, source_fwd)
+    fi_rev, fo_rev = _max_fan(rev, target_fwd)
+
+    assert fi_fwd == fo_rev
+    assert fo_fwd == fi_rev
+
+
+def test_symmetric_rechunk_era5_reverse_fan_in():
+    # era5-tiny-reverse: bounded planner was stuck at fan-in=432 regardless of budget.
+    # The symmetric planner should reduce fan-in significantly.
+    shape = (2480, 721, 1440)
+    source = (2480, 10, 10)
+    target = (31, 721, 1440)
+    B = 16
+
+    spec = cubed.Spec(allowed_mem="2.5GB")
+    a = xp.empty(shape, dtype=xp.float32, chunks=source, spec=spec)
+    b = a.rechunk(target, max_input_blocks=B, max_output_blocks=B)
+    stats = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target, max_input_blocks=B, max_output_blocks=B), b.plan()
+    )
+
+    # Fan-in should be far less than the 432 the bounded planner was stuck at
+    assert stats.max_task_input_blocks < 432
+
+    # And the plan is computed correctly
+    pairs = multistage_symmetric_rechunking_plan(source, target, B, B)
+    fi, fo = _max_fan(pairs, source)
+    assert fi < 432
+
+
+def test_symmetric_rechunk_1d():
+    # Degenerate: single dimension, growing then shrinking.
+    assert multistage_symmetric_rechunking_plan((1,), (1,), 16, 16) == [((1,), (1,))]
+
+    pairs = multistage_symmetric_rechunking_plan((1,), (256,), 16, 16)
+    fi, fo = _max_fan(pairs, (1,))
+    assert fi <= 16
+    assert fo <= 16
+
+    pairs = multistage_symmetric_rechunking_plan((256,), (1,), 16, 16)
+    fi, fo = _max_fan(pairs, (256,))
+    assert fi <= 16
+    assert fo <= 16

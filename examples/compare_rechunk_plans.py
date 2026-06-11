@@ -229,6 +229,7 @@ def compare_workload(name, wl, budgets):
     import math
     chunk_bytes = math.prod(wl["source_chunks"]) * 4
     allowed_mem = max(chunk_bytes * 10, 2_500_000_000)
+    print(f"  allowed_mem={allowed_mem:,}")
     spec = cubed.Spec(allowed_mem=allowed_mem)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

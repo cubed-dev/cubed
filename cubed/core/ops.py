@@ -23,8 +23,8 @@ from cubed.core.array import CoreArray, check_array_specs, gensym
 from cubed.core.array import compute as compute_arrays
 from cubed.core.plan import Plan, intermediate_store
 from cubed.core.rechunk import (
-    multistage_bounded_rechunking_plan,
     multistage_regular_rechunking_plan,
+    multistage_symmetric_rechunking_plan,
 )
 from cubed.primitive.blockwise import ChunkKey, FunctionArgs
 from cubed.primitive.blockwise import blockwise as primitive_blockwise
@@ -1026,27 +1026,13 @@ def _rechunk_plan(
     use_blocks_criterion = max_input_blocks is not None or max_output_blocks is not None
 
     if allow_irregular and use_blocks_criterion:
-        stages = list(
-            multistage_bounded_rechunking_plan(
-                shape=x.shape,
-                source_chunks=source_chunks,
-                target_chunks=target_chunks,
-                itemsize=itemsize(x.dtype),
-                max_mem=rechunker_max_mem,
-                max_input_blocks=max_input_blocks,
-                max_output_blocks=max_output_blocks,
-            )
-        )
-        for i, stage in enumerate(stages):
-            last_stage = i == len(stages) - 1
-            read_chunks, int_chunks, write_chunks = stage
-            target_chunks_ = target_chunks if last_stage else write_chunks
-            if read_chunks == write_chunks:
-                yield read_chunks, target_chunks_
-            else:
-                yield read_chunks, int_chunks
-                if last_stage:
-                    yield write_chunks, target_chunks_
+        for copy_chunks, store_chunks in multistage_symmetric_rechunking_plan(
+            source_chunks=source_chunks,
+            target_chunks=target_chunks,
+            max_input_blocks=max_input_blocks,
+            max_output_blocks=max_output_blocks,
+        ):
+            yield copy_chunks, store_chunks
         return
 
     if min_mem is None:

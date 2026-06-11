@@ -4,7 +4,7 @@ import logging
 import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
-from math import ceil, floor, prod
+from math import ceil, floor, log, prod
 
 import numpy as np
 
@@ -460,6 +460,89 @@ def multistage_regular_rechunking_plan(
         f"consolidate_reads={consolidate_reads}, "
         f"consolidate_writes={consolidate_writes}"
     )
+
+
+def multistage_symmetric_rechunking_plan(
+    source_chunks: Sequence[int],
+    target_chunks: Sequence[int],
+    max_input_blocks: int | None = None,
+    max_output_blocks: int | None = None,
+) -> list[tuple[tuple[int, ...], tuple[int, ...]]]:
+    """Symmetric rechunking plan.
+
+    Treats growing and shrinking dimensions independently:
+
+    - Growing dims (target > source): copy granularity is set to the output
+      intermediate, so fan-in per dim <= max_input_blocks and fan-out = 1.
+    - Shrinking dims (target < source): copy granularity is set to the input
+      intermediate, so fan-in = 1 and fan-out per dim <= max_output_blocks.
+
+    Stage count is the minimum needed to keep each dimension within its budget.
+    Reversing the rechunk (swapping source and target) produces a plan with
+    identical stage count and fan-in/fan-out exactly swapped.
+
+    Note: total fan across all dims is the product of per-dim fans, so
+    arrays with many simultaneously growing or shrinking dimensions may still
+    exceed the per-total budget.
+
+    Returns a list of (copy_chunks, store_chunks) pairs.
+    """
+    ndim = len(source_chunks)
+    # None means no constraint on that side; clamp to ≥2 to keep log(budget) > 0.
+    budget_in = max(max_input_blocks, 2) if max_input_blocks is not None else None
+    budget_out = max(max_output_blocks, 2) if max_output_blocks is not None else None
+
+    def _stages_grow(s, t):
+        # No constraint → no stage pressure from growing dims.
+        if t <= s or budget_in is None:
+            return 0
+        return ceil(log(t / s) / log(budget_in))
+
+    def _stages_shrink(s, t):
+        # No constraint → no stage pressure from shrinking dims.
+        if s <= t or budget_out is None:
+            return 0
+        return ceil(log(s / t) / log(budget_out))
+
+    num_stages = max(
+        max(
+            (_stages_grow(s, t) for s, t in zip(source_chunks, target_chunks)),
+            default=0,
+        ),
+        max(
+            (_stages_shrink(s, t) for s, t in zip(source_chunks, target_chunks)),
+            default=0,
+        ),
+        1,
+    )
+
+    # Build per-dim intermediate sequence of length num_stages + 1
+    # (includes source and target as endpoints, intermediates in between).
+    # Growing dims: multiples of source, so fan-in = ceil(next/prev) is exact.
+    # Shrinking dims: multiples of target, so the final stage aligns to target.
+    sequences = []
+    for s, t in zip(source_chunks, target_chunks):
+        if t > s:
+            seq = [s] + multspace(s, t, num_stages - 1) + [t]
+        elif t < s:
+            seq = [s] + list(reversed(multspace(t, s, num_stages - 1))) + [t]
+        else:
+            seq = [s] * (num_stages + 1)
+        sequences.append(seq)
+
+    result = []
+    for k in range(num_stages):
+        prev_inter = tuple(seq[k] for seq in sequences)
+        next_inter = tuple(seq[k + 1] for seq in sequences)
+        # Growing dim: copy = next side (fan-in bounded, fan-out = 1).
+        # Shrinking dim: copy = prev side (fan-in = 1, fan-out bounded).
+        # Equal dim: copy = prev = next = source = target.
+        copy_chunks = tuple(
+            next_inter[i] if target_chunks[i] > source_chunks[i] else prev_inter[i]
+            for i in range(ndim)
+        )
+        result.append((copy_chunks, next_inter))
+    return result
 
 
 @dataclass
