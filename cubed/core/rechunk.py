@@ -462,6 +462,37 @@ def multistage_regular_rechunking_plan(
     )
 
 
+def _limit_copy_to_mem(
+    copy_chunks: Sequence[int],
+    store_chunks: Sequence[int],
+    itemsize: int,
+    max_mem: int,
+) -> tuple[int, ...]:
+    """Reduce copy_chunks so that itemsize * prod(copy_chunks) <= max_mem.
+
+    Only dims where copy > store (shrinking dims carrying the prev-stage extent)
+    are reduced. Each reduced chunk is kept as a positive multiple of store_chunks[i]
+    to preserve write alignment.
+
+    If the constraint cannot be met (e.g. a single store chunk already exceeds
+    max_mem) the chunks are returned unchanged.
+    """
+    cc = list(copy_chunks)
+    sc = list(store_chunks)
+    while itemsize * prod(cc) > max_mem:
+        reducible = [(cc[i], i) for i in range(len(cc)) if cc[i] > sc[i]]
+        if not reducible:
+            break
+        _, best = max(reducible)
+        other_prod = prod(cc[j] for j in range(len(cc)) if j != best)
+        target = max_mem // (itemsize * other_prod)
+        new_cc = max(sc[best], (target // sc[best]) * sc[best])
+        if new_cc >= cc[best]:
+            break  # defensive
+        cc[best] = new_cc
+    return tuple(cc)
+
+
 def _symmetric_num_stages(
     source_chunks: Sequence[int],
     effective_target: Sequence[int],
@@ -576,6 +607,11 @@ def multistage_symmetric_rechunking_plan(
             next_inter[i] if effective_target[i] > source_chunks[i] else prev_inter[i]
             for i in range(ndim)
         )
+        # Cap copy chunks to max_mem. Shrinking dims carry the prev-stage (large)
+        # extent into each task; without this cap, early stages can far exceed the
+        # memory budget even though individual store chunks are within budget.
+        if max_mem is not None and itemsize is not None:
+            copy_chunks = _limit_copy_to_mem(copy_chunks, next_inter, itemsize, max_mem)
         result.append((copy_chunks, next_inter))
 
     # Cleanup stage: write from the consolidated intermediate to the actual target.
@@ -586,6 +622,10 @@ def multistage_symmetric_rechunking_plan(
         if max_output_blocks is not None:
             cleanup_copy = _limit_chunks(
                 effective_target, target_chunks, target_chunks, max_output_blocks
+            )
+        if max_mem is not None and itemsize is not None:
+            cleanup_copy = _limit_copy_to_mem(
+                cleanup_copy, tuple(target_chunks), itemsize, max_mem
             )
         result.append((cleanup_copy, tuple(target_chunks)))
 
