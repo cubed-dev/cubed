@@ -4,7 +4,7 @@ import logging
 import warnings
 from collections.abc import Sequence
 from dataclasses import dataclass
-from math import floor, prod
+from math import ceil, floor, prod
 
 import numpy as np
 
@@ -19,6 +19,7 @@ from cubed.vendor.rechunker.algorithm import (
     _calculate_shared_chunks,
     _MultistagePlan,
     calculate_single_stage_io_ops,
+    calculate_stage_chunks,
     consolidate_chunks,
 )
 
@@ -103,12 +104,234 @@ def calculate_regular_stage_chunks(
     return [tuple(chunks) for chunks in np.array(stages).T.tolist()]
 
 
+def _limit_chunks(chunks, ratio_chunks, align_to, max_blocks):
+    """Reduce chunks greedily so that prod(ceil(chunks[i] / ratio_chunks[i])) <= max_blocks.
+
+    Each reduced chunk remains a positive multiple of align_to[i].
+
+    For fan-out limiting: ratio_chunks = align_to = target_chunks, max_blocks = max_output_blocks.
+    For fan-in limiting: ratio_chunks = source_chunks, align_to = store_chunks, max_blocks = max_input_blocks.
+    When ratio_chunks == align_to the ceil is always exact (chunks are guaranteed multiples).
+
+    If the constraint cannot be met then chunks is returned unchanged.
+    """
+    cc = list(chunks)
+    rc = list(ratio_chunks)
+    at = list(align_to)
+    while True:
+        ratios = [ceil(c / r) for c, r in zip(cc, rc)]
+        total = prod(ratios)
+        if total <= max_blocks:
+            break
+        reducible = [
+            (ratios[i], i) for i in range(len(cc)) if cc[i] > at[i] and ratios[i] > 1
+        ]
+        if not reducible:
+            break  # nothing left to reduce
+        _, best = max(reducible)
+        other = total // ratios[best]
+        new_ratio = max(1, max_blocks // other)
+        # Largest multiple of at[best] with ceil(x / rc[best]) <= new_ratio
+        new_cc = (new_ratio * rc[best] // at[best]) * at[best]
+        new_cc = max(new_cc, at[best])
+        if new_cc >= cc[best]:
+            # defensive: unreachable when chunks are multiples of align_to
+            break  # pragma: no cover
+        cc[best] = new_cc
+    return tuple(cc)
+
+
 def _fix_copy_chunks(shape, copy_chunks, target_chunks):
     # if copy chunks are bigger than target chunks in a particular axis, then
     # round them down to the largest multiple of the target so they are aligned
     return tuple(
         cc if (cc <= tc) or (cc == n) or (cc % tc == 0) else (cc // tc) * tc
         for n, cc, tc in zip(shape, copy_chunks, target_chunks)
+    )
+
+
+def _compute_plan_max_fan(
+    stages: _MultistagePlan,
+    source_chunks: Sequence[int],
+    target_chunks: Sequence[int],
+) -> tuple[int, int]:
+    """Compute max fan-in and fan-out across all copy ops implied by a plan.
+
+    Mirrors the copy-op structure of _rechunk_plan in ops.py: a stage with
+    read_chunks == write_chunks emits one copy op; otherwise the non-last stages
+    emit only a READ op, and the last stage emits a READ op and a WRITE op.
+    """
+    current_source = tuple(source_chunks)
+    max_fan_in = 0
+    max_fan_out = 0
+
+    for i, (read_chunks, int_chunks, write_chunks) in enumerate(stages):
+        last_stage = i == len(stages) - 1
+        target_chunks_ = tuple(target_chunks) if last_stage else write_chunks
+
+        if read_chunks == write_chunks:
+            fan_in = prod(ceil(r / s) for r, s in zip(read_chunks, current_source))
+            fan_out = prod(ceil(r / t) for r, t in zip(read_chunks, target_chunks_))
+            max_fan_in = max(max_fan_in, fan_in)
+            max_fan_out = max(max_fan_out, fan_out)
+            current_source = target_chunks_
+        else:
+            # READ op
+            fan_in = prod(ceil(r / s) for r, s in zip(read_chunks, current_source))
+            fan_out = prod(ceil(r / c) for r, c in zip(read_chunks, int_chunks))
+            max_fan_in = max(max_fan_in, fan_in)
+            max_fan_out = max(max_fan_out, fan_out)
+            current_source = int_chunks
+
+            if last_stage:
+                # WRITE op
+                fan_in = prod(ceil(w / s) for w, s in zip(write_chunks, current_source))
+                fan_out = prod(
+                    ceil(w / t) for w, t in zip(write_chunks, target_chunks_)
+                )
+                max_fan_in = max(max_fan_in, fan_in)
+                max_fan_out = max(max_fan_out, fan_out)
+                current_source = target_chunks_
+
+    return max_fan_in, max_fan_out
+
+
+def multistage_bounded_rechunking_plan(
+    shape: Sequence[int],
+    source_chunks: Sequence[int],
+    target_chunks: Sequence[int],
+    itemsize: int,
+    max_mem: int,
+    consolidate_reads: bool = True,
+    consolidate_writes: bool = True,
+    max_input_blocks: int | None = None,
+    max_output_blocks: int | None = None,
+) -> _MultistagePlan:
+    """Calculate an irregular rechunking plan driven by fan-in/out budgets.
+
+    Stages are added until every copy op's fan-in and fan-out are within
+    max_input_blocks and max_output_blocks respectively, then _limit_chunks
+    is applied as a post-processing step to reduce any residual fan excess.
+    If IO requirements start increasing before the budget is met, the last
+    plan that did not increase IO is used with a warning.
+    """
+    ndim = len(shape)
+    if len(source_chunks) != ndim:
+        raise ValueError(f"source_chunks {source_chunks} must have length {ndim}")
+    if len(target_chunks) != ndim:
+        raise ValueError(f"target_chunks {target_chunks} must have length {ndim}")
+
+    source_chunk_mem = itemsize * prod(source_chunks)
+    target_chunk_mem = itemsize * prod(target_chunks)
+
+    if source_chunk_mem > max_mem:
+        raise ValueError(
+            f"Source chunk memory ({source_chunk_mem}) exceeds max_mem ({max_mem})"
+        )
+    if target_chunk_mem > max_mem:
+        raise ValueError(
+            f"Target chunk memory ({target_chunk_mem}) exceeds max_mem ({max_mem})"
+        )
+
+    if consolidate_writes:
+        write_chunks = consolidate_chunks(shape, target_chunks, itemsize, max_mem)
+    else:
+        write_chunks = tuple(target_chunks)
+
+    if consolidate_reads:
+        read_chunk_limits = []
+        for sc, wc in zip(source_chunks, write_chunks):
+            read_chunk_limits.append(wc if wc > sc else None)
+        read_chunks = consolidate_chunks(
+            shape, source_chunks, itemsize, max_mem, read_chunk_limits
+        )
+    else:
+        read_chunks = tuple(source_chunks)
+
+    def _postprocess(plan: _MultistagePlan) -> _MultistagePlan:
+        current_source = tuple(source_chunks)
+        result = []
+        for i, (rc, ic, wc) in enumerate(plan):
+            last_stage = i == len(plan) - 1
+            tc = tuple(target_chunks) if last_stage else wc
+            if rc == wc:
+                cc = rc
+                if max_input_blocks is not None:
+                    cc = _limit_chunks(cc, current_source, tc, max_input_blocks)
+                if max_output_blocks is not None:
+                    cc = _limit_chunks(cc, tc, tc, max_output_blocks)
+                result.append((cc, ic, cc))
+                current_source = tc
+            else:
+                cc_read = rc
+                if max_input_blocks is not None:
+                    cc_read = _limit_chunks(
+                        cc_read, current_source, ic, max_input_blocks
+                    )
+                if max_output_blocks is not None:
+                    cc_read = _limit_chunks(cc_read, ic, ic, max_output_blocks)
+                current_source = ic
+                if last_stage:
+                    cc_write = wc
+                    if max_input_blocks is not None:
+                        cc_write = _limit_chunks(
+                            cc_write, current_source, tc, max_input_blocks
+                        )
+                    if max_output_blocks is not None:
+                        cc_write = _limit_chunks(cc_write, tc, tc, max_output_blocks)
+                    result.append((cc_read, ic, cc_write))
+                    current_source = tc
+                else:
+                    result.append((cc_read, ic, wc))
+        return result
+
+    prev_io_ops: float | None = None
+    prev_plan: _MultistagePlan | None = None
+
+    for stage_count in range(1, MAX_STAGES):
+        stage_chunks = calculate_stage_chunks(read_chunks, write_chunks, stage_count)
+        pre_chunks = [read_chunks] + stage_chunks
+        post_chunks = stage_chunks + [write_chunks]
+
+        int_chunks = [
+            _calculate_shared_chunks(pre, post)
+            for pre, post in zip(pre_chunks, post_chunks)
+        ]
+        plan = _postprocess(list(zip(pre_chunks, int_chunks, post_chunks)))
+
+        max_fan_in, max_fan_out = _compute_plan_max_fan(
+            plan, source_chunks, target_chunks
+        )
+        fan_in_ok = max_input_blocks is None or max_fan_in <= max_input_blocks
+        fan_out_ok = max_output_blocks is None or max_fan_out <= max_output_blocks
+        if fan_in_ok and fan_out_ok:
+            return plan
+
+        io_ops = sum(
+            calculate_single_stage_io_ops(shape, pre, post)
+            for pre, post in zip(pre_chunks, post_chunks)
+        )
+        if prev_io_ops is not None and io_ops > prev_io_ops:
+            warnings.warn(
+                "Search for multi-stage rechunking plan terminated before "
+                "satisfying max_input_blocks/max_output_blocks constraints due to "
+                f"increasing IO requirements. Max fan-in={max_fan_in}, "
+                f"max fan-out={max_fan_out}. "
+                f"Consider increasing max_mem ({max_mem}) to find a more efficient plan.",
+                category=ExcessiveIOWarning,
+                stacklevel=2,
+            )
+            assert prev_plan is not None
+            return prev_plan
+
+        prev_io_ops = io_ops
+        prev_plan = plan
+
+    raise AssertionError(
+        "Failed to find a feasible multi-stage rechunking plan satisfying "
+        f"max_input_blocks={max_input_blocks}, max_output_blocks={max_output_blocks} "
+        f"within max_mem ({max_mem}). "
+        f"shape={shape}, source_chunks={source_chunks}, target_chunks={target_chunks}"
     )
 
 
@@ -289,6 +512,8 @@ class RechunkPlanStats:
     num_tasks: int
     total_nbytes_written: int
     max_task_iops: int
+    max_task_input_blocks: int
+    max_task_output_blocks: int
 
     @classmethod
     def from_plan(cls, rechunk_plan: RechunkPlan, plan: FinalizedPlan):
@@ -302,22 +527,43 @@ class RechunkPlanStats:
             + d["pipeline"].config.num_output_blocks[0]
             for _, d in rechunks
         ]
+        num_task_input_blocks = [
+            d["pipeline"].config.num_input_blocks[0] for _, d in rechunks
+        ]
+        num_task_output_blocks = [
+            d["pipeline"].config.num_output_blocks[0] for _, d in rechunks
+        ]
 
         return cls(
             num_copy_ops=len(rechunk_plan.copy_ops),
             num_tasks=plan.num_tasks,
             total_nbytes_written=plan.total_nbytes_written,
             max_task_iops=max(num_task_iops),
+            max_task_input_blocks=max(num_task_input_blocks),
+            max_task_output_blocks=max(num_task_output_blocks),
         )
 
 
-def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=True):
+def rechunk_plan(
+    x,
+    chunks,
+    *,
+    min_mem=None,
+    allow_irregular=True,
+    max_input_blocks=None,
+    max_output_blocks=None,
+):
     from cubed.core.ops import _rechunk_plan
 
     copy_ops = []
     source_chunks = x.chunksize
     for copy_chunks, target_chunks in _rechunk_plan(
-        x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
+        x,
+        chunks,
+        min_mem=min_mem,
+        allow_irregular=allow_irregular,
+        max_input_blocks=max_input_blocks,
+        max_output_blocks=max_output_blocks,
     ):
         copy_ops.append(RechunkCopy(x.shape, source_chunks, copy_chunks, target_chunks))
         source_chunks = target_chunks

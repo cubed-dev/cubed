@@ -1,3 +1,5 @@
+from math import ceil, prod
+
 import pytest
 
 import cubed
@@ -7,6 +9,7 @@ from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import _store_array, split_chunksizes
 from cubed.core.rechunk import (
     RechunkPlanStats,
+    _limit_chunks,
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
     multspace,
@@ -167,6 +170,70 @@ def test_rechunk_allow_irregular_false():
     assert_array_equal(b.compute(), nxp.ones(shape))
 
 
+def test_rechunk_max_input_blocks():
+    # Small workload where max_input_blocks successfully reduces fan-in.
+    # Without limit: one stage, copy_chunks=(10,8,6), fan_in=8, fan_out=12, iops=20.
+    # With max_input_blocks=5: write_chunks in dim 2 is shrunk so fan_in drops to 4.
+    shape = (10, 8, 6)
+    source_chunks = (5, 4, 3)
+    target_chunks = (10, 2, 2)
+
+    spec = cubed.Spec(allowed_mem="2.5GB")
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    from cubed.core.ops import _rechunk_plan
+
+    plan_no_limit = list(_rechunk_plan(a, target_chunks))
+    assert plan_no_limit == [((10, 8, 6), (10, 2, 2))]
+
+    b_no_limit = a.rechunk(target_chunks)
+    stats_no_limit = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target_chunks), b_no_limit.plan()
+    )
+    assert stats_no_limit.num_copy_ops == 1
+    assert stats_no_limit.max_task_input_blocks == 8
+    assert stats_no_limit.max_task_output_blocks == 12
+    assert stats_no_limit.max_task_iops == 20
+
+    plan_limited = list(_rechunk_plan(a, target_chunks, max_input_blocks=5))
+    assert plan_limited == [((10, 8, 2), (10, 2, 2))]
+
+    b_limited = a.rechunk(target_chunks, max_input_blocks=5)
+    stats_limited = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target_chunks, max_input_blocks=5), b_limited.plan()
+    )
+    assert stats_limited.num_copy_ops == 1
+    # fan_in reduced to <= max_input_blocks=5
+    assert stats_limited.max_task_input_blocks == 4
+    assert stats_limited.max_task_output_blocks == 4
+    assert stats_limited.max_task_iops == 8
+
+
+def test_rechunk_max_output_blocks():
+    shape = (2480, 721, 1440)
+    source_chunks = (31, 721, 1440)
+    target_chunks = (2480, 10, 10)
+
+    spec = cubed.Spec(allowed_mem="2.5GB")
+    a = xp.empty(shape, dtype=xp.float32, chunks=source_chunks, spec=spec)
+
+    # Without max_output_blocks: final op has large fan-out (lon axis fully consolidated)
+    b = a.rechunk(target_chunks)
+    stats_no_limit = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target_chunks), b.plan()
+    )
+    assert stats_no_limit.num_copy_ops == 3
+    assert stats_no_limit.max_task_output_blocks > 400
+
+    # With max_output_blocks=50: _limit_chunks brings fan-out within budget at stage 1.
+    b_limited = a.rechunk(target_chunks, max_output_blocks=50)
+    stats_limited = RechunkPlanStats.from_plan(
+        rechunk_plan(a, target_chunks, max_output_blocks=50), b_limited.plan()
+    )
+    assert stats_limited.num_copy_ops == 2
+    assert stats_limited.max_task_output_blocks <= 50
+
+
 def test_rechunk_plan_viz():
     rechunk_shapes = (tuple([1001, 1001]), (38, 376), (5, 146))
     shape, source_chunks, target_chunks = rechunk_shapes
@@ -277,3 +344,36 @@ def test_split_chunksizes():
     assert split_chunksizes(20, 5, 7) == (5, 2, 3, 4, 1, 5)
     # from hypothesis generated bug (above)
     assert split_chunksizes(1001, 38, 15)[:8] == (15, 15, 8, 7, 15, 15, 1, 14)
+
+
+@pytest.mark.parametrize(
+    ("chunks", "ratio_chunks", "align_to", "max_blocks", "expected"),
+    [
+        # max_blocks already satisfied
+        pytest.param((4,), (4,), (4,), 1, (4,), id="within_budget_1d"),
+        pytest.param((4, 4), (2, 2), (2, 2), 4, (4, 4), id="within_budget_2d"),
+        # fan-out reduction (ratio_chunks == align_to = target_chunks):
+        #   ratios=[4] > 2; new_ratio=2 -> new_cc=6; next total=2 <= 2
+        pytest.param((12,), (3,), (3,), 2, (6,), id="fan_out_1d"),
+        #   ratios=[4,3]=12 > 6; dim 0 shrinks: new_ratio=2 -> new_cc=4; next total=6 <= 6
+        pytest.param((8, 6), (2, 2), (2, 2), 6, (4, 6), id="fan_out_2d"),
+        # fan-in reduction (ratio_chunks != align_to: source_chunks vs store_chunks):
+        #   ratios=[ceil(10/3)=4] > 2; new_ratio=2 -> new_cc=(2*3//2)*2=6; next total=2 <= 2
+        pytest.param((10,), (3,), (2,), 2, (6,), id="fan_in_1d"),
+        #   ratios=[ceil(12/5)=3, ceil(6/3)=2]=6 > 4; dim 0: new_ratio=2 -> new_cc=(2*5//2)*2=10; next total=4 <= 4
+        pytest.param((12, 6), (5, 3), (2, 2), 4, (10, 6), id="fan_in_2d"),
+        # cannot achieve the max_blocks limit, return input unchanged
+        pytest.param((3,), (2,), (3,), 1, (3,), id="structural_1d"),
+        pytest.param((4, 4), (3, 3), (4, 4), 1, (4, 4), id="structural_2d"),
+        pytest.param((6, 4), (4, 4), (6, 4), 1, (6, 4), id="structural_2d_mixed_ratio"),
+    ],
+)
+def test_limit_chunks(chunks, ratio_chunks, align_to, max_blocks, expected):
+    result = _limit_chunks(chunks, ratio_chunks, align_to, max_blocks)
+    assert result == expected
+    # output must remain a multiple of each align_to element
+    for r, a in zip(result, align_to):
+        assert r % a == 0
+    # when reduction occurred the limit must now be satisfied
+    if result != chunks:
+        assert prod(ceil(r / rc) for r, rc in zip(result, ratio_chunks)) <= max_blocks
