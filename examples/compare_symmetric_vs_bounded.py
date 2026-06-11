@@ -1,11 +1,12 @@
-"""Compare the symmetric rechunking planner against the bounded planner.
+"""Compare the symmetric rechunking planner against another planner.
 
 For each workload and fan-in/out budget, prints side-by-side metrics so you
 can check whether the new multistage_symmetric_rechunking_plan() produces plans
-that are no worse than the multistage_bounded_rechunking_plan().
+that are no worse than the comparison planner.
 
 Usage:
     python examples/compare_symmetric_vs_bounded.py
+    python examples/compare_symmetric_vs_bounded.py --against existing
     python examples/compare_symmetric_vs_bounded.py --budgets 16 64 256
     python examples/compare_symmetric_vs_bounded.py --workload era5-tiny
 """
@@ -22,6 +23,7 @@ from cubed.core.rechunk import (
     multistage_symmetric_rechunking_plan,
 )
 from cubed.primitive.memory import get_buffer_copies
+from cubed.vendor.rechunker.algorithm import multistage_rechunking_plan
 
 WORKLOADS = {
     "local-test": dict(
@@ -167,11 +169,36 @@ def _stats_bounded(wl, budget, allowed_mem):
     return _stats_from_pairs(pairs, source_chunks, shape)
 
 
+def _stats_existing(wl, allowed_mem):
+    """Stats for multistage_rechunking_plan (no fan budget — uses min/max mem)."""
+    shape = wl["shape"]
+    source_chunks = wl["source_chunks"]
+    target_chunks = wl["target_chunks"]
+    itemsize = 4  # float32
+    max_mem = _rechunker_max_mem(shape, source_chunks, target_chunks, allowed_mem)
+    min_mem = min(max_mem // 20, itemsize * prod(shape))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        try:
+            plan = multistage_rechunking_plan(
+                shape=shape,
+                source_chunks=source_chunks,
+                target_chunks=target_chunks,
+                itemsize=itemsize,
+                min_mem=min_mem,
+                max_mem=max_mem,
+            )
+        except (ValueError, AssertionError):
+            return None
+    pairs = _bounded_to_pairs(plan, source_chunks, target_chunks)
+    return _stats_from_pairs(pairs, source_chunks, shape)
+
+
 def fmt_num(n):
     return f"{n:,}"
 
 
-def compare_workload(name, wl, budgets):
+def compare_workload(name, wl, budgets, against):
     chunk_bytes = math.prod(wl["source_chunks"]) * 4
     allowed_mem = max(chunk_bytes * 10, 2_500_000_000)
 
@@ -183,7 +210,8 @@ def compare_workload(name, wl, budgets):
     )
     print(f"  allowed_mem={allowed_mem:,}")
 
-    sub = f"  {'':>6}  {'── symmetric ──':^38}  {'── bounded ──':^38}"
+    label = f"── {against} ──"
+    sub = f"  {'':>6}  {'── symmetric ──':^38}  {label:^38}"
     cols = (
         f"  {'':>6}  {'ops':>3} {'tasks':>8} {'in':>5} {'out':>5} {'in ok':>5} {'out ok':>5}"
         f"    {'ops':>3} {'tasks':>8} {'in':>5} {'out':>5} {'in ok':>5} {'out ok':>5}"
@@ -193,40 +221,43 @@ def compare_workload(name, wl, budgets):
     print(cols)
     print(f"  {'-'*6}  {'-'*38}  {'-'*38}")
 
+    # For the existing planner, stats don't depend on budget — compute once.
+    existing_stats = _stats_existing(wl, allowed_mem) if against == "existing" else None
+
     any_worse = False
     for budget in budgets:
         sym = _stats_symmetric(wl, budget, allowed_mem)
-        bnd = _stats_bounded(wl, budget, allowed_mem)
+        cmp = _stats_bounded(wl, budget, allowed_mem) if against == "bounded" else existing_stats
 
         def fmt(stats, budget):
             if stats is None:
                 return f"{'n/a':>3} {'n/a':>8} {'n/a':>5} {'n/a':>5} {'n/a':>5} {'n/a':>5}"
             ops, tasks, fi, fo = stats
-            fi_ok = "YES" if fi <= budget else f"NO"
-            fo_ok = "YES" if fo <= budget else f"NO"
+            fi_ok = "YES" if fi <= budget else "NO"
+            fo_ok = "YES" if fo <= budget else "NO"
             return f"{ops:>3} {fmt_num(tasks):>8} {fi:>5} {fo:>5} {fi_ok:>5} {fo_ok:>5}"
 
-        # Flag rows where symmetric is worse than bounded, but only when:
-        #   - bounded itself meets the fan budget (otherwise it's not a valid baseline)
-        #   - symmetric does not already win on both ops and tasks while within budget
-        #     (fewer stages and tasks with valid fan is a clear overall win)
         worse = ""
-        if sym is not None and bnd is not None:
+        if sym is not None and cmp is not None:
             ops_s, tasks_s, fi_s, fo_s = sym
-            ops_b, tasks_b, fi_b, fo_b = bnd
-            bnd_meets_budget = fi_b <= budget and fo_b <= budget
+            ops_c, tasks_c, fi_c, fo_c = cmp
             sym_within_budget = fi_s <= budget and fo_s <= budget
-            sym_wins_throughput = sym_within_budget and ops_s <= ops_b and tasks_s <= tasks_b
-            if bnd_meets_budget and not sym_wins_throughput and (
-                ops_s > ops_b or tasks_s > tasks_b or fi_s > fi_b or fo_s > fo_b
+            sym_wins_throughput = sym_within_budget and ops_s <= ops_c and tasks_s <= tasks_c
+            # Only flag if the comparison plan itself meets the fan budget.
+            # A plan that violates the budget is not a valid baseline.
+            cmp_valid = fi_c <= budget and fo_c <= budget
+            if cmp_valid and not sym_wins_throughput and (
+                ops_s > ops_c or tasks_s > tasks_c or fi_s > fi_c or fo_s > fo_c
             ):
                 worse = " !"
                 any_worse = True
 
-        print(f"  {budget:>6}  {fmt(sym, budget)}    {fmt(bnd, budget)}{worse}")
+        print(f"  {budget:>6}  {fmt(sym, budget)}    {fmt(cmp, budget)}{worse}")
 
+    if against == "existing":
+        print("  (existing stats are independent of budget B)")
     if any_worse:
-        print("  (! = symmetric worse than bounded on at least one metric)")
+        print(f"  (! = symmetric worse than {against} on at least one metric)")
 
 
 def main():
@@ -244,20 +275,28 @@ def main():
         metavar="B",
         help="Fan-in/out budget values to test",
     )
+    parser.add_argument(
+        "--against",
+        choices=["bounded", "existing"],
+        default="bounded",
+        help="Planner to compare against (default: bounded)",
+    )
     args = parser.parse_args()
 
     workloads = (
         WORKLOADS if args.workload == "all" else {args.workload: WORKLOADS[args.workload]}
     )
 
-    print("Comparing symmetric planner vs bounded planner")
+    print(f"Comparing symmetric planner vs {args.against} planner")
     print(f"Budgets: {args.budgets}  (max_input_blocks = max_output_blocks = B)")
+    if args.against == "existing":
+        print("(existing planner uses min_mem/max_mem, not a fan budget)")
     print()
     print("Columns: ops | tasks | max fan-in | max fan-out | fi within budget | fo within budget")
-    print("'!' marks rows where symmetric is worse than bounded on any metric.")
+    print(f"'!' marks rows where symmetric is worse than {args.against} on any metric.")
 
     for name, wl in workloads.items():
-        compare_workload(name, wl, args.budgets)
+        compare_workload(name, wl, args.budgets, args.against)
 
     print()
 
