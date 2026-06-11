@@ -54,6 +54,12 @@ WORKLOADS = {
         target_chunks=(25854, 10, 10),
         description="~100 GB, 3D time→space (ERA5, medium)",
     ),
+    "era5-original": dict(
+        shape=(350640, 721, 1440),
+        source_chunks=(31, 721, 1440),
+        target_chunks=(350640, 10, 10),
+        description="~1 TB, 3D time→space (ERA5, original)",
+    ),
     "ocean-4d": dict(
         shape=(50, 500, 1000, 1000),
         source_chunks=(50, 1, 1000, 1000),
