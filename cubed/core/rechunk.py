@@ -462,11 +462,40 @@ def multistage_regular_rechunking_plan(
     )
 
 
+def _symmetric_num_stages(
+    source_chunks: Sequence[int],
+    effective_target: Sequence[int],
+    budget_in: int | None,
+    budget_out: int | None,
+) -> int:
+    """Minimum stages to keep total fan within budget for source → effective_target."""
+    if budget_in is not None:
+        total_grow = prod(
+            et / s for s, et in zip(source_chunks, effective_target) if et > s
+        )
+        stages_grow = ceil(log(total_grow) / log(budget_in)) if total_grow > 1 else 0
+    else:
+        stages_grow = 0
+    if budget_out is not None:
+        total_shrink = prod(
+            s / et for s, et in zip(source_chunks, effective_target) if s > et
+        )
+        stages_shrink = (
+            ceil(log(total_shrink) / log(budget_out)) if total_shrink > 1 else 0
+        )
+    else:
+        stages_shrink = 0
+    return max(stages_grow, stages_shrink, 1)
+
+
 def multistage_symmetric_rechunking_plan(
     source_chunks: Sequence[int],
     target_chunks: Sequence[int],
     max_input_blocks: int | None = None,
     max_output_blocks: int | None = None,
+    shape: Sequence[int] | None = None,
+    itemsize: int | None = None,
+    max_mem: int | None = None,
 ) -> list[tuple[tuple[int, ...], tuple[int, ...]]]:
     """Symmetric rechunking plan.
 
@@ -483,8 +512,14 @@ def multistage_symmetric_rechunking_plan(
     the product of simultaneously changing dims, not the per-dim maximum,
     so the budget is honoured on the total fan at every stage.
 
-    Reversing the rechunk (swapping source and target) produces a plan with
-    identical stage count and fan-in/fan-out exactly swapped.
+    When shape, itemsize, and max_mem are given, consolidate_chunks is used
+    to find an effective intermediate target that fits within the memory
+    budget. This can "freeze" large dimensions (e.g. one that already fits
+    entirely in memory), reducing the effective shrink product and thus the
+    number of main stages required. A single cleanup stage is appended to
+    write from the consolidated intermediate into the actual target chunks.
+    Consolidation is only applied when it strictly reduces the total stage
+    count (main stages + cleanup).
 
     Returns a list of (copy_chunks, store_chunks) pairs.
     """
@@ -493,35 +528,39 @@ def multistage_symmetric_rechunking_plan(
     budget_in = max(max_input_blocks, 2) if max_input_blocks is not None else None
     budget_out = max(max_output_blocks, 2) if max_output_blocks is not None else None
 
-    # Stage count is driven by the *product* of simultaneously growing or shrinking
-    # dims, not the per-dim max. Growing dims contribute multiplicatively to fan-in;
-    # shrinking dims contribute multiplicatively to fan-out. Using the product ensures
-    # the budget is honoured on the total fan, not just each dimension individually.
-    if budget_in is not None:
-        total_grow = prod(t / s for s, t in zip(source_chunks, target_chunks) if t > s)
-        stages_grow = ceil(log(total_grow) / log(budget_in)) if total_grow > 1 else 0
-    else:
-        stages_grow = 0
+    effective_target = tuple(target_chunks)
 
-    if budget_out is not None:
-        total_shrink = prod(
-            s / t for s, t in zip(source_chunks, target_chunks) if s > t
+    if shape is not None and itemsize is not None and max_mem is not None:
+        et = consolidate_chunks(shape, target_chunks, itemsize, max_mem)
+        # Cap shrinking dims at source_chunks to avoid inverting their direction.
+        # (consolidate_chunks can expand a shrinking dim past source size when
+        # max_mem is generous, which would flip it from shrinking to growing.)
+        et = tuple(
+            min(et_i, s) if s > t else et_i
+            for s, t, et_i in zip(source_chunks, target_chunks, et)
         )
-        stages_shrink = (
-            ceil(log(total_shrink) / log(budget_out)) if total_shrink > 1 else 0
-        )
-    else:
-        stages_shrink = 0
+        if et != tuple(target_chunks):
+            stages_without = _symmetric_num_stages(
+                source_chunks, target_chunks, budget_in, budget_out
+            )
+            # +1 accounts for the cleanup stage needed to go from et → target_chunks.
+            stages_with = (
+                _symmetric_num_stages(source_chunks, et, budget_in, budget_out) + 1
+            )
+            if stages_with < stages_without:
+                effective_target = et
 
-    num_stages = max(stages_grow, stages_shrink, 1)
+    num_stages = _symmetric_num_stages(
+        source_chunks, effective_target, budget_in, budget_out
+    )
 
     # Build per-dim intermediate sequence of length num_stages + 1
-    # (includes source and target as endpoints, intermediates in between).
+    # (includes source and effective_target as endpoints).
     # Geomspace gives uniform per-stage ratios, minimising the max fan at any stage.
     sequences = []
-    for s, t in zip(source_chunks, target_chunks):
-        if t != s:
-            seq = [max(1, round(v)) for v in np.geomspace(s, t, num_stages + 1)]
+    for s, et in zip(source_chunks, effective_target):
+        if et != s:
+            seq = [max(1, round(v)) for v in np.geomspace(s, et, num_stages + 1)]
         else:
             seq = [s] * (num_stages + 1)
         sequences.append(seq)
@@ -532,12 +571,24 @@ def multistage_symmetric_rechunking_plan(
         next_inter = tuple(seq[k + 1] for seq in sequences)
         # Growing dim: copy = next side (fan-in bounded, fan-out = 1).
         # Shrinking dim: copy = prev side (fan-in = 1, fan-out bounded).
-        # Equal dim: copy = prev = next = source = target.
+        # Equal/frozen dim: copy = prev = next (unchanged).
         copy_chunks = tuple(
-            next_inter[i] if target_chunks[i] > source_chunks[i] else prev_inter[i]
+            next_inter[i] if effective_target[i] > source_chunks[i] else prev_inter[i]
             for i in range(ndim)
         )
         result.append((copy_chunks, next_inter))
+
+    # Cleanup stage: write from the consolidated intermediate to the actual target.
+    # Fan-in is always 1 (copy <= effective_target per dim).
+    # Fan-out is bounded by _limit_chunks.
+    if effective_target != tuple(target_chunks):
+        cleanup_copy = effective_target
+        if max_output_blocks is not None:
+            cleanup_copy = _limit_chunks(
+                effective_target, target_chunks, target_chunks, max_output_blocks
+            )
+        result.append((cleanup_copy, tuple(target_chunks)))
+
     return result
 
 

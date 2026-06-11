@@ -123,11 +123,16 @@ def _stats_symmetric(wl, budget, allowed_mem):
     shape = wl["shape"]
     source_chunks = wl["source_chunks"]
     target_chunks = wl["target_chunks"]
+    itemsize = 4  # float32
+    max_mem = _rechunker_max_mem(shape, source_chunks, target_chunks, allowed_mem)
     pairs = multistage_symmetric_rechunking_plan(
         source_chunks=source_chunks,
         target_chunks=target_chunks,
         max_input_blocks=budget,
         max_output_blocks=budget,
+        shape=shape,
+        itemsize=itemsize,
+        max_mem=max_mem,
     )
     return _stats_from_pairs(pairs, source_chunks, shape)
 

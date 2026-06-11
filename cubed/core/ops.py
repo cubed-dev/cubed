@@ -1031,6 +1031,9 @@ def _rechunk_plan(
             target_chunks=target_chunks,
             max_input_blocks=max_input_blocks,
             max_output_blocks=max_output_blocks,
+            shape=x.shape,
+            itemsize=x.dtype.itemsize,
+            max_mem=rechunker_max_mem,
         ):
             yield copy_chunks, store_chunks
         return

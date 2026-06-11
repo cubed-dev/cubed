@@ -233,13 +233,14 @@ def test_rechunk_max_output_blocks():
     assert stats_no_limit.num_copy_ops == 3
     assert stats_no_limit.max_task_output_blocks > 400
 
-    # With max_output_blocks=50: product of shrinking lat/lon ratios (72x * 144x = 10382x)
-    # needs 3 stages to stay within budget, and fan-out is within the budget.
+    # With max_output_blocks=50: consolidation freezes the lon axis (1440 fits in memory),
+    # reducing the effective shrink product from lat×lon=10382x to just lat≈36x, so
+    # 1 main stage + 1 cleanup is sufficient instead of 3 stages without consolidation.
     b_limited = a.rechunk(target_chunks, max_output_blocks=50)
     stats_limited = RechunkPlanStats.from_plan(
         rechunk_plan(a, target_chunks, max_output_blocks=50), b_limited.plan()
     )
-    assert stats_limited.num_copy_ops == 3
+    assert stats_limited.num_copy_ops == 2
     assert stats_limited.max_task_output_blocks <= 50
 
 
@@ -491,3 +492,52 @@ def test_symmetric_rechunk_1d():
     fi, fo = _max_fan(pairs, (256,))
     assert fi <= 16
     assert fo <= 16
+
+
+def test_symmetric_rechunk_consolidation():
+    # era5-tiny: without consolidation, lat×lon=72×144=10382x shrink requires
+    # ceil(log(10382)/log(16))=4 main stages. With consolidation, lon is "frozen"
+    # at 1440 (it fits in memory), reducing effective shrink to just lat≈24x,
+    # so only 2 main stages + 1 cleanup = 3 total (vs 4 without).
+    source = (31, 721, 1440)
+    target = (2480, 10, 10)
+    shape = (2480, 721, 1440)
+    itemsize = 4  # float32
+    # 500 MB: enough to freeze lon (≈143 MB) and expand lat 10→30 (≈429 MB)
+    max_mem = 500_000_000
+    B = 16
+
+    pairs_no_mem = multistage_symmetric_rechunking_plan(source, target, B, B)
+    pairs_with_mem = multistage_symmetric_rechunking_plan(
+        source, target, B, B, shape=shape, itemsize=itemsize, max_mem=max_mem
+    )
+
+    # Consolidation should reduce total stage count
+    assert len(pairs_with_mem) < len(pairs_no_mem)
+
+    # The last stage must write to actual target chunks
+    assert pairs_with_mem[-1][1] == target
+
+    # Fan-out must still respect the budget
+    _, fo = _max_fan(pairs_with_mem, source)
+    assert fo <= B
+
+    # Consolidation should not be applied when it does not reduce stage count.
+    # For the tiny local-test workload, consolidation would expand all dims to
+    # shape and add an extra cleanup, making it worse — so it should be skipped.
+    small_source = (5, 4, 3)
+    small_target = (10, 2, 2)
+    small_shape = (10, 8, 6)
+    pairs_small_no_mem = multistage_symmetric_rechunking_plan(
+        small_source, small_target, 4, 4
+    )
+    pairs_small_with_mem = multistage_symmetric_rechunking_plan(
+        small_source,
+        small_target,
+        4,
+        4,
+        shape=small_shape,
+        itemsize=itemsize,
+        max_mem=max_mem,
+    )
+    assert len(pairs_small_with_mem) == len(pairs_small_no_mem)
