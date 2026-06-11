@@ -473,9 +473,9 @@ def multistage_symmetric_rechunking_plan(
     Treats growing and shrinking dimensions independently:
 
     - Growing dims (target > source): copy granularity is set to the output
-      intermediate, so fan-in per dim <= max_input_blocks and fan-out = 1.
+      intermediate, so fan-in is bounded and fan-out = 1.
     - Shrinking dims (target < source): copy granularity is set to the input
-      intermediate, so fan-in = 1 and fan-out per dim <= max_output_blocks.
+      intermediate, so fan-in = 1 and fan-out is bounded.
 
     Stage count is the minimum needed to keep the total fan within budget.
     Growing dims contribute multiplicatively to fan-in; shrinking dims
@@ -517,14 +517,11 @@ def multistage_symmetric_rechunking_plan(
 
     # Build per-dim intermediate sequence of length num_stages + 1
     # (includes source and target as endpoints, intermediates in between).
-    # Growing dims: multiples of source, so fan-in = ceil(next/prev) is exact.
-    # Shrinking dims: multiples of target, so the final stage aligns to target.
+    # Geomspace gives uniform per-stage ratios, minimising the max fan at any stage.
     sequences = []
     for s, t in zip(source_chunks, target_chunks):
-        if t > s:
-            seq = [s] + multspace(s, t, num_stages - 1) + [t]
-        elif t < s:
-            seq = [s] + list(reversed(multspace(t, s, num_stages - 1))) + [t]
+        if t != s:
+            seq = [max(1, round(v)) for v in np.geomspace(s, t, num_stages + 1)]
         else:
             seq = [s] * (num_stages + 1)
         sequences.append(seq)
