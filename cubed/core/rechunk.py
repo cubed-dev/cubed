@@ -477,13 +477,14 @@ def multistage_symmetric_rechunking_plan(
     - Shrinking dims (target < source): copy granularity is set to the input
       intermediate, so fan-in = 1 and fan-out per dim <= max_output_blocks.
 
-    Stage count is the minimum needed to keep each dimension within its budget.
+    Stage count is the minimum needed to keep the total fan within budget.
+    Growing dims contribute multiplicatively to fan-in; shrinking dims
+    contribute multiplicatively to fan-out. The stage count is driven by
+    the product of simultaneously changing dims, not the per-dim maximum,
+    so the budget is honoured on the total fan at every stage.
+
     Reversing the rechunk (swapping source and target) produces a plan with
     identical stage count and fan-in/fan-out exactly swapped.
-
-    Note: total fan across all dims is the product of per-dim fans, so
-    arrays with many simultaneously growing or shrinking dimensions may still
-    exceed the per-total budget.
 
     Returns a list of (copy_chunks, store_chunks) pairs.
     """
@@ -492,29 +493,27 @@ def multistage_symmetric_rechunking_plan(
     budget_in = max(max_input_blocks, 2) if max_input_blocks is not None else None
     budget_out = max(max_output_blocks, 2) if max_output_blocks is not None else None
 
-    def _stages_grow(s, t):
-        # No constraint → no stage pressure from growing dims.
-        if t <= s or budget_in is None:
-            return 0
-        return ceil(log(t / s) / log(budget_in))
+    # Stage count is driven by the *product* of simultaneously growing or shrinking
+    # dims, not the per-dim max. Growing dims contribute multiplicatively to fan-in;
+    # shrinking dims contribute multiplicatively to fan-out. Using the product ensures
+    # the budget is honoured on the total fan, not just each dimension individually.
+    if budget_in is not None:
+        total_grow = prod(t / s for s, t in zip(source_chunks, target_chunks) if t > s)
+        stages_grow = ceil(log(total_grow) / log(budget_in)) if total_grow > 1 else 0
+    else:
+        stages_grow = 0
 
-    def _stages_shrink(s, t):
-        # No constraint → no stage pressure from shrinking dims.
-        if s <= t or budget_out is None:
-            return 0
-        return ceil(log(s / t) / log(budget_out))
+    if budget_out is not None:
+        total_shrink = prod(
+            s / t for s, t in zip(source_chunks, target_chunks) if s > t
+        )
+        stages_shrink = (
+            ceil(log(total_shrink) / log(budget_out)) if total_shrink > 1 else 0
+        )
+    else:
+        stages_shrink = 0
 
-    num_stages = max(
-        max(
-            (_stages_grow(s, t) for s, t in zip(source_chunks, target_chunks)),
-            default=0,
-        ),
-        max(
-            (_stages_shrink(s, t) for s, t in zip(source_chunks, target_chunks)),
-            default=0,
-        ),
-        1,
-    )
+    num_stages = max(stages_grow, stages_shrink, 1)
 
     # Build per-dim intermediate sequence of length num_stages + 1
     # (includes source and target as endpoints, intermediates in between).

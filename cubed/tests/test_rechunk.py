@@ -216,8 +216,8 @@ def test_rechunk_max_input_blocks():
 
 
 def test_rechunk_max_output_blocks():
-    # Symmetric planner: shrinking dims use the input side as copy granularity, so
-    # per-dim fan-out is bounded.  Total fan-out is the product of per-dim fans.
+    # Symmetric planner: stage count is driven by the product of simultaneously
+    # shrinking dims, so the total fan-out (not just each dim) stays within budget.
     shape = (2480, 721, 1440)
     source_chunks = (31, 721, 1440)
     target_chunks = (2480, 10, 10)
@@ -233,14 +233,14 @@ def test_rechunk_max_output_blocks():
     assert stats_no_limit.num_copy_ops == 3
     assert stats_no_limit.max_task_output_blocks > 400
 
-    # With max_output_blocks=50: symmetric planner uses 2 stages (driven by shrinking
-    # lat/lon dims), fan-out is substantially reduced vs. no-limit.
+    # With max_output_blocks=50: product of shrinking lat/lon ratios (72x * 144x = 10382x)
+    # needs 3 stages to stay within budget, and fan-out is within the budget.
     b_limited = a.rechunk(target_chunks, max_output_blocks=50)
     stats_limited = RechunkPlanStats.from_plan(
         rechunk_plan(a, target_chunks, max_output_blocks=50), b_limited.plan()
     )
-    assert stats_limited.num_copy_ops == 2
-    assert stats_limited.max_task_output_blocks < stats_no_limit.max_task_output_blocks
+    assert stats_limited.num_copy_ops == 3
+    assert stats_limited.max_task_output_blocks <= 50
 
 
 def test_rechunk_plan_viz():
