@@ -311,7 +311,7 @@ class RechunkPlanStats:
         )
 
 
-def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=True):
     from cubed.core.ops import _rechunk_plan
 
     copy_ops = []

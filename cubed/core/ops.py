@@ -948,7 +948,7 @@ def _map_blocks(
     )
 
 
-def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
+def rechunk(x, chunks, *, min_mem=None, allow_irregular=True):
     """Change the chunking of an array without changing its shape or data.
 
     Parameters
@@ -969,7 +969,7 @@ def rechunk(x, chunks, *, min_mem=None, allow_irregular=False):
     return out
 
 
-def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=False):
+def _rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=True):
     if isinstance(chunks, dict):
         chunks = {validate_axis(c, x.ndim): v for c, v in chunks.items()}
         for i in range(x.ndim):
@@ -1052,7 +1052,7 @@ def split_chunksizes(n: int, sc: int, tc: int) -> tuple[int]:
     return tuple(np.diff(c).tolist())
 
 
-def _rechunk(x, copy_chunks, target_chunks, allow_irregular=False):
+def _rechunk(x, copy_chunks, target_chunks, allow_irregular=True):
     # rechunk x so that its target store has target_chunks, using copy_chunks as the size of chunks for copying from source to target
 
     normalized_copy_chunks = normalize_chunks(copy_chunks, x.shape, dtype=x.dtype)

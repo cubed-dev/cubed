@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-import zarr
 
 import cubed
 import cubed.array_api as xp
@@ -13,8 +12,6 @@ from cubed.tests.utils import (
     MODAL_EXECUTORS,
     skip_if_cupy,
 )
-
-ZARR_PYTHON_V2 = zarr.__version__[0] == "2"
 
 
 @pytest.fixture
@@ -662,7 +659,6 @@ def test_flip(executor, shape, chunks, axis):
 
 
 
-@pytest.mark.skipif(ZARR_PYTHON_V2, reason="fails with Zarr v2")
 def test_flip_zero_size_dim(spec):
     x = np.ones((0, 4))
     a = xp.asarray(x, chunks=(1, 2), spec=spec)
