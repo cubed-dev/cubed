@@ -22,7 +22,7 @@ from cubed.array_api.linear_algebra_functions import matmul
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.array import CoreArray
 from cubed.core.ops import elemwise
-from cubed.utils import itemsize, memory_repr
+from cubed.utils import memory_repr
 
 ARRAY_SVG_SIZE = (
     120  # cubed doesn't have a config module like dask does so hard-code this for now
@@ -56,7 +56,7 @@ class Array(CoreArray):
 
         if not math.isnan(self.nbytes):
             nbytes = memory_repr(self.nbytes)
-            cbytes = memory_repr(math.prod(self.chunksize) * itemsize(self.dtype))
+            cbytes = memory_repr(self.cbytes)
         else:
             nbytes = "unknown"
             cbytes = "unknown"

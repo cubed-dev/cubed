@@ -3,16 +3,15 @@
 import logging
 import warnings
 from collections.abc import Sequence
-from dataclasses import dataclass
-from math import floor, prod
+from dataclasses import dataclass, field
+from math import ceil, floor, prod
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from cubed.core.plan import FinalizedPlan
 from cubed.types import T_RegularChunks, T_Shape
-from cubed.utils import (
-    normalize_chunks,
-)
+from cubed.utils import normalize_chunks
 from cubed.vendor.rechunker.algorithm import (
     MAX_STAGES,
     ExcessiveIOWarning,
@@ -21,6 +20,9 @@ from cubed.vendor.rechunker.algorithm import (
     calculate_single_stage_io_ops,
     consolidate_chunks,
 )
+
+if TYPE_CHECKING:
+    from cubed.array_api.array_object import Array
 
 logger = logging.getLogger(__name__)
 
@@ -253,19 +255,46 @@ class RechunkCopy:
     target_chunks: T_RegularChunks
     """The chunks of the target array for this copy operation."""
 
-    source_aligned: bool | None = None
+    num_input_blocks: int = field(init=False)
+    """The number of input blocks read from the source."""
+
+    num_output_blocks: int = field(init=False)
+    """The number of output blocks written to the target."""
+
+    source_aligned: bool = field(init=False)
     """Are copy chunks aligned with source chunks?"""
 
-    target_aligned: bool | None = None
+    target_aligned: bool = field(init=False)
     """
     Are copy chunks aligned with target chunks?
     If not then irregular chunking must be used.
     """
 
+    def __post_init__(self):
+        self.num_input_blocks = prod(
+            ceil(cc / sc) for cc, sc in zip(self.copy_chunks, self.source_chunks)
+        )
+        self.num_output_blocks = prod(
+            ceil(cc / tc) for cc, tc in zip(self.copy_chunks, self.target_chunks)
+        )
+        self.source_aligned = all(
+            (cc == n) or (cc % sc == 0)
+            for n, sc, cc in zip(self.shape, self.source_chunks, self.copy_chunks)
+        )
+        self.target_aligned = all(
+            (cc == n) or (cc % tc == 0)
+            for n, tc, cc in zip(self.shape, self.target_chunks, self.copy_chunks)
+        )
+
 
 @dataclass
 class RechunkPlan:
+    arrays: list["Array"]
     copy_ops: list[RechunkCopy]
+    regular: bool = field(init=False)
+
+    def __post_init__(self):
+        self.regular = not any(not copy_op.target_aligned for copy_op in self.copy_ops)
 
     def _repr_html_(self):
         from cubed.diagnostics.widgets import get_template
@@ -275,12 +304,48 @@ class RechunkPlan:
         for copy_op in self.copy_ops:
             row = (
                 copy_op,
-                svg(normalize_chunks(copy_op.source_chunks, shape=copy_op.copy_chunks)),
-                svg(normalize_chunks(copy_op.target_chunks, shape=copy_op.copy_chunks)),
+                svg(
+                    normalize_chunks(copy_op.source_chunks, shape=copy_op.copy_chunks),
+                    size=80,
+                ),
+                svg(
+                    normalize_chunks(copy_op.target_chunks, shape=copy_op.copy_chunks),
+                    size=80,
+                ),
             )
             table.append(row)
 
         return get_template("rechunk_plan.j2").render(table=table)
+
+    @property
+    def result(self):
+        return self.arrays[-1]
+
+    @property
+    def array_view(self):
+        return RechunkPlanArrayView(self.arrays)
+
+    @property
+    def stats(self):
+        return RechunkPlanStats.from_plan(self, self.result.plan())
+
+
+@dataclass
+class RechunkPlanArrayView:
+    arrays: list["Array"]
+
+    def _repr_html_(self):
+        from cubed.diagnostics.widgets import get_template
+
+        table = []
+        for array in self.arrays:
+            row = (
+                array,
+                array.to_svg(size=120),
+            )
+            table.append(row)
+
+        return get_template("rechunk_arrays.j2").render(table=table)
 
 
 @dataclass
@@ -288,7 +353,11 @@ class RechunkPlanStats:
     num_copy_ops: int
     num_tasks: int
     total_nbytes_written: int
+    total_task_iops: int
     max_task_iops: int
+    max_task_input_blocks: int
+    max_task_output_blocks: int
+    regular: bool
 
     @classmethod
     def from_plan(cls, rechunk_plan: RechunkPlan, plan: FinalizedPlan):
@@ -302,23 +371,51 @@ class RechunkPlanStats:
             + d["pipeline"].config.num_output_blocks[0]
             for _, d in rechunks
         ]
+        total_task_iops = sum(
+            d["primitive_op"].num_tasks
+            * (
+                d["pipeline"].config.num_input_blocks[0]
+                + d["pipeline"].config.num_output_blocks[0]
+            )
+            for _, d in rechunks
+        )
+        num_task_input_blocks = [
+            d["pipeline"].config.num_input_blocks[0] for _, d in rechunks
+        ]
+        num_task_output_blocks = [
+            d["pipeline"].config.num_output_blocks[0] for _, d in rechunks
+        ]
 
         return cls(
             num_copy_ops=len(rechunk_plan.copy_ops),
             num_tasks=plan.num_tasks,
             total_nbytes_written=plan.total_nbytes_written,
+            total_task_iops=total_task_iops,
             max_task_iops=max(num_task_iops),
+            max_task_input_blocks=max(num_task_input_blocks),
+            max_task_output_blocks=max(num_task_output_blocks),
+            regular=rechunk_plan.regular,
         )
 
 
 def rechunk_plan(x, chunks, *, min_mem=None, allow_irregular=True):
     from cubed.core.ops import _rechunk_plan
 
+    out = x
+    arrays = [x]
     copy_ops = []
     source_chunks = x.chunksize
     for copy_chunks, target_chunks in _rechunk_plan(
         x, chunks, min_mem=min_mem, allow_irregular=allow_irregular
     ):
+        from .ops import _rechunk
+
+        out = _rechunk(out, copy_chunks, target_chunks, allow_irregular=allow_irregular)
+        arrays.append(out)
         copy_ops.append(RechunkCopy(x.shape, source_chunks, copy_chunks, target_chunks))
         source_chunks = target_chunks
-    return RechunkPlan(copy_ops)
+
+    # final output must have regular chunking
+    assert copy_ops[-1].target_aligned
+
+    return RechunkPlan(arrays, copy_ops)

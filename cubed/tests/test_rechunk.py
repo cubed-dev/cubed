@@ -6,7 +6,6 @@ from cubed._testing import assert_array_equal
 from cubed.backend_array_api import namespace as nxp
 from cubed.core.ops import _store_array, split_chunksizes
 from cubed.core.rechunk import (
-    RechunkPlanStats,
     calculate_regular_stage_chunks,
     multistage_regular_rechunking_plan,
     multspace,
@@ -178,11 +177,10 @@ def test_rechunk_plan_viz():
     assert len(rplan.copy_ops) == 2
     # check generating the repr doesn't raise an exception
     rplan._repr_html_()
+    rplan.array_view._repr_html_()
 
     # check stats (without running the rechunk)
-    b = a.rechunk(target_chunks)
-    plan = b.plan()
-    stats = RechunkPlanStats.from_plan(rplan, plan)
+    stats = rplan.stats
     assert stats.num_copy_ops == 2
     assert stats.max_task_iops == 23
 

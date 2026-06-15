@@ -1,3 +1,4 @@
+import math
 from functools import reduce
 from operator import mul
 from typing import Literal, TypeVar
@@ -102,6 +103,11 @@ class CoreArray:
     def nbytes(self) -> int:
         """Number of bytes in array"""
         return self.size * itemsize(self.dtype)
+
+    @property
+    def cbytes(self) -> int:
+        """Number of bytes in a chunk"""
+        return math.prod(self.chunksize) * itemsize(self.dtype)
 
     @property
     def nchunks(self) -> int:
