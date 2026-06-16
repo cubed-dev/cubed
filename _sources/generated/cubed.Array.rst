@@ -30,6 +30,7 @@
    
       ~Array.T
       ~Array.blocks
+      ~Array.cbytes
       ~Array.chunkmem
       ~Array.chunks
       ~Array.chunksize
