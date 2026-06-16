@@ -47,9 +47,13 @@ def index(x, key):
 
     # Use trick from xarray for negative step values
     where_negative_step = []
+    num_integer_dims = 0
     for i, ia in enumerate(idx.args):
-        if isinstance(ia, ndindex.Slice) and ia.step < 0:
-            where_negative_step.append(i)
+        if isinstance(ia, ndindex.Integer):
+            num_integer_dims += 1
+        elif isinstance(ia, ndindex.Slice) and ia.step < 0:
+            # Axis in the output drops integer-indexed dimensions, so adjust
+            where_negative_step.append(i - num_integer_dims)
             pos_slice = _convert_slice_with_negative_step(selection[i], x.shape[i])
             selection[i] = pos_slice
     where_negative_step = tuple(where_negative_step)

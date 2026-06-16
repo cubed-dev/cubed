@@ -299,6 +299,7 @@ def test_index_1d(spec, ind):
         (slice(None), slice(2, 4), xp.newaxis),
         (slice(None), 1),
         (1, slice(2, 4)),
+        (0, slice(1, None, -1)),
     ],
 )
 def test_index_2d(spec, ind):
@@ -374,6 +375,14 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
             (4, 4),
             (slice(14, 3, -2), slice(14, 3, -3)),
             ((4, 2), (4,),),
+        ),
+        # integer index on axis 0 drops a dimension; negative step on axis 1
+        # must flip on axis 0 of the output, not axis 1 of the input
+        (
+            (1, 2),
+            (1, 2),
+            (0, slice(1, None, -1)),
+            ((2,),),
         ),
     ],
 )
