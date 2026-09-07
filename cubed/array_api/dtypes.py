@@ -1,6 +1,8 @@
 # Copied from numpy.array_api
 import builtins
 
+import numpy as np
+
 from cubed.array_api.inspection import __array_namespace_info__
 from cubed.backend_array_api import namespace as nxp
 
@@ -130,9 +132,9 @@ def _upcast_integral_dtypes(
 
 
 def _promote_scalars(x1, x2, op):
-    """Promote at most one of x1 or x2 to an array from a Python scalar"""
-    x1_is_scalar = isinstance(x1, (int, float, complex, builtins.bool))
-    x2_is_scalar = isinstance(x2, (int, float, complex, builtins.bool))
+    """Promote at most one of x1 or x2 to an array from a Python or NumPy scalar"""
+    x1_is_scalar = isinstance(x1, (int, float, complex, builtins.bool, np.generic))
+    x2_is_scalar = isinstance(x2, (int, float, complex, builtins.bool, np.generic))
     if x1_is_scalar and x2_is_scalar:
         raise TypeError(f"At least one of x1 and x2 must be an array in {op}")
     elif x1_is_scalar:

@@ -241,6 +241,14 @@ def test_clip(spec, min, max):
         assert_array_equal(b.compute(), np.clip(npa, min, max))
 
 
+def test_clip_numpy_scalars(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    npa = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.clip(a, np.int64(2), np.int64(7))
+    assert b.dtype == a.dtype
+    assert_array_equal(b.compute(), np.clip(npa, 2, 7))
+
+
 def test_equal(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
@@ -930,6 +938,18 @@ def test_searchsorted_scalar(side):
     assert_array_equal(out.compute(), np.searchsorted(x1, x2, side=side))
 
 
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_searchsorted_numpy_scalar(side):
+    x1 = np.array([-10, 0, 10, 20, 30])
+
+    x1d = xp.asarray(x1, chunks=3)
+
+    out = xp.searchsorted(x1d, np.int64(11), side=side)
+
+    assert out.shape == ()
+    assert_array_equal(out.compute(), np.searchsorted(x1, 11, side=side))
+
+
 def test_searchsorted_sorter_not_implemented():
     with pytest.raises(NotImplementedError):
         xp.searchsorted(xp.asarray([1, 0]), xp.asarray([1]), sorter=xp.asarray([1, 0]))
@@ -949,6 +969,69 @@ def test_where_scalars():
 
     with pytest.raises(TypeError):
         xp.where(condition, 0, 1)
+
+
+def test_where_numpy_scalars():
+    # NumPy scalars other than np.float64/np.complex128 used to crash with
+    # AttributeError: 'numpy.float32' object has no attribute 'name'
+    condition = xp.asarray(
+        [[True, False, True], [False, True, False], [True, False, True]], chunks=(2, 2)
+    )
+    a = xp.asarray(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2)
+    )
+
+    b = xp.where(condition, a, np.float32(0))
+    assert b.dtype == xp.float32  # NumPy scalar keeps its own dtype (NEP 50)
+    assert_array_equal(
+        b.compute(), np.array([[1, 0, 3], [0, 5, 0], [7, 0, 9]], dtype=np.float32)
+    )
+
+    c = xp.where(condition, a, np.float64(0))
+    assert c.dtype == xp.float64  # pre-existing behavior, unchanged
+
+    with pytest.raises(TypeError):
+        xp.where(condition, np.float32(0), np.float32(1))
+
+
+def test_elemwise_numpy_scalars():
+    a = xp.asarray(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2)
+    )
+
+    b = xp.add(a, np.float32(1))
+    assert b.dtype == xp.float32
+    assert_array_equal(
+        b.compute(),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]], dtype=np.float32),
+    )
+
+    c = xp.maximum(np.float32(5), a)
+    assert c.dtype == xp.float32
+    assert_array_equal(
+        c.compute(), np.array([[5, 5, 5], [5, 5, 6], [7, 8, 9]], dtype=np.float32)
+    )
+
+    with pytest.raises(TypeError):
+        xp.add(np.float32(1), np.float32(2))
+
+
+def test_operators_numpy_scalars():
+    a = xp.asarray(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2)
+    )
+
+    b = a + np.float32(1)
+    assert isinstance(b, xp.Array)  # lazy, not eagerly computed by numpy
+    assert b.dtype == xp.float32
+    assert_array_equal(
+        b.compute(),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]], dtype=np.float32),
+    )
+
+    c = a > np.float32(4)
+    assert isinstance(c, xp.Array)
+    assert c.dtype == xp.bool
 
 
 # Set functions

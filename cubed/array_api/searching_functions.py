@@ -1,3 +1,5 @@
+import numpy as np
+
 from cubed.array_api.creation_functions import asarray, zeros_like
 from cubed.array_api.data_type_functions import astype, result_type
 from cubed.array_api.dtypes import _promote_scalars, _real_numeric_dtypes
@@ -61,7 +63,7 @@ def searchsorted(x1, x2, /, *, side="left", sorter=None):
     if x1.ndim != 1:
         raise ValueError("Input array x1 must be one dimensional")
 
-    if isinstance(x2, int | float | complex):
+    if isinstance(x2, int | float | complex | np.generic):
         x2 = asarray(x2, spec=x1.spec)
 
     if sorter is not None:
