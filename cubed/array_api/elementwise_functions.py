@@ -1,3 +1,5 @@
+import numpy as np
+
 from cubed.array_api.array_object import Array
 from cubed.array_api.creation_functions import asarray
 from cubed.array_api.data_type_functions import result_type
@@ -150,9 +152,9 @@ def clip(x, /, min=None, max=None):
         and max.dtype not in _real_numeric_dtypes
     ):
         raise TypeError("Only real numeric dtypes are allowed in clip")
-    if not isinstance(min, (int, float, Array, type(None))):
+    if not isinstance(min, (int, float, np.generic, Array, type(None))):
         raise TypeError("min must be an None, int, float, or an array")
-    if not isinstance(max, (int, float, Array, type(None))):
+    if not isinstance(max, (int, float, np.generic, Array, type(None))):
         raise TypeError("max must be an None, int, float, or an array")
 
     if min is max is None:

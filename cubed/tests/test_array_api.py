@@ -241,6 +241,14 @@ def test_clip(spec, min, max):
         assert_array_equal(b.compute(), np.clip(npa, min, max))
 
 
+def test_clip_numpy_scalars(spec):
+    a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
+    npa = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    b = xp.clip(a, np.int64(2), np.int64(7))
+    assert b.dtype == a.dtype
+    assert_array_equal(b.compute(), np.clip(npa, 2, 7))
+
+
 def test_equal(spec):
     a = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
     b = xp.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]], chunks=(2, 2), spec=spec)
