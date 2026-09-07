@@ -930,6 +930,18 @@ def test_searchsorted_scalar(side):
     assert_array_equal(out.compute(), np.searchsorted(x1, x2, side=side))
 
 
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_searchsorted_numpy_scalar(side):
+    x1 = np.array([-10, 0, 10, 20, 30])
+
+    x1d = xp.asarray(x1, chunks=3)
+
+    out = xp.searchsorted(x1d, np.int64(11), side=side)
+
+    assert out.shape == ()
+    assert_array_equal(out.compute(), np.searchsorted(x1, 11, side=side))
+
+
 def test_searchsorted_sorter_not_implemented():
     with pytest.raises(NotImplementedError):
         xp.searchsorted(xp.asarray([1, 0]), xp.asarray([1]), sorter=xp.asarray([1, 0]))
