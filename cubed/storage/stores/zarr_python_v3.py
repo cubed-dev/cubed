@@ -95,7 +95,7 @@ def open_zarr_v3_array(
                 store=store,
                 shape=shape,
                 dtype=dtype,
-                chunks=chunks,
+                chunks=chunks or "auto",
                 name=path,
                 **kwargs,
             )
