@@ -411,7 +411,7 @@ class Array(CoreArray):
             and self.dtype not in _dtype_categories[dtype_category]
         ):
             raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
-        if isinstance(other, (int, complex, float, bool)):
+        if isinstance(other, (int, complex, float, bool, np.generic)):
             other = self._promote_scalar(other)
         elif isinstance(other, CoreArray):
             if (

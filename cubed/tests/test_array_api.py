@@ -996,6 +996,24 @@ def test_elemwise_numpy_scalars():
         xp.add(np.float32(1), np.float32(2))
 
 
+def test_operators_numpy_scalars():
+    a = xp.asarray(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2)
+    )
+
+    b = a + np.float32(1)
+    assert isinstance(b, xp.Array)  # lazy, not eagerly computed by numpy
+    assert b.dtype == xp.float32
+    assert_array_equal(
+        b.compute(),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]], dtype=np.float32),
+    )
+
+    c = a > np.float32(4)
+    assert isinstance(c, xp.Array)
+    assert c.dtype == xp.bool
+
+
 # Set functions
 
 @pytest.mark.parametrize(("low", "high"), [(0, 10)])
