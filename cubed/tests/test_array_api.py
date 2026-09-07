@@ -951,6 +951,51 @@ def test_where_scalars():
         xp.where(condition, 0, 1)
 
 
+def test_where_numpy_scalars():
+    # NumPy scalars other than np.float64/np.complex128 used to crash with
+    # AttributeError: 'numpy.float32' object has no attribute 'name'
+    condition = xp.asarray(
+        [[True, False, True], [False, True, False], [True, False, True]], chunks=(2, 2)
+    )
+    a = xp.asarray(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2)
+    )
+
+    b = xp.where(condition, a, np.float32(0))
+    assert b.dtype == xp.float32  # NumPy scalar keeps its own dtype (NEP 50)
+    assert_array_equal(
+        b.compute(), np.array([[1, 0, 3], [0, 5, 0], [7, 0, 9]], dtype=np.float32)
+    )
+
+    c = xp.where(condition, a, np.float64(0))
+    assert c.dtype == xp.float64  # pre-existing behavior, unchanged
+
+    with pytest.raises(TypeError):
+        xp.where(condition, np.float32(0), np.float32(1))
+
+
+def test_elemwise_numpy_scalars():
+    a = xp.asarray(
+        [[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=xp.float32, chunks=(2, 2)
+    )
+
+    b = xp.add(a, np.float32(1))
+    assert b.dtype == xp.float32
+    assert_array_equal(
+        b.compute(),
+        np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]], dtype=np.float32),
+    )
+
+    c = xp.maximum(np.float32(5), a)
+    assert c.dtype == xp.float32
+    assert_array_equal(
+        c.compute(), np.array([[5, 5, 5], [5, 5, 6], [7, 8, 9]], dtype=np.float32)
+    )
+
+    with pytest.raises(TypeError):
+        xp.add(np.float32(1), np.float32(2))
+
+
 # Set functions
 
 @pytest.mark.parametrize(("low", "high"), [(0, 10)])
