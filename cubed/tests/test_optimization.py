@@ -1,5 +1,4 @@
 from functools import partial
-from types import SimpleNamespace
 
 import networkx as nx
 import numpy as np
@@ -22,7 +21,6 @@ from cubed.core.optimization import (
     simple_optimize_dag,
 )
 from cubed.core.plan import arrays_to_plan
-from cubed.storage.virtual import VirtualEmptyArray
 from cubed.tests.test_core import sqrts
 from cubed.tests.utils import TaskCounter, create_zarr
 
@@ -280,15 +278,6 @@ def placeholder_func(*x):
 
 def add_placeholder_op(dag, inputs, outputs):
     add_op(dag, placeholder_func, [a.name for a in inputs], [b.name for b in outputs])
-
-
-def virtual_empty_sources(arr):
-    """The empty virtual arrays that ``map_blocks`` adds as inputs when called with none, as in ``random``."""
-    return tuple(
-        SimpleNamespace(name=n)
-        for n, d in arr._plan.dag.nodes(data=True)
-        if isinstance(d.get("target"), VirtualEmptyArray)
-    )
 
 
 def structurally_equivalent(dag1, dag2):
@@ -1204,10 +1193,7 @@ def test_optimize_stack(spec):
 
     # check structure of optimized dag
     expected_fused_dag = create_dag()
-    sources = virtual_empty_sources(c)
-    for source in sources:
-        add_placeholder_op(expected_fused_dag, (), (source,))
-    add_placeholder_op(expected_fused_dag, sources, (c,))
+    add_placeholder_op(expected_fused_dag, (), (c,))
     optimized_dag = c._plan.optimize(optimize_function=opt_fn).dag
     assert structurally_equivalent(optimized_dag, expected_fused_dag)
 
@@ -1232,10 +1218,7 @@ def test_optimize_concat(spec):
 
     # check structure of optimized dag
     expected_fused_dag = create_dag()
-    sources = virtual_empty_sources(c)
-    for source in sources:
-        add_placeholder_op(expected_fused_dag, (), (source,))
-    add_placeholder_op(expected_fused_dag, sources, (c,))
+    add_placeholder_op(expected_fused_dag, (), (c,))
     optimized_dag = c._plan.optimize(optimize_function=opt_fn).dag
     assert structurally_equivalent(optimized_dag, expected_fused_dag)
 

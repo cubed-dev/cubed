@@ -79,18 +79,6 @@ def asarray(
 
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     shape = normalize_shape(shape)
-    return empty_virtual_array(
-        shape, dtype=dtype, device=device, chunks=chunks, spec=spec
-    )
-
-
-def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
-    return empty(**_like_args(x, dtype, device, chunks, spec))
-
-
-def empty_virtual_array(
-    shape, *, dtype=None, device=None, chunks="auto", spec=None
-) -> "Array":
     dtypes = __array_namespace_info__().default_dtypes(device=device)
     if dtype is None:
         dtype = dtypes["real floating"]
@@ -103,6 +91,10 @@ def empty_virtual_array(
 
     plan = Plan._new(name, "empty", target)
     return Array(name, target, spec, plan)
+
+
+def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Array":
+    return empty(**_like_args(x, dtype, device, chunks, spec))
 
 
 def eye(

@@ -34,6 +34,7 @@ from cubed.types import T_RectangularChunks, T_RegularChunks, T_Shape
 from cubed.utils import (
     array_memory,
     array_size,
+    broadcast_trick,
     get_item,
     itemsize,
     normalize_chunks,
@@ -541,8 +542,6 @@ def _general_blockwise(
     extra_func_kwargs=None,
     **kwargs,
 ) -> Union["Array", tuple["Array", ...]]:
-    assert len(arrays) > 0
-
     # replace arrays with zarr arrays
     zargs = [a._zarray for a in arrays]
     in_names = [a.name for a in arrays]
@@ -556,7 +555,10 @@ def _general_blockwise(
 
     op_name = kwargs.pop("op_name", "blockwise")
 
-    spec = check_array_specs(arrays)
+    if arrays:
+        spec = check_array_specs(arrays)
+    else:
+        spec = kwargs.pop("spec", None) or spec_from_config(config)
     buffer_copies = get_buffer_copies(spec)
 
     if isinstance(target_stores, list) and len(target_stores) > 1:  # multiple outputs
@@ -776,12 +778,10 @@ def map_blocks(
     spec0 = specs[0] if len(specs) > 0 else spec
     args = tuple(asarray(a, spec=spec0) for a in args)
 
-    # Handle the case where an array is created by calling `map_blocks` with no input arrays
     if len(args) == 0:
-        from cubed.array_api.creation_functions import empty_virtual_array
-
-        shape = tuple(map(sum, chunks))
-        args = (empty_virtual_array(shape, dtype=dtype, chunks=chunks, spec=spec),)
+        return _map_blocks_no_inputs(
+            func, dtype=dtype, chunks=chunks, spec=spec, **kwargs
+        )
 
     return _map_blocks(
         func,
@@ -793,6 +793,47 @@ def map_blocks(
         function_takes_block_id=has_keyword(func, "block_id"),
         **kwargs,
     )
+
+
+def _map_blocks_no_inputs(func, *, dtype, chunks, spec, **kwargs) -> "Array":
+    shape = tuple(map(sum, chunks))
+
+    def back_key_function(out_key: ChunkKey) -> FunctionArgs[Any]:
+        return FunctionArgs(output_name=out_key.name)
+
+    from cubed.array_api import Array
+
+    out = general_blockwise(
+        _EmptyBlockFunction(func, chunks, dtype),
+        back_key_function,
+        shapes=[shape],
+        dtypes=[dtype],
+        chunkss=[chunks],
+        spec=spec,
+        **kwargs,
+    )
+    assert isinstance(out, Array)  # single output
+    return out
+
+
+class _EmptyBlockFunction:
+    """Calls ``func`` on an empty block with the shape of the output chunk.
+
+    For ``map_blocks`` with no input arrays, whose function still takes a block.
+    """
+
+    def __init__(self, func, chunks, dtype):
+        self.func = func
+        self.chunks = chunks
+        self.dtype = dtype
+        self.func_takes_block_id = has_keyword(func, "block_id")
+
+    def __call__(self, *, block_id, **kwargs):
+        shape = tuple(c[i] for c, i in zip(self.chunks, block_id))
+        block = broadcast_trick(nxp.empty)(shape, dtype=self.dtype)
+        if self.func_takes_block_id:
+            kwargs["block_id"] = block_id
+        return self.func(block, **kwargs)
 
 
 def _map_blocks(
