@@ -1,10 +1,6 @@
-from numbers import Integral
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
-
 from cubed.backend_array_api import namespace as nxp
-from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.storage.types import ArrayMetadata
 from cubed.types import T_DType, T_RegularChunks, T_Shape, T_StandardArray
 from cubed.utils import array_memory, broadcast_trick, memory_repr
@@ -71,23 +67,6 @@ class VirtualFullArray(VirtualArray):
         return array_memory(self.dtype, (1,))
 
 
-class VirtualOffsetsArray(VirtualArray):
-    """An array that is never materialized (in memory or on disk) and contains sequentially incrementing integers."""
-
-    def __init__(self, shape: T_Shape):
-        dtype = nxp.int32
-        chunks = (1,) * len(shape)
-        super().__init__(shape, dtype, chunks)
-
-    def __getitem__(self, key: "Selection") -> T_StandardArray:
-        if key == () and self.shape == ():
-            return nxp.asarray(0, dtype=self.dtype)
-        return numpy_array_to_backend_array(
-            np.ravel_multi_index(_key_to_index_tuple(key), self.shape),
-            dtype=self.dtype,  # type: ignore[arg-type]
-        )
-
-
 class VirtualInMemoryArray(VirtualArray):
     """A small array that is held in memory but never materialized on disk."""
 
@@ -109,25 +88,6 @@ class VirtualInMemoryArray(VirtualArray):
         return self.array.__getitem__(key)
 
 
-def _key_to_index_tuple(selection: "Selection") -> tuple[int, ...]:
-    if isinstance(selection, (slice, Integral)):
-        selection = (selection,)
-    assert all(isinstance(s, (slice, Integral)) for s in selection)  # type: ignore[union-attr]
-    sel = []
-    for s in selection:  # type: ignore[union-attr]
-        if isinstance(s, Integral):
-            sel.append(int(s))
-        elif (
-            isinstance(s, slice)
-            and s.stop == s.start + 1
-            and (s.step is None or s.step == 1)
-        ):
-            sel.append(s.start)
-        else:
-            raise NotImplementedError(f"Offset selection not supported: {selection}")
-    return tuple(sel)
-
-
 def virtual_empty(
     shape: T_Shape, *, dtype: T_DType, chunks: T_RegularChunks, **kwargs: Any
 ) -> VirtualEmptyArray:
@@ -143,10 +103,6 @@ def virtual_full(
     **kwargs: Any,
 ) -> VirtualFullArray:
     return VirtualFullArray(shape, dtype, chunks, fill_value, **kwargs)
-
-
-def virtual_offsets(shape: T_Shape) -> VirtualOffsetsArray:
-    return VirtualOffsetsArray(shape)
 
 
 def virtual_in_memory(

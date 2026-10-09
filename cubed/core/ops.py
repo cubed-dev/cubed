@@ -37,10 +37,8 @@ from cubed.utils import (
     get_item,
     itemsize,
     normalize_chunks,
-    offset_to_block_id,
     to_chunksize,
 )
-from cubed.utils import numblocks as compute_numblocks
 from cubed.vendor.dask.array.core import _check_regular_chunks
 from cubed.vendor.dask.array.utils import validate_axis
 from cubed.vendor.dask.blockwise import broadcast_dimensions
@@ -496,7 +494,6 @@ def blockwise(
         "blockwise",
         op.target_array,
         op,
-        False,
         None,
         *source_arrays,
     )
@@ -517,54 +514,6 @@ def general_blockwise(
     extra_func_kwargs=None,
     **kwargs,
 ) -> Union["Array", tuple["Array", ...]]:
-    if has_keyword(func, "block_id"):
-        from cubed.array_api.creation_functions import offsets_virtual_array
-
-        # Create an array of index offsets with the same chunk structure as the args,
-        # which we convert to block ids (chunk coordinates) later.
-        array0 = arrays[0]
-        # note that primitive general_blockwise checks that all chunkss have same numblocks
-        numblocks = compute_numblocks(chunkss[0])
-        offsets = offsets_virtual_array(numblocks, array0.spec)
-        new_arrays = arrays + (offsets,)
-
-        def back_key_function_with_offset(back_key_function):
-            def wrap(out_key):
-                out_coords = out_key.coords
-                offset_in_key = (ChunkKey(offsets.name, out_coords),)
-                return FunctionArgs(
-                    *(back_key_function(out_key).args + offset_in_key),
-                    output_name=out_key.name,
-                )
-
-            return wrap
-
-        def func_with_block_id(func):
-            def wrap(*a, **kw):
-                offset = int(a[-1])  # convert from 0-d array
-                block_id = offset_to_block_id(offset, numblocks)
-                return func(*a[:-1], block_id=block_id, **kw)
-
-            return wrap
-
-        num_input_blocks = kwargs.pop("num_input_blocks", None)
-        if num_input_blocks is not None:
-            num_input_blocks = num_input_blocks + (1,)  # for offsets array
-
-        return _general_blockwise(
-            func_with_block_id(func),
-            back_key_function_with_offset(back_key_function),
-            *new_arrays,
-            shapes=shapes,
-            dtypes=dtypes,
-            chunkss=chunkss,
-            target_stores=target_stores,
-            target_paths=target_paths,
-            extra_func_kwargs=extra_func_kwargs,
-            num_input_blocks=num_input_blocks,
-            **kwargs,
-        )
-
     return _general_blockwise(
         func,
         back_key_function,
@@ -575,6 +524,7 @@ def general_blockwise(
         target_stores=target_stores,
         target_paths=target_paths,
         extra_func_kwargs=extra_func_kwargs,
+        function_takes_block_id=has_keyword(func, "block_id"),
         **kwargs,
     )
 
@@ -648,7 +598,6 @@ def _general_blockwise(
         op_name,
         op.target_array,
         op,
-        False,
         None,
         *source_arrays,
     )
@@ -834,34 +783,6 @@ def map_blocks(
         shape = tuple(map(sum, chunks))
         args = (empty_virtual_array(shape, dtype=dtype, chunks=chunks, spec=spec),)
 
-    if has_keyword(func, "block_id"):
-        from cubed.array_api.creation_functions import offsets_virtual_array
-
-        # Create an array of index offsets with the same chunk structure as the args,
-        # which we convert to block ids (chunk coordinates) later.
-        arg0 = args[0]
-        numblocks = arg0.numblocks
-        offsets = offsets_virtual_array(numblocks, arg0.spec)
-        new_args = args + (offsets,)
-
-        def func_with_block_id(func):
-            def wrap(*a, **kw):
-                offset = int(a[-1])  # convert from 0-d array
-                block_id = offset_to_block_id(offset, numblocks)
-                return func(*a[:-1], block_id=block_id, **kw)
-
-            return wrap
-
-        return _map_blocks(
-            func_with_block_id(func),
-            *new_args,
-            dtype=dtype,
-            chunks=chunks,
-            drop_axis=drop_axis,
-            new_axis=new_axis,
-            **kwargs,
-        )
-
     return _map_blocks(
         func,
         *args,
@@ -869,6 +790,7 @@ def map_blocks(
         chunks=chunks,
         drop_axis=drop_axis,
         new_axis=new_axis,
+        function_takes_block_id=has_keyword(func, "block_id"),
         **kwargs,
     )
 

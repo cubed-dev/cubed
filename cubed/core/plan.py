@@ -92,7 +92,6 @@ class Plan:
         op_name,
         target,
         primitive_op=None,
-        hidden=False,
         scalar_value=None,
         *source_arrays,
     ):
@@ -121,7 +120,6 @@ class Plan:
                 func_name=func_name,
                 type="op",
                 stack_summaries=stack_summaries,
-                hidden=hidden,
             )
             # array
             if isinstance(name, list):  # multiple outputs
@@ -131,7 +129,6 @@ class Plan:
                         name=n,
                         type="array",
                         target=t,
-                        hidden=hidden,
                     )
                     dag.add_edge(op_name_unique, n)
             else:  # single output
@@ -140,7 +137,6 @@ class Plan:
                     name=name,
                     type="array",
                     target=target,
-                    hidden=hidden,
                     scalar_value=scalar_value,
                 )
                 dag.add_edge(op_name_unique, name)
@@ -153,7 +149,6 @@ class Plan:
                 func_name=func_name,
                 type="op",
                 stack_summaries=stack_summaries,
-                hidden=hidden,
                 primitive_op=primitive_op,
                 pipeline=primitive_op.pipeline,
             )
@@ -165,7 +160,6 @@ class Plan:
                         name=n,
                         type="array",
                         target=t,
-                        hidden=hidden,
                     )
                     dag.add_edge(op_name_unique, n)
             else:  # single output
@@ -174,7 +168,6 @@ class Plan:
                     name=name,
                     type="array",
                     target=target,
-                    hidden=hidden,
                 )
                 dag.add_edge(op_name_unique, name)
         for x in source_arrays:
@@ -611,7 +604,6 @@ class FinalizedPlan:
         filename="cubed",
         format=None,
         rankdir="TB",
-        show_hidden=False,
         engine: Literal["cytoscape", "graphviz"] | None = None,
     ):
         from cubed.diagnostics.colors import APRICOT, LAVENDER, RED
@@ -621,7 +613,6 @@ class FinalizedPlan:
                 filename,
                 format=format,
                 rankdir=rankdir,
-                show_hidden=show_hidden,
             )
 
         if self._ops_exceeding_memory:
@@ -637,11 +628,6 @@ class FinalizedPlan:
 
         # remove edges from create-arrays output node to avoid cluttering the diagram
         dag.remove_edges_from(list(dag.out_edges("arrays")))
-
-        if not show_hidden:
-            dag.remove_nodes_from(
-                list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
-            )
 
         # Build the graph label - use HTML-like label for mixed colors if memory exceeded
         stats_text = (
@@ -819,7 +805,6 @@ class FinalizedPlan:
         filename="cubed",
         format=None,
         rankdir="TB",
-        show_hidden=False,
     ):
         from cubed.diagnostics.widgets.plan import create_or_update_plan_widget
 

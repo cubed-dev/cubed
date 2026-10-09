@@ -80,10 +80,17 @@ T = TypeVar("T")
 
 
 class FunctionArgs(Generic[T]):
-    def __init__(self, *args: T, output_name: str) -> None:
-        # output_name is the name of the array that the function produces
+    def __init__(
+        self,
+        *args: T,
+        output_name: str,
+        output_coords: tuple[int, ...] | None = None,
+    ) -> None:
+        # output_name is the name of the array that the function produces,
+        # and output_coords the coordinates of the chunk, if known
         self.args: tuple[T, ...] = args
         self.output_name = output_name
+        self.output_coords = output_coords
 
     def __repr__(self) -> str:
         return "≪" + ", ".join(repr(v) for v in self.args) + "≫"
@@ -116,6 +123,8 @@ class BlockwiseSpec:
     writes_map : Dict[str, CubedArrayProxy]
         Write proxy dictionary keyed by array name where entries have an ``array`` attribute that supports ``__setitem__``.
         Note that the order of the entries must correspond to the order of the outputs created by the function.
+    function_takes_block_id : bool
+        Whether ``function`` is passed the output chunk coordinates as a ``block_id`` keyword argument.
     """
 
     back_key_function: Callable[[ChunkKey], FunctionArgs[Any]]
@@ -125,6 +134,7 @@ class BlockwiseSpec:
     reads_map: dict[str, CubedArrayProxy]
     writes_map: dict[str, CubedArrayProxy]
     return_writes_stores: bool = False
+    function_takes_block_id: bool = False
 
 
 def apply_blockwise(
@@ -173,6 +183,8 @@ def get_results_in_different_scope(out_coords: list[int], *, config: BlockwiseSp
     name_chunk_inds = config.back_key_function(out_key)
     fargs = map_nested(get_chunk_config, name_chunk_inds)
 
+    if config.function_takes_block_id:
+        return config.function(*fargs.args, block_id=out_coords_tuple)
     return config.function(*fargs.args)
 
 
@@ -223,6 +235,7 @@ def blockwise(
     fusable_with_predecessors: bool = True,
     fusable_with_successors: bool = True,
     num_input_blocks: tuple[int, ...] | None = None,
+    function_takes_block_id: bool = False,
     **kwargs,
 ) -> PrimitiveOperation:
     """Apply a function to multiple blocks from multiple inputs, expressed using concise indexing rules.
@@ -314,6 +327,7 @@ def blockwise(
         fusable_with_predecessors=fusable_with_predecessors,
         fusable_with_successors=fusable_with_successors,
         num_input_blocks=num_input_blocks,
+        function_takes_block_id=function_takes_block_id,
         **kwargs,
     )
 
@@ -343,6 +357,7 @@ def general_blockwise(
     return_writes_stores: bool = False,
     output_blocks: Iterator[list[int]] | None = None,
     num_tasks=None,
+    function_takes_block_id: bool = False,
     **kwargs,
 ) -> PrimitiveOperation:
     """A more general form of ``blockwise`` that uses a function to specify the block
@@ -449,6 +464,7 @@ def general_blockwise(
         read_proxies,
         write_proxies,
         return_writes_stores,
+        function_takes_block_id,
     )
 
     buffer_copies = buffer_copies or BufferCopies(read=1, write=1)
@@ -558,6 +574,7 @@ def _map_nested_impl(func: Callable[[Any], Any], seq: Any) -> Any:
         return FunctionArgs(
             *[_map_nested_impl(func, item) for item in seq.args],
             output_name=seq.output_name,
+            output_coords=seq.output_coords,
         )
     else:
         return func(seq)
@@ -735,31 +752,8 @@ def fuse(
 
     mappable = pipeline2.mappable
 
-    def fused_key_func(out_key: ChunkKey) -> FunctionArgs[Any]:
-        return pipeline1.config.back_key_function(
-            pipeline2.config.back_key_function(out_key).args[0]
-        )
-
-    def fused_func(*args):
-        return pipeline2.config.function(pipeline1.config.function(*args))
-
-    read_proxies = pipeline1.config.reads_map
-    write_proxies = pipeline2.config.writes_map
-    return_writes_stores = pipeline2.config.return_writes_stores
-    num_input_blocks = tuple(
-        n * pipeline2.config.num_input_blocks[0]
-        for n in pipeline1.config.num_input_blocks
-    )
-    num_output_blocks = pipeline2.config.num_output_blocks
-    spec = BlockwiseSpec(
-        fused_key_func,
-        fused_func,
-        num_input_blocks,
-        num_output_blocks,
-        read_proxies,
-        write_proxies,
-        return_writes_stores,
-    )
+    # op2 has a single input, which op1 produces
+    spec = fuse_blockwise_specs(pipeline2.config, pipeline1.config)
 
     source_array_names = primitive_op1.source_array_names
     target_array = primitive_op2.target_array
@@ -858,7 +852,11 @@ def fuse_blockwise_specs(
     for bws in predecessor_bw_specs:
         for name in bws.writes_map.keys():
             predecessor_back_key_functions_dict[name] = bws.back_key_function
-            predecessor_functions_dict[name] = bws.function
+            predecessor_functions_dict[name] = (
+                _with_block_id(bws.function)
+                if bws.function_takes_block_id
+                else bws.function
+            )
 
     fused_key_func = make_fused_back_key_function(
         bw_spec.back_key_function, predecessor_back_key_functions_dict
@@ -891,7 +889,18 @@ def fuse_blockwise_specs(
         read_proxies,
         write_proxies,
         return_writes_stores,
+        bw_spec.function_takes_block_id,
     )
+
+
+class _with_block_id:
+    """Marks a predecessor function to be passed its output chunk coordinates as ``block_id``."""
+
+    def __init__(self, function: Callable[..., Any]) -> None:
+        self.function = function
+
+    def __call__(self, *args: Any, block_id: tuple[int, ...] | None = None) -> Any:
+        return self.function(*args, block_id=block_id)
 
 
 def apply_blockwise_key_func(
@@ -908,6 +917,7 @@ def apply_blockwise_key_func(
                     a, back_key_functions_dict
                 ).args,
                 output_name=a.name,
+                output_coords=a.coords,
             )
             for a in arg
         ]
@@ -918,6 +928,7 @@ def apply_blockwise_key_func(
                     a, back_key_functions_dict
                 ).args,
                 output_name=a.name,
+                output_coords=a.coords,
             )
             for a in arg
         )
@@ -928,8 +939,9 @@ def _apply_blockwise_key_func_to_chunk_key(
     back_key_functions_dict: dict[str, KeyFunction],
 ) -> FunctionArgs[Any]:
     if arg.name not in back_key_functions_dict:
-        return FunctionArgs(arg, output_name=arg.name)
-    return back_key_functions_dict[arg.name](arg)
+        return FunctionArgs(arg, output_name=arg.name, output_coords=arg.coords)
+    fargs = back_key_functions_dict[arg.name](arg)
+    return FunctionArgs(*fargs.args, output_name=arg.name, output_coords=arg.coords)
 
 
 def make_fused_back_key_function(
@@ -983,7 +995,10 @@ def apply_blockwise_func(
     if isinstance(arg, FunctionArgs):
         if arg.output_name not in functions_dict:
             return arg.args[0] if len(arg.args) == 1 else list(arg.args)
-        return functions_dict[arg.output_name](*arg.args)
+        function = functions_dict[arg.output_name]
+        if isinstance(function, _with_block_id):
+            return function(*arg.args, block_id=arg.output_coords)
+        return function(*arg.args)
     # more than one input block is being read from arg
     if isinstance(arg, list):
         return [apply_blockwise_func(a, functions_dict) for a in arg]
@@ -995,14 +1010,14 @@ def make_fused_function(
     function: Callable[..., T],
     predecessor_functions_dict: dict[str, Callable[..., T]],
 ) -> Callable[..., T]:
-    def fused_func_single(*args: Any) -> T:
+    def fused_func_single(*args: Any, **kwargs: Any) -> T:
         func_args = [apply_blockwise_func(a, predecessor_functions_dict) for a in args]
-        return function(*func_args)
+        return function(*func_args, **kwargs)
 
     # outer function is a generator (yields multiple outputs)
-    def fused_func_generator(*args: Any) -> Any:
+    def fused_func_generator(*args: Any, **kwargs: Any) -> Any:
         func_args = [apply_blockwise_func(a, predecessor_functions_dict) for a in args]
-        yield from cast(Iterable[Any], function(*func_args))
+        yield from cast(Iterable[Any], function(*func_args, **kwargs))
 
     return (
         fused_func_generator

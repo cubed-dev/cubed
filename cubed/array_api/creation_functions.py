@@ -10,7 +10,6 @@ from cubed.storage.virtual import (
     virtual_empty,
     virtual_full,
     virtual_in_memory,
-    virtual_offsets,
 )
 from cubed.utils import normalize_chunks, normalize_shape, to_chunksize
 
@@ -81,7 +80,7 @@ def asarray(
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
     shape = normalize_shape(shape)
     return empty_virtual_array(
-        shape, dtype=dtype, device=device, chunks=chunks, spec=spec, hidden=False
+        shape, dtype=dtype, device=device, chunks=chunks, spec=spec
     )
 
 
@@ -90,7 +89,7 @@ def empty_like(x, /, *, dtype=None, device=None, chunks=None, spec=None) -> "Arr
 
 
 def empty_virtual_array(
-    shape, *, dtype=None, device=None, chunks="auto", spec=None, hidden=True
+    shape, *, dtype=None, device=None, chunks="auto", spec=None
 ) -> "Array":
     dtypes = __array_namespace_info__().default_dtypes(device=device)
     if dtype is None:
@@ -102,7 +101,7 @@ def empty_virtual_array(
 
     from .array_object import Array
 
-    plan = Plan._new(name, "empty", target, hidden=hidden)
+    plan = Plan._new(name, "empty", target)
     return Array(name, target, spec, plan)
 
 
@@ -166,16 +165,6 @@ def full(
     from .array_object import Array
 
     plan = Plan._new(name, "full", target)
-    return Array(name, target, spec, plan)
-
-
-def offsets_virtual_array(shape, spec=None) -> "Array":
-    name = gensym()
-    target = virtual_offsets(shape)
-
-    from .array_object import Array
-
-    plan = Plan._new(name, "block_ids", target, hidden=True)
     return Array(name, target, spec, plan)
 
 
