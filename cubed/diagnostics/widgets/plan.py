@@ -216,19 +216,11 @@ def create_or_update_plan_widget(plan, widget=None, height="600px", rankdir="TB"
     return widget
 
 
-def plan_to_cytoscape(
-    plan,
-    show_hidden=False,
-):
+def plan_to_cytoscape(plan):
     dag = plan.dag.copy()  # make a copy since we mutate the DAG below
 
     # remove edges from create-arrays output node to avoid cluttering the diagram
     dag.remove_edges_from(list(dag.out_edges("arrays")))
-
-    if not show_hidden:
-        dag.remove_nodes_from(
-            list(n for n, d in dag.nodes(data=True) if d.get("hidden", False))
-        )
 
     # do an initial pass to extract array variable names from stack summaries
     stacks = []

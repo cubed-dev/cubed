@@ -209,7 +209,6 @@ class CoreArray:
         format=None,
         optimize_graph=True,
         optimize_function=None,
-        show_hidden=False,
         engine: Literal["cytoscape", "graphviz"] | None = None,
     ):
         """Produce a visualization of the computation graph for this array.
@@ -227,9 +226,6 @@ class CoreArray:
         optimize_function : callable, optional
             Function to optimize the computation graph. Default is to use a
             function that performs map fusion only.
-        show_hidden : bool
-            If True, show arrays and operations that are marked as hidden in the
-            visualization. Default is False.
 
         Returns
         -------
@@ -243,7 +239,6 @@ class CoreArray:
             format=format,
             optimize_graph=optimize_graph,
             optimize_function=optimize_function,
-            show_hidden=show_hidden,
             engine=engine,
         )
 
@@ -341,7 +336,6 @@ def visualize(
     format=None,
     optimize_graph=True,
     optimize_function=None,
-    show_hidden=False,
     engine: Literal["cytoscape", "graphviz"] | None = None,
 ):
     """Produce a visualization of the computation graph for multiple arrays.
@@ -361,9 +355,6 @@ def visualize(
     optimize_function : callable, optional
         Function to optimize the computation graph. Default is to use a
         function that performs map fusion only.
-    show_hidden : bool
-        If True, show arrays and operations that are marked as hidden in the
-        visualization. Default is False.
 
     Returns
     -------
@@ -379,7 +370,6 @@ def visualize(
     return finalized_plan.visualize(
         filename=filename,
         format=format,
-        show_hidden=show_hidden,
         engine=engine,
     )
 

@@ -905,9 +905,6 @@ def test_visualize(tmp_path):
     e.visualize(filename=tmp_path / "e")
     assert (tmp_path / "e.svg").exists()
 
-    e.visualize(filename=tmp_path / "e-hidden", show_hidden=True)
-    assert (tmp_path / "e-hidden.svg").exists()
-
     e.visualize(filename=tmp_path / "e", format="png")
     assert (tmp_path / "e.png").exists()
 
@@ -1044,12 +1041,10 @@ def test_plan_quad_means(tmp_path, t_length):
     m.visualize(
         filename=tmp_path / "quad_means_unoptimized",
         optimize_graph=False,
-        show_hidden=True,
     )
     m.visualize(
         filename=tmp_path / "quad_means",
         optimize_function=multiple_inputs_optimize_dag,
-        show_hidden=True,
     )
 
 
