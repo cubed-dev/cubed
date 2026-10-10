@@ -890,6 +890,25 @@ def test_argmin_axis_0(spec):
 
 
 @pytest.mark.parametrize(
+    ("func", "np_func"), [(xp.argmin, np.argmin), (cubed.nanargmax, np.nanargmax)]
+)
+def test_arg_reduction_negative_axis(spec, func, np_func):
+    x = np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]])
+    a = xp.asarray(x, chunks=(2, 2), spec=spec)
+    b = func(a, axis=-1)
+    assert _array_shapes(b) == _array_shapes(func(a, axis=1))
+    assert_array_equal(b.compute(), np_func(x, axis=-1))
+
+
+def _array_shapes(x):
+    return [
+        (d["target"].shape, d["target"].chunks)
+        for _, d in x._plan.dag.nodes(data=True)
+        if d.get("type") == "array"
+    ]
+
+
+@pytest.mark.parametrize(
     ("x1", "x1_chunks", "x2", "x2_chunks"),
     [
         ([], 1, [], 1),

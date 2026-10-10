@@ -1362,6 +1362,8 @@ def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None
     """A reduction that returns the array indexes, not the values."""
     dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
+    if axis is not None:
+        axis = validate_axis(axis, x.ndim)
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
     chunks = tuple((1,) * len(c) if i == axis else c for i, c in enumerate(x.chunks))
@@ -1424,6 +1426,8 @@ def nanarg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=N
     """A reduction that returns the array indexes, not the values, and which raises for all-NaN slices."""
     dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
+    if axis is not None:
+        axis = validate_axis(axis, x.ndim)
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
     chunks = tuple((1,) * len(c) if i == axis else c for i, c in enumerate(x.chunks))
