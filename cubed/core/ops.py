@@ -515,33 +515,6 @@ def general_blockwise(
     extra_func_kwargs=None,
     **kwargs,
 ) -> Union["Array", tuple["Array", ...]]:
-    return _general_blockwise(
-        func,
-        back_key_function,
-        *arrays,
-        shapes=shapes,
-        dtypes=dtypes,
-        chunkss=chunkss,
-        target_stores=target_stores,
-        target_paths=target_paths,
-        extra_func_kwargs=extra_func_kwargs,
-        function_takes_block_id=has_keyword(func, "block_id"),
-        **kwargs,
-    )
-
-
-def _general_blockwise(
-    func,
-    back_key_function,
-    *arrays,
-    shapes,
-    dtypes,
-    chunkss,
-    target_stores=None,
-    target_paths=None,
-    extra_func_kwargs=None,
-    **kwargs,
-) -> Union["Array", tuple["Array", ...]]:
     # replace arrays with zarr arrays
     zargs = [a._zarray for a in arrays]
     in_names = [a.name for a in arrays]
@@ -593,6 +566,7 @@ def _general_blockwise(
         in_names=in_names,
         extra_func_kwargs=extra_func_kwargs,
         num_input_blocks=num_input_blocks,
+        function_takes_block_id=has_keyword(func, "block_id"),
         **kwargs,
     )
     plan = Plan._new(
