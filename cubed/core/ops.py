@@ -1626,21 +1626,22 @@ def scan(
     if array.numblocks[axis] == 1:
         return scanned
 
-    # 2. Calculate the reduction using `preop`
-    #    Use `partial_reduce` to also merge to a decent intermediate chunksize
-    #    since reduced.chunksize[axis] == 1
-
-    def identity_func(a, **kwargs):
-        return a
-
-    split_size = min(split_every, array.numblocks[axis])
-    reduced = partial_reduce(
+    # 2. Calculate the reduction using `preop`, then merge to a decent
+    #    intermediate chunksize since each block reduces to size 1.
+    #    (Not `partial_reduce` with `combine_sizes`, which gives the last group
+    #    of blocks the full size even if it has fewer blocks.)
+    reduced = map_blocks(
+        partial(preop, axis=axis, keepdims=True),
         array,
-        initial_func=partial(preop, axis=axis, keepdims=True),
-        func=identity_func,
-        split_every={axis: split_size},
         dtype=dtype,
-        combine_sizes={axis: split_size},
+        chunks=tuple(
+            (1,) * len(c) if i == axis else c for i, c in enumerate(array.chunks)
+        ),
+    )
+    split_size = min(split_every, array.numblocks[axis])
+    reduced = merge_chunks(
+        reduced,
+        tuple(split_size if i == axis else c for i, c in enumerate(reduced.chunksize)),
     )
 
     # 3. Now scan `reduced` to generate the increments for each block of `scanned`.

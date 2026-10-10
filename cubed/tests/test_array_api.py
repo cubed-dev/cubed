@@ -1041,6 +1041,14 @@ def test_cumulative_sum_1d():
     )
 
 
+@pytest.mark.parametrize("n", [12, 30, 40, 60])
+def test_cumulative_sum_1d_recursive(n):
+    # 40 rows gives 14 blocks, which aren't a multiple of split_every
+    a = xp.arange(n, chunks=(3,))
+    b = xp.cumulative_sum(a, axis=0)
+    assert_array_equal(b.compute(), np.cumulative_sum(np.arange(n), axis=0))
+
+
 def test_cumulative_sum_unsupported_include_initial(spec):
     a = xp.asarray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], chunks=(4,))
     with pytest.raises(NotImplementedError):
