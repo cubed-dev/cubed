@@ -354,6 +354,11 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
     assert b.chunks == new_chunks_expected
 
 
+def test_index_negative_step_num_tasks(spec):
+    a = xp.arange(20, chunks=4, spec=spec)
+    assert a[14:3:-2].plan().num_tasks == xp.flip(a[4:15:2]).plan().num_tasks
+
+
 # fmt: off
 @pytest.mark.parametrize(
     ("shape", "chunks", "ind", "new_chunks_expected"),
@@ -374,7 +379,7 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
             (20, 20),
             (4, 4),
             (slice(14, 3, -2), slice(14, 3, -3)),
-            ((4, 2), (4,),),
+            ((4, 2), (3, 1),),
         ),
         # integer index on axis 0 drops a dimension; negative step on axis 1
         # must flip on axis 0 of the output, not axis 1 of the input
