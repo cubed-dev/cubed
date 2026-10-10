@@ -384,6 +384,19 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
             (0, slice(1, None, -1)),
             ((2,),),
         ),
+        # output is smaller than a chunk along axis 0
+        (
+            (4, 4),
+            (4, 4),
+            (slice(None, -1), slice(None, None, 2)),
+            ((3,), (2,),),
+        ),
+        (
+            (4, 4),
+            (4, 4),
+            (slice(None, -1), slice(3, -4, -1)),
+            ((3,), (3,),),
+        ),
     ],
 )
 # fmt: on

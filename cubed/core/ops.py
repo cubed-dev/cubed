@@ -1065,7 +1065,12 @@ def merge_chunks(x, chunks):
         raise ValueError(
             f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
         )
-    if not all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunksize)):
+    if not all(
+        c1 % c0 == 0
+        # a dimension's only chunk is clipped to its length, so needn't divide c1
+        or (nb == 1 and c1 >= n)
+        for c0, c1, nb, n in zip(x.chunksize, target_chunksize, x.numblocks, x.shape)
+    ):
         raise ValueError(
             f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
         )
