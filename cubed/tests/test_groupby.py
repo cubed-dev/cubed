@@ -143,6 +143,10 @@ def test_groupby_blockwise_axis1():
 def _sum_reduction_func(arr, by, axis, start_group, num_groups, groupby_dtype):
     # change 'by' so it starts from 0 for each chunk
     by = by - start_group
+    if by.size == 0:
+        # numpy_groupies rejects an empty group_idx (chunks of groups with no labels)
+        shape = tuple(num_groups if i == axis else s for i, s in enumerate(arr.shape))
+        return nxp.zeros(shape, dtype=groupby_dtype)
     return npg.aggregate(
         by, arr, func="sum", dtype=groupby_dtype, axis=axis, size=num_groups
     )

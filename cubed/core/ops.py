@@ -681,6 +681,8 @@ def _create_zarr_indexer(selection, shape, chunks):
     from zarr.core.chunk_grids import ChunkGrid
     from zarr.core.indexing import OrthogonalIndexer
 
+    # zarr rejects zero-length chunks, which only occur in zero-length dimensions
+    chunks = tuple(1 if c == 0 or c == (0,) else c for c in chunks)
     chunk_grid = ChunkGrid.from_sizes(array_shape=shape, chunk_sizes=chunks)
     return OrthogonalIndexer(selection, shape, chunk_grid)
 
