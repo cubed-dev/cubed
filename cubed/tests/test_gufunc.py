@@ -25,7 +25,8 @@ def test_apply_reduction(spec, vectorize):
     expected = nxp.mean(r, axis=-1, dtype=np.float32)
 
     assert actual.compute().shape == expected.shape
-    assert_allclose(actual.compute(), expected)
+    # on JAX, a chunked float32 mean may differ from the whole array's
+    assert_allclose(actual.compute(), expected, atol=1e-6)
 
 
 def test_apply_gufunc_elemwise_01(spec):

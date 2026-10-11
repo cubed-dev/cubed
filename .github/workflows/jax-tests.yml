@@ -42,8 +42,7 @@ jobs:
 
       - name: Run tests
         run: |
-          # exclude a few tests that don't work on JAX
-          pytest -k "not broadcast_trick and not object_dtype"
+          pytest
         env:
           CUBED_BACKEND_ARRAY_API_MODULE: jax.numpy
           JAX_ENABLE_X64: True

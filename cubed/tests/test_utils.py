@@ -141,7 +141,8 @@ def test_broadcast_trick():
 
     assert_array_equal(a, b)
     assert a.nbytes == 100
-    assert b.base.nbytes == 1
+    if hasattr(b, "base"):  # JAX arrays are never views
+        assert b.base.nbytes == 1
 
     a = nxp.ones((), dtype=nxp.int8)
     b = broadcast_trick(nxp.ones)((), dtype=nxp.int8)
