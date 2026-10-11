@@ -1,8 +1,6 @@
 import math
 import random as pyrandom
 
-import numpy as np
-
 from cubed.backend_array_api import namespace as nxp
 from cubed.backend_array_api import numpy_array_to_backend_array
 from cubed.core.ops import map_blocks
@@ -94,16 +92,17 @@ def _integers(x, _shape, _chunksize, block_id=None):
             + nxp.reshape(idx, tuple(-1 if j == ax else 1 for j in range(len(_shape))))
             * stride
         )
-    # _wang_hash uses numpy-specific .view(); convert and convert back
-    hashed = _wang_hash(np.asarray(flat, dtype=np.uint32))
-    return numpy_array_to_backend_array(hashed).astype(x.dtype)
+    # relies on out-of-range integer casts wrapping, which the Array API leaves
+    # implementation-defined but NumPy and JAX both do
+    hashed = _wang_hash(nxp.astype(flat, nxp.uint32))
+    return nxp.astype(hashed, x.dtype)
 
 
 def _wang_hash(n):
-    """Bijective 32-bit Wang hash applied elementwise to a uint32 numpy array."""
-    n = (n ^ np.uint32(61)) ^ (n >> np.uint32(16))
-    n = n + (n << np.uint32(3))
-    n = n ^ (n >> np.uint32(4))
-    n = n * np.uint32(0x27D4EB2D)
-    n = n ^ (n >> np.uint32(15))
-    return n.view(np.int32)
+    """Bijective 32-bit Wang hash applied elementwise to a uint32 array."""
+    n = (n ^ 61) ^ (n >> 16)
+    n = n + (n << 3)
+    n = n ^ (n >> 4)
+    n = n * 0x27D4EB2D
+    n = n ^ (n >> 15)
+    return nxp.astype(n, nxp.int32)
