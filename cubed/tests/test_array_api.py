@@ -354,6 +354,11 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
     assert b.chunks == new_chunks_expected
 
 
+def test_index_negative_step_num_tasks(spec):
+    a = xp.arange(20, chunks=4, spec=spec)
+    assert a[14:3:-2].plan().num_tasks == xp.flip(a[4:15:2]).plan().num_tasks
+
+
 # fmt: off
 @pytest.mark.parametrize(
     ("shape", "chunks", "ind", "new_chunks_expected"),
@@ -374,7 +379,7 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
             (20, 20),
             (4, 4),
             (slice(14, 3, -2), slice(14, 3, -3)),
-            ((4, 2), (4,),),
+            ((4, 2), (3, 1),),
         ),
         # integer index on axis 0 drops a dimension; negative step on axis 1
         # must flip on axis 0 of the output, not axis 1 of the input
@@ -383,6 +388,19 @@ def test_index_1d_step(spec, shape, chunks, ind, new_chunks_expected):
             (1, 2),
             (0, slice(1, None, -1)),
             ((2,),),
+        ),
+        # output is smaller than a chunk along axis 0
+        (
+            (4, 4),
+            (4, 4),
+            (slice(None, -1), slice(None, None, 2)),
+            ((3,), (2,),),
+        ),
+        (
+            (4, 4),
+            (4, 4),
+            (slice(None, -1), slice(3, -4, -1)),
+            ((3,), (3,),),
         ),
     ],
 )
@@ -890,6 +908,25 @@ def test_argmin_axis_0(spec):
 
 
 @pytest.mark.parametrize(
+    ("func", "np_func"), [(xp.argmin, np.argmin), (cubed.nanargmax, np.nanargmax)]
+)
+def test_arg_reduction_negative_axis(spec, func, np_func):
+    x = np.array([[11, 12, 13], [11, 11, 14], [10, 13, 11]])
+    a = xp.asarray(x, chunks=(2, 2), spec=spec)
+    b = func(a, axis=-1)
+    assert _array_shapes(b) == _array_shapes(func(a, axis=1))
+    assert_array_equal(b.compute(), np_func(x, axis=-1))
+
+
+def _array_shapes(x):
+    return [
+        (d["target"].shape, d["target"].chunks)
+        for _, d in x._plan.dag.nodes(data=True)
+        if d.get("type") == "array"
+    ]
+
+
+@pytest.mark.parametrize(
     ("x1", "x1_chunks", "x2", "x2_chunks"),
     [
         ([], 1, [], 1),
@@ -1020,6 +1057,14 @@ def test_cumulative_sum_1d():
         b.compute(),
         np.cumulative_sum(np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), axis=0),
     )
+
+
+@pytest.mark.parametrize("n", [12, 30, 40, 60])
+def test_cumulative_sum_1d_recursive(n):
+    # 40 rows gives 14 blocks, which aren't a multiple of split_every
+    a = xp.arange(n, chunks=(3,))
+    b = xp.cumulative_sum(a, axis=0)
+    assert_array_equal(b.compute(), np.cumulative_sum(np.arange(n), axis=0))
 
 
 def test_cumulative_sum_unsupported_include_initial(spec):

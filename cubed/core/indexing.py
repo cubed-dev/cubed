@@ -58,6 +58,12 @@ def index(x, key):
             selection[i] = pos_slice
     where_negative_step = tuple(where_negative_step)
     selection = tuple(selection)
+    idx = ndindex.Tuple(
+        *(
+            ndindex.Slice(sel) if isinstance(ia, ndindex.Slice) else ia
+            for ia, sel in zip(idx.args, selection)
+        )
+    )
 
     # Check selection is supported
     if not all(

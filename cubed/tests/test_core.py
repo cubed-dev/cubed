@@ -825,6 +825,14 @@ def test_merge_chunks(spec, target_chunks, expected_chunksize):
     assert_array_equal(b.compute(), np.ones((10, 10)))
 
 
+def test_merge_chunks_single_chunk_dim(spec):
+    # the array's chunk size along the first dimension is clipped to 3
+    a = xp.ones((3, 10), dtype=np.uint8, chunks=(4, 2), spec=spec)
+    b = merge_chunks(a, (4, 4))
+    assert b.chunksize == (3, 4)
+    assert_array_equal(b.compute(), np.ones((3, 10)))
+
+
 @pytest.mark.parametrize("target_chunks", [(3, 2), (1, 3), (5, 5), (10, 10)])
 def test_merge_chunks_fails(spec, target_chunks):
     a = xp.ones((10, 10), dtype=np.uint8, chunks=(2, 3), spec=spec)

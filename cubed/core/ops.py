@@ -1039,7 +1039,12 @@ def merge_chunks(x, chunks):
         raise ValueError(
             f"Chunks {target_chunksize} must have same number of dimensions as array ({x.ndim})"
         )
-    if not all(c1 % c0 == 0 for c0, c1 in zip(x.chunksize, target_chunksize)):
+    if not all(
+        c1 % c0 == 0
+        # a dimension's only chunk is clipped to its length, so needn't divide c1
+        or (nb == 1 and c1 >= n)
+        for c0, c1, nb, n in zip(x.chunksize, target_chunksize, x.numblocks, x.shape)
+    ):
         raise ValueError(
             f"Chunks {target_chunksize} must be a multiple of array's chunks {x.chunksize}"
         )
@@ -1336,6 +1341,8 @@ def arg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=None
     """A reduction that returns the array indexes, not the values."""
     dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
+    if axis is not None:
+        axis = validate_axis(axis, x.ndim)
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
     chunks = tuple((1,) * len(c) if i == axis else c for i, c in enumerate(x.chunks))
@@ -1398,6 +1405,8 @@ def nanarg_reduction(x, /, arg_func, axis=None, *, keepdims=False, split_every=N
     """A reduction that returns the array indexes, not the values, and which raises for all-NaN slices."""
     dtype = nxp.__array_namespace_info__().default_dtypes(device=x.device)["indexing"]
     intermediate_dtype = [("i", dtype), ("v", x.dtype)]
+    if axis is not None:
+        axis = validate_axis(axis, x.ndim)
 
     # initial map does arg reduction on each block, and uses block id to find the absolute index within whole array
     chunks = tuple((1,) * len(c) if i == axis else c for i, c in enumerate(x.chunks))
@@ -1596,21 +1605,22 @@ def scan(
     if array.numblocks[axis] == 1:
         return scanned
 
-    # 2. Calculate the reduction using `preop`
-    #    Use `partial_reduce` to also merge to a decent intermediate chunksize
-    #    since reduced.chunksize[axis] == 1
-
-    def identity_func(a, **kwargs):
-        return a
-
-    split_size = min(split_every, array.numblocks[axis])
-    reduced = partial_reduce(
+    # 2. Calculate the reduction using `preop`, then merge to a decent
+    #    intermediate chunksize since each block reduces to size 1.
+    #    (Not `partial_reduce` with `combine_sizes`, which gives the last group
+    #    of blocks the full size even if it has fewer blocks.)
+    reduced = map_blocks(
+        partial(preop, axis=axis, keepdims=True),
         array,
-        initial_func=partial(preop, axis=axis, keepdims=True),
-        func=identity_func,
-        split_every={axis: split_size},
         dtype=dtype,
-        combine_sizes={axis: split_size},
+        chunks=tuple(
+            (1,) * len(c) if i == axis else c for i, c in enumerate(array.chunks)
+        ),
+    )
+    split_size = min(split_every, array.numblocks[axis])
+    reduced = merge_chunks(
+        reduced,
+        tuple(split_size if i == axis else c for i, c in enumerate(reduced.chunksize)),
     )
 
     # 3. Now scan `reduced` to generate the increments for each block of `scanned`.
