@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.array_api import make_strategies_namespace
 
@@ -124,6 +124,7 @@ def nan_array(draw):
 )
 @pytest.mark.parametrize("axis", [None, 0, 1])
 @given(na=nan_array())
+@settings(deadline=None)
 def test_nan_functions_hypothesis(na, cubed_func, numpy_func, axis):
     a = cubed.asarray(na, chunks=(2, 2))
     b = cubed_func(a, axis=axis)
@@ -139,6 +140,7 @@ def test_nan_functions_hypothesis(na, cubed_func, numpy_func, axis):
 )
 @pytest.mark.parametrize("axis", [None, 0, 1])
 @given(na=nan_array())
+@settings(deadline=None)
 def test_nanarg_functions_hypothesis(na, cubed_func, numpy_func, axis):
     a = cubed.asarray(na, chunks=(2, 2))
     b = cubed_func(a, axis=axis)

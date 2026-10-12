@@ -23,7 +23,8 @@ def rechunk_shapes(draw):
 @given(rechunk_shapes())
 @settings(
     deadline=None,
-    max_examples=100,
+    # JAX compiles each new chunk shape, so is much slower
+    max_examples=20 if "jax" in nxp.__name__ else 100,
     phases=[Phase.explicit, Phase.reuse, Phase.generate, Phase.target],
 )
 def test_rechunk(rechunk_shapes):
