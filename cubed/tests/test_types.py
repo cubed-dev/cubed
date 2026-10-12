@@ -3,6 +3,7 @@ import pytest
 import cubed
 import cubed.array_api as xp
 from cubed._testing import assert_array_equal
+from cubed.backend_array_api import namespace as nxp
 from cubed.storage.store import get_storage_name
 
 
@@ -17,6 +18,7 @@ def test_prod_sum_bool():
     get_storage_name() != "zarr-python",
     reason="object dtype only works on zarr-python",
 )
+@pytest.mark.skipif(nxp.__name__ != "numpy", reason="object dtype only works on NumPy")
 def test_object_dtype():
     a = xp.asarray(["a", "b"], dtype=object, chunks=2)
     cubed.to_zarr(a, store=None)
