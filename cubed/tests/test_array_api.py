@@ -901,12 +901,12 @@ def test_argmin_axis_0(spec):
     ],
 )
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_searchsorted(x1, x1_chunks, x2, x2_chunks, side):
+def test_searchsorted(spec, x1, x1_chunks, x2, x2_chunks, side):
     x1 = np.array(x1)
     x2 = np.array(x2)
 
-    x1d = xp.asarray(x1, chunks=x1_chunks)
-    x2d = xp.asarray(x2, chunks=x2_chunks)
+    x1d = xp.asarray(x1, chunks=x1_chunks, spec=spec)
+    x2d = xp.asarray(x2, chunks=x2_chunks, spec=spec)
 
     out = xp.searchsorted(x1d, x2d, side=side)
 
@@ -916,11 +916,11 @@ def test_searchsorted(x1, x1_chunks, x2, x2_chunks, side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_searchsorted_scalar(side):
+def test_searchsorted_scalar(spec, side):
     x1 = np.array([-10, 0, 10, 20, 30])
     x2 = 11
 
-    x1d = xp.asarray(x1, chunks=3)
+    x1d = xp.asarray(x1, chunks=3, spec=spec)
     x2d = x2
 
     out = xp.searchsorted(x1d, x2d, side=side)

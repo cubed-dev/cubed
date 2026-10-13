@@ -87,7 +87,7 @@ def searchsorted(x1, x2, /, *, side="left", sorter=None):
     x1_chunk_sizes = nxp.asarray((0, *x1.chunks[0]))
     x1_chunk_offsets = nxp.cumulative_sum(x1_chunk_sizes)[:-1]
     x1_chunk_offsets = x1_chunk_offsets[(Ellipsis,) + x2.ndim * (nxp.newaxis,)]
-    x1_offsets = asarray(x1_chunk_offsets, chunks=1)
+    x1_offsets = asarray(x1_chunk_offsets, chunks=1, spec=x1.spec)
     out = where(out < 0, out, out + x1_offsets)
 
     # combine the results from each block (of a)
