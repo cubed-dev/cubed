@@ -114,6 +114,18 @@ def test_asarray_from_array(spec):
     assert_array_equal(b.compute(), np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
 
 
+@pytest.mark.parametrize("cubed_input", [False, True])
+def test_asarray_dtype(spec, cubed_input):
+    values = np.arange(6, dtype=np.int64)
+    source = xp.asarray(values, chunks=2, spec=spec) if cubed_input else values
+    a = xp.asarray(source, dtype=xp.float32, chunks=2, spec=spec)
+    assert a.dtype == xp.float32
+    assert a.spec == spec
+    result = a.compute()
+    assert result.dtype == np.float32
+    assert_array_equal(result, values.astype(np.float32))
+
+
 @pytest.mark.parametrize("k", [-1, 0, 1])
 def test_eye(spec, k):
     a = xp.eye(5, k=k, chunks=(2, 2), spec=spec)

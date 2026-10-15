@@ -54,10 +54,11 @@ def asarray(
 ) -> "Array":
     a = obj
     from cubed.array_api.array_object import Array
+    from cubed.array_api.data_type_functions import astype
 
     # from dask.asarray
     if isinstance(a, Array):
-        return a
+        return a if dtype is None else astype(a, dtype, copy=False)
     elif type(a).__module__.split(".")[0] == "xarray" and hasattr(
         a, "data"
     ):  # pragma: no cover
@@ -74,7 +75,7 @@ def asarray(
 
     scalar_value = str(a) if a.shape == () else None
     plan = Plan._new(name, "asarray", target, scalar_value=scalar_value)
-    return Array(name, target, spec, plan)
+    return astype(Array(name, target, spec, plan), dtype, copy=False)
 
 
 def empty(shape, *, dtype=None, device=None, chunks="auto", spec=None) -> "Array":
