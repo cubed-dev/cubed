@@ -411,7 +411,7 @@ class Array(CoreArray):
             and self.dtype not in _dtype_categories[dtype_category]
         ):
             raise TypeError(f"Only {dtype_category} dtypes are allowed in {op}")
-        if isinstance(other, (int, complex, float, bool)):
+        if isinstance(other, (int, complex, float, bool, np.generic)):
             other = self._promote_scalar(other)
         elif isinstance(other, CoreArray):
             if (
@@ -427,6 +427,10 @@ class Array(CoreArray):
         return other
 
     def _promote_scalar(self, scalar):
+        if isinstance(scalar, np.generic):
+            # NumPy scalars keep their own dtype (NEP 50); mixed-dtype
+            # promotion is handled by result_type in the caller
+            return asarray(scalar, spec=self.spec)
         if isinstance(scalar, bool):
             if self.dtype not in _boolean_dtypes:
                 raise TypeError(
