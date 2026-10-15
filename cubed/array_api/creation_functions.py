@@ -191,7 +191,7 @@ def linspace(
     chunksize = chunks[0][0]
 
     if num == 0:
-        return asarray(0.0, dtype=dtype, spec=spec)
+        return empty((0,), dtype=dtype, chunks=chunks, spec=spec)
 
     return map_blocks(
         _linspace,

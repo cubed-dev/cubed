@@ -140,6 +140,19 @@ def test_linspace(spec, endpoint):
     assert_allclose(a, npa)
 
 
+@pytest.mark.parametrize("endpoint", [True, False])
+@pytest.mark.parametrize("dtype", [xp.float32, xp.float64])
+def test_linspace_empty(spec, endpoint, dtype):
+    a = xp.linspace(2, 8, 0, endpoint=endpoint, dtype=dtype, chunks=2, spec=spec)
+    assert a.shape == (0,)
+    assert a.dtype == dtype
+    assert a.spec == spec
+    result = a.compute()
+    assert result.shape == (0,)
+    assert result.dtype == dtype
+    assert_array_equal(result, np.linspace(2, 8, 0, endpoint=endpoint, dtype=dtype))
+
+
 def test_ones(spec, executor):
     a = xp.ones((3, 3), chunks=(2, 2), spec=spec)
     assert_array_equal(a.compute(executor=executor), np.ones((3, 3)))
